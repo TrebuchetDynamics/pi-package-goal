@@ -95,11 +95,12 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(commands.has("dev-loop"));
   assert.ok(handlers.has("session_start"));
   assert.ok(handlers.has("agent_end"));
+  assert.ok(handlers.has("input"));
 
+  const command = commands.get("development-loop");
   const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-e2e-"));
   fs.mkdirSync(path.join(e2eRoot, ".git"));
   try {
-    const command = commands.get("development-loop");
     const ctx = {
       cwd: e2eRoot,
       hasUI: true,
@@ -122,6 +123,24 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).customType, "development-loop-state");
     assert.equal(entries.at(-1).data.phase, "running");
 
+    const steeringResult = await handlers.get("input")({
+      type: "input",
+      text: "focus release checks next",
+      source: "interactive",
+    }, ctx);
+    assert.equal(steeringResult.action, "transform");
+    assert.match(steeringResult.text, /Development loop steering request/);
+    assert.match(steeringResult.text, /focus release checks next/);
+    assert.match(steeringResult.text, /DEV_LOOP_DECISION/);
+    assert.match(entries.at(-1).data.topic, /latest user steering: focus release checks next/);
+
+    const extensionInputResult = await handlers.get("input")({
+      type: "input",
+      text: "Use the project instructions and matching skills now.",
+      source: "extension",
+    }, ctx);
+    assert.equal(extensionInputResult.action, "continue");
+
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
@@ -141,6 +160,41 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(messages.at(-1).content, /Project-configured adapter docs-only/);
   } finally {
     fs.rmSync(e2eRoot, { recursive: true, force: true });
+  }
+
+  const initRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-init-"));
+  fs.mkdirSync(path.join(initRoot, ".git"));
+  try {
+    const selectItems = [];
+    const initCtx = {
+      cwd: initRoot,
+      hasUI: true,
+      ui: {
+        select(_title, items) {
+          selectItems.push(...items);
+          assert.ok(items.every((item) => typeof item === "string"), "adapter select items must render as strings");
+          return items[0];
+        },
+        input() { return "docs polish"; },
+        editor(_title, text) { return text; },
+        confirm() { return false; },
+        notify() {},
+        setStatus() {},
+        setWidget() {},
+      },
+      sessionManager: {
+        getCwd: () => initRoot,
+        getEntries: () => [],
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("init", initCtx);
+    assert.deepEqual(selectItems, ["generic-git (detected)", "Gormes", "Navivox"]);
+    const written = JSON.parse(fs.readFileSync(path.join(initRoot, ".pi", "development-loop.json"), "utf8"));
+    assert.equal(written.adapter, "generic-git");
+  } finally {
+    fs.rmSync(initRoot, { recursive: true, force: true });
   }
 }
 
@@ -166,6 +220,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /## Included skills/);
   assert.match(readme, /Project-local configuration for any repo/);
   assert.match(readme, /"adapter": "docs-loop"/);
+  assert.match(readme, /## Update or remove/);
+  assert.match(readme, /### Steer an active loop/);
+  assert.match(readme, /plain text becomes a steering request/);
+  assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
+  assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);

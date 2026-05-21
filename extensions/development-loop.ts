@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
@@ -104,6 +104,7 @@ const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-loop", "logs.jsonl");
 const DEFAULT_ITERATIONS = 3;
 const HARD_MAX_ITERATIONS = 25;
 const STATUS_TOPIC_MAX = 72;
+const STEERING_TOPIC_MAX = 240;
 
 const COMMON_PREFLIGHT = [
   "pwd",
@@ -258,8 +259,35 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     queueNextIteration(pi, ctx);
   }
 
+  async function onInput(event: InputEvent, ctx: ExtensionContext): Promise<InputEventResult> {
+    if (!state.active) return { action: "continue" };
+    if (event.source === "extension") return { action: "continue" };
+
+    const steeringText = event.text.trim();
+    if (!steeringText || steeringText.startsWith("/")) return { action: "continue" };
+
+    const cwd = contextCwd(ctx);
+    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    state = {
+      ...state,
+      topic: mergeSteeringTopic(state.topic, steeringText),
+      lastReason: "user_steering",
+    };
+    appendLoopLog("user_steering", { reason: steeringText });
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+    notify(ctx, "Development loop steering accepted for the active task.");
+
+    return {
+      action: "transform",
+      text: buildSteeringPrompt(state, resolved, cwd, steeringText),
+      images: event.images,
+    };
+  }
+
   pi.on("session_start", onSessionStart);
   pi.on("agent_end", onAgentEnd);
+  pi.on("input", onInput);
 
   const command = {
     description: "Run an adapter-aware project development loop",
@@ -390,15 +418,16 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
 
   if (ctx.hasUI && !adapterName) {
     const detected = resolveProjectAdapter(cwd).adapter.name;
-    const selection = await ctx.ui.select("Development loop adapter", [
-      { value: detected, label: `${detected} (detected)` },
+    const adapterOptions = [
+      { name: detected, label: `${detected} (detected)` },
       ...BUILT_IN_ADAPTERS.filter((adapter) => adapter.name !== detected).map((adapter) => ({
-        value: adapter.name,
+        name: adapter.name,
         label: adapter.label,
-        description: adapter.description,
       })),
-    ]);
-    adapterName = typeof selection === "string" ? selection : detected;
+    ];
+    const labelToName = new Map(adapterOptions.map((adapter) => [adapter.label, adapter.name]));
+    const selection = await ctx.ui.select("Development loop adapter", adapterOptions.map((adapter) => adapter.label));
+    adapterName = typeof selection === "string" ? labelToName.get(selection) ?? selection : detected;
   }
 
   adapterName = adapterName || resolveProjectAdapter(cwd).adapter.name;
@@ -531,6 +560,30 @@ DEV_LOOP_VALIDATED: yes|no
 DEV_LOOP_DECISION: continue|stop|blocked|done
 
 Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
+}
+
+function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, steeringText: string): string {
+  const adapter = resolved.adapter;
+  return `Development loop steering request for the active task.
+
+Project root: ${cwd}
+Adapter: ${adapter.name} — ${adapter.description}
+Current loop iteration: ${s.iteration}/${s.maxIterations}
+Current objective: ${s.topic}
+User steering request: ${steeringText}
+
+Incorporate this steering into the current or next safe vertical slice. Preserve unrelated dirty work. Keep using the configured validation commands before any continue/done decision.
+
+End with these exact marker lines:
+DEV_LOOP_VALIDATED: yes|no
+DEV_LOOP_DECISION: continue|stop|blocked|done
+
+Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
+}
+
+function mergeSteeringTopic(currentTopic: string, steeringText: string): string {
+  const next = `${currentTopic || "active development loop"}; latest user steering: ${steeringText}`;
+  return next.length <= STEERING_TOPIC_MAX ? next : `${next.slice(0, STEERING_TOPIC_MAX - 1)}…`;
 }
 
 function resolveProjectAdapter(cwd: string, requestedAdapter?: string): ResolvedProjectAdapter {

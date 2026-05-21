@@ -48,6 +48,22 @@ Short alias:
 /dev-loop status
 ```
 
+## Update or remove
+
+Refresh the installed package when the repository changes:
+
+```bash
+pi update git:github.com/TrebuchetDynamics/pi-package-development-loop
+```
+
+Remove it if you no longer want the extension and bundled skills:
+
+```bash
+pi remove git:github.com/TrebuchetDynamics/pi-package-development-loop
+```
+
+Run `/reload` after either command in an open Pi session.
+
 ## Development-loop instructions and tips
 
 `/development-loop` sends the agent a scoped iteration prompt, watches for final markers, logs progress, and queues follow-up iterations until the loop stops.
@@ -72,6 +88,12 @@ Tips:
 - Keep one objective per run; stop and restart when the objective changes.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
+
+### Steer an active loop
+
+When a development loop is active, plain text becomes a steering request for the current or next safe slice. For example, type `focus release checks next` to update the objective without stopping the loop.
+
+Slash commands still run as commands, and prompts sent by the extension are not rewritten.
 
 Each iteration must end with:
 
