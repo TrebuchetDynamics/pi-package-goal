@@ -40,13 +40,13 @@ function exists(file) {
 function collectMissingPackageManifestPaths(baseDir, pkg) {
   const missing = [];
   for (const file of stringArray(pkg.files)) {
-    if (!pathExists(baseDir, file)) missing.push(`files: ${file}`);
+    if (!isManifestExclusion(file) && !pathExists(baseDir, file)) missing.push(`files: ${file}`);
   }
   for (const extension of stringArray(pkg.pi?.extensions)) {
-    if (!pathExists(baseDir, extension)) missing.push(`pi.extensions: ${extension}`);
+    if (!isManifestExclusion(extension) && !pathExists(baseDir, extension)) missing.push(`pi.extensions: ${extension}`);
   }
   for (const skillPath of stringArray(pkg.pi?.skills)) {
-    if (!pathExists(baseDir, skillPath)) missing.push(`pi.skills: ${skillPath}`);
+    if (!isManifestExclusion(skillPath) && !pathExists(baseDir, skillPath)) missing.push(`pi.skills: ${skillPath}`);
   }
   return missing;
 }
@@ -55,8 +55,71 @@ function stringArray(value) {
   return Array.isArray(value) ? value.filter((item) => typeof item === "string" && item.trim()) : [];
 }
 
+function isManifestExclusion(target) {
+  return target.trim().startsWith("!");
+}
+
 function pathExists(baseDir, target) {
-  return fs.existsSync(path.join(baseDir, target.replace(/^\.\//, "")));
+  const normalized = normalizeManifestPath(target);
+  if (hasGlobPattern(normalized)) return globPathExists(baseDir, normalized);
+  return fs.existsSync(path.join(baseDir, normalized));
+}
+
+function normalizeManifestPath(target) {
+  return target.trim().replace(/^\.\//, "").split(path.sep).join("/");
+}
+
+function hasGlobPattern(target) {
+  return /[*?]/.test(target);
+}
+
+function globPathExists(baseDir, pattern) {
+  const matcher = globPatternToRegExp(pattern);
+  return listRelativePackagePaths(baseDir).some((item) => matcher.test(item));
+}
+
+function listRelativePackagePaths(baseDir) {
+  const out = [];
+  const skipDirs = new Set([".git", ".pi", "node_modules"]);
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory() && skipDirs.has(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      out.push(path.relative(baseDir, full).split(path.sep).join("/"));
+      if (entry.isDirectory()) walk(full);
+    }
+  };
+  walk(baseDir);
+  return out;
+}
+
+function globPatternToRegExp(pattern) {
+  let source = "^";
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index];
+    if (char === "*") {
+      if (pattern[index + 1] === "*") {
+        while (pattern[index + 1] === "*") index += 1;
+        if (pattern[index + 1] === "/") {
+          source += "(?:.*/)?";
+          index += 1;
+        } else {
+          source += ".*";
+        }
+      } else {
+        source += "[^/]*";
+      }
+    } else if (char === "?") {
+      source += "[^/]";
+    } else {
+      source += escapeRegExp(char);
+    }
+  }
+  return new RegExp(`${source}$`);
+}
+
+function escapeRegExp(char) {
+  return char.replace(/[\\^$+?.()|[\]{}]/g, "\\$&");
 }
 
 function listSkillFiles() {
@@ -156,9 +219,9 @@ async function testPackageManifestPaths() {
     fs.writeFileSync(path.join(fixtureRoot, "extensions", "good.ts"), "export default () => {};\n");
 
     const missing = collectMissingPackageManifestPaths(fixtureRoot, {
-      files: ["README.md", "skills", "missing-dir"],
+      files: ["README.md", "skills", "extensions/*.ts", "missing-dir"],
       pi: {
-        extensions: ["./extensions/good.ts", "./extensions/missing.ts"],
+        extensions: ["./extensions/*.ts", "!./extensions/legacy.ts", "./extensions/missing.ts"],
         skills: ["./skills"],
       },
     });
@@ -894,7 +957,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);
   assert.match(readme, /\/development-loop help/);
-  assert.match(readme, /Pi package manifest shape and referenced bundle paths/);
+  assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
