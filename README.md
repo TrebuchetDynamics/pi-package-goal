@@ -234,7 +234,7 @@ The validation script checks:
 - Skill frontmatter and expected bundle contents.
 - Markdown relative links outside code-fence templates.
 - README quick-start structure.
-- Third-party notices and license copies.
+- Third-party notices, local notice paths, and license copies.
 
 ## Attribution
 

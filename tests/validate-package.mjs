@@ -266,6 +266,26 @@ function isExternalMarkdownTarget(target) {
   return target.startsWith("#") || /^[a-z][a-z0-9+.-]*:/i.test(target);
 }
 
+function collectThirdPartyNoticePathIssues(baseDir) {
+  const noticeFile = path.join(baseDir, "THIRD_PARTY_NOTICES.md");
+  if (!fs.existsSync(noticeFile)) return ["THIRD_PARTY_NOTICES.md: missing"];
+
+  const issues = [];
+  const content = fs.readFileSync(noticeFile, "utf8");
+  for (const match of content.matchAll(/`([^`]+)`/g)) {
+    const localPath = match[1].trim();
+    if (!isThirdPartyNoticeLocalPath(localPath)) continue;
+    if (!fs.existsSync(path.join(baseDir, localPath))) {
+      issues.push(`THIRD_PARTY_NOTICES.md: missing local notice path ${localPath}`);
+    }
+  }
+  return issues;
+}
+
+function isThirdPartyNoticeLocalPath(localPath) {
+  return localPath.startsWith("licenses/") || localPath.startsWith("skills/");
+}
+
 function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);
   assert.ok(match, "SKILL.md must have YAML frontmatter");
@@ -1012,6 +1032,32 @@ async function testMarkdownLinks() {
   assert.deepEqual(broken, [], `broken Markdown links:\n${broken.map((item) => `${item.file} -> ${item.target}`).join("\n")}`);
 }
 
+async function testThirdPartyNoticePaths() {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-notice-paths-"));
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "licenses"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "skills", "present"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "licenses", "present-LICENSE"), "MIT\n");
+    fs.writeFileSync(path.join(fixtureRoot, "THIRD_PARTY_NOTICES.md"), [
+      "# Notices",
+      "- Bundled path: `skills/present/`",
+      "- Bundled path: `skills/missing/`",
+      "- Full license copy: `licenses/present-LICENSE`",
+      "- Full license copy: `licenses/missing-LICENSE`",
+      "- Snapshot inspected: `abc123`",
+    ].join("\n"));
+
+    assert.deepEqual(collectThirdPartyNoticePathIssues(fixtureRoot), [
+      "THIRD_PARTY_NOTICES.md: missing local notice path skills/missing/",
+      "THIRD_PARTY_NOTICES.md: missing local notice path licenses/missing-LICENSE",
+    ]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(collectThirdPartyNoticePathIssues(root), []);
+}
+
 async function testNoticesAndDocs() {
   const readme = read("README.md");
   assert.match(readme, /## Quick start/);
@@ -1067,6 +1113,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
+  assert.match(readme, /Third-party notices, local notice paths, and license copies/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
   assert.match(notices, /GoogleChrome\/modern-web-guidance/);
@@ -1090,5 +1137,6 @@ await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
 await testMarkdownLinks();
+await testThirdPartyNoticePaths();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");
