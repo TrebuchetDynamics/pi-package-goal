@@ -463,8 +463,13 @@ function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
 function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd);
+  const isBuiltInAdapter = BUILT_IN_ADAPTERS.some((adapter) => adapter.name === resolved.adapter.name);
+  const projectAdapterLines = isBuiltInAdapter ? [] : [
+    `Project-configured adapter ${resolved.adapter.name}: ${resolved.adapter.description}`,
+  ];
   const text = [
     `Detected adapter: ${resolved.adapter.name}`,
+    ...projectAdapterLines,
     "Built-in adapters:",
     ...BUILT_IN_ADAPTERS.map((adapter) => `- ${adapter.name}: ${adapter.description}`),
     `Config: ${relativeToCwd(cwd, resolved.configPath)}${resolved.configLoaded ? " present" : " missing"}`,

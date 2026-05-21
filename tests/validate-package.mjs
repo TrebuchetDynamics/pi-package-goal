@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
 
@@ -79,19 +80,68 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   const commands = new Map();
   const handlers = new Map();
+  const entries = [];
+  const messages = [];
   const sent = [];
   const pi = {
     on(name, handler) { handlers.set(name, handler); },
     registerCommand(name, command) { commands.set(name, command); },
-    appendEntry() {},
+    appendEntry(customType, data) { entries.push({ customType, data }); },
     sendUserMessage(content, options) { sent.push({ content, options }); },
-    sendMessage() {},
+    sendMessage(message) { messages.push(message); },
   };
   mod.default(pi);
   assert.ok(commands.has("development-loop"));
   assert.ok(commands.has("dev-loop"));
   assert.ok(handlers.has("session_start"));
   assert.ok(handlers.has("agent_end"));
+
+  const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-e2e-"));
+  fs.mkdirSync(path.join(e2eRoot, ".git"));
+  try {
+    const command = commands.get("development-loop");
+    const ctx = {
+      cwd: e2eRoot,
+      hasUI: true,
+      ui: {
+        notify() {},
+        setStatus() {},
+        setWidget() {},
+      },
+      sessionManager: {
+        getCwd: () => e2eRoot,
+        getEntries: () => [],
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("start --iterations=2 README polish", ctx);
+    assert.equal(sent.length, 1);
+    assert.match(sent[0].content, /Development loop iteration 1\/2/);
+    assert.match(sent[0].content, /DEV_LOOP_DECISION/);
+    assert.equal(entries.at(-1).customType, "development-loop-state");
+    assert.equal(entries.at(-1).data.phase, "running");
+
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done",
+      }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, false);
+    assert.equal(entries.at(-1).data.phase, "done");
+
+    fs.mkdirSync(path.join(e2eRoot, ".pi"), { recursive: true });
+    fs.writeFileSync(path.join(e2eRoot, ".pi", "development-loop.json"), JSON.stringify({
+      adapter: "docs-only",
+      defaultTopic: "polish docs",
+      validationCommands: ["npm test"],
+    }, null, 2));
+    await command.handler("adapters", ctx);
+    assert.match(messages.at(-1).content, /Project-configured adapter docs-only/);
+  } finally {
+    fs.rmSync(e2eRoot, { recursive: true, force: true });
+  }
 }
 
 async function testSkills() {
@@ -107,6 +157,16 @@ async function testSkills() {
 
 async function testNoticesAndDocs() {
   const readme = read("README.md");
+  assert.match(readme, /## Quick start/);
+  assert.match(readme, /### Step 1: Install the Pi agent/);
+  assert.match(readme, /### Step 2: Install this package/);
+  assert.match(readme, /### Step 3: Start `\/development-loop`/);
+  assert.match(readme, /## Development-loop instructions and tips/);
+  assert.match(readme, /## Included extensions/);
+  assert.match(readme, /## Included skills/);
+  assert.match(readme, /Project-local configuration for any repo/);
+  assert.match(readme, /"adapter": "docs-loop"/);
+  assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);
 
