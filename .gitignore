@@ -1,0 +1,4 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+.pi/development-loop/logs.jsonl

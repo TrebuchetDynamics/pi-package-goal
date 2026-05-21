@@ -1,0 +1,51 @@
+{
+  "name": "pi-package-development-loop",
+  "version": "0.1.0",
+  "description": "Adapter-aware Pi development loop extension bundled with high-signal engineering and web skills.",
+  "type": "module",
+  "license": "MIT AND Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrebuchetDynamics/pi-package-development-loop.git"
+  },
+  "homepage": "https://github.com/TrebuchetDynamics/pi-package-development-loop#readme",
+  "bugs": {
+    "url": "https://github.com/TrebuchetDynamics/pi-package-development-loop/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-agent",
+    "development-loop",
+    "agent-skills",
+    "coding-agent",
+    "tdd",
+    "modern-web"
+  ],
+  "files": [
+    "extensions",
+    "skills",
+    "licenses",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/development-loop.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "scripts": {
+    "test": "node tests/validate-package.mjs",
+    "validate": "node tests/validate-package.mjs"
+  }
+}
