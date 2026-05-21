@@ -37,6 +37,28 @@ function exists(file) {
   return fs.existsSync(path.join(root, file));
 }
 
+function collectMissingPackageManifestPaths(baseDir, pkg) {
+  const missing = [];
+  for (const file of stringArray(pkg.files)) {
+    if (!pathExists(baseDir, file)) missing.push(`files: ${file}`);
+  }
+  for (const extension of stringArray(pkg.pi?.extensions)) {
+    if (!pathExists(baseDir, extension)) missing.push(`pi.extensions: ${extension}`);
+  }
+  for (const skillPath of stringArray(pkg.pi?.skills)) {
+    if (!pathExists(baseDir, skillPath)) missing.push(`pi.skills: ${skillPath}`);
+  }
+  return missing;
+}
+
+function stringArray(value) {
+  return Array.isArray(value) ? value.filter((item) => typeof item === "string" && item.trim()) : [];
+}
+
+function pathExists(baseDir, target) {
+  return fs.existsSync(path.join(baseDir, target.replace(/^\.\//, "")));
+}
+
 function listSkillFiles() {
   const out = [];
   const base = path.join(root, "skills");
@@ -123,6 +145,29 @@ async function testPackageManifest() {
   assert.deepEqual(pkg.pi.extensions, ["./extensions/development-loop.ts", "./extensions/e2e-loop.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
+}
+
+async function testPackageManifestPaths() {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-pkg-paths-"));
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "extensions"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "skills"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "README.md"), "fixture\n");
+    fs.writeFileSync(path.join(fixtureRoot, "extensions", "good.ts"), "export default () => {};\n");
+
+    const missing = collectMissingPackageManifestPaths(fixtureRoot, {
+      files: ["README.md", "skills", "missing-dir"],
+      pi: {
+        extensions: ["./extensions/good.ts", "./extensions/missing.ts"],
+        skills: ["./skills"],
+      },
+    });
+    assert.deepEqual(missing, ["files: missing-dir", "pi.extensions: ./extensions/missing.ts"]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(collectMissingPackageManifestPaths(root, readJson("package.json")), []);
 }
 
 async function testExtensionLoadsAndRegistersCommands() {
@@ -849,6 +894,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);
   assert.match(readme, /\/development-loop help/);
+  assert.match(readme, /Pi package manifest shape and referenced bundle paths/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
@@ -867,6 +913,7 @@ async function testNoticesAndDocs() {
 }
 
 await testPackageManifest();
+await testPackageManifestPaths();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
