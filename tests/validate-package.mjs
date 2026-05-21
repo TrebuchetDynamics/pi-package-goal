@@ -122,6 +122,83 @@ function escapeRegExp(char) {
   return char.replace(/[\\^$+?.()|[\]{}]/g, "\\$&");
 }
 
+const piCorePackages = new Set([
+  "@earendil-works/pi-ai",
+  "@earendil-works/pi-agent-core",
+  "@earendil-works/pi-coding-agent",
+  "@earendil-works/pi-tui",
+  "typebox",
+]);
+
+function collectPiCoreDependencyIssues(baseDir, pkg) {
+  const issues = [];
+  const importedCorePackages = [...collectImportedPackageNames(baseDir)]
+    .filter((packageName) => piCorePackages.has(packageName))
+    .sort();
+  for (const packageName of importedCorePackages) {
+    if (pkg.peerDependencies?.[packageName] !== "*") {
+      issues.push(`peerDependencies: ${packageName} must be "*"`);
+    }
+  }
+
+  const runtimeCorePackages = Object.keys(pkg.dependencies ?? {})
+    .filter((packageName) => piCorePackages.has(packageName))
+    .sort();
+  for (const packageName of runtimeCorePackages) {
+    issues.push(`dependencies: ${packageName} must be a peerDependency, not a runtime dependency`);
+  }
+  return issues;
+}
+
+function collectImportedPackageNames(baseDir) {
+  const imported = new Set();
+  for (const file of listPackageCodeFiles(baseDir)) {
+    const content = fs.readFileSync(file, "utf8");
+    for (const source of parseImportSources(content)) {
+      const packageName = barePackageName(source);
+      if (packageName) imported.add(packageName);
+    }
+  }
+  return imported;
+}
+
+function listPackageCodeFiles(baseDir) {
+  const out = [];
+  const extensionsDir = path.join(baseDir, "extensions");
+  if (!fs.existsSync(extensionsDir)) return out;
+  const codeExtensions = new Set([".cjs", ".js", ".jsx", ".mjs", ".ts", ".tsx"]);
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      if (entry.isFile() && codeExtensions.has(path.extname(entry.name))) out.push(full);
+    }
+  };
+  walk(extensionsDir);
+  return out.sort();
+}
+
+function parseImportSources(content) {
+  const sources = [];
+  const importPatterns = [
+    /\bfrom\s*["']([^"']+)["']/g,
+    /\bimport\s*["']([^"']+)["']/g,
+    /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g,
+  ];
+  for (const pattern of importPatterns) {
+    for (const match of content.matchAll(pattern)) {
+      sources.push(match[1]);
+    }
+  }
+  return sources;
+}
+
+function barePackageName(source) {
+  if (source.startsWith(".") || source.startsWith("/")) return undefined;
+  const parts = source.split("/");
+  return source.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
+}
+
 function listSkillFiles() {
   const out = [];
   const base = path.join(root, "skills");
@@ -231,6 +308,36 @@ async function testPackageManifestPaths() {
   }
 
   assert.deepEqual(collectMissingPackageManifestPaths(root, readJson("package.json")), []);
+}
+
+async function testPiCoreDependencies() {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-core-deps-"));
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "extensions"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "extensions", "bad.ts"), [
+      "import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';",
+      "import { Box } from '@earendil-works/pi-tui/widgets';",
+      "import { Type } from 'typebox';",
+      "import './local';",
+    ].join("\n"));
+
+    const issues = collectPiCoreDependencyIssues(fixtureRoot, {
+      dependencies: { typebox: "^1.0.0" },
+      peerDependencies: {
+        "@earendil-works/pi-coding-agent": "^1.0.0",
+        "@earendil-works/pi-tui": "*",
+      },
+    });
+    assert.deepEqual(issues, [
+      "peerDependencies: @earendil-works/pi-coding-agent must be \"*\"",
+      "peerDependencies: typebox must be \"*\"",
+      "dependencies: typebox must be a peerDependency, not a runtime dependency",
+    ]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(collectPiCoreDependencyIssues(root, readJson("package.json")), []);
 }
 
 async function testExtensionLoadsAndRegistersCommands() {
@@ -958,6 +1065,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /\/development-loop start/);
   assert.match(readme, /\/development-loop help/);
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
+  assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
@@ -977,6 +1085,7 @@ async function testNoticesAndDocs() {
 
 await testPackageManifest();
 await testPackageManifestPaths();
+await testPiCoreDependencies();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();

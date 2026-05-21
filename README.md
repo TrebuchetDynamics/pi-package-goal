@@ -226,6 +226,7 @@ npm test
 The validation script checks:
 
 - Pi package manifest shape, referenced bundle paths, and Pi glob/exclusion entries.
+- Pi core imports are peerDependencies with "*".
 - Extension load via Pi-bundled `jiti`.
 - `/development-loop`, `/dev-loop`, `/e2e-loop`, and `/e2e` command registration.
 - E2E smoke coverage for starting and completing one development-loop extension run.
