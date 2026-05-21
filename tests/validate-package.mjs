@@ -18,6 +18,7 @@ const expectedSkills = [
   "prototype",
   "zoom-out",
   "handoff",
+  "lgtm",
   "caveman",
   "write-a-skill",
   "greploop",
@@ -97,6 +98,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(handlers.has("session_start"));
   assert.ok(handlers.has("agent_end"));
   assert.ok(handlers.has("input"));
+  assert.ok(handlers.has("session_before_compact"));
+  assert.ok(handlers.has("session_compact"));
 
   const command = commands.get("development-loop");
   const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-e2e-"));
@@ -136,7 +139,33 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.phase, "running");
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
     assert.match(statusUpdates.at(-1).value, /loop 1\/2 · generic-git · git:manual · README polish/);
-    assert.ok(widgetUpdates.at(-1).value.length <= 2, "development-loop widget should stay compact");
+    assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
+    assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
+    assert.doesNotMatch(widgetUpdates.at(-1).value[0], /loop 1\/2/);
+
+    await handlers.get("agent_end")({ messages: [] }, ctx);
+    assert.equal(entries.at(-1).data.active, true, "empty provider-error turns should wait for compaction/retry instead of blocking the loop");
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "empty_agent_response_waiting_for_compaction");
+
+    await handlers.get("session_before_compact")({
+      preparation: { tokensBefore: 272879 },
+    }, ctx);
+    assert.equal(entries.at(-1).customType, "development-loop-state");
+    assert.equal(entries.at(-1).data.active, true);
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "preparing_for_compaction");
+
+    const sentBeforeCompactResume = sent.length;
+    await handlers.get("session_compact")({
+      compactionEntry: { tokensBefore: 272879 },
+    }, ctx);
+    assert.equal(sent.length, sentBeforeCompactResume + 1, "active loop should resume after compaction");
+    assert.match(sent.at(-1).content, /Continue development loop after compaction/);
+    assert.match(sent.at(-1).content, /Development loop iteration 1\/2/);
+    assert.match(sent.at(-1).content, /DEV_LOOP_DECISION/);
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "resumed_after_compaction");
 
     const steeringResult = await handlers.get("input")({
       type: "input",
@@ -156,6 +185,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(extensionInputResult.action, "continue");
 
+    const sentBeforeContinue = sent.length;
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
@@ -163,7 +193,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       }],
     }, ctx);
     await new Promise((resolve) => setTimeout(resolve, 10));
-    assert.equal(sent.length, 2);
+    assert.equal(sent.length, sentBeforeContinue + 1);
     assert.match(sent.at(-1).content, /Development loop iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
 
@@ -183,7 +213,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(statusUpdates.at(-1).value, /<error>■ block<\/error>/);
     assert.match(statusUpdates.at(-1).value, /git:manual/);
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
-    assert.ok(widgetUpdates.at(-1).value.length <= 2, "blocked development-loop widget should stay compact");
+    assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-loop widget should show only detail because footer already shows status");
 
     fs.mkdirSync(path.join(e2eRoot, ".pi"), { recursive: true });
     fs.writeFileSync(path.join(e2eRoot, ".pi", "development-loop.json"), JSON.stringify({
@@ -193,6 +223,42 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, null, 2));
     await command.handler("adapters", ctx);
     assert.match(messages.at(-1).content, /Project-configured adapter docs-only/);
+
+    const proactiveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-proactive-compact-"));
+    fs.mkdirSync(path.join(proactiveRoot, ".git"));
+    try {
+      const compactCalls = [];
+      const proactiveCtx = {
+        ...ctx,
+        cwd: proactiveRoot,
+        sessionManager: {
+          getCwd: () => proactiveRoot,
+          getEntries: () => [],
+        },
+        getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }),
+        compact(options) { compactCalls.push(options); },
+      };
+      await command.handler("start --iterations=2 compaction threshold", proactiveCtx);
+      const sentBeforeProactiveContinue = sent.length;
+      await handlers.get("agent_end")({
+        messages: [{
+          role: "assistant",
+          content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue",
+        }],
+      }, proactiveCtx);
+      assert.equal(compactCalls.length, 1, "high context usage should compact before next iteration");
+      assert.match(compactCalls[0].customInstructions, /development loop state/);
+      assert.equal(sent.length, sentBeforeProactiveContinue, "next iteration should wait for compaction to finish");
+      assert.equal(entries.at(-1).data.iteration, 2);
+      assert.equal(entries.at(-1).data.phase, "queued");
+      assert.equal(entries.at(-1).data.lastReason, "compaction_before_next_iteration");
+
+      await handlers.get("session_compact")({ compactionEntry: { tokensBefore: 300000 } }, proactiveCtx);
+      assert.equal(sent.length, sentBeforeProactiveContinue + 1, "queued loop should continue after compaction");
+      assert.match(sent.at(-1).content, /Development loop iteration 2\/2/);
+    } finally {
+      fs.rmSync(proactiveRoot, { recursive: true, force: true });
+    }
 
     await command.handler("help", ctx);
     assert.match(messages.at(-1).content, /\/development-loop init --dry-run/);
@@ -211,7 +277,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     const initPrompts = [];
     const recordUnexpectedPrompt = (name) => (...args) => {
       initPrompts.push({ name, args });
-      throw new Error(`/development-loop init should not prompt with ${name}`);
+      throw new Error(`/development-loop init --yes should not prompt with ${name}`);
     };
     const initCtx = {
       cwd: initRoot,
@@ -232,7 +298,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       isIdle: () => true,
     };
 
-    await command.handler("init", initCtx);
+    await command.handler("init --yes", initCtx);
     assert.deepEqual(initPrompts, []);
     const written = JSON.parse(fs.readFileSync(path.join(initRoot, ".pi", "development-loop.json"), "utf8"));
     assert.equal(written.adapter, "generic-git");
@@ -244,6 +310,75 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.ok(written.stopConditions.some((condition) => /TODO\.md/.test(condition)));
   } finally {
     fs.rmSync(initRoot, { recursive: true, force: true });
+  }
+
+  const interactiveInitRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-interactive-init-"));
+  fs.mkdirSync(path.join(interactiveInitRoot, ".git"));
+  try {
+    fs.mkdirSync(path.join(interactiveInitRoot, ".pi"), { recursive: true });
+    fs.writeFileSync(path.join(interactiveInitRoot, ".pi", "development-loop.json"), JSON.stringify({ adapter: "old" }, null, 2));
+
+    const promptCalls = [];
+    const interactiveCtx = {
+      cwd: interactiveInitRoot,
+      hasUI: true,
+      ui: {
+        select(title, items) {
+          promptCalls.push({ name: "select", title, items });
+          if (/adapter/i.test(title)) return "generic-git";
+          if (/delivery/i.test(title)) return "push";
+          throw new Error(`unexpected select: ${title}`);
+        },
+        input(title, placeholder) {
+          promptCalls.push({ name: "input", title, placeholder });
+          if (/iterations/i.test(title)) return "4";
+          if (/log path/i.test(title)) return ".dev-loop/logs.jsonl";
+          throw new Error(`unexpected input: ${title}`);
+        },
+        editor(title, text) {
+          promptCalls.push({ name: "editor", title, text });
+          if (/objective/i.test(title)) return "ship interactive init";
+          if (/validation/i.test(title)) return "npm test\ngit diff --check";
+          if (/preflight/i.test(title)) return "git status --short";
+          if (/skills/i.test(title)) return "tdd\nverification-before-completion";
+          if (/stop conditions/i.test(title)) return "credentials missing";
+          throw new Error(`unexpected editor: ${title}`);
+        },
+        confirm(title, message) {
+          promptCalls.push({ name: "confirm", title, message });
+          return true;
+        },
+        notify() {},
+        setStatus() {},
+        setWidget() {},
+      },
+      sessionManager: {
+        getCwd: () => interactiveInitRoot,
+        getEntries: () => [],
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("init --force", interactiveCtx);
+    assert.ok(promptCalls.some((call) => call.name === "select" && /adapter/i.test(call.title)), "interactive init must ask for adapter");
+    assert.ok(promptCalls.some((call) => call.name === "editor" && /objective/i.test(call.title)), "interactive init must ask for objective");
+    assert.ok(promptCalls.some((call) => call.name === "input" && /iterations/i.test(call.title)), "interactive init must ask for iterations");
+    assert.ok(promptCalls.some((call) => call.name === "select" && /delivery/i.test(call.title)), "interactive init must ask for git delivery");
+    assert.ok(promptCalls.some((call) => call.name === "confirm"), "interactive init must confirm before writing");
+
+    const configured = JSON.parse(fs.readFileSync(path.join(interactiveInitRoot, ".pi", "development-loop.json"), "utf8"));
+    assert.equal(configured.adapter, "generic-git");
+    assert.equal(configured.defaultTopic, "ship interactive init");
+    assert.equal(configured.maxIterations, 4);
+    assert.equal(configured.commit, true, "push delivery selected in the wizard should imply commit delivery");
+    assert.equal(configured.push, true);
+    assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
+    assert.deepEqual(configured.preflightCommands, ["git status --short"]);
+    assert.deepEqual(configured.skills, ["tdd", "verification-before-completion"]);
+    assert.deepEqual(configured.stopConditions, ["credentials missing"]);
+    assert.equal(configured.logPath, ".dev-loop/logs.jsonl");
+  } finally {
+    fs.rmSync(interactiveInitRoot, { recursive: true, force: true });
   }
 
   const configurableInitRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-configurable-init-"));
@@ -264,7 +399,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       isIdle: () => true,
     };
 
-    await command.handler("init --iterations=7 --push --test 'npm test' --test 'git diff --check' --preflight 'git status --short' --skill=grill-me --skill=tdd --stop-condition 'review blockers are unresolved' --log-path .dev-loop/logs.jsonl 'release hardening'", configurableCtx);
+    await command.handler("init --yes --iterations=7 --push --test 'npm test' --test 'git diff --check' --preflight 'git status --short' --skill=grill-me --skill=tdd --stop-condition 'review blockers are unresolved' --log-path .dev-loop/logs.jsonl 'release hardening'", configurableCtx);
     const configured = JSON.parse(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"));
     assert.equal(configured.defaultTopic, "release hardening");
     assert.equal(configured.maxIterations, 7);
@@ -277,10 +412,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.logPath, ".dev-loop/logs.jsonl");
 
     const before = JSON.stringify(configured, null, 2) + "\n";
-    await command.handler("init --iterations=2 --force=false overwrite attempt", configurableCtx);
+    await command.handler("init --yes --iterations=2 --force=false overwrite attempt", configurableCtx);
     assert.equal(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"), before, "init must not overwrite existing config without --force");
 
-    await command.handler("init --force --iterations=2 --no-push forced replacement", configurableCtx);
+    await command.handler("init --yes --force --iterations=2 --no-push forced replacement", configurableCtx);
     const replaced = JSON.parse(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"));
     assert.equal(replaced.defaultTopic, "forced replacement");
     assert.equal(replaced.maxIterations, 2);
@@ -308,7 +443,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       isIdle: () => true,
     };
 
-    await command.handler("init --dry-run --iterations=4 --push --skill=grill-me preview config", dryRunCtx);
+    await command.handler("init --yes --dry-run --iterations=4 --push --skill=grill-me preview config", dryRunCtx);
     assert.equal(fs.existsSync(path.join(dryRunInitRoot, ".pi", "development-loop.json")), false, "dry-run init must not write config");
     assert.match(dryRunNotifications.at(-1), /Development-loop init preview/);
     assert.match(dryRunNotifications.at(-1), /"defaultTopic": "preview config"/);
@@ -348,7 +483,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /"statusKey": "development-loop"/);
   assert.match(readme, /### Steer an active loop/);
   assert.match(readme, /plain text becomes a steering request/);
-  assert.match(readme, /`\/development-loop init` is non-interactive/);
+  assert.match(readme, /`\/development-loop init` opens an interactive setup wizard/);
   assert.match(readme, /TODO\.md, progress\.json, plans/);
   assert.match(readme, /`--force` only when you intentionally want an atomic replacement/);
   assert.match(readme, /`--iterations <n>`/);
@@ -356,10 +491,13 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`--skill <name-or-note>`/);
   assert.match(readme, /`--dry-run`/);
   assert.match(readme, /preview the generated config without writing/);
+  assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
+  assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /`grill-me`/);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review loop/);
+  assert.match(readme, /`lgtm`/);
   assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);

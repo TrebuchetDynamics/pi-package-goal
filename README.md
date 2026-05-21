@@ -74,8 +74,9 @@ Useful commands:
 /development-loop adapters
 /development-loop help
 /development-loop init
-/development-loop init --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-loop init --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-loop init --force
+/development-loop init --yes --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-loop init --yes --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-loop start --iterations=3 providers
 /development-loop start --iterations=5 --commit --push fix flaky tests
 /development-loop status
@@ -86,12 +87,14 @@ Useful commands:
 Tips:
 
 - Start small: `--iterations=1` or `--iterations=3` is usually enough.
-- `/development-loop init` is non-interactive: it writes safe defaults without adapter, validation, or commit prompts.
+- `/development-loop init` opens an interactive setup wizard in the Pi TUI for adapter, objective, iterations, git delivery, validation, skills, stop conditions, and log path.
+- Use `--yes` (`-y` or `--defaults`) for scripted/non-interactive init that accepts generated defaults and any provided flags without prompts.
 - Existing `.pi/development-loop.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
 - Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.
 - Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
+- An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration after an empty provider-error response.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
 
@@ -145,6 +148,7 @@ Create `.pi/development-loop.json` when a repo needs its own adapter name, defau
 - `--log-path <path>`
 - `--dry-run` / `--preview` to preview the generated config without writing files
 - `--force` to replace an existing config atomically
+- `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
 Example config:
 
@@ -181,6 +185,7 @@ Run `/development-loop adapters` to confirm which adapter and config Pi will use
 - `prototype` — throwaway prototypes for design uncertainty.
 - `zoom-out` — source-backed broader codebase understanding.
 - `handoff` — continuation handoff for future sessions.
+- `lgtm` — treats approvals like “lgtm” or “go ahead” as permission to continue the most recent recommendation.
 - `caveman` — ultra-compressed status communication.
 - `write-a-skill` — skill authoring guidance.
 - `greploop` — Greptile review loop for PR/MR/CL cleanup when review automation, required CLI auth, and git delivery are intentionally enabled.

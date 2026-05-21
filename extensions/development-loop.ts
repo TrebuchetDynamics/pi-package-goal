@@ -75,6 +75,7 @@ type ParsedCommand = {
   push?: boolean;
   force?: boolean;
   dryRun?: boolean;
+  yes?: boolean;
   logPath?: string;
   validationCommands: string[];
   preflightCommands: string[];
@@ -96,7 +97,7 @@ type UiLikeContext = {
     setStatus?: (key: string, value: string | undefined) => void;
     setWidget?: (key: string, value: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }) => void;
     confirm?: (title: string, message: string, options?: unknown) => Promise<boolean> | boolean;
-    select?: (title: string, items: Array<string | { value: string; label?: string; description?: string }>) => Promise<string | undefined> | string | undefined;
+    select?: (title: string, items: Array<string | { value: string; label?: string; description?: string }>, options?: unknown) => Promise<string | undefined> | string | undefined;
     input?: (title: string, placeholder?: string) => Promise<string | undefined> | string | undefined;
     editor?: (title: string, text?: string) => Promise<string | undefined> | string | undefined;
   };
@@ -106,6 +107,12 @@ type UiLikeContext = {
   };
   isIdle?: () => boolean;
   hasPendingMessages?: () => boolean;
+  getContextUsage?: () => { tokens?: number; contextWindow?: number; maxTokens?: number } | undefined;
+  compact?: (options?: {
+    customInstructions?: string;
+    onComplete?: (result?: unknown) => void;
+    onError?: (error: Error) => void;
+  }) => void;
 };
 
 const CUSTOM_STATE_TYPE = "development-loop-state";
@@ -117,6 +124,8 @@ const STATUS_TOPIC_MAX = 72;
 const STEERING_TOPIC_MAX = 240;
 const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
+const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
+const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.35;
 
 const COMMON_PREFLIGHT = [
   "pwd",
@@ -252,6 +261,14 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     const validated = parseValidated(assistantText);
 
     if (!decision) {
+      if (!assistantText.trim()) {
+        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction" };
+        appendLoopLog("empty_agent_response_waiting_for_compaction", { reason: "missing_assistant_text" });
+        pi.appendEntry(CUSTOM_STATE_TYPE, state);
+        refreshUi(ctx);
+        notify(ctx, "Development loop is waiting for compaction or retry after an empty provider response.", "warning");
+        return;
+      }
       blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");
       return;
     }
@@ -289,7 +306,28 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       return;
     }
 
+    if (compactBeforeNextIteration(pi, ctx)) return;
     queueNextIteration(pi, ctx);
+  }
+
+  async function onSessionBeforeCompact(event: { preparation?: { tokensBefore?: number } }, ctx: ExtensionContext) {
+    if (!state.active) return;
+    state = { ...state, lastReason: "preparing_for_compaction" };
+    appendLoopLog("compaction_started", { reason: compactionReason(event.preparation?.tokensBefore) });
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+    notify(ctx, "Development loop state saved before compaction.");
+  }
+
+  async function onSessionCompact(_event: unknown, ctx: ExtensionContext) {
+    if (!state.active) return;
+    if (state.phase === "running") {
+      resumeCurrentIterationAfterCompaction(pi, ctx);
+      return;
+    }
+    if (state.phase === "queued" || state.phase === "reported") {
+      continueQueuedIterationAfterCompaction(pi, ctx);
+    }
   }
 
   async function onInput(event: InputEvent, ctx: ExtensionContext): Promise<InputEventResult> {
@@ -320,6 +358,8 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   pi.on("session_start", onSessionStart);
   pi.on("agent_end", onAgentEnd);
+  pi.on("session_before_compact", onSessionBeforeCompact);
+  pi.on("session_compact", onSessionCompact);
   pi.on("input", onInput);
 
   const command = {
@@ -417,6 +457,68 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
 }
 
+function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): boolean {
+  if (!state.active || !shouldCompactBeforeNextIteration(ctx) || typeof ctx.compact !== "function") return false;
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  state = {
+    ...state,
+    iteration: state.iteration + 1,
+    phase: "queued",
+    lastReason: "compaction_before_next_iteration",
+  };
+  appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, `Compacting before development loop iteration ${state.iteration}/${state.maxIterations}.`);
+  ctx.compact({
+    customInstructions: buildDevelopmentLoopCompactionInstructions(state, resolved, cwd),
+    onComplete: () => notify(ctx, "Development loop compaction completed; continuing automatically."),
+    onError: (error) => {
+      state = { ...state, lastReason: "compaction_failed_before_next_iteration" };
+      appendLoopLog("compaction_failed_before_next_iteration", { reason: error.message });
+      pi.appendEntry(CUSTOM_STATE_TYPE, state);
+      refreshUi(ctx);
+      notify(ctx, `Compaction failed before next iteration: ${error.message}. Continuing without compaction.`, "warning");
+      scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
+    },
+  });
+  return true;
+}
+
+function shouldCompactBeforeNextIteration(ctx: UiLikeContext): boolean {
+  if (typeof ctx.getContextUsage !== "function") return false;
+  const usage = ctx.getContextUsage();
+  const tokens = typeof usage?.tokens === "number" ? usage.tokens : undefined;
+  if (tokens === undefined) return false;
+  if (tokens >= PROACTIVE_COMPACTION_MIN_TOKENS) return true;
+  const contextWindow = typeof usage?.contextWindow === "number" ? usage.contextWindow : typeof usage?.maxTokens === "number" ? usage.maxTokens : undefined;
+  return contextWindow !== undefined && contextWindow > 0 && tokens / contextWindow >= PROACTIVE_COMPACTION_CONTEXT_RATIO;
+}
+
+function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const prompt = buildCompactionResumePrompt(state, resolved, cwd);
+  state = { ...state, phase: "queued", lastReason: "resuming_after_compaction" };
+  appendLoopLog("compaction_resume_queued");
+  refreshUi(ctx);
+  sendLoopPrompt(pi, ctx, prompt);
+  state = { ...state, phase: "running", lastReason: "resumed_after_compaction" };
+  appendLoopLog("compaction_resume_sent");
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, `Resumed development loop iteration ${state.iteration}/${state.maxIterations} after compaction.`);
+}
+
+function continueQueuedIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  appendLoopLog("compaction_continue_queued_iteration");
+  notify(ctx, `Continuing development loop iteration ${state.iteration}/${state.maxIterations} after compaction.`);
+  sendIterationPrompt(pi, ctx, resolved);
+}
+
 function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, targetIteration: number, attempt = 0) {
   const delay = attempt === 0 ? 0 : AUTO_CONTINUATION_RETRY_MS;
   setTimeout(() => {
@@ -443,15 +545,19 @@ function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: Res
   state = { ...state, phase: asFollowUp ? "queued" : "running" };
   appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent");
   refreshUi(ctx);
+  sendLoopPrompt(pi, ctx, prompt, asFollowUp);
+  state = { ...state, phase: "running" };
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+}
+
+function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, asFollowUp = false) {
   const idle = typeof ctx.isIdle === "function" ? ctx.isIdle() : true;
   if (asFollowUp || !idle) {
     pi.sendUserMessage(prompt, { deliverAs: "followUp" });
   } else {
     pi.sendUserMessage(prompt);
   }
-  state = { ...state, phase: "running" };
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
 }
 
 function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string) {
@@ -464,8 +570,44 @@ function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, deci
 
 async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
   const cwd = contextCwd(ctx);
-  const adapterName = parsed.adapter || resolveProjectAdapter(cwd).adapter.name;
-  const adapter = getAdapterByName(adapterName) ?? customAdapter(adapterName, {});
+  const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
+
+  if (!parsed.dryRun && fs.existsSync(configPath) && !parsed.force) {
+    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
+    return;
+  }
+
+  const config = await buildInitConfig(parsed, ctx, cwd);
+  if (!config) return;
+
+  if (parsed.dryRun) {
+    notify(ctx, `Development-loop init preview (no files written):\n${JSON.stringify(config, null, 2)}`);
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  if (fs.existsSync(configPath) && !parsed.force) {
+    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
+    return;
+  }
+  writeJsonFileAtomic(configPath, config);
+  notify(ctx, `Wrote ${relativeToCwd(cwd, configPath)}`);
+}
+
+async function buildInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string): Promise<ProjectConfig | undefined> {
+  const defaults = initDefaults(parsed, cwd);
+  if (!shouldPromptForInit(parsed, ctx)) return defaults.config;
+  return promptForInitConfig(parsed, ctx, cwd, defaults.adapterName);
+}
+
+function initDefaults(parsed: ParsedCommand, cwd: string, adapterName = parsed.adapter || resolveProjectAdapter(cwd).adapter.name): { adapterName: string; adapter: LoopAdapter; config: ProjectConfig } {
+  const adapter = getAdapterByName(adapterName) ?? customAdapter(adapterName, {
+    defaultTopic: parsed.topic,
+    skills: nonEmpty(parsed.skills) ? parsed.skills : undefined,
+    preflightCommands: nonEmpty(parsed.preflightCommands) ? parsed.preflightCommands : undefined,
+    validationCommands: nonEmpty(parsed.validationCommands) ? parsed.validationCommands : undefined,
+    stopConditions: nonEmpty(parsed.stopConditions) ? parsed.stopConditions : undefined,
+  });
   const defaultTopic = parsed.topic || adapter.defaultTopic;
   const validationCommands = parsed.validationCommands.length > 0 ? parsed.validationCommands : adapter.validationCommands;
   const preflightCommands = parsed.preflightCommands.length > 0 ? parsed.preflightCommands : adapter.preflightCommands;
@@ -475,31 +617,118 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
   const maxIterations = clampIterations(parsed.iterations ?? DEFAULT_ITERATIONS);
   const logPath = parsed.logPath || DEFAULT_LOG_RELATIVE;
 
-  const config: ProjectConfig = {
-    adapter: adapterName,
-    defaultTopic,
-    skills,
-    preflightCommands,
-    validationCommands,
-    commit,
-    push,
-    logPath,
-    maxIterations,
-    stopConditions,
+  return {
+    adapterName,
+    adapter,
+    config: {
+      adapter: adapterName,
+      defaultTopic,
+      skills,
+      preflightCommands,
+      validationCommands,
+      commit,
+      push,
+      logPath,
+      maxIterations,
+      stopConditions,
+    },
   };
+}
 
-  const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
-  if (parsed.dryRun) {
-    notify(ctx, `Development-loop init preview (no files written):\n${JSON.stringify(config, null, 2)}`);
-    return;
-  }
-  fs.mkdirSync(path.dirname(configPath), { recursive: true });
-  if (fs.existsSync(configPath) && !parsed.force) {
-    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
-    return;
-  }
-  writeJsonFileAtomic(configPath, config);
-  notify(ctx, `Wrote ${relativeToCwd(cwd, configPath)}`);
+function shouldPromptForInit(parsed: ParsedCommand, ctx: UiLikeContext): boolean {
+  return parsed.yes !== true &&
+    ctx.hasUI === true &&
+    typeof ctx.ui?.select === "function" &&
+    typeof ctx.ui.input === "function" &&
+    typeof ctx.ui.editor === "function" &&
+    typeof ctx.ui.confirm === "function";
+}
+
+async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string, initialAdapterName: string): Promise<ProjectConfig | undefined> {
+  const ui = ctx.ui;
+  let defaults = initDefaults(parsed, cwd, initialAdapterName);
+  const selectedAdapter = await ui.select!("Development loop adapter", adapterSelectionItems(defaults.adapterName));
+  if (selectedAdapter === undefined) return cancelInit(ctx);
+  defaults = initDefaults(parsed, cwd, selectedAdapter || defaults.adapterName);
+  const config: ProjectConfig = { ...defaults.config };
+
+  const defaultTopic = config.defaultTopic || defaults.adapter.defaultTopic;
+  const topicText = await ui.editor!("Default objective", defaultTopic);
+  if (topicText === undefined) return cancelInit(ctx);
+  config.defaultTopic = topicText.trim() || defaultTopic;
+
+  const iterationsText = await ui.input!("Max iterations (1-25)", String(config.maxIterations ?? DEFAULT_ITERATIONS));
+  if (iterationsText === undefined) return cancelInit(ctx);
+  const iterations = numberOrUndefined(iterationsText);
+  config.maxIterations = iterations ? clampIterations(iterations) : config.maxIterations;
+
+  const delivery = await ui.select!("Git delivery policy", [
+    { value: "manual", label: "Manual", description: "Do not commit or push from the loop." },
+    { value: "commit", label: "Commit", description: "Commit validated slices; do not push." },
+    { value: "push", label: "Push", description: "Commit and push validated slices when safe." },
+  ]);
+  if (delivery === undefined) return cancelInit(ctx);
+  config.push = delivery === "push";
+  config.commit = delivery === "commit" || config.push;
+
+  const validationText = await ui.editor!("Validation commands (one per line)", (config.validationCommands ?? []).join("\n"));
+  if (validationText === undefined) return cancelInit(ctx);
+  config.validationCommands = splitLinesOrDefault(validationText, config.validationCommands ?? []);
+
+  const preflightText = await ui.editor!("Preflight commands (one per line)", (config.preflightCommands ?? []).join("\n"));
+  if (preflightText === undefined) return cancelInit(ctx);
+  config.preflightCommands = splitLinesOrDefault(preflightText, config.preflightCommands ?? []);
+
+  const skillsText = await ui.editor!("Skills (one per line)", (config.skills ?? []).join("\n"));
+  if (skillsText === undefined) return cancelInit(ctx);
+  config.skills = splitLinesOrDefault(skillsText, config.skills ?? []);
+
+  const stopConditionsText = await ui.editor!("Stop conditions (one per line)", (config.stopConditions ?? []).join("\n"));
+  if (stopConditionsText === undefined) return cancelInit(ctx);
+  config.stopConditions = splitLinesOrDefault(stopConditionsText, config.stopConditions ?? []);
+
+  const logPathText = await ui.input!("Log path", config.logPath || DEFAULT_LOG_RELATIVE);
+  if (logPathText === undefined) return cancelInit(ctx);
+  config.logPath = logPathText.trim() || config.logPath || DEFAULT_LOG_RELATIVE;
+
+  const ok = await ui.confirm!("Write development-loop config", initConfigSummary(config, cwd));
+  if (!ok) return cancelInit(ctx);
+  return config;
+}
+
+function adapterSelectionItems(selectedAdapterName: string): Array<{ value: string; label: string; description: string }> {
+  const builtIns = BUILT_IN_ADAPTERS.map((adapter) => ({
+    value: adapter.name,
+    label: adapter.name === selectedAdapterName ? `${adapter.name} (detected)` : adapter.name,
+    description: adapter.description,
+  }));
+  if (BUILT_IN_ADAPTERS.some((adapter) => adapter.name === selectedAdapterName)) return builtIns;
+  return [
+    { value: selectedAdapterName, label: `${selectedAdapterName} (project)`, description: `Project-configured adapter ${selectedAdapterName}` },
+    ...builtIns,
+  ];
+}
+
+function splitLinesOrDefault(value: string, fallback: string[]): string[] {
+  const lines = splitLines(value);
+  return lines.length > 0 ? lines : fallback;
+}
+
+function initConfigSummary(config: ProjectConfig, cwd: string): string {
+  return [
+    `Target: ${relativeToCwd(cwd, path.join(cwd, DEFAULT_CONFIG_RELATIVE))}`,
+    `Adapter: ${config.adapter}`,
+    `Objective: ${config.defaultTopic}`,
+    `Iterations: ${config.maxIterations}`,
+    `Git delivery: ${config.push ? "push" : config.commit ? "commit" : "manual"}`,
+    `Validation: ${(config.validationCommands ?? []).join("; ") || "none"}`,
+    `Log path: ${config.logPath || DEFAULT_LOG_RELATIVE}`,
+  ].join("\n");
+}
+
+function cancelInit(ctx: UiLikeContext): undefined {
+  notify(ctx, "Development-loop init cancelled.");
+  return undefined;
 }
 
 function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
@@ -519,7 +748,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop stop — stop the active loop",
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
-    "- /development-loop init [options] <default topic> — write .pi/development-loop.json",
+    "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
     "Configurable init options:",
     "- /development-loop init --dry-run ... — preview without writing files",
@@ -532,6 +761,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- --stop-condition <text> (repeatable)",
     "- --log-path <path>",
     "- --force — atomically replace an existing config",
+    "- --yes | -y | --defaults — accept generated values without prompts",
     "",
     "Active-loop behavior:",
     "- DEV_LOOP_DECISION: continue starts the next iteration automatically when Pi is idle.",
@@ -620,6 +850,34 @@ DEV_LOOP_VALIDATED: yes|no
 DEV_LOOP_DECISION: continue|stop|blocked|done
 
 Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
+}
+
+function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+  return `Continue development loop after compaction.
+
+The previous model request may have failed or been compacted before it emitted DEV_LOOP markers. Resume the same iteration from the compacted summary and current repository state. Do not restart from scratch, do not mark the loop blocked solely because compaction happened, and preserve unrelated dirty work.
+
+${buildIterationPrompt(s, resolved, cwd)}`;
+}
+
+function buildDevelopmentLoopCompactionInstructions(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+  return `Preserve development loop state for automatic continuation.
+
+Current development loop state:
+- Project root: ${cwd}
+- Adapter: ${resolved.adapter.name}
+- Objective: ${s.topic}
+- Iteration: ${s.iteration}/${s.maxIterations}
+- Phase: ${s.phase}
+- Git delivery: ${s.push ? "push" : s.commit ? "commit" : "manual"}
+- Log path: ${relativeToCwd(cwd, s.logPath)}
+
+In the compaction summary, include:
+1. Current objective and selected adapter.
+2. Iteration number and whether the next action is to continue the queued iteration.
+3. Files changed/read and validation evidence seen so far.
+4. Any blockers or missing credentials.
+5. The requirement that the next assistant response ends with DEV_LOOP_VALIDATED and DEV_LOOP_DECISION markers.`;
 }
 
 function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, steeringText: string): string {
@@ -771,7 +1029,7 @@ function statusWidgetLines(s: LoopState, cwd: string, theme?: UiThemeLike): stri
     last?.iteration !== undefined ? `i${String(last.iteration)}` : undefined,
     `log ${relativeToCwd(cwd, logPath)}`,
   ]);
-  return [statusLine(s, theme), paint(theme, "dim", detail)];
+  return [paint(theme, "dim", detail)];
 }
 
 function loopStatusMeta(s: LoopState): { icon: string; label: string; color: string } {
@@ -840,6 +1098,20 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
   return parts.join("; ");
+}
+
+function compactionReason(tokensBefore?: number): string {
+  return typeof tokensBefore === "number" ? `tokens_before=${tokensBefore}` : "tokens_before=unknown";
+}
+
+function contextUsageReason(ctx: UiLikeContext): string {
+  const usage = typeof ctx.getContextUsage === "function" ? ctx.getContextUsage() : undefined;
+  const tokens = typeof usage?.tokens === "number" ? usage.tokens : undefined;
+  const contextWindow = typeof usage?.contextWindow === "number" ? usage.contextWindow : typeof usage?.maxTokens === "number" ? usage.maxTokens : undefined;
+  return compactJoin([
+    tokens !== undefined ? `tokens=${tokens}` : undefined,
+    contextWindow !== undefined ? `context_window=${contextWindow}` : undefined,
+  ]) || "tokens=unknown";
 }
 
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
@@ -1005,6 +1277,18 @@ function parseArgs(raw: string | undefined): ParsedCommand {
     }
     if (token.startsWith("--dry-run=") || token.startsWith("--preview=")) {
       parsed.dryRun = parseBoolean(token.split("=").slice(1).join("="));
+      continue;
+    }
+    if (token === "--yes" || token === "-y" || token === "--defaults" || token === "--non-interactive" || token === "--no-prompt" || token === "--no-prompts") {
+      parsed.yes = true;
+      continue;
+    }
+    if (token === "--interactive" || token === "--prompt" || token === "--prompts") {
+      parsed.yes = false;
+      continue;
+    }
+    if (token.startsWith("--yes=") || token.startsWith("--defaults=") || token.startsWith("--non-interactive=")) {
+      parsed.yes = parseBoolean(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--log-path") {
