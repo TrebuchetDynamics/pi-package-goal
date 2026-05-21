@@ -67,21 +67,31 @@ type LoopLogRecord = {
 };
 
 type ParsedCommand = {
-  command: "start" | "restart" | "stop" | "status" | "init" | "adapters";
+  command: "start" | "restart" | "stop" | "status" | "init" | "adapters" | "help";
   adapter?: string;
   topic?: string;
   iterations?: number;
   commit?: boolean;
   push?: boolean;
+  force?: boolean;
+  dryRun?: boolean;
+  logPath?: string;
   validationCommands: string[];
   preflightCommands: string[];
   skills: string[];
+  stopConditions: string[];
+};
+
+type UiThemeLike = {
+  fg?: (color: string, text: string) => string;
+  bold?: (text: string) => string;
 };
 
 type UiLikeContext = {
   cwd?: string;
   hasUI?: boolean;
   ui?: {
+    theme?: UiThemeLike;
     notify?: (message: string, level?: string) => void;
     setStatus?: (key: string, value: string | undefined) => void;
     setWidget?: (key: string, value: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }) => void;
@@ -105,12 +115,28 @@ const DEFAULT_ITERATIONS = 3;
 const HARD_MAX_ITERATIONS = 25;
 const STATUS_TOPIC_MAX = 72;
 const STEERING_TOPIC_MAX = 240;
+const AUTO_CONTINUATION_RETRY_MS = 50;
+const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 
 const COMMON_PREFLIGHT = [
   "pwd",
   "git rev-parse --show-toplevel 2>/dev/null || true",
   "git rev-parse --abbrev-ref HEAD 2>/dev/null || true",
   "git status --short --branch --untracked-files=all 2>/dev/null || true",
+];
+
+const TASK_DISCOVERY_CUES = [
+  "repo-local skills whose names match the work, including *-git, *-release, *-e2e, *-playwright, and *-maestro-flutter when present",
+  "TODO.md, TODOS.md, TODO.txt, PLAN.md, PLANS.md, ROADMAP.md, and similar planning files",
+  "progress.json, progress/*.json, status.json, backlog files, and project task trackers",
+  "PR/MR/CL review state and Greptile review comments when greploop is explicitly requested or git delivery is enabled",
+  "docs/plans, docs/adr, docs/roadmap, issues, and other project progress notes",
+];
+
+const REVIEW_LOOP_GUIDANCE = [
+  "Use greploop for PR/MR/CL review cleanup only when the user requested a Greptile review loop, a PR/MR/CL is available, and required gh/glab/p4 authentication is present.",
+  "Do not trigger Greptile, post review comments, resolve review threads, push, or re-shelve unless the commit/push policy permits it or the user explicitly asked for that external review action.",
+  "If Greptile, required CLIs, credentials, or PR/MR/CL context are unavailable for a requested greploop, report DEV_LOOP_DECISION: blocked with the missing prerequisite.",
 ];
 
 const BUILT_IN_ADAPTERS: LoopAdapter[] = [
@@ -180,9 +206,14 @@ const BUILT_IN_ADAPTERS: LoopAdapter[] = [
     name: "generic-git",
     label: "Generic Git",
     description: "Conservative generic git-project development loop",
-    defaultTopic: "make the smallest safe project improvement with tests",
+    defaultTopic: "discover and complete the smallest safe project task with validation",
     skills: [
-      "brainstorming for creative/product changes",
+      "repo-local skills that match the detected task before package defaults",
+      "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
+      "zoom-out for source-backed project understanding",
+      "writing-plans for multi-step plans when available",
+      "writing-shape for docs, articles, READMEs, and narrative docs",
+      "writing-skills for creating or updating skills",
       "test-driven-development for code changes",
       "verification-before-completion before reporting done",
     ],
@@ -192,7 +223,9 @@ const BUILT_IN_ADAPTERS: LoopAdapter[] = [
     ],
     stopConditions: [
       "project instructions are missing or conflict with the requested work",
+      "no task can be selected after inspecting TODO.md, progress.json, planning files, and repo-local guidance",
       "no relevant test/build command can be identified",
+      "Greptile, gh/glab/p4, credentials, or PR/MR/CL context are required for greploop and unavailable",
       "validation fails twice with the same blocker",
       "commit or push would include unrelated dirty work",
     ],
@@ -291,7 +324,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   const command = {
     description: "Run an adapter-aware project development loop",
-    getArgumentCompletions: (prefix: string) => ["start", "restart", "status", "stop", "init", "adapters"]
+    getArgumentCompletions: (prefix: string) => ["start", "restart", "status", "stop", "init", "adapters", "help"]
       .filter((value) => value.startsWith(prefix))
       .map((value) => ({ value, label: value })),
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
@@ -317,6 +350,9 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
     case "adapters":
       publishAdapters(pi, ctx);
       return;
+    case "help":
+      publishHelp(pi, ctx);
+      return;
     case "init":
       await initConfig(parsed, ctx);
       return;
@@ -332,7 +368,7 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
 
 async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed: ParsedCommand, replaceActive: boolean) {
   if (state.active && !replaceActive) {
-    notify(ctx, `${statusLine(state)}\nUse /development-loop restart to replace it or /development-loop stop to stop it.`);
+    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued loop iterations start automatically. Use /development-loop restart to replace it or /development-loop stop to stop it.`);
     refreshUi(ctx);
     return;
   }
@@ -347,8 +383,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
   const adapter = resolved.adapter;
   const topic = parsed.topic || resolved.config.defaultTopic || adapter.defaultTopic;
   const maxIterations = clampIterations(parsed.iterations ?? resolved.config.maxIterations ?? DEFAULT_ITERATIONS);
-  const commit = parsed.commit ?? resolved.config.commit ?? false;
-  const push = parsed.push ?? resolved.config.push ?? false;
+  const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, resolved.config.commit, resolved.config.push);
   const logPath = absoluteLogPath(cwd, resolved.config.logPath);
 
   state = {
@@ -378,8 +413,29 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   state = { ...state, iteration: state.iteration + 1, phase: "queued" };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
-  notify(ctx, `Queued development loop iteration ${state.iteration}/${state.maxIterations}.`);
-  sendIterationPrompt(pi, ctx, resolved, true);
+  notify(ctx, `Queued development loop iteration ${state.iteration}/${state.maxIterations}; it will start automatically when the current turn is idle.`);
+  scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
+}
+
+function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, targetIteration: number, attempt = 0) {
+  const delay = attempt === 0 ? 0 : AUTO_CONTINUATION_RETRY_MS;
+  setTimeout(() => {
+    if (!state.active || state.iteration !== targetIteration || state.phase !== "queued") return;
+
+    const idle = typeof ctx.isIdle === "function" ? ctx.isIdle() : true;
+    if (idle) {
+      sendIterationPrompt(pi, ctx, resolved);
+      return;
+    }
+
+    if (attempt >= AUTO_CONTINUATION_MAX_ATTEMPTS) {
+      appendLoopLog("iteration_prompt_follow_up_fallback", { reason: "agent_not_idle_after_retry" });
+      sendIterationPrompt(pi, ctx, resolved, true);
+      return;
+    }
+
+    scheduleAutomaticIteration(pi, ctx, resolved, targetIteration, attempt + 1);
+  }, delay);
 }
 
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
@@ -408,51 +464,16 @@ function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, deci
 
 async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
   const cwd = contextCwd(ctx);
-  let adapterName = parsed.adapter;
-  let defaultTopic = parsed.topic;
-  let validationCommands = parsed.validationCommands;
-  let preflightCommands = parsed.preflightCommands;
-  let skills = parsed.skills;
-  let commit = parsed.commit ?? false;
-  let push = parsed.push ?? false;
-
-  if (ctx.hasUI && !adapterName) {
-    const detected = resolveProjectAdapter(cwd).adapter.name;
-    const adapterOptions = [
-      { name: detected, label: `${detected} (detected)` },
-      ...BUILT_IN_ADAPTERS.filter((adapter) => adapter.name !== detected).map((adapter) => ({
-        name: adapter.name,
-        label: adapter.label,
-      })),
-    ];
-    const labelToName = new Map(adapterOptions.map((adapter) => [adapter.label, adapter.name]));
-    const selection = await ctx.ui.select("Development loop adapter", adapterOptions.map((adapter) => adapter.label));
-    adapterName = typeof selection === "string" ? labelToName.get(selection) ?? selection : detected;
-  }
-
-  adapterName = adapterName || resolveProjectAdapter(cwd).adapter.name;
-  const adapter = getAdapterByName(adapterName) ?? BUILT_IN_ADAPTERS[BUILT_IN_ADAPTERS.length - 1];
-
-  if (ctx.hasUI && !defaultTopic) {
-    defaultTopic = await ctx.ui.input("Default development-loop topic", adapter.defaultTopic) || adapter.defaultTopic;
-  }
-  defaultTopic = defaultTopic || adapter.defaultTopic;
-
-  if (ctx.hasUI && validationCommands.length === 0) {
-    const edited = await ctx.ui.editor("Validation commands, one per line", adapter.validationCommands.join("\n"));
-    validationCommands = splitLines(edited || adapter.validationCommands.join("\n"));
-  }
-  if (validationCommands.length === 0) validationCommands = adapter.validationCommands;
-
-  if (preflightCommands.length === 0) preflightCommands = adapter.preflightCommands;
-  if (skills.length === 0) skills = adapter.skills;
-
-  if (ctx.hasUI && parsed.commit === undefined) {
-    commit = await ctx.ui.confirm("Commit by default?", "Allow /development-loop start to ask the agent to commit validated slices by default?") || false;
-  }
-  if (ctx.hasUI && parsed.push === undefined) {
-    push = commit ? await ctx.ui.confirm("Push by default?", "Allow /development-loop start to ask the agent to push committed slices by default?") || false : false;
-  }
+  const adapterName = parsed.adapter || resolveProjectAdapter(cwd).adapter.name;
+  const adapter = getAdapterByName(adapterName) ?? customAdapter(adapterName, {});
+  const defaultTopic = parsed.topic || adapter.defaultTopic;
+  const validationCommands = parsed.validationCommands.length > 0 ? parsed.validationCommands : adapter.validationCommands;
+  const preflightCommands = parsed.preflightCommands.length > 0 ? parsed.preflightCommands : adapter.preflightCommands;
+  const skills = parsed.skills.length > 0 ? parsed.skills : adapter.skills;
+  const stopConditions = parsed.stopConditions.length > 0 ? parsed.stopConditions : adapter.stopConditions;
+  const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, false, false);
+  const maxIterations = clampIterations(parsed.iterations ?? DEFAULT_ITERATIONS);
+  const logPath = parsed.logPath || DEFAULT_LOG_RELATIVE;
 
   const config: ProjectConfig = {
     adapter: adapterName,
@@ -462,21 +483,22 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
     validationCommands,
     commit,
     push,
-    logPath: DEFAULT_LOG_RELATIVE,
-    maxIterations: DEFAULT_ITERATIONS,
-    stopConditions: adapter.stopConditions,
+    logPath,
+    maxIterations,
+    stopConditions,
   };
 
   const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
-  fs.mkdirSync(path.dirname(configPath), { recursive: true });
-  if (fs.existsSync(configPath) && ctx.hasUI) {
-    const ok = await ctx.ui.confirm("Overwrite development-loop config?", `${relativeToCwd(cwd, configPath)} already exists. Replace it?`);
-    if (!ok) {
-      notify(ctx, "Development-loop init cancelled.");
-      return;
-    }
+  if (parsed.dryRun) {
+    notify(ctx, `Development-loop init preview (no files written):\n${JSON.stringify(config, null, 2)}`);
+    return;
   }
-  fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  if (fs.existsSync(configPath) && !parsed.force) {
+    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
+    return;
+  }
+  writeJsonFileAtomic(configPath, config);
   notify(ctx, `Wrote ${relativeToCwd(cwd, configPath)}`);
 }
 
@@ -486,6 +508,38 @@ function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-loop-status", content: text, display: true });
+  }
+}
+
+function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
+  const text = [
+    "Development loop commands:",
+    "- /development-loop start [options] <topic> — start a loop",
+    "- /development-loop restart [options] <topic> — replace the active loop",
+    "- /development-loop stop — stop the active loop",
+    "- /development-loop status — show current state",
+    "- /development-loop adapters — show detected adapter/config",
+    "- /development-loop init [options] <default topic> — write .pi/development-loop.json",
+    "",
+    "Configurable init options:",
+    "- /development-loop init --dry-run ... — preview without writing files",
+    "- --adapter <name>",
+    "- --iterations <n> | --max-iterations <n> | -n <n>",
+    "- --commit | --no-commit | --push | --no-push (--push implies --commit)",
+    "- --validation <command> | --test <command> (repeatable)",
+    "- --preflight <command> (repeatable)",
+    "- --skill <name-or-note> (repeatable), for example greploop or grill-me",
+    "- --stop-condition <text> (repeatable)",
+    "- --log-path <path>",
+    "- --force — atomically replace an existing config",
+    "",
+    "Active-loop behavior:",
+    "- DEV_LOOP_DECISION: continue starts the next iteration automatically when Pi is idle.",
+    "- Plain text typed during an active loop becomes steering for the current or next safe slice.",
+  ].join("\n");
+  notify(ctx, text);
+  if (typeof pi.sendMessage === "function") {
+    pi.sendMessage({ customType: "development-loop-help", content: text, display: true });
   }
 }
 
@@ -533,6 +587,12 @@ Loop log path: ${relativeToCwd(cwd, s.logPath)}
 Suggested skills/adapters for this project:
 ${skills.map((skill) => `- ${skill}`).join("\n") || "- Use the smallest project-matching skill set."}
 
+Task discovery cues for broad objectives:
+${TASK_DISCOVERY_CUES.map((cue) => `- ${cue}`).join("\n")}
+
+Review-loop guidance:
+${REVIEW_LOOP_GUIDANCE.map((cue) => `- ${cue}`).join("\n")}
+
 Preflight commands to run before edits:
 ${preflightCommands.map((command) => `- ${command}`).join("\n")}
 
@@ -550,7 +610,7 @@ Run one complete vertical development iteration:
 1. State scope lock with exact absolute project path and adapter.
 2. Read project instructions and use matching skills before risky work.
 3. Inspect current dirty state and preserve unrelated work.
-4. Choose one small verifiable slice for the topic.
+4. Choose one small verifiable slice from the user topic, repo-local skills, or task discovery cues above.
 5. Prefer test-first changes when editing code.
 6. Run the validation commands above. If a command is not applicable, explain exact evidence and substitute the closest project-appropriate check.
 7. If validation fails twice with the same cause, stop and report the first failing stderr line.
@@ -647,6 +707,12 @@ function getAdapterByName(name: string): LoopAdapter | undefined {
   return BUILT_IN_ADAPTERS.find((adapter) => adapter.name === name);
 }
 
+function resolveCommitPush(commitFlag: boolean | undefined, pushFlag: boolean | undefined, fallbackCommit = false, fallbackPush = false): { commit: boolean; push: boolean } {
+  const push = pushFlag ?? fallbackPush;
+  const commit = (commitFlag ?? fallbackCommit) || push;
+  return { commit, push };
+}
+
 function customAdapter(name: string, config: ProjectConfig): LoopAdapter {
   return {
     ...getAdapterByName("generic-git")!,
@@ -676,26 +742,80 @@ function statusReport(s: LoopState, cwd = process.cwd()): string {
   ].join("\n");
 }
 
-function statusLine(s: LoopState): string {
-  if (!s.active) return `Development loop: ${s.phase === "idle" ? "idle" : s.phase}${s.lastDecision ? ` (${s.lastDecision})` : ""}`;
-  return `Development loop: ${s.phase} ${s.iteration}/${s.maxIterations} ${compactTopic(s.topic)}`;
+function statusLine(s: LoopState, theme?: UiThemeLike): string {
+  const status = loopStatusMeta(s);
+  const context = statusContext(s);
+  return compactJoin([
+    paint(theme, status.color, `${status.icon} ${status.label}`),
+    s.active ? `loop ${s.iteration}/${s.maxIterations}` : "loop",
+    s.adapterName !== "none" ? s.adapterName : undefined,
+    s.adapterName !== "none" ? deliverySegment(s) : undefined,
+    context,
+  ]);
 }
 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
-  ctx.ui.setStatus?.("development-loop", statusLine(state));
-  ctx.ui.setWidget?.("development-loop", statusWidgetLines(state, contextCwd(ctx)), { placement: "belowEditor" });
+  const theme = ctx.ui.theme;
+  ctx.ui.setStatus?.("development-loop", statusLine(state, theme));
+  ctx.ui.setWidget?.("development-loop", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }
 
-function statusWidgetLines(s: LoopState, cwd: string): string[] | undefined {
+function statusWidgetLines(s: LoopState, cwd: string, theme?: UiThemeLike): string[] | undefined {
   if (!s.active && s.phase === "idle" && !s.lastDecision) return undefined;
-  const last = readLastLoopRecord(s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE));
-  return [
-    statusLine(s),
-    `Adapter: ${s.adapterName} • ${stateExplanation(s, last)}`,
-    summarizeLastLoopRecord(last),
-    `Log: ${relativeToCwd(cwd, s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE))}`,
-  ];
+  const logPath = s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE);
+  const last = readLastLoopRecord(logPath);
+  const detail = compactJoin([
+    recordEvent(last) ? `last ${recordEvent(last)}` : "last none",
+    recordTime(last),
+    last?.iteration !== undefined ? `i${String(last.iteration)}` : undefined,
+    `log ${relativeToCwd(cwd, logPath)}`,
+  ]);
+  return [statusLine(s, theme), paint(theme, "dim", detail)];
+}
+
+function loopStatusMeta(s: LoopState): { icon: string; label: string; color: string } {
+  if (s.phase === "blocked") return { icon: "■", label: "block", color: "error" };
+  if (s.phase === "done") return { icon: "✓", label: "done", color: "success" };
+  if (!s.active) return { icon: "○", label: "idle", color: "dim" };
+  if (s.phase === "queued") return { icon: "◆", label: "queue", color: "warning" };
+  if (s.phase === "reported") return { icon: "◇", label: "report", color: "accent" };
+  if (s.phase === "started") return { icon: "●", label: "start", color: "accent" };
+  return { icon: "●", label: "run", color: "accent" };
+}
+
+function deliverySegment(s: LoopState): string {
+  if (s.push) return "git:push";
+  if (s.commit) return "git:commit";
+  return "git:manual";
+}
+
+function statusContext(s: LoopState): string | undefined {
+  if (s.active) return compactTopic(s.topic);
+  if (s.phase === "blocked") return compactStatusText(s.lastReason || String(s.lastDecision || "blocked"));
+  if (s.phase === "done") return compactStatusText(s.lastReason || "complete");
+  return s.lastDecision ? compactStatusText(String(s.lastDecision)) : undefined;
+}
+
+function compactJoin(parts: Array<string | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part && part.trim())).join(" · ");
+}
+
+function paint(theme: UiThemeLike | undefined, color: string, text: string): string {
+  return theme?.fg ? theme.fg(color, text) : text;
+}
+
+function compactStatusText(text: string): string {
+  if (text.length <= STATUS_TOPIC_MAX) return text;
+  return `${text.slice(0, STATUS_TOPIC_MAX - 1)}…`;
+}
+
+function recordTime(record?: Record<string, unknown>): string | undefined {
+  const at = record?.at;
+  if (typeof at !== "string") return undefined;
+  const date = new Date(at);
+  if (Number.isNaN(date.getTime())) return at;
+  return date.toISOString().slice(11, 19);
 }
 
 function stateExplanation(s: LoopState, last?: Record<string, unknown>): string {
@@ -810,13 +930,14 @@ function messageText(message: { content?: unknown }): string {
 function parseArgs(raw: string | undefined): ParsedCommand {
   const tokens = tokenizeArgs(raw || "");
   const commandToken = tokens[0];
-  const known = new Set(["start", "restart", "stop", "status", "init", "adapters"]);
+  const known = new Set(["start", "restart", "stop", "status", "init", "adapters", "help"]);
   const command = known.has(commandToken) ? tokens.shift() as ParsedCommand["command"] : "start";
   const parsed: ParsedCommand = {
     command,
     validationCommands: [],
     preflightCommands: [],
     skills: [],
+    stopConditions: [],
   };
   const positional: string[] = [];
 
@@ -830,11 +951,11 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.adapter = token.slice("--adapter=".length);
       continue;
     }
-    if (token === "--iterations" || token === "-n") {
+    if (token === "--iterations" || token === "--max-iterations" || token === "-n") {
       parsed.iterations = numberOrUndefined(tokens[++i]);
       continue;
     }
-    if (token.startsWith("--iterations=") || token.startsWith("-n=")) {
+    if (token.startsWith("--iterations=") || token.startsWith("--max-iterations=") || token.startsWith("-n=")) {
       parsed.iterations = numberOrUndefined(token.split("=").slice(1).join("="));
       continue;
     }
@@ -862,13 +983,45 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.push = parseBoolean(token.slice("--push=".length));
       continue;
     }
-    if (token === "--validation") {
+    if (token === "--force") {
+      parsed.force = true;
+      continue;
+    }
+    if (token === "--no-force") {
+      parsed.force = false;
+      continue;
+    }
+    if (token.startsWith("--force=")) {
+      parsed.force = parseBoolean(token.slice("--force=".length));
+      continue;
+    }
+    if (token === "--dry-run" || token === "--preview") {
+      parsed.dryRun = true;
+      continue;
+    }
+    if (token === "--no-dry-run") {
+      parsed.dryRun = false;
+      continue;
+    }
+    if (token.startsWith("--dry-run=") || token.startsWith("--preview=")) {
+      parsed.dryRun = parseBoolean(token.split("=").slice(1).join("="));
+      continue;
+    }
+    if (token === "--log-path") {
+      parsed.logPath = tokens[++i];
+      continue;
+    }
+    if (token.startsWith("--log-path=")) {
+      parsed.logPath = token.slice("--log-path=".length);
+      continue;
+    }
+    if (token === "--validation" || token === "--test" || token === "--testing" || token === "--test-command") {
       const value = tokens[++i];
       if (value) parsed.validationCommands.push(value);
       continue;
     }
-    if (token.startsWith("--validation=")) {
-      parsed.validationCommands.push(token.slice("--validation=".length));
+    if (token.startsWith("--validation=") || token.startsWith("--test=") || token.startsWith("--testing=") || token.startsWith("--test-command=")) {
+      parsed.validationCommands.push(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--preflight") {
@@ -887,6 +1040,15 @@ function parseArgs(raw: string | undefined): ParsedCommand {
     }
     if (token.startsWith("--skill=")) {
       parsed.skills.push(token.slice("--skill=".length));
+      continue;
+    }
+    if (token === "--stop-condition" || token === "--condition") {
+      const value = tokens[++i];
+      if (value) parsed.stopConditions.push(value);
+      continue;
+    }
+    if (token.startsWith("--stop-condition=") || token.startsWith("--condition=")) {
+      parsed.stopConditions.push(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--topic") {
@@ -991,6 +1153,23 @@ function relativeToCwd(cwd: string, target: string): string {
   const absolute = path.isAbsolute(target) ? target : path.join(cwd, target);
   const relative = path.relative(cwd, absolute);
   return relative && !relative.startsWith("..") ? relative : absolute;
+}
+
+function writeJsonFileAtomic(target: string, value: unknown) {
+  const dir = path.dirname(target);
+  fs.mkdirSync(dir, { recursive: true });
+  const temp = path.join(dir, `.${path.basename(target)}.${process.pid}.${Date.now()}.tmp`);
+  try {
+    fs.writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+    fs.renameSync(temp, target);
+  } catch (error) {
+    try {
+      fs.rmSync(temp, { force: true });
+    } catch {
+      // Best effort cleanup; keep the original config untouched when possible.
+    }
+    throw error;
+  }
 }
 
 function safeRead(file: string): string {

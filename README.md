@@ -72,7 +72,10 @@ Useful commands:
 
 ```text
 /development-loop adapters
+/development-loop help
 /development-loop init
+/development-loop init --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-loop init --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-loop start --iterations=3 providers
 /development-loop start --iterations=5 --commit --push fix flaky tests
 /development-loop status
@@ -83,11 +86,34 @@ Useful commands:
 Tips:
 
 - Start small: `--iterations=1` or `--iterations=3` is usually enough.
-- Use `/development-loop init` to create `.pi/development-loop.json` for project defaults.
-- Leave `--commit` and `--push` off unless you want the loop to handle git delivery.
+- `/development-loop init` is non-interactive: it writes safe defaults without adapter, validation, or commit prompts.
+- Existing `.pi/development-loop.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
+- Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.
+- Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
+- `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
+
+### Status bar integration
+
+`/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · loop 2/3 · generic-git · git:manual · release checks`. If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote it into a dedicated segment:
+
+```json
+{
+  "powerline": {
+    "customItems": [
+      {
+        "id": "dev-loop",
+        "statusKey": "development-loop",
+        "position": "secondary",
+        "prefix": "loop",
+        "color": "accent"
+      }
+    ]
+  }
+}
+```
 
 ### Steer an active loop
 
@@ -104,7 +130,23 @@ DEV_LOOP_DECISION: continue|stop|blocked|done
 
 ### Project-local configuration for any repo
 
-Create `.pi/development-loop.json` when a repo needs its own adapter name, default objective, skills, or validation commands:
+Create `.pi/development-loop.json` when a repo needs its own adapter name, default objective, skills, validation commands, iteration count, git delivery policy, stop conditions, or log path.
+
+`/development-loop init` accepts the same basic knobs used by `start` plus config-only fields:
+
+- `--adapter <name>`
+- `--topic <text>` or trailing topic text
+- `--iterations <n>` / `--max-iterations <n>` / `-n <n>`
+- `--commit`, `--no-commit`, `--push`, `--no-push`
+- `--validation <command>` or `--test <command>`; repeat for multiple checks
+- `--preflight <command>`; repeat for multiple preflight checks
+- `--skill <name-or-note>`; repeat for skills such as `greploop`, `grill-me`, `tdd`, or repo-local workflow skills
+- `--stop-condition <text>`; repeat for custom blockers
+- `--log-path <path>`
+- `--dry-run` / `--preview` to preview the generated config without writing files
+- `--force` to replace an existing config atomically
+
+Example config:
 
 ```json
 {
@@ -113,9 +155,11 @@ Create `.pi/development-loop.json` when a repo needs its own adapter name, defau
   "skills": ["tdd", "verification-before-completion"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
+  "stopConditions": ["validation fails twice with the same blocker"],
   "maxIterations": 3,
   "commit": false,
-  "push": false
+  "push": false,
+  "logPath": ".pi/development-loop/logs.jsonl"
 }
 ```
 
@@ -139,6 +183,7 @@ Run `/development-loop adapters` to confirm which adapter and config Pi will use
 - `handoff` — continuation handoff for future sessions.
 - `caveman` — ultra-compressed status communication.
 - `write-a-skill` — skill authoring guidance.
+- `greploop` — Greptile review loop for PR/MR/CL cleanup when review automation, required CLI auth, and git delivery are intentionally enabled.
 
 ### Web and browser
 

@@ -20,6 +20,7 @@ const expectedSkills = [
   "handoff",
   "caveman",
   "write-a-skill",
+  "greploop",
   "pi-ecosystem-scout",
 ];
 
@@ -101,13 +102,18 @@ async function testExtensionLoadsAndRegistersCommands() {
   const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-e2e-"));
   fs.mkdirSync(path.join(e2eRoot, ".git"));
   try {
+    const statusUpdates = [];
+    const widgetUpdates = [];
     const ctx = {
       cwd: e2eRoot,
       hasUI: true,
       ui: {
+        theme: {
+          fg(color, text) { return `<${color}>${text}</${color}>`; },
+        },
         notify() {},
-        setStatus() {},
-        setWidget() {},
+        setStatus(key, value) { statusUpdates.push({ key, value }); },
+        setWidget(key, value, options) { widgetUpdates.push({ key, value, options }); },
       },
       sessionManager: {
         getCwd: () => e2eRoot,
@@ -120,8 +126,17 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(sent.length, 1);
     assert.match(sent[0].content, /Development loop iteration 1\/2/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
+    assert.match(sent[0].content, /Task discovery cues/);
+    assert.match(sent[0].content, /TODO\.md/);
+    assert.match(sent[0].content, /progress\.json/);
+    assert.match(sent[0].content, /repo-local skills/);
+    assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
+    assert.match(sent[0].content, /Do not trigger Greptile/);
     assert.equal(entries.at(-1).customType, "development-loop-state");
     assert.equal(entries.at(-1).data.phase, "running");
+    assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
+    assert.match(statusUpdates.at(-1).value, /loop 1\/2 · generic-git · git:manual · README polish/);
+    assert.ok(widgetUpdates.at(-1).value.length <= 2, "development-loop widget should stay compact");
 
     const steeringResult = await handlers.get("input")({
       type: "input",
@@ -144,11 +159,31 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
+        content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue",
+      }],
+    }, ctx);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    assert.equal(sent.length, 2);
+    assert.match(sent.at(-1).content, /Development loop iteration 2\/2/);
+    assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
+
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
         content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done",
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.active, false);
     assert.equal(entries.at(-1).data.phase, "done");
+
+    await command.handler("start --iterations=1 blocker", ctx);
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "No markers here." }],
+    }, ctx);
+    assert.match(statusUpdates.at(-1).value, /<error>■ block<\/error>/);
+    assert.match(statusUpdates.at(-1).value, /git:manual/);
+    assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
+    assert.ok(widgetUpdates.at(-1).value.length <= 2, "blocked development-loop widget should stay compact");
 
     fs.mkdirSync(path.join(e2eRoot, ".pi"), { recursive: true });
     fs.writeFileSync(path.join(e2eRoot, ".pi", "development-loop.json"), JSON.stringify({
@@ -158,6 +193,14 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, null, 2));
     await command.handler("adapters", ctx);
     assert.match(messages.at(-1).content, /Project-configured adapter docs-only/);
+
+    await command.handler("help", ctx);
+    assert.match(messages.at(-1).content, /\/development-loop init --dry-run/);
+    assert.match(messages.at(-1).content, /--iterations <n>/);
+    assert.match(messages.at(-1).content, /--push implies --commit/);
+    assert.match(messages.at(-1).content, /--skill <name-or-note>/);
+    assert.match(messages.at(-1).content, /greploop/);
+    assert.match(messages.at(-1).content, /--stop-condition <text>/);
   } finally {
     fs.rmSync(e2eRoot, { recursive: true, force: true });
   }
@@ -165,19 +208,19 @@ async function testExtensionLoadsAndRegistersCommands() {
   const initRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-init-"));
   fs.mkdirSync(path.join(initRoot, ".git"));
   try {
-    const selectItems = [];
+    const initPrompts = [];
+    const recordUnexpectedPrompt = (name) => (...args) => {
+      initPrompts.push({ name, args });
+      throw new Error(`/development-loop init should not prompt with ${name}`);
+    };
     const initCtx = {
       cwd: initRoot,
       hasUI: true,
       ui: {
-        select(_title, items) {
-          selectItems.push(...items);
-          assert.ok(items.every((item) => typeof item === "string"), "adapter select items must render as strings");
-          return items[0];
-        },
-        input() { return "docs polish"; },
-        editor(_title, text) { return text; },
-        confirm() { return false; },
+        select: recordUnexpectedPrompt("select"),
+        input: recordUnexpectedPrompt("input"),
+        editor: recordUnexpectedPrompt("editor"),
+        confirm: recordUnexpectedPrompt("confirm"),
         notify() {},
         setStatus() {},
         setWidget() {},
@@ -190,11 +233,90 @@ async function testExtensionLoadsAndRegistersCommands() {
     };
 
     await command.handler("init", initCtx);
-    assert.deepEqual(selectItems, ["generic-git (detected)", "Gormes", "Navivox"]);
+    assert.deepEqual(initPrompts, []);
     const written = JSON.parse(fs.readFileSync(path.join(initRoot, ".pi", "development-loop.json"), "utf8"));
     assert.equal(written.adapter, "generic-git");
+    assert.equal(written.commit, false);
+    assert.equal(written.push, false);
+    assert.equal(written.maxIterations, 3);
+    assert.ok(written.skills.some((skill) => /repo-local skills/.test(skill)));
+    assert.ok(written.skills.some((skill) => /greploop/.test(skill)));
+    assert.ok(written.stopConditions.some((condition) => /TODO\.md/.test(condition)));
   } finally {
     fs.rmSync(initRoot, { recursive: true, force: true });
+  }
+
+  const configurableInitRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-configurable-init-"));
+  fs.mkdirSync(path.join(configurableInitRoot, ".git"));
+  try {
+    const configurableCtx = {
+      cwd: configurableInitRoot,
+      hasUI: true,
+      ui: {
+        notify() {},
+        setStatus() {},
+        setWidget() {},
+      },
+      sessionManager: {
+        getCwd: () => configurableInitRoot,
+        getEntries: () => [],
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("init --iterations=7 --push --test 'npm test' --test 'git diff --check' --preflight 'git status --short' --skill=grill-me --skill=tdd --stop-condition 'review blockers are unresolved' --log-path .dev-loop/logs.jsonl 'release hardening'", configurableCtx);
+    const configured = JSON.parse(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"));
+    assert.equal(configured.defaultTopic, "release hardening");
+    assert.equal(configured.maxIterations, 7);
+    assert.equal(configured.commit, true, "--push should imply commit delivery");
+    assert.equal(configured.push, true);
+    assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
+    assert.deepEqual(configured.preflightCommands, ["git status --short"]);
+    assert.deepEqual(configured.skills, ["grill-me", "tdd"]);
+    assert.deepEqual(configured.stopConditions, ["review blockers are unresolved"]);
+    assert.equal(configured.logPath, ".dev-loop/logs.jsonl");
+
+    const before = JSON.stringify(configured, null, 2) + "\n";
+    await command.handler("init --iterations=2 --force=false overwrite attempt", configurableCtx);
+    assert.equal(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"), before, "init must not overwrite existing config without --force");
+
+    await command.handler("init --force --iterations=2 --no-push forced replacement", configurableCtx);
+    const replaced = JSON.parse(fs.readFileSync(path.join(configurableInitRoot, ".pi", "development-loop.json"), "utf8"));
+    assert.equal(replaced.defaultTopic, "forced replacement");
+    assert.equal(replaced.maxIterations, 2);
+    assert.equal(replaced.push, false);
+  } finally {
+    fs.rmSync(configurableInitRoot, { recursive: true, force: true });
+  }
+
+  const dryRunInitRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-dry-run-init-"));
+  fs.mkdirSync(path.join(dryRunInitRoot, ".git"));
+  try {
+    const dryRunNotifications = [];
+    const dryRunCtx = {
+      cwd: dryRunInitRoot,
+      hasUI: true,
+      ui: {
+        notify(message) { dryRunNotifications.push(message); },
+        setStatus() {},
+        setWidget() {},
+      },
+      sessionManager: {
+        getCwd: () => dryRunInitRoot,
+        getEntries: () => [],
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("init --dry-run --iterations=4 --push --skill=grill-me preview config", dryRunCtx);
+    assert.equal(fs.existsSync(path.join(dryRunInitRoot, ".pi", "development-loop.json")), false, "dry-run init must not write config");
+    assert.match(dryRunNotifications.at(-1), /Development-loop init preview/);
+    assert.match(dryRunNotifications.at(-1), /"defaultTopic": "preview config"/);
+    assert.match(dryRunNotifications.at(-1), /"maxIterations": 4/);
+    assert.match(dryRunNotifications.at(-1), /"commit": true/);
+    assert.match(dryRunNotifications.at(-1), /"push": true/);
+  } finally {
+    fs.rmSync(dryRunInitRoot, { recursive: true, force: true });
   }
 }
 
@@ -221,13 +343,29 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Project-local configuration for any repo/);
   assert.match(readme, /"adapter": "docs-loop"/);
   assert.match(readme, /## Update or remove/);
+  assert.match(readme, /### Status bar integration/);
+  assert.match(readme, /pi-powerline-footer/);
+  assert.match(readme, /"statusKey": "development-loop"/);
   assert.match(readme, /### Steer an active loop/);
   assert.match(readme, /plain text becomes a steering request/);
+  assert.match(readme, /`\/development-loop init` is non-interactive/);
+  assert.match(readme, /TODO\.md, progress\.json, plans/);
+  assert.match(readme, /`--force` only when you intentionally want an atomic replacement/);
+  assert.match(readme, /`--iterations <n>`/);
+  assert.match(readme, /`--test <command>`/);
+  assert.match(readme, /`--skill <name-or-note>`/);
+  assert.match(readme, /`--dry-run`/);
+  assert.match(readme, /preview the generated config without writing/);
+  assert.match(readme, /starts the next iteration automatically/);
+  assert.match(readme, /`grill-me`/);
+  assert.match(readme, /`greploop`/);
+  assert.match(readme, /Greptile review loop/);
   assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);
+  assert.match(readme, /\/development-loop help/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
   assert.match(notices, /GoogleChrome\/modern-web-guidance/);
@@ -235,10 +373,13 @@ async function testNoticesAndDocs() {
   assert.match(notices, /mattpocock\/skills/);
   assert.match(notices, /MIT/);
   assert.match(notices, /qualisero\/awesome-pi-agent/);
+  assert.match(notices, /greptileai\/skills/);
+  assert.match(notices, /skills\/greploop\//);
 
   assert.ok(exists("licenses/GoogleChrome-modern-web-guidance-LICENSE"));
   assert.ok(exists("licenses/mattpocock-skills-LICENSE"));
   assert.ok(exists("licenses/qualisero-awesome-pi-agent-LICENSE"));
+  assert.ok(exists("licenses/greptileai-skills-LICENSE"));
 }
 
 await testPackageManifest();

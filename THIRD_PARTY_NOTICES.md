@@ -38,3 +38,12 @@ Trebuchet Dynamics under the MIT License.
 - Usage: source evidence for the package-local `pi-ecosystem-scout` skill.
 - License: MIT
 - Full license copy: `licenses/qualisero-awesome-pi-agent-LICENSE`
+
+## greptileai/skills
+
+- Source: https://github.com/greptileai/skills
+- Snapshot inspected: `4ae5198`
+- Bundled paths:
+  - `skills/greploop/`
+- License: MIT
+- Full license copy: `licenses/greptileai-skills-LICENSE`
