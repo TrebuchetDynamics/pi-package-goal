@@ -199,18 +199,35 @@ function barePackageName(source) {
   return source.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
 }
 
-function listSkillFiles() {
+function listSkillFiles(baseDir = root) {
   const out = [];
-  const base = path.join(root, "skills");
+  const base = path.join(baseDir, "skills");
+  if (!fs.existsSync(base)) return out;
   const walk = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
-      if (entry.isFile() && entry.name === "SKILL.md") out.push(path.relative(root, full));
+      if (entry.isFile() && entry.name === "SKILL.md") out.push(path.relative(baseDir, full).split(path.sep).join("/"));
     }
   };
   walk(base);
   return out.sort();
+}
+
+function collectSkillInventoryIssues(baseDir, expectedNames) {
+  const expected = new Set(expectedNames);
+  const actual = new Set(listSkillFiles(baseDir)
+    .map((file) => file.match(/^skills\/([^/]+)\/SKILL\.md$/)?.[1])
+    .filter(Boolean));
+
+  const issues = [];
+  for (const name of [...expected].sort()) {
+    if (!actual.has(name)) issues.push(`missing skill: ${name}`);
+  }
+  for (const name of [...actual].sort()) {
+    if (!expected.has(name)) issues.push(`unexpected skill: ${name}`);
+  }
+  return issues;
 }
 
 function listMarkdownFiles(baseDir) {
@@ -997,6 +1014,20 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
 }
 
 async function testSkills() {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-skill-inventory-"));
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "skills", "expected"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "skills", "extra"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "skills", "expected", "SKILL.md"), "---\nname: expected\ndescription: Expected skill\n---\n");
+    fs.writeFileSync(path.join(fixtureRoot, "skills", "extra", "SKILL.md"), "---\nname: extra\ndescription: Extra skill\n---\n");
+
+    assert.deepEqual(collectSkillInventoryIssues(fixtureRoot, ["expected"]), ["unexpected skill: extra"]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
+
   const skillFiles = listSkillFiles();
   for (const skill of expectedSkills) {
     assert.ok(skillFiles.includes(`skills/${skill}/SKILL.md`), `missing ${skill}`);
@@ -1112,6 +1143,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /\/development-loop help/);
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
+  assert.match(readme, /Skill frontmatter and exact expected bundle contents/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
   assert.match(readme, /Third-party notices, local notice paths, and license copies/);
 
