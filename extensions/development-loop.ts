@@ -8,6 +8,7 @@ type LoopDecision = "continue" | "stop" | "blocked" | "done";
 type ProjectConfig = {
   adapter?: string;
   defaultTopic?: string;
+  language?: string;
   skills?: string[];
   preflightCommands?: string[];
   validationCommands?: string[];
@@ -89,6 +90,8 @@ type UiThemeLike = {
   bold?: (text: string) => string;
 };
 
+type UiSelectResult = string | { value: string; label?: string; description?: string } | undefined;
+
 type UiLikeContext = {
   cwd?: string;
   hasUI?: boolean;
@@ -98,7 +101,7 @@ type UiLikeContext = {
     setStatus?: (key: string, value: string | undefined) => void;
     setWidget?: (key: string, value: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }) => void;
     confirm?: (title: string, message: string, options?: unknown) => Promise<boolean> | boolean;
-    select?: (title: string, items: Array<string | { value: string; label?: string; description?: string }>, options?: unknown) => Promise<string | undefined> | string | undefined;
+    select?: (title: string, items: string[], options?: unknown) => Promise<UiSelectResult> | UiSelectResult;
     input?: (title: string, placeholder?: string) => Promise<string | undefined> | string | undefined;
     editor?: (title: string, text?: string) => Promise<string | undefined> | string | undefined;
   };
@@ -129,6 +132,30 @@ const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 1;
 const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
 const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.35;
+const DEFAULT_LANGUAGE = "English";
+const COMMON_LANGUAGE_CHOICES = [
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Portuguese",
+  "Italian",
+  "Dutch",
+  "Russian",
+  "Chinese",
+  "Japanese",
+  "Korean",
+  "Arabic",
+  "Hindi",
+  "Bengali",
+  "Turkish",
+  "Vietnamese",
+  "Indonesian",
+  "Polish",
+  "Ukrainian",
+  "Swahili",
+];
+const MANDATORY_SKILLS = ["caveman", "improve-codebase-architecture"];
 
 const COMMON_PREFLIGHT = [
   "pwd",
@@ -153,73 +180,13 @@ const REVIEW_LOOP_GUIDANCE = [
 
 const BUILT_IN_ADAPTERS: LoopAdapter[] = [
   {
-    name: "gormes",
-    label: "Gormes",
-    description: "Gormes Go-native Hermes-compatible agent runtime",
-    defaultTopic: "auto-select the highest-impact builder-ready row or parity-safe improvement",
-    skills: [
-      "gormes-skill-manager",
-      "gormes-delivery-loop",
-      "gormes-architecture-zoomout",
-      "gormes-planner",
-      "gormes-hermes-parity",
-      "gormes-builder",
-      "gormes-tdd-slice",
-      "gormes-git when commit/push is enabled",
-    ],
-    preflightCommands: COMMON_PREFLIGHT,
-    validationCommands: [
-      "go test ./... -count=1",
-      "go run ./cmd/progress validate",
-      "git diff --check",
-    ],
-    stopConditions: [
-      "branch is not development",
-      "progress row is not builder-ready",
-      "upstream parity evidence is missing for a parity claim",
-      "validation fails twice with the same blocker",
-      "slice would touch unrelated dirty work",
-    ],
-    matches(cwd: string): boolean {
-      if (path.basename(cwd) === "gormes-agent") return true;
-      if (safeRead(path.join(cwd, "go.mod")).includes("github.com/TrebuchetDynamics/gormes-agent")) return true;
-      return safeRead(path.join(cwd, "AGENTS.md")).toLowerCase().includes("gormes-agent");
-    },
-  },
-  {
-    name: "navivox",
-    label: "Navivox",
-    description: "Navivox app and voice/chat UX delivery loop",
-    defaultTopic: "auto-select the highest-impact Navivox UX or gateway-channel improvement",
-    skills: [
-      "navivox-telegram-ui for Telegram-like chat/contact UI",
-      "test-driven-development for implementation slices",
-      "verification-before-completion before reporting done",
-    ],
-    preflightCommands: COMMON_PREFLIGHT,
-    validationCommands: [
-      "flutter analyze",
-      "flutter test",
-      "git diff --check",
-    ],
-    stopConditions: [
-      "Flutter tools are unavailable",
-      "repo ownership or untracked app tree makes commit unsafe",
-      "validation fails twice with the same blocker",
-      "slice would touch unrelated dirty work",
-    ],
-    matches(cwd: string): boolean {
-      if (path.basename(cwd) === "navivox-app") return true;
-      const pubspec = safeRead(path.join(cwd, "pubspec.yaml")).toLowerCase();
-      return pubspec.includes("name: navivox") || pubspec.includes("navivox_app");
-    },
-  },
-  {
     name: "generic-git",
     label: "Generic Git",
     description: "Conservative generic git-project development loop",
     defaultTopic: "discover and complete the smallest safe project task with validation",
     skills: [
+      "caveman",
+      "improve-codebase-architecture",
       "repo-local skills that match the detected task before package defaults",
       "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
       "zoom-out for source-backed project understanding",
@@ -355,7 +322,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (!state.active) return { action: "continue" };
     if (event.source === "extension") return { action: "continue" };
 
-    const steeringText = event.text.trim();
+    const steeringText = singleLineText(event.text);
     if (!steeringText || steeringText.startsWith("/")) return { action: "continue" };
 
     const cwd = contextCwd(ctx);
@@ -641,18 +608,13 @@ async function buildInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandConte
   return promptForInitConfig(parsed, ctx, cwd, defaults.adapterName);
 }
 
-function initDefaults(parsed: ParsedCommand, cwd: string, adapterName = parsed.adapter || resolveProjectAdapter(cwd).adapter.name): { adapterName: string; adapter: LoopAdapter; config: ProjectConfig } {
-  const adapter = getAdapterByName(adapterName) ?? customAdapter(adapterName, {
-    defaultTopic: parsed.topic,
-    skills: nonEmpty(parsed.skills) ? parsed.skills : undefined,
-    preflightCommands: nonEmpty(parsed.preflightCommands) ? parsed.preflightCommands : undefined,
-    validationCommands: nonEmpty(parsed.validationCommands) ? parsed.validationCommands : undefined,
-    stopConditions: nonEmpty(parsed.stopConditions) ? parsed.stopConditions : undefined,
-  });
+function initDefaults(parsed: ParsedCommand, _cwd: string, _adapterName = "generic-git"): { adapterName: string; adapter: LoopAdapter; config: ProjectConfig } {
+  const adapter = getAdapterByName("generic-git")!;
+  const adapterName = adapter.name;
   const defaultTopic = parsed.topic || adapter.defaultTopic;
   const validationCommands = parsed.validationCommands.length > 0 ? parsed.validationCommands : adapter.validationCommands;
   const preflightCommands = parsed.preflightCommands.length > 0 ? parsed.preflightCommands : adapter.preflightCommands;
-  const skills = parsed.skills.length > 0 ? parsed.skills : adapter.skills;
+  const skills = ensureMandatorySkills(parsed.skills.length > 0 ? parsed.skills : adapter.skills);
   const stopConditions = parsed.stopConditions.length > 0 ? parsed.stopConditions : adapter.stopConditions;
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, false, false);
   const maxIterations = clampIterations(parsed.iterations ?? DEFAULT_ITERATIONS);
@@ -664,6 +626,7 @@ function initDefaults(parsed: ParsedCommand, cwd: string, adapterName = parsed.a
     config: {
       adapter: adapterName,
       defaultTopic,
+      language: DEFAULT_LANGUAGE,
       skills,
       preflightCommands,
       validationCommands,
@@ -687,10 +650,7 @@ function shouldPromptForInit(parsed: ParsedCommand, ctx: UiLikeContext): boolean
 
 async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string, initialAdapterName: string): Promise<ProjectConfig | undefined> {
   const ui = ctx.ui;
-  let defaults = initDefaults(parsed, cwd, initialAdapterName);
-  const selectedAdapter = await ui.select!("Development loop adapter", adapterSelectionItems(defaults.adapterName));
-  if (selectedAdapter === undefined) return cancelInit(ctx);
-  defaults = initDefaults(parsed, cwd, selectedAdapter || defaults.adapterName);
+  const defaults = initDefaults(parsed, cwd, initialAdapterName);
   const config: ProjectConfig = { ...defaults.config };
 
   const defaultTopic = config.defaultTopic || defaults.adapter.defaultTopic;
@@ -698,16 +658,16 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
   if (topicText === undefined) return cancelInit(ctx);
   config.defaultTopic = topicText.trim() || defaultTopic;
 
+  const language = selectValue(await ui.select!("Preferred language", COMMON_LANGUAGE_CHOICES));
+  if (language === undefined) return cancelInit(ctx);
+  config.language = language || config.language || DEFAULT_LANGUAGE;
+
   const iterationsText = await ui.input!("Max iterations (1-25)", String(config.maxIterations ?? DEFAULT_ITERATIONS));
   if (iterationsText === undefined) return cancelInit(ctx);
   const iterations = numberOrUndefined(iterationsText);
   config.maxIterations = iterations ? clampIterations(iterations) : config.maxIterations;
 
-  const delivery = await ui.select!("Git delivery policy", [
-    { value: "manual", label: "Manual", description: "Do not commit or push from the loop." },
-    { value: "commit", label: "Commit", description: "Commit validated slices; do not push." },
-    { value: "push", label: "Push", description: "Commit and push validated slices when safe." },
-  ]);
+  const delivery = selectValue(await ui.select!("Git delivery policy", ["manual", "commit", "push"]));
   if (delivery === undefined) return cancelInit(ctx);
   config.push = delivery === "push";
   config.commit = delivery === "commit" || config.push;
@@ -722,7 +682,7 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
 
   const skillsText = await ui.editor!("Skills (one per line)", (config.skills ?? []).join("\n"));
   if (skillsText === undefined) return cancelInit(ctx);
-  config.skills = splitLinesOrDefault(skillsText, config.skills ?? []);
+  config.skills = ensureMandatorySkills(splitLinesOrDefault(skillsText, config.skills ?? []));
 
   const stopConditionsText = await ui.editor!("Stop conditions (one per line)", (config.stopConditions ?? []).join("\n"));
   if (stopConditionsText === undefined) return cancelInit(ctx);
@@ -737,19 +697,6 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
   return config;
 }
 
-function adapterSelectionItems(selectedAdapterName: string): Array<{ value: string; label: string; description: string }> {
-  const builtIns = BUILT_IN_ADAPTERS.map((adapter) => ({
-    value: adapter.name,
-    label: adapter.name === selectedAdapterName ? `${adapter.name} (detected)` : adapter.name,
-    description: adapter.description,
-  }));
-  if (BUILT_IN_ADAPTERS.some((adapter) => adapter.name === selectedAdapterName)) return builtIns;
-  return [
-    { value: selectedAdapterName, label: `${selectedAdapterName} (project)`, description: `Project-configured adapter ${selectedAdapterName}` },
-    ...builtIns,
-  ];
-}
-
 function splitLinesOrDefault(value: string, fallback: string[]): string[] {
   const lines = splitLines(value);
   return lines.length > 0 ? lines : fallback;
@@ -760,6 +707,7 @@ function initConfigSummary(config: ProjectConfig, cwd: string): string {
     `Target: ${relativeToCwd(cwd, path.join(cwd, DEFAULT_CONFIG_RELATIVE))}`,
     `Adapter: ${config.adapter}`,
     `Objective: ${config.defaultTopic}`,
+    `Preferred language: ${config.language || DEFAULT_LANGUAGE}`,
     `Iterations: ${config.maxIterations}`,
     `Git delivery: ${config.push ? "push" : config.commit ? "commit" : "manual"}`,
     `Validation: ${(config.validationCommands ?? []).join("; ") || "none"}`,
@@ -793,7 +741,6 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "",
     "Configurable init options:",
     "- /development-loop init --dry-run ... — preview without writing files",
-    "- --adapter <name>",
     "- --iterations <n> | --max-iterations <n> | -n <n>",
     "- --commit | --no-commit | --push | --no-push (--push implies --commit)",
     "- --validation <command> | --test <command> (repeatable)",
@@ -817,15 +764,9 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
 function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd);
-  const isBuiltInAdapter = BUILT_IN_ADAPTERS.some((adapter) => adapter.name === resolved.adapter.name);
-  const projectAdapterLines = isBuiltInAdapter ? [] : [
-    `Project-configured adapter ${resolved.adapter.name}: ${resolved.adapter.description}`,
-  ];
   const text = [
     `Detected adapter: ${resolved.adapter.name}`,
-    ...projectAdapterLines,
-    "Built-in adapters:",
-    ...BUILT_IN_ADAPTERS.map((adapter) => `- ${adapter.name}: ${adapter.description}`),
+    `Adapter description: ${resolved.adapter.description}`,
     `Config: ${relativeToCwd(cwd, resolved.configPath)}${resolved.configLoaded ? " present" : " missing"}`,
   ].join("\n");
   notify(ctx, text);
@@ -839,7 +780,8 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
   const config = resolved.config;
   const preflightCommands = nonEmpty(config.preflightCommands) ? config.preflightCommands! : adapter.preflightCommands;
   const validationCommands = nonEmpty(config.validationCommands) ? config.validationCommands! : adapter.validationCommands;
-  const skills = nonEmpty(config.skills) ? config.skills! : adapter.skills;
+  const skills = ensureMandatorySkills(nonEmpty(config.skills) ? config.skills! : adapter.skills);
+  const language = config.language || DEFAULT_LANGUAGE;
   const stopConditions = nonEmpty(config.stopConditions) ? config.stopConditions! : adapter.stopConditions;
   const commitPolicy = s.commit
     ? s.push
@@ -851,7 +793,8 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
 
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
-Topic/objective: ${s.topic}
+Topic/objective: ${singleLineText(s.topic)}
+Preferred language: ${language}
 Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
 Loop log path: ${relativeToCwd(cwd, s.logPath)}
 
@@ -915,7 +858,7 @@ function buildDevelopmentLoopCompactionInstructions(s: LoopState, resolved: Reso
 Current development loop state:
 - Project root: ${cwd}
 - Adapter: ${resolved.adapter.name}
-- Objective: ${s.topic}
+- Objective: ${singleLineText(s.topic)}
 - Iteration: ${s.iteration}/${s.maxIterations}
 - Phase: ${s.phase}
 - Git delivery: ${s.push ? "push" : s.commit ? "commit" : "manual"}
@@ -936,7 +879,7 @@ function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Current loop iteration: ${s.iteration}/${s.maxIterations}
-Current objective: ${s.topic}
+Current objective: ${singleLineText(s.topic)}
 User steering request: ${steeringText}
 
 Incorporate this steering into the current or next safe vertical slice. Preserve unrelated dirty work. Keep using the configured validation commands before any continue/done decision.
@@ -949,17 +892,17 @@ Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_
 }
 
 function mergeSteeringTopic(currentTopic: string, steeringText: string): string {
-  const next = `${currentTopic || "active development loop"}; latest user steering: ${steeringText}`;
+  const baseTopic = singleLineText(currentTopic) || "active development loop";
+  const steering = singleLineText(steeringText);
+  const next = `${baseTopic}; latest user steering: ${steering}`;
   return next.length <= STEERING_TOPIC_MAX ? next : `${next.slice(0, STEERING_TOPIC_MAX - 1)}…`;
 }
 
-function resolveProjectAdapter(cwd: string, requestedAdapter?: string): ResolvedProjectAdapter {
+function resolveProjectAdapter(cwd: string, _requestedAdapter?: string): ResolvedProjectAdapter {
   const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
   const loaded = loadProjectConfig(configPath);
   const config = loaded.config ?? {};
-  const adapterName = requestedAdapter || config.adapter;
-  const builtIn = adapterName ? getAdapterByName(adapterName) : BUILT_IN_ADAPTERS.find((adapter) => adapter.matches(cwd));
-  const adapter = builtIn ?? (adapterName ? customAdapter(adapterName, config) : getAdapterByName("generic-git")!);
+  const adapter = getAdapterByName("generic-git")!;
   return {
     adapter,
     config: mergeAdapterConfig(adapter, config),
@@ -971,9 +914,10 @@ function resolveProjectAdapter(cwd: string, requestedAdapter?: string): Resolved
 
 function mergeAdapterConfig(adapter: LoopAdapter, config: ProjectConfig): ProjectConfig {
   return {
-    adapter: config.adapter ?? adapter.name,
+    adapter: adapter.name,
     defaultTopic: config.defaultTopic ?? adapter.defaultTopic,
-    skills: nonEmpty(config.skills) ? config.skills : adapter.skills,
+    language: config.language ?? DEFAULT_LANGUAGE,
+    skills: ensureMandatorySkills(nonEmpty(config.skills) ? config.skills : adapter.skills),
     preflightCommands: nonEmpty(config.preflightCommands) ? config.preflightCommands : adapter.preflightCommands,
     validationCommands: nonEmpty(config.validationCommands) ? config.validationCommands : adapter.validationCommands,
     commit: config.commit ?? false,
@@ -997,8 +941,9 @@ function loadProjectConfig(configPath: string): { config?: ProjectConfig; error?
 
 function normalizeConfig(raw: Record<string, unknown>): ProjectConfig {
   return {
-    adapter: stringOrUndefined(raw.adapter),
+    adapter: selectValue(raw.adapter),
     defaultTopic: stringOrUndefined(raw.defaultTopic),
+    language: stringOrUndefined(raw.language),
     skills: stringArrayOrUndefined(raw.skills),
     preflightCommands: stringArrayOrUndefined(raw.preflightCommands),
     validationCommands: stringArrayOrUndefined(raw.validationCommands),
@@ -1020,28 +965,13 @@ function resolveCommitPush(commitFlag: boolean | undefined, pushFlag: boolean | 
   return { commit, push };
 }
 
-function customAdapter(name: string, config: ProjectConfig): LoopAdapter {
-  return {
-    ...getAdapterByName("generic-git")!,
-    name,
-    label: name,
-    description: `Project-configured adapter ${name}`,
-    defaultTopic: config.defaultTopic || getAdapterByName("generic-git")!.defaultTopic,
-    skills: config.skills || getAdapterByName("generic-git")!.skills,
-    preflightCommands: config.preflightCommands || getAdapterByName("generic-git")!.preflightCommands,
-    validationCommands: config.validationCommands || getAdapterByName("generic-git")!.validationCommands,
-    stopConditions: config.stopConditions || getAdapterByName("generic-git")!.stopConditions,
-    matches: () => true,
-  };
-}
-
 function statusReport(s: LoopState, cwd = process.cwd()): string {
   const logPath = s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE);
   const last = readLastLoopRecord(logPath);
   return [
     statusLine(s),
     `adapter: ${s.adapterName}`,
-    `topic: ${s.topic}`,
+    `topic: ${singleLineText(s.topic)}`,
     `state: ${stateExplanation(s, last)}`,
     summarizeLastLoopRecord(last),
     `log: ${relativeToCwd(cwd, logPath)}`,
@@ -1098,7 +1028,7 @@ function deliverySegment(s: LoopState): string {
 }
 
 function statusContext(s: LoopState): string | undefined {
-  if (s.active) return compactTopic(s.topic);
+  if (s.active) return compactTopic(singleLineText(s.topic));
   if (s.phase === "blocked") return compactStatusText(s.lastReason || String(s.lastDecision || "blocked"));
   if (s.phase === "done") return compactStatusText(s.lastReason || "complete");
   return s.lastDecision ? compactStatusText(String(s.lastDecision)) : undefined;
@@ -1530,8 +1460,30 @@ function splitLines(value: string): string[] {
   return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
+function ensureMandatorySkills(skills: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const skill of [...MANDATORY_SKILLS, ...skills]) {
+    const trimmed = skill.trim();
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    result.push(trimmed);
+  }
+  return result;
+}
+
 function stringOrUndefined(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function singleLineText(value: unknown): string {
+  return typeof value === "string" ? value.replace(/\[object Object\]/g, " ").replace(/[\u2500-\u257F]{3,}/g, " ").replace(/↑↓\s*(?:navi(?:gate)?|nav|na)?/gi, " ").replace(/\s+/g, " ").trim() : "";
+}
+
+function selectValue(value: unknown): string | undefined {
+  if (typeof value === "string") return stringOrUndefined(value);
+  if (!value || typeof value !== "object") return undefined;
+  return stringOrUndefined((value as { value?: unknown }).value);
 }
 
 function stringArrayOrUndefined(value: unknown): string[] | undefined {

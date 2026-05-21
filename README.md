@@ -97,7 +97,7 @@ Useful commands:
 Tips:
 
 - Start small: `--iterations=1` or `--iterations=3` is usually enough.
-- `/development-loop init` opens an interactive setup wizard in the Pi TUI for adapter, objective, iterations, git delivery, validation, skills, stop conditions, and log path.
+- `/development-loop init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, iterations, git delivery, validation, skills, stop conditions, and log path.
 - Use `--yes` (`-y` or `--defaults`) for scripted/non-interactive init that accepts generated defaults and any provided flags without prompts.
 - Existing `.pi/development-loop.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
 - Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.
@@ -147,11 +147,10 @@ DEV_LOOP_DECISION: continue|stop|blocked|done
 
 ### Project-local configuration for any repo
 
-Create `.pi/development-loop.json` when a repo needs its own adapter name, default objective, skills, validation commands, iteration count, git delivery policy, stop conditions, or log path.
+Create `.pi/development-loop.json` when a repo needs its own default objective, preferred language, skills, validation commands, iteration count, git delivery policy, stop conditions, or log path. The development loop uses the single built-in `generic-git` adapter.
 
 `/development-loop init` accepts the same basic knobs used by `start` plus config-only fields:
 
-- `--adapter <name>`
 - `--topic <text>` or trailing topic text
 - `--iterations <n>` / `--max-iterations <n>` / `-n <n>`
 - `--commit`, `--no-commit`, `--push`, `--no-push`
@@ -164,13 +163,16 @@ Create `.pi/development-loop.json` when a repo needs its own adapter name, defau
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The loop always includes `caveman` and `improve-codebase-architecture` in its skill list, even when custom skills are configured.
+
 Example config:
 
 ```json
 {
-  "adapter": "docs-loop",
+  "adapter": "generic-git",
   "defaultTopic": "improve documentation with tests",
-  "skills": ["tdd", "verification-before-completion"],
+  "language": "English",
+  "skills": ["caveman", "improve-codebase-architecture", "tdd", "verification-before-completion"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
   "stopConditions": ["validation fails twice with the same blocker"],
@@ -181,11 +183,11 @@ Example config:
 }
 ```
 
-Run `/development-loop adapters` to confirm which adapter and config Pi will use.
+Run `/development-loop adapters` to confirm the `generic-git` adapter and config Pi will use.
 
 ## Included extensions
 
-- `/development-loop` — visible, adapter-aware project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
+- `/development-loop` — visible `generic-git` project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
 - `/dev-loop` — short alias for the development-loop extension.
 - `/e2e-loop` — real-usage E2E test loop that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists loop state and logs progress to `.pi/e2e-loop/logs.jsonl` by default.
 - `/e2e` — short alias for the E2E loop extension.

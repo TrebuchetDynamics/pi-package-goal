@@ -79,6 +79,46 @@ async function testExtensionLoadsAndRegistersCommands() {
   const mod = await jiti.import(path.join(root, "extensions", "development-loop.ts"));
   assert.equal(typeof mod.default, "function");
   assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
+  assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
+
+  const promptRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-prompt-topic-"));
+  fs.mkdirSync(path.join(promptRoot, ".git"));
+  try {
+    const resolved = mod.__test__.resolveProjectAdapter(promptRoot, "generic-git");
+    const prompt = mod.__test__.buildIterationPrompt({
+      active: true,
+      adapterName: "generic-git",
+      topic: "Development loop adapter → [object Object]\n\nDefault objective ───────────────── discover and complete ───────────────── enter\n\nGit delivery policy → [object Object]",
+      iteration: 1,
+      maxIterations: 1,
+      startedAt: new Date(0).toISOString(),
+      logPath: path.join(promptRoot, ".pi", "development-loop", "logs.jsonl"),
+      phase: "running",
+      commit: false,
+      push: false,
+    }, resolved, promptRoot);
+    assert.match(prompt, /Topic\/objective: Development loop adapter → Default objective discover and complete enter Git delivery policy →/);
+    assert.doesNotMatch(prompt, /\[object Object\]/);
+    assert.doesNotMatch(prompt, /[─━═]{3,}/);
+    assert.doesNotMatch(prompt, /Topic\/objective: Development loop adapter → \n/);
+  } finally {
+    fs.rmSync(promptRoot, { recursive: true, force: true });
+  }
+
+  const noisyStatus = mod.__test__.statusReport({
+    active: true,
+    adapterName: "generic-git",
+    topic: "Development loop adapter → [object Object] ↑↓ navi\nDefault objective ───────────────── ship it",
+    iteration: 1,
+    maxIterations: 2,
+    startedAt: new Date(0).toISOString(),
+    logPath: path.join(promptRoot, ".pi", "development-loop", "logs.jsonl"),
+    phase: "running",
+    commit: false,
+    push: false,
+  }, promptRoot);
+  assert.match(noisyStatus, /topic: Development loop adapter → Default objective ship it/);
+  assert.doesNotMatch(noisyStatus, /\[object Object\]|↑↓|navi|[─━═]{3,}|\nDefault objective/);
 
   const commands = new Map();
   const handlers = new Map();
@@ -133,6 +173,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /TODO\.md/);
     assert.match(sent[0].content, /progress\.json/);
     assert.match(sent[0].content, /repo-local skills/);
+    assert.match(sent[0].content, /caveman/);
+    assert.match(sent[0].content, /improve-codebase-architecture/);
+    assert.match(sent[0].content, /Preferred language: English/);
     assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
     assert.match(sent[0].content, /Do not trigger Greptile/);
     assert.equal(entries.at(-1).customType, "development-loop-state");
@@ -185,6 +228,16 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(steeringResult.text, /DEV_LOOP_DECISION/);
     assert.match(entries.at(-1).data.topic, /latest user steering: focus release checks next/);
 
+    const multilineSteeringResult = await handlers.get("input")({
+      type: "input",
+      text: "Development loop adapter → generic-git\n\nGit delivery policy → manual",
+      source: "interactive",
+    }, ctx);
+    assert.equal(multilineSteeringResult.action, "transform");
+    assert.match(multilineSteeringResult.text, /User steering request: Development loop adapter → generic-git Git delivery policy → manual/);
+    assert.match(entries.at(-1).data.topic, /latest user steering: Development loop adapter → generic-git Git delivery policy → manual/);
+    assert.doesNotMatch(entries.at(-1).data.topic, /\n/);
+
     const extensionInputResult = await handlers.get("input")({
       type: "input",
       text: "Use the project instructions and matching skills now.",
@@ -222,6 +275,46 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-loop widget should show only detail because footer already shows status");
 
+    const noisySteeringRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-noisy-steering-"));
+    fs.mkdirSync(path.join(noisySteeringRoot, ".git"));
+    try {
+      const noisySteeringCtx = {
+        ...ctx,
+        cwd: noisySteeringRoot,
+        sessionManager: {
+          getCwd: () => noisySteeringRoot,
+          getEntries: () => [{
+            type: "custom",
+            customType: "development-loop-state",
+            data: {
+              active: true,
+              adapterName: "generic-git",
+              topic: "Development loop adapter → [object Object] ↑↓ navi\nDefault objective ───────────────── ship it",
+              iteration: 1,
+              maxIterations: 2,
+              startedAt: new Date(0).toISOString(),
+              logPath: path.join(noisySteeringRoot, ".pi", "development-loop", "logs.jsonl"),
+              phase: "running",
+              commit: false,
+              push: false,
+            },
+          }],
+        },
+      };
+      await handlers.get("session_start")({}, noisySteeringCtx);
+      const noisySteeringResult = await handlers.get("input")({
+        type: "input",
+        text: "focus release checks next",
+        source: "interactive",
+      }, noisySteeringCtx);
+      assert.equal(noisySteeringResult.action, "transform");
+      assert.match(entries.at(-1).data.topic, /Development loop adapter → Default objective ship it; latest user steering: focus release checks next/);
+      assert.doesNotMatch(entries.at(-1).data.topic, /\[object Object\]|↑↓|navi|[─━═]{3,}|\nDefault objective/);
+      await command.handler("stop", noisySteeringCtx);
+    } finally {
+      fs.rmSync(noisySteeringRoot, { recursive: true, force: true });
+    }
+
     fs.mkdirSync(path.join(e2eRoot, ".pi"), { recursive: true });
     fs.writeFileSync(path.join(e2eRoot, ".pi", "development-loop.json"), JSON.stringify({
       adapter: "docs-only",
@@ -229,7 +322,20 @@ async function testExtensionLoadsAndRegistersCommands() {
       validationCommands: ["npm test"],
     }, null, 2));
     await command.handler("adapters", ctx);
-    assert.match(messages.at(-1).content, /Project-configured adapter docs-only/);
+    assert.match(messages.at(-1).content, /Detected adapter: generic-git/);
+    assert.doesNotMatch(messages.at(-1).content, /Project-configured adapter|docs-only|Built-in adapters:/);
+
+    fs.writeFileSync(path.join(e2eRoot, ".pi", "development-loop.json"), JSON.stringify({
+      adapter: {
+        value: "gormes",
+        label: "Gormes",
+        description: "Gormes Go-native Hermes-compatible agent runtime",
+      },
+      defaultTopic: "legacy object-valued adapter config",
+    }, null, 2));
+    await command.handler("adapters", ctx);
+    assert.match(messages.at(-1).content, /Detected adapter: generic-git/);
+    assert.doesNotMatch(messages.at(-1).content, /Detected adapter: gormes|Project-configured adapter/);
 
     const proactiveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-proactive-compact-"));
     fs.mkdirSync(path.join(proactiveRoot, ".git"));
@@ -350,6 +456,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(written.commit, false);
     assert.equal(written.push, false);
     assert.equal(written.maxIterations, 3);
+    assert.equal(written.language, "English");
+    assert.equal(written.skills[0], "caveman");
+    assert.equal(written.skills[1], "improve-codebase-architecture");
     assert.ok(written.skills.some((skill) => /repo-local skills/.test(skill)));
     assert.ok(written.skills.some((skill) => /greploop/.test(skill)));
     assert.ok(written.stopConditions.some((condition) => /TODO\.md/.test(condition)));
@@ -370,8 +479,16 @@ async function testExtensionLoadsAndRegistersCommands() {
       ui: {
         select(title, items) {
           promptCalls.push({ name: "select", title, items });
-          if (/adapter/i.test(title)) return "generic-git";
-          if (/delivery/i.test(title)) return "push";
+          assert.ok(items.every((item) => typeof item === "string"), `${title} select choices must be strings for Pi TUI rendering`);
+          assert.doesNotMatch(title, /adapter/i, "interactive init should not ask for an adapter when only generic-git exists");
+          if (/language/i.test(title)) {
+            assert.equal(items.length, 20, "language picker should offer 20 common languages");
+            assert.deepEqual(items.slice(0, 5), ["English", "Spanish", "French", "German", "Portuguese"]);
+            assert.ok(items.includes("Japanese"));
+            assert.ok(items.includes("Swahili"));
+            return "Spanish";
+          }
+          if (/delivery/i.test(title)) return items.find((item) => item === "push");
           throw new Error(`unexpected select: ${title}`);
         },
         input(title, placeholder) {
@@ -405,21 +522,23 @@ async function testExtensionLoadsAndRegistersCommands() {
     };
 
     await command.handler("init --force", interactiveCtx);
-    assert.ok(promptCalls.some((call) => call.name === "select" && /adapter/i.test(call.title)), "interactive init must ask for adapter");
+    assert.ok(!promptCalls.some((call) => call.name === "select" && /adapter/i.test(call.title)), "interactive init must not ask for adapter when only generic-git exists");
     assert.ok(promptCalls.some((call) => call.name === "editor" && /objective/i.test(call.title)), "interactive init must ask for objective");
     assert.ok(promptCalls.some((call) => call.name === "input" && /iterations/i.test(call.title)), "interactive init must ask for iterations");
+    assert.ok(promptCalls.some((call) => call.name === "select" && /language/i.test(call.title)), "interactive init must ask for preferred language");
     assert.ok(promptCalls.some((call) => call.name === "select" && /delivery/i.test(call.title)), "interactive init must ask for git delivery");
     assert.ok(promptCalls.some((call) => call.name === "confirm"), "interactive init must confirm before writing");
 
     const configured = JSON.parse(fs.readFileSync(path.join(interactiveInitRoot, ".pi", "development-loop.json"), "utf8"));
     assert.equal(configured.adapter, "generic-git");
     assert.equal(configured.defaultTopic, "ship interactive init");
+    assert.equal(configured.language, "Spanish");
     assert.equal(configured.maxIterations, 4);
     assert.equal(configured.commit, true, "push delivery selected in the wizard should imply commit delivery");
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["tdd", "verification-before-completion"]);
+    assert.deepEqual(configured.skills, ["caveman", "improve-codebase-architecture", "tdd", "verification-before-completion"]);
     assert.deepEqual(configured.stopConditions, ["credentials missing"]);
     assert.equal(configured.logPath, ".dev-loop/logs.jsonl");
   } finally {
@@ -452,7 +571,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["grill-me", "tdd"]);
+    assert.deepEqual(configured.skills, ["caveman", "improve-codebase-architecture", "grill-me", "tdd"]);
     assert.deepEqual(configured.stopConditions, ["review blockers are unresolved"]);
     assert.equal(configured.logPath, ".dev-loop/logs.jsonl");
 
@@ -615,7 +734,13 @@ async function testNoticesAndDocs() {
   assert.match(readme, /\.pi\/e2e-loop\/logs\.jsonl/);
   assert.match(readme, /## Included skills/);
   assert.match(readme, /Project-local configuration for any repo/);
-  assert.match(readme, /"adapter": "docs-loop"/);
+  assert.match(readme, /"adapter": "generic-git"/);
+  assert.doesNotMatch(readme, /"adapter": "docs-loop"/);
+  assert.doesNotMatch(readme, /--adapter <name>/);
+  assert.doesNotMatch(readme, /wizard in the Pi TUI for adapter,/);
+  assert.match(readme, /Preferred language/);
+  assert.match(readme, /caveman/);
+  assert.match(readme, /improve-codebase-architecture/);
   assert.match(readme, /## Update or remove/);
   assert.match(readme, /### Status bar integration/);
   assert.match(readme, /pi-powerline-footer/);
