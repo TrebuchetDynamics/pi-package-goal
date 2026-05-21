@@ -51,6 +51,59 @@ function listSkillFiles() {
   return out.sort();
 }
 
+function listMarkdownFiles(baseDir) {
+  const out = [];
+  const skipDirs = new Set([".git", ".pi", "node_modules"]);
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory() && skipDirs.has(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      if (entry.isFile() && entry.name.endsWith(".md")) out.push(full);
+    }
+  };
+  walk(baseDir);
+  return out.sort();
+}
+
+function collectBrokenMarkdownLinks(baseDir) {
+  const broken = [];
+  for (const file of listMarkdownFiles(baseDir)) {
+    const content = stripMarkdownCodeFences(fs.readFileSync(file, "utf8"));
+    for (const match of content.matchAll(/!?\[[^\]\n]+\]\(([^)\n]+)\)/g)) {
+      const target = markdownLinkTarget(match[1]);
+      if (!target || isExternalMarkdownTarget(target)) continue;
+      const localTarget = target.split("#")[0];
+      if (!localTarget) continue;
+      const resolved = path.resolve(path.dirname(file), localTarget);
+      if (!fs.existsSync(resolved)) {
+        broken.push({ file: path.relative(baseDir, file), target: localTarget });
+      }
+    }
+  }
+  return broken;
+}
+
+function stripMarkdownCodeFences(content) {
+  return content
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/~~~[\s\S]*?~~~/g, "");
+}
+
+function markdownLinkTarget(rawTarget) {
+  const trimmed = rawTarget.trim();
+  if (!trimmed) return undefined;
+  if (trimmed.startsWith("<")) {
+    const closing = trimmed.indexOf(">");
+    return closing === -1 ? trimmed.slice(1) : trimmed.slice(1, closing);
+  }
+  return trimmed.split(/\s+/)[0];
+}
+
+function isExternalMarkdownTarget(target) {
+  return target.startsWith("#") || /^[a-z][a-z0-9+.-]*:/i.test(target);
+}
+
 function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);
   assert.ok(match, "SKILL.md must have YAML frontmatter");
@@ -719,6 +772,31 @@ async function testSkills() {
   }
 }
 
+async function testMarkdownLinks() {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-md-links-"));
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "docs"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "docs", "ok.md"), "ok\n");
+    fs.writeFileSync(path.join(fixtureRoot, "README.md"), [
+      "[good](docs/ok.md)",
+      "[external](https://example.com)",
+      "[anchor](#section)",
+      "```md",
+      "[template](REFERENCE.md)",
+      "```",
+      "[missing](docs/missing.md)",
+    ].join("\n"));
+
+    const fixtureBroken = collectBrokenMarkdownLinks(fixtureRoot).map((item) => `${item.file} -> ${item.target}`);
+    assert.deepEqual(fixtureBroken, ["README.md -> docs/missing.md"]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+
+  const broken = collectBrokenMarkdownLinks(root);
+  assert.deepEqual(broken, [], `broken Markdown links:\n${broken.map((item) => `${item.file} -> ${item.target}`).join("\n")}`);
+}
+
 async function testNoticesAndDocs() {
   const readme = read("README.md");
   assert.match(readme, /## Quick start/);
@@ -771,6 +849,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.match(readme, /\/development-loop start/);
   assert.match(readme, /\/development-loop help/);
+  assert.match(readme, /Markdown relative links outside code-fence templates/);
 
   const notices = read("THIRD_PARTY_NOTICES.md");
   assert.match(notices, /GoogleChrome\/modern-web-guidance/);
@@ -791,5 +870,6 @@ await testPackageManifest();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
+await testMarkdownLinks();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");

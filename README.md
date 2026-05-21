@@ -231,6 +231,7 @@ The validation script checks:
 - E2E smoke coverage for starting and completing one development-loop extension run.
 - E2E-loop smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-loop/logs.jsonl` progress logging.
 - Skill frontmatter and expected bundle contents.
+- Markdown relative links outside code-fence templates.
 - README quick-start structure.
 - Third-party notices and license copies.
 
