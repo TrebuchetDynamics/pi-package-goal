@@ -1,6 +1,6 @@
 # pi-package-development-loop
 
-A Pi package that bundles a reusable development-loop extension with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
+A Pi package that bundles reusable development-loop and E2E-loop extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
 
 ## Quick start
 
@@ -41,6 +41,16 @@ From the project you want to improve:
 /development-loop start --iterations=3 improve the README
 /development-loop status
 ```
+
+For real usage and end-to-end test work, start `/e2e-loop` from the app repo:
+
+```text
+/e2e-loop start checkout flow and primary user journeys
+/e2e-loop start --iterations=3 API contracts and TUI smoke coverage
+/e2e-loop status
+```
+
+`/e2e-loop` persists status in the Pi session and writes progress logs to `.pi/e2e-loop/logs.jsonl` by default.
 
 Short alias:
 
@@ -97,6 +107,10 @@ Tips:
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration after an empty provider-error response.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
+
+### Troubleshooting provider interruptions
+
+If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
 
 ### Status bar integration
 
@@ -172,7 +186,9 @@ Run `/development-loop adapters` to confirm which adapter and config Pi will use
 ## Included extensions
 
 - `/development-loop` — visible, adapter-aware project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
-- `/dev-loop` — short alias for the same extension.
+- `/dev-loop` — short alias for the development-loop extension.
+- `/e2e-loop` — real-usage E2E test loop that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists loop state and logs progress to `.pi/e2e-loop/logs.jsonl` by default.
+- `/e2e` — short alias for the E2E loop extension.
 
 ## Included skills
 
@@ -209,8 +225,9 @@ The validation script checks:
 
 - Pi package manifest shape.
 - Extension load via Pi-bundled `jiti`.
-- `/development-loop` and `/dev-loop` command registration.
+- `/development-loop`, `/dev-loop`, `/e2e-loop`, and `/e2e` command registration.
 - E2E smoke coverage for starting and completing one development-loop extension run.
+- E2E-loop smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-loop/logs.jsonl` progress logging.
 - Skill frontmatter and expected bundle contents.
 - README quick-start structure.
 - Third-party notices and license copies.

@@ -51,6 +51,7 @@ type LoopState = {
   lastReason?: string;
   commit: boolean;
   push: boolean;
+  emptyResponseRetries?: number;
 };
 
 type LoopLogRecord = {
@@ -124,6 +125,8 @@ const STATUS_TOPIC_MAX = 72;
 const STEERING_TOPIC_MAX = 240;
 const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
+const EMPTY_RESPONSE_RETRY_MS = 50;
+const EMPTY_RESPONSE_MAX_RETRIES = 1;
 const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
 const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.35;
 
@@ -250,6 +253,14 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   async function onSessionStart(_event: unknown, ctx: ExtensionContext) {
     state = restoreState(ctx.sessionManager.getEntries()) ?? inactiveState();
     refreshUi(ctx);
+    if (state.active && state.phase === "running" && state.lastReason === "empty_agent_response_waiting_for_compaction") {
+      const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
+      if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
+        state = { ...state, emptyResponseRetries: retryNumber };
+        pi.appendEntry(CUSTOM_STATE_TYPE, state);
+        scheduleEmptyResponseRetry(pi, ctx, state.iteration, retryNumber);
+      }
+    }
   }
 
   async function onAgentEnd(event: { messages?: Array<{ role?: string; content?: unknown; stopReason?: string }> }, ctx: ExtensionContext) {
@@ -262,15 +273,25 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
     if (!decision) {
       if (!assistantText.trim()) {
-        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction" };
+        const emptyResponseRetries = (state.emptyResponseRetries ?? 0) + 1;
+        if (emptyResponseRetries > EMPTY_RESPONSE_MAX_RETRIES) {
+          blockLoop(pi, ctx, "empty provider response retry limit reached");
+          return;
+        }
+        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction", emptyResponseRetries };
         appendLoopLog("empty_agent_response_waiting_for_compaction", { reason: "missing_assistant_text" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development loop is waiting for compaction or retry after an empty provider response.", "warning");
+        scheduleEmptyResponseRetry(pi, ctx, state.iteration, emptyResponseRetries);
         return;
       }
       blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");
       return;
+    }
+
+    if (state.emptyResponseRetries) {
+      state = { ...state, emptyResponseRetries: 0 };
     }
 
     if (requiresValidation(decision) && validated !== true) {
@@ -437,6 +458,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
     phase: "started",
     commit,
     push,
+    emptyResponseRetries: 0,
   };
 
   appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_adapter" });
@@ -450,7 +472,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (!state.active) return;
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
-  state = { ...state, iteration: state.iteration + 1, phase: "queued" };
+  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0 };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
   notify(ctx, `Queued development loop iteration ${state.iteration}/${state.maxIterations}; it will start automatically when the current turn is idle.`);
@@ -466,6 +488,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
     iteration: state.iteration + 1,
     phase: "queued",
     lastReason: "compaction_before_next_iteration",
+    emptyResponseRetries: 0,
   };
   appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -504,7 +527,7 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
   appendLoopLog("compaction_resume_queued");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt);
-  state = { ...state, phase: "running", lastReason: "resumed_after_compaction" };
+  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0 };
   appendLoopLog("compaction_resume_sent");
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -540,9 +563,27 @@ function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolv
   }, delay);
 }
 
+function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, targetIteration: number, retryNumber: number) {
+  setTimeout(() => {
+    if (!state.active || state.iteration !== targetIteration || state.phase !== "running") return;
+    if (state.lastReason !== "empty_agent_response_waiting_for_compaction") return;
+    if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
+
+    const cwd = contextCwd(ctx);
+    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    const prompt = buildEmptyResponseRetryPrompt(state, resolved, cwd);
+    state = { ...state, lastReason: "retrying_after_empty_provider_response" };
+    appendLoopLog("empty_provider_response_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}` });
+    refreshUi(ctx);
+    sendLoopPrompt(pi, ctx, prompt);
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+  }, EMPTY_RESPONSE_RETRY_MS);
+}
+
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = { ...state, phase: asFollowUp ? "queued" : "running" };
+  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0 };
   appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt, asFollowUp);
@@ -561,7 +602,7 @@ function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, as
 }
 
 function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string) {
-  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason };
+  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0 };
   appendLoopLog("loop_blocked", { decision, reason });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -856,6 +897,14 @@ function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdap
   return `Continue development loop after compaction.
 
 The previous model request may have failed or been compacted before it emitted DEV_LOOP markers. Resume the same iteration from the compacted summary and current repository state. Do not restart from scratch, do not mark the loop blocked solely because compaction happened, and preserve unrelated dirty work.
+
+${buildIterationPrompt(s, resolved, cwd)}`;
+}
+
+function buildEmptyResponseRetryPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+  return `Retry development loop iteration after empty provider response.
+
+The previous model request returned no assistant text, likely because the provider stream ended early. Retry the same iteration from current repository state. Do not increment the loop iteration, do not restart from scratch, and do not mark the loop blocked solely because the provider response was empty.
 
 ${buildIterationPrompt(s, resolved, cwd)}`;
 }
@@ -1421,6 +1470,7 @@ function inactiveState(): LoopState {
     phase: "idle",
     commit: false,
     push: false,
+    emptyResponseRetries: 0,
   };
 }
 

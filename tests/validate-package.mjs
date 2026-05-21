@@ -67,7 +67,7 @@ async function testPackageManifest() {
   assert.equal(pkg.name, "pi-package-development-loop");
   assert.equal(pkg.type, "module");
   assert.ok(pkg.keywords.includes("pi-package"));
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-loop.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-loop.ts", "./extensions/e2e-loop.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
 }
@@ -143,10 +143,17 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
     assert.doesNotMatch(widgetUpdates.at(-1).value[0], /loop 1\/2/);
 
+    const sentBeforeEmptyRetry = sent.length;
     await handlers.get("agent_end")({ messages: [] }, ctx);
     assert.equal(entries.at(-1).data.active, true, "empty provider-error turns should wait for compaction/retry instead of blocking the loop");
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.lastReason, "empty_agent_response_waiting_for_compaction");
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    assert.equal(sent.length, sentBeforeEmptyRetry + 1, "empty provider-error turns should automatically retry the current iteration if no compaction arrives");
+    assert.match(sent.at(-1).content, /Retry development loop iteration after empty provider response/);
+    assert.match(sent.at(-1).content, /Development loop iteration 1\/2/);
+    assert.equal(entries.at(-1).data.lastReason, "retrying_after_empty_provider_response");
 
     await handlers.get("session_before_compact")({
       preparation: { tokensBefore: 272879 },
@@ -267,6 +274,44 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(messages.at(-1).content, /--skill <name-or-note>/);
     assert.match(messages.at(-1).content, /greploop/);
     assert.match(messages.at(-1).content, /--stop-condition <text>/);
+
+    const restoreRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-empty-restore-"));
+    fs.mkdirSync(path.join(restoreRoot, ".git"));
+    try {
+      const sentBeforeRestoreRetry = sent.length;
+      await handlers.get("session_start")({}, {
+        ...ctx,
+        cwd: restoreRoot,
+        sessionManager: {
+          getCwd: () => restoreRoot,
+          getEntries: () => [{
+            type: "custom",
+            customType: "development-loop-state",
+            data: {
+              active: true,
+              adapterName: "generic-git",
+              topic: "recover empty provider response",
+              iteration: 1,
+              maxIterations: 3,
+              startedAt: new Date(0).toISOString(),
+              logPath: path.join(restoreRoot, ".pi", "development-loop", "logs.jsonl"),
+              phase: "running",
+              lastReason: "empty_agent_response_waiting_for_compaction",
+              commit: false,
+              push: false,
+              emptyResponseRetries: 1,
+            },
+          }],
+        },
+        isIdle: () => true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      assert.equal(sent.length, sentBeforeRestoreRetry + 1, "restored empty provider-response states should retry instead of staying stuck");
+      assert.match(sent.at(-1).content, /Retry development loop iteration after empty provider response/);
+      assert.match(sent.at(-1).content, /recover empty provider response/);
+    } finally {
+      fs.rmSync(restoreRoot, { recursive: true, force: true });
+    }
   } finally {
     fs.rmSync(e2eRoot, { recursive: true, force: true });
   }
@@ -455,6 +500,95 @@ async function testExtensionLoadsAndRegistersCommands() {
   }
 }
 
+async function testE2ELoopExtensionLoadsAndRegistersCommands() {
+  assert.ok(exists("extensions/e2e-loop.ts"), "e2e-loop extension missing");
+  const { createJiti } = require(jitiEntry);
+  const jiti = createJiti(import.meta.url, { interopDefault: true });
+  const mod = await jiti.import(path.join(root, "extensions", "e2e-loop.ts"));
+  assert.equal(typeof mod.default, "function");
+  assert.equal(typeof mod.__test__.buildE2EPrompt, "function");
+
+  const commands = new Map();
+  const handlers = new Map();
+  const messages = [];
+  const sent = [];
+  const statusUpdates = [];
+  const entries = [];
+  const pi = {
+    on(name, handler) { handlers.set(name, handler); },
+    appendEntry(customType, data) { entries.push({ type: "custom", customType, data }); },
+    registerCommand(name, command) { commands.set(name, command); },
+    sendUserMessage(content, options) { sent.push({ content, options }); },
+    sendMessage(message) { messages.push(message); },
+  };
+  mod.default(pi);
+  assert.ok(commands.has("e2e-loop"));
+  assert.ok(commands.has("e2e"));
+
+  const command = commands.get("e2e-loop");
+  const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-e2e-loop-"));
+  fs.mkdirSync(path.join(e2eRoot, ".git"));
+  try {
+    const ctx = {
+      cwd: e2eRoot,
+      hasUI: true,
+      ui: {
+        notify() {},
+        setStatus(key, value) { statusUpdates.push({ key, value }); },
+      },
+      sessionManager: {
+        getCwd: () => e2eRoot,
+        getEntries: () => entries,
+      },
+      isIdle: () => true,
+    };
+
+    await command.handler("start --iterations=2 checkout flow", ctx);
+    assert.equal(sent.length, 1);
+    assert.match(sent[0].content, /E2E loop run/);
+    assert.match(sent[0].content, /checkout flow/);
+    assert.match(sent[0].content, /Playwright/);
+    assert.match(sent[0].content, /Maestro/);
+    assert.match(sent[0].content, /screenshots/);
+    assert.match(sent[0].content, /feature inventory/i);
+    assert.match(sent[0].content, /coverage matrix/i);
+    assert.match(sent[0].content, /public endpoint/i);
+    assert.match(sent[0].content, /API contract/i);
+    assert.match(sent[0].content, /TUI transcript/i);
+    assert.match(sent[0].content, /E2E_LOOP_DECISION/);
+    assert.equal(sent[0].options, undefined, "idle e2e-loop start should send immediately");
+    assert.match(statusUpdates.at(-1).value, /e2e 1\/2/);
+    assert.equal(entries.at(-1).customType, "e2e-loop-state");
+    assert.equal(entries.at(-1).data.objective, "checkout flow");
+    assert.equal(entries.at(-1).data.maxIterations, 2);
+    assert.match(entries.at(-1).data.logPath, /\.pi[/\\]e2e-loop[/\\]logs\.jsonl$/);
+
+    const logPath = path.join(e2eRoot, ".pi", "e2e-loop", "logs.jsonl");
+    assert.equal(fs.existsSync(logPath), true, "e2e-loop should write a JSONL loop log");
+    const logRecords = fs.readFileSync(logPath, "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    assert.equal(logRecords[0].event, "loop_started");
+    assert.equal(logRecords[0].objective, "checkout flow");
+    assert.equal(logRecords.at(-1).event, "iteration_prompt_sent");
+
+    await handlers.get("agent_end")({ messages: [{ role: "assistant", content: "E2E_LOOP_VALIDATED: yes\nE2E_LOOP_DECISION: continue" }] }, ctx);
+    assert.equal(sent.length, 2);
+    assert.match(sent[1].content, /E2E loop run 2\/2/);
+    assert.equal(entries.at(-1).data.iteration, 2);
+    assert.match(fs.readFileSync(logPath, "utf8"), /"event":"iteration_result"/);
+
+    await command.handler("help", ctx);
+    assert.match(messages.at(-1).content, /\/e2e-loop start/);
+    assert.match(messages.at(-1).content, /Playwright/);
+
+    await command.handler("status", ctx);
+    assert.match(messages.at(-1).content, /checkout flow/);
+    assert.match(messages.at(-1).content, /running/);
+    assert.match(messages.at(-1).content, /\.pi\/e2e-loop\/logs\.jsonl/);
+  } finally {
+    fs.rmSync(e2eRoot, { recursive: true, force: true });
+  }
+}
+
 async function testSkills() {
   const skillFiles = listSkillFiles();
   for (const skill of expectedSkills) {
@@ -474,6 +608,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /### Step 3: Start `\/development-loop`/);
   assert.match(readme, /## Development-loop instructions and tips/);
   assert.match(readme, /## Included extensions/);
+  assert.match(readme, /\/e2e-loop/);
+  assert.match(readme, /Playwright/);
+  assert.match(readme, /Maestro/);
+  assert.match(readme, /screenshots/);
+  assert.match(readme, /\.pi\/e2e-loop\/logs\.jsonl/);
   assert.match(readme, /## Included skills/);
   assert.match(readme, /Project-local configuration for any repo/);
   assert.match(readme, /"adapter": "docs-loop"/);
@@ -494,6 +633,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /continues automatically after compaction/);
+  assert.match(readme, /WebSocket error/);
+  assert.match(readme, /empty provider response/);
+  assert.match(readme, /\/development-loop status/);
   assert.match(readme, /`grill-me`/);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review loop/);
@@ -522,6 +664,7 @@ async function testNoticesAndDocs() {
 
 await testPackageManifest();
 await testExtensionLoadsAndRegistersCommands();
+await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");
