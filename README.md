@@ -109,7 +109,7 @@ Tips:
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
 - If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration after an empty provider-error response.
-- If validation is red or credentials are needed, the loop should report `blocked`.
+- If validation is red or credentials are needed, the loop should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
 - New loop runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.

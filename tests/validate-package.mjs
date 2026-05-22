@@ -732,6 +732,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.phase, "done");
 
     await command.handler("start --iterations=1 blocker", ctx);
+    const blockerRunId = entries.at(-1).data.runId;
     const sentBeforeBlockerRecovery = sent.length;
     await handlers.get("agent_end")({
       messages: [{ role: "assistant", content: "No markers here." }],
@@ -750,6 +751,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(statusUpdates.at(-1).value, /git:manual/);
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-loop widget should show only detail because footer already shows status");
+    const postmortemRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const missingMarkerPostmortem = postmortemRecords.find((record) => record.event === "loop_postmortem" && record.runId === blockerRunId);
+    assert.equal(missingMarkerPostmortem.reason, "missing DEV_LOOP_DECISION final marker after recovery request");
+    assert.equal(missingMarkerPostmortem.likelyCause, "assistant_response_missing_final_markers");
+    assert.equal(missingMarkerPostmortem.nextSafeAction, "reuse completed work if present, then return only DEV_LOOP_VALIDATED and DEV_LOOP_DECISION markers or restart the iteration");
 
     const providerNoiseTopic = "read source loop logs Error: Codex error: {type:error,error:{type:invalid_request_error,code:context_length _exceeded,message:Your input exceeds the context window of this model. Please adjust your input and try again.,param:input},sequence_number:2} Warning: Development loop is waiting for compaction";
     await command.handler(`start --iterations=1 ${providerNoiseTopic}`, ctx);
