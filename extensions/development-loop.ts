@@ -53,6 +53,7 @@ type LoopState = {
   commit: boolean;
   push: boolean;
   emptyResponseRetries?: number;
+  markerRecoveryRetries?: number;
 };
 
 type LoopLogRecord = {
@@ -164,6 +165,7 @@ const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 1;
+const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
 const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
 const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.35;
 const DEFAULT_LANGUAGE = "English";
@@ -276,7 +278,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (!decision) {
       if (hasContextOverflowProviderError(messages)) {
         const alreadyWaitingForContextOverflowCompaction = state.lastReason === "context_overflow_waiting_for_compaction";
-        state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0 };
+        state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
         appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
@@ -290,7 +292,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
           blockLoop(pi, ctx, "empty provider response retry limit reached");
           return;
         }
-        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction", emptyResponseRetries };
+        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction", emptyResponseRetries, markerRecoveryRetries: 0 };
         appendLoopLog("empty_agent_response_waiting_for_compaction", { reason: "missing_assistant_text" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
@@ -298,12 +300,16 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         scheduleEmptyResponseRetry(pi, ctx, state.iteration, emptyResponseRetries);
         return;
       }
-      blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");
+      if ((state.markerRecoveryRetries ?? 0) >= MISSING_MARKER_RECOVERY_MAX_RETRIES) {
+        blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker after recovery request");
+        return;
+      }
+      requestMissingMarkerRecovery(pi, ctx);
       return;
     }
 
-    if (state.emptyResponseRetries) {
-      state = { ...state, emptyResponseRetries: 0 };
+    if (state.emptyResponseRetries || state.markerRecoveryRetries) {
+      state = { ...state, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
     }
 
     if (requiresValidation(decision) && validated !== true) {
@@ -474,6 +480,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
     commit,
     push,
     emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
   };
 
   appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_adapter" });
@@ -487,7 +494,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (!state.active) return;
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
-  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0 };
+  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
   notify(ctx, `Queued development loop iteration ${state.iteration}/${state.maxIterations}; it will start automatically when the current turn is idle.`);
@@ -504,6 +511,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
     phase: "queued",
     lastReason: "compaction_before_next_iteration",
     emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
   };
   appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -559,7 +567,7 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
   appendLoopLog("compaction_resume_queued");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt);
-  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0 };
+  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
   appendLoopLog("compaction_resume_sent");
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -595,6 +603,22 @@ function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolv
   }, delay);
 }
 
+function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
+  const retryNumber = (state.markerRecoveryRetries ?? 0) + 1;
+  state = {
+    ...state,
+    phase: "running",
+    lastReason: "missing_final_marker_recovery_requested",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: retryNumber,
+  };
+  appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_LOOP_DECISION final marker" });
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, "Development loop is requesting a final-marker-only recovery response.", "warning");
+  sendLoopPrompt(pi, ctx, buildMissingMarkerRecoveryPrompt(state), true);
+}
+
 function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, targetIteration: number, retryNumber: number) {
   setTimeout(() => {
     if (!state.active || state.iteration !== targetIteration || state.phase !== "running") return;
@@ -615,7 +639,7 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
 
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0 };
+  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
   appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt, asFollowUp);
@@ -634,7 +658,7 @@ function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, as
 }
 
 function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string) {
-  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0 };
+  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
   appendLoopLog("loop_blocked", { decision, reason });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -819,6 +843,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "",
     "Active-loop behavior:",
     "- DEV_LOOP_DECISION: continue starts the next iteration automatically when Pi is idle.",
+    "- A non-empty response missing final markers gets one final-marker-only recovery prompt before blocking.",
     "- Plain text typed during an active loop becomes steering for the current or next safe slice.",
   ].join("\n");
   notify(ctx, text);
@@ -1131,6 +1156,16 @@ function buildEmptyResponseRetryPrompt(s: LoopState, resolved: ResolvedProjectAd
 The previous model request returned no assistant text, likely because the provider stream ended early. Retry the same iteration from current repository state. Do not increment the loop iteration, do not restart from scratch, and do not mark the loop blocked solely because the provider response was empty.
 
 ${buildIterationPrompt(s, resolved, cwd)}`;
+}
+
+function buildMissingMarkerRecoveryPrompt(s: LoopState): string {
+  return `Return only the development loop final markers for iteration ${s.iteration}/${s.maxIterations}.
+
+The previous assistant response was non-empty but did not end with the required DEV_LOOP markers. Do not redo the work, do not run new commands, and do not include a summary. If validation evidence is missing or red, choose DEV_LOOP_VALIDATED: no and DEV_LOOP_DECISION: blocked.
+
+Use exactly these two final lines and nothing else:
+DEV_LOOP_VALIDATED: yes|no
+DEV_LOOP_DECISION: continue|stop|blocked|done`;
 }
 
 function buildDevelopmentLoopCompactionInstructions(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -1742,6 +1777,7 @@ function inactiveState(): LoopState {
     commit: false,
     push: false,
     emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
   };
 }
 

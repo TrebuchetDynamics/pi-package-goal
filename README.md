@@ -107,6 +107,7 @@ Tips:
 - Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
+- If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration after an empty provider-error response.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
@@ -117,6 +118,8 @@ Tips:
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
 
 If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the loop records `context_overflow_waiting_for_compaction` and keeps the same iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_LOOP_DECISION` marker.
+
+If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and `DEV_LOOP_DECISION`, the loop records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the loop to avoid infinite retries.
 
 ### Status bar integration
 

@@ -666,10 +666,40 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
 
+    await command.handler("start --iterations=1 marker recovery", ctx);
+    const sentBeforeMarkerRecovery = sent.length;
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "Work completed, but I forgot the required final markers." }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, true, "missing marker turns should request one recovery response instead of blocking immediately");
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "missing_final_marker_recovery_requested");
+    assert.equal(entries.at(-1).data.markerRecoveryRetries, 1);
+    assert.equal(sent.length, sentBeforeMarkerRecovery + 1, "missing marker turns should send exactly one recovery prompt");
+    assert.match(sent.at(-1).content, /Return only the development loop final markers/);
+    assert.match(sent.at(-1).content, /DEV_LOOP_VALIDATED: yes\|no/);
+
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "DEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done" }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, false, "valid recovered markers should complete the loop normally");
+    assert.equal(entries.at(-1).data.phase, "done");
+
     await command.handler("start --iterations=1 blocker", ctx);
+    const sentBeforeBlockerRecovery = sent.length;
     await handlers.get("agent_end")({
       messages: [{ role: "assistant", content: "No markers here." }],
     }, ctx);
+    assert.equal(entries.at(-1).data.active, true);
+    assert.equal(entries.at(-1).data.lastReason, "missing_final_marker_recovery_requested");
+    assert.equal(sent.length, sentBeforeBlockerRecovery + 1);
+
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "Still no markers here." }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, false, "a second missing-marker turn should block instead of retrying forever");
+    assert.equal(entries.at(-1).data.phase, "blocked");
+    assert.equal(entries.at(-1).data.lastReason, "missing DEV_LOOP_DECISION final marker after recovery request");
     assert.match(statusUpdates.at(-1).value, /<error>■ block<\/error>/);
     assert.match(statusUpdates.at(-1).value, /git:manual/);
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
