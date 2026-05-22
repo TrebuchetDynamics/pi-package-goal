@@ -129,6 +129,8 @@ If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and 
 
 If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-loop log failure.
 
+Likely causes include a full home filesystem, Codex being unable to create PATH wrapper files under `~/.codex/tmp`, and SQLite cannot extend the state database or write its WAL/SHM sidecars while disk space is exhausted.
+
 Check free space and the largest Codex paths:
 
 ```bash

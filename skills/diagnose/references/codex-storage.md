@@ -2,6 +2,10 @@
 
 Use this quick path when Codex fails before the agent starts with messages such as `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` database.
 
+## Likely causes
+
+These failures usually mean the home filesystem is full or so close to full that Codex cannot create PATH wrapper files under `~/.codex/tmp`. Once the disk is full, SQLite cannot extend the state database, write its WAL/SHM sidecars, or complete a repair copy, so `state_*.sqlite` can look damaged even when the root problem is disk pressure.
+
 ## Triage first
 
 Confirm whether the failure is disk pressure, not the project under test:
