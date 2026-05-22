@@ -406,6 +406,25 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.doesNotMatch(prompt, /\[object Object\]/);
     assert.doesNotMatch(prompt, /[─━═]{3,}/);
     assert.doesNotMatch(prompt, /Topic\/objective: Development loop adapter → \n/);
+
+    const longTailMarker = "TAIL_SHOULD_NOT_REACH_ITERATION_PROMPT";
+    const longPrompt = mod.__test__.buildIterationPrompt({
+      active: true,
+      adapterName: "generic-git",
+      topic: `context_length_exceeded ${"token ".repeat(180)}${longTailMarker}`,
+      iteration: 1,
+      maxIterations: 1,
+      startedAt: new Date(0).toISOString(),
+      logPath: path.join(promptRoot, ".pi", "development-loop", "logs.jsonl"),
+      phase: "running",
+      commit: false,
+      push: false,
+    }, resolved, promptRoot);
+    const objectiveLine = longPrompt.split("\n").find((line) => line.startsWith("Topic/objective: "));
+    assert.ok(objectiveLine, "iteration prompt should include an objective line");
+    assert.ok(objectiveLine.length <= "Topic/objective: ".length + 600, "iteration prompt objective should be capped before it can bloat provider context");
+    assert.match(objectiveLine, /…$/);
+    assert.doesNotMatch(longPrompt, new RegExp(longTailMarker));
   } finally {
     fs.rmSync(promptRoot, { recursive: true, force: true });
   }
@@ -686,7 +705,13 @@ async function testExtensionLoadsAndRegistersCommands() {
         getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }),
         compact(options) { compactCalls.push(options); },
       };
-      await command.handler("start --iterations=2 compaction threshold", proactiveCtx);
+      const proactiveTailMarker = "TAIL_SHOULD_NOT_REACH_COMPACTION_INSTRUCTIONS";
+      const proactiveTopic = `context_length_exceeded ${"token ".repeat(180)}${proactiveTailMarker}`;
+      await command.handler(`start --iterations=2 ${proactiveTopic}`, proactiveCtx);
+      const proactivePromptObjectiveLine = sent.at(-1).content.split("\n").find((line) => line.startsWith("Topic/objective: "));
+      assert.ok(proactivePromptObjectiveLine, "initial prompt should include an objective line");
+      assert.ok(proactivePromptObjectiveLine.length <= "Topic/objective: ".length + 600, "initial prompt objective should be capped before it can bloat provider context");
+      assert.doesNotMatch(sent.at(-1).content, new RegExp(proactiveTailMarker));
       const sentBeforeProactiveContinue = sent.length;
       await handlers.get("agent_end")({
         messages: [{
@@ -696,6 +721,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       }, proactiveCtx);
       assert.equal(compactCalls.length, 1, "high context usage should compact before next iteration");
       assert.match(compactCalls[0].customInstructions, /development loop state/);
+      const compactionObjectiveLine = compactCalls[0].customInstructions.split("\n").find((line) => line.startsWith("- Objective: "));
+      assert.ok(compactionObjectiveLine, "compaction instructions should include an objective line");
+      assert.ok(compactionObjectiveLine.length <= "- Objective: ".length + 600, "compaction objective should be capped before it can bloat provider context");
+      assert.match(compactionObjectiveLine, /…$/);
+      assert.doesNotMatch(compactCalls[0].customInstructions, new RegExp(proactiveTailMarker));
       assert.equal(sent.length, sentBeforeProactiveContinue, "next iteration should wait for compaction to finish");
       assert.equal(entries.at(-1).data.iteration, 2);
       assert.equal(entries.at(-1).data.phase, "queued");

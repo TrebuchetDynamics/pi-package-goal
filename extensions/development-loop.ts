@@ -126,6 +126,7 @@ const DEFAULT_ITERATIONS = 3;
 const HARD_MAX_ITERATIONS = 25;
 const STATUS_TOPIC_MAX = 72;
 const STEERING_TOPIC_MAX = 240;
+const PROMPT_OBJECTIVE_MAX = 600;
 const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
@@ -801,7 +802,7 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
 
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
-Topic/objective: ${singleLineText(s.topic)}
+Topic/objective: ${promptObjectiveText(s.topic)}
 Preferred language: ${language}
 Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
 Loop log path: ${relativeToCwd(cwd, s.logPath)}
@@ -866,7 +867,7 @@ function buildDevelopmentLoopCompactionInstructions(s: LoopState, resolved: Reso
 Current development loop state:
 - Project root: ${cwd}
 - Adapter: ${resolved.adapter.name}
-- Objective: ${singleLineText(s.topic)}
+- Objective: ${promptObjectiveText(s.topic)}
 - Iteration: ${s.iteration}/${s.maxIterations}
 - Phase: ${s.phase}
 - Git delivery: ${s.push ? "push" : s.commit ? "commit" : "manual"}
@@ -887,7 +888,7 @@ function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Current loop iteration: ${s.iteration}/${s.maxIterations}
-Current objective: ${singleLineText(s.topic)}
+Current objective: ${promptObjectiveText(s.topic)}
 User steering request: ${steeringText}
 
 Incorporate this steering into the current or next safe vertical slice. Preserve unrelated dirty work. Keep using the configured validation commands before any continue/done decision.
@@ -1526,6 +1527,12 @@ function clampIterations(value: number): number {
 function compactTopic(topic: string): string {
   if (topic.length <= STATUS_TOPIC_MAX) return topic;
   return `${topic.slice(0, STATUS_TOPIC_MAX - 1)}…`;
+}
+
+function promptObjectiveText(value: unknown): string {
+  const text = singleLineText(value);
+  if (text.length <= PROMPT_OBJECTIVE_MAX) return text;
+  return `${text.slice(0, PROMPT_OBJECTIVE_MAX - 1)}…`;
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {
