@@ -8,6 +8,8 @@ type LoopDecision = "continue" | "stop" | "blocked" | "done";
 type ObjectiveKind = "short" | "oversized" | "provider-noise";
 
 type DeliveryEvidence = {
+  summary?: string;
+  nextSteps?: string[];
   changedFiles?: string[];
   validationCommands?: string[];
   commitHash?: string;
@@ -88,6 +90,8 @@ type LoopLogRecord = {
   phase: LoopPhase;
   decision?: string;
   reason?: string;
+  summary?: string;
+  nextSteps?: string[];
   changedFiles?: string[];
   validationCommands?: string[];
   commitHash?: string;
@@ -2112,7 +2116,7 @@ Run one complete vertical development iteration:
 7. If validation fails twice with the same cause, stop and report the first failing stderr line.
 8. Apply the commit/push policy above.
 9. End with exact changed files, validations, blocker state, a machine-readable delivery line when evidence exists, and these final marker lines:
-DEV_LOOP_REPORT: {"validated":true,"decision":"continue","changedFiles":["path"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
+DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
 DEV_LOOP_VALIDATED: yes|no
 DEV_LOOP_DECISION: continue|stop|blocked|done
 
@@ -2377,6 +2381,9 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (record.iteration !== undefined) parts.push(`iteration ${String(record.iteration)}`);
   if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
+  if (typeof record.summary === "string") parts.push(`summary ${record.summary}`);
+  const nextSteps = stringArrayOrUndefined(record.nextSteps);
+  if (nextSteps?.[0]) parts.push(`next ${nextSteps[0]}`);
   return parts.join("; ");
 }
 
@@ -2556,14 +2563,30 @@ function parseDeliveryEvidence(text: string): DeliveryEvidence {
   const lines = text.split(/\r?\n/);
   const changedFiles: string[] = [];
   const validationCommands: string[] = [];
+  const nextSteps: string[] = [];
+  let summary: string | undefined;
   let commitHash: string | undefined;
   let pushStatus: string | undefined;
-  let section: "changed" | "validation" | undefined;
+  let section: "changed" | "validation" | "nextSteps" | undefined;
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) {
       section = undefined;
+      continue;
+    }
+
+    const summaryHeader = trimmed.match(/^(?:Summary|End report summary|What changed(?: and why)?):\s*(.*)$/i);
+    if (summaryHeader) {
+      summary = cleanReportText(summaryHeader[1]) || summary;
+      section = undefined;
+      continue;
+    }
+
+    const nextStepsHeader = trimmed.match(/^(?:Possible next steps|Next steps|Follow-up actions|Follow up actions)(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (nextStepsHeader) {
+      section = "nextSteps";
+      addInlineListItems(nextSteps, nextStepsHeader[1], cleanReportText);
       continue;
     }
 
@@ -2599,9 +2622,12 @@ function parseDeliveryEvidence(text: string): DeliveryEvidence {
     if (!bullet || !section) continue;
     if (section === "changed") addUnique(changedFiles, cleanChangedFileEvidence(bullet[1]));
     if (section === "validation") addUnique(validationCommands, cleanValidationEvidence(bullet[1]));
+    if (section === "nextSteps") addUnique(nextSteps, cleanReportText(bullet[1]));
   }
 
   return {
+    ...(summary ? { summary } : {}),
+    ...(nextSteps.length ? { nextSteps } : {}),
     ...(changedFiles.length ? { changedFiles } : {}),
     ...(validationCommands.length ? { validationCommands } : {}),
     ...(commitHash ? { commitHash } : {}),
@@ -2624,6 +2650,11 @@ function cleanValidationEvidence(value: string): string | undefined {
   const text = cleanEvidenceText(value);
   if (!text) return undefined;
   return text.replace(/\s+(?:exited|passed|failed|succeeded|returned|→).*/i, "").trim() || undefined;
+}
+
+function cleanReportText(value: string): string | undefined {
+  const text = cleanEvidenceText(value);
+  return text ? text.replace(/\s+/g, " ").trim() : undefined;
 }
 
 function cleanEvidenceText(value: string): string | undefined {
@@ -2673,10 +2704,14 @@ function parseTypedFinalReport(text: string): FinalReport | undefined {
   const commitHash = stringOrUndefined(rawReport.commitHash) || stringOrUndefined(rawReport.commit);
   const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
   const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
+  const summary = stringOrUndefined(rawReport.summary) || stringOrUndefined(rawReport.whatChanged);
+  const nextSteps = stringArrayOrSingleString(rawReport.nextSteps) || stringArrayOrSingleString(rawReport.possibleNextSteps) || stringArrayOrSingleString(rawReport.nextStep) || stringArrayOrSingleString(rawReport.nextActions);
   return {
     ...(decision ? { decision } : {}),
     ...(validated !== undefined ? { validated } : {}),
     deliveryEvidence: {
+      ...(summary ? { summary } : {}),
+      ...(nextSteps ? { nextSteps } : {}),
       ...(changedFiles ? { changedFiles } : {}),
       ...(validationCommands ? { validationCommands } : {}),
       ...(commitHash ? { commitHash } : {}),
@@ -3039,6 +3074,13 @@ function stringArrayOrUndefined(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
   const items = value.map((item) => typeof item === "string" ? item.trim() : "").filter(Boolean);
   return items.length ? items : undefined;
+}
+
+function stringArrayOrSingleString(value: unknown): string[] | undefined {
+  const array = stringArrayOrUndefined(value);
+  if (array) return array;
+  const single = stringOrUndefined(value);
+  return single ? [single] : undefined;
 }
 
 function booleanOrUndefined(value: unknown): boolean | undefined {

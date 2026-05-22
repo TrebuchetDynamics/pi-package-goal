@@ -528,6 +528,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
     assert.match(sent[0].content, /DEV_LOOP_REPORT/);
+    assert.match(sent[0].content, /"summary":"brief result"/);
+    assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -626,6 +628,10 @@ async function testExtensionLoadsAndRegistersCommands() {
           "- `npm test` exited 0",
           "",
           "Committed/pushed slice: `6da2dcd feat: test evidence`",
+          "Summary: improved loop final-report delivery evidence extraction.",
+          "Possible next steps:",
+          "- Add structured nextSteps to status output",
+          "- Show recent loop summaries in analyze-logs",
           "",
           "DEV_LOOP_VALIDATED: yes",
           "DEV_LOOP_DECISION: continue",
@@ -640,6 +646,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.deepEqual(iterationResultWithEvidence.validationCommands, ["git diff --check", "npm test"]);
     assert.equal(iterationResultWithEvidence.commitHash, "6da2dcd");
     assert.equal(iterationResultWithEvidence.pushStatus, "pushed");
+    assert.equal(iterationResultWithEvidence.summary, "improved loop final-report delivery evidence extraction.");
+    assert.deepEqual(iterationResultWithEvidence.nextSteps, ["Add structured nextSteps to status output", "Show recent loop summaries in analyze-logs"]);
     assert.equal(sent.length, sentBeforeContinue + 1);
     assert.match(sent.at(-1).content, /Development loop iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
@@ -660,7 +668,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Typed delivery evidence follows.",
-          'DEV_LOOP_REPORT: {"validated":true,"decision":"done","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed"}',
+          'DEV_LOOP_REPORT: {"validated":true,"decision":"done","summary":"Profile Control Center TUI shell and draft apply flow","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed","nextSteps":["Exercise real profile apply command","Add profile selection tests"]}',
           "DEV_LOOP_VALIDATED: yes",
           "DEV_LOOP_DECISION: done",
         ].join("\n"),
@@ -675,6 +683,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.deepEqual(typedReportFinished.validationCommands, ["git diff --check", "npm test"]);
     assert.equal(typedReportFinished.commitHash, "abc1234");
     assert.equal(typedReportFinished.pushStatus, "pushed");
+    assert.equal(typedReportFinished.summary, "Profile Control Center TUI shell and draft apply flow");
+    assert.deepEqual(typedReportFinished.nextSteps, ["Exercise real profile apply command", "Add profile selection tests"]);
+    const typedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
+    assert.match(typedStatus, /summary Profile Control Center TUI shell and draft apply flow/);
+    assert.match(typedStatus, /next Exercise real profile apply command/);
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
@@ -2030,6 +2043,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /Human-readable end report/);
+  assert.match(readme, /structured `summary` and `nextSteps`/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
