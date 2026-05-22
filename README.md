@@ -114,7 +114,7 @@ Tips:
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
 - New loop runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
-- Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
+- Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a final-line `DEV_LOOP_REPORT: {"validated":true,"decision":"continue",...}` JSON object into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
 - Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, completion outcomes, unresolved starts, blocker reasons, postmortem causes/actions, delivery evidence, CI-green/CI-red records, empty provider responses, context overflows, compactions, topic sizes, repeated oversized topics, and likely improvement areas. Add `--html` to write a self-contained health report to the OS temp directory.
 
 ### Troubleshooting provider interruptions

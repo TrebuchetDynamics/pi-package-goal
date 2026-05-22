@@ -14,6 +14,12 @@ type DeliveryEvidence = {
   pushStatus?: string;
 };
 
+type FinalReport = {
+  decision?: LoopDecision;
+  validated?: boolean;
+  deliveryEvidence: DeliveryEvidence;
+};
+
 type ProjectConfig = {
   adapter?: string;
   defaultTopic?: string;
@@ -1816,6 +1822,9 @@ function parseFinalMarkerBlock(text: string): RegExpMatchArray | null {
 }
 
 function parseDeliveryEvidence(text: string): DeliveryEvidence {
+  const typedReport = parseTypedFinalReport(text);
+  if (typedReport) return typedReport.deliveryEvidence;
+
   const lines = text.split(/\r?\n/);
   const changedFiles: string[] = [];
   const validationCommands: string[] = [];
@@ -1912,13 +1921,43 @@ function normalizePushStatus(value: string): string {
 
 function parseLoopDecision(text: string): LoopDecision | undefined {
   const match = parseFinalMarkerBlock(text);
-  return match?.[2]?.toLowerCase() as LoopDecision | undefined;
+  if (match) return match[2]?.toLowerCase() as LoopDecision | undefined;
+  return parseTypedFinalReport(text)?.decision;
 }
 
 function parseValidated(text: string): boolean | undefined {
   const match = parseFinalMarkerBlock(text);
+  if (match) return match[1].toLowerCase() === "yes";
+  return parseTypedFinalReport(text)?.validated;
+}
+
+function parseTypedFinalReport(text: string): FinalReport | undefined {
+  const match = text.match(/(?:^|\r?\n)\s*DEV_LOOP_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
   if (!match) return undefined;
-  return match[1].toLowerCase() === "yes";
+  const rawReport = parseLogRecord(match[1]);
+  if (!rawReport) return undefined;
+  const decision = loopDecisionOrUndefined(rawReport.decision);
+  const validated = booleanOrUndefined(rawReport.validated);
+  const changedFiles = stringArrayOrUndefined(rawReport.changedFiles) || stringArrayOrUndefined(rawReport.files);
+  const validationCommands = stringArrayOrUndefined(rawReport.validationCommands) || stringArrayOrUndefined(rawReport.validation);
+  const commitHash = stringOrUndefined(rawReport.commitHash) || stringOrUndefined(rawReport.commit);
+  const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
+  const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
+  return {
+    ...(decision ? { decision } : {}),
+    ...(validated !== undefined ? { validated } : {}),
+    deliveryEvidence: {
+      ...(changedFiles ? { changedFiles } : {}),
+      ...(validationCommands ? { validationCommands } : {}),
+      ...(commitHash ? { commitHash } : {}),
+      ...(pushStatus ? { pushStatus } : {}),
+    },
+  };
+}
+
+function loopDecisionOrUndefined(value: unknown): LoopDecision | undefined {
+  const decision = stringOrUndefined(value)?.toLowerCase();
+  return decision === "continue" || decision === "stop" || decision === "blocked" || decision === "done" ? decision : undefined;
 }
 
 function requiresValidation(decision: LoopDecision): boolean {

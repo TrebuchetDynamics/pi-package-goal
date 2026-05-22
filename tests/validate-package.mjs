@@ -388,6 +388,9 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
+  const typedFinalReport = 'Typed final report.\nDEV_LOOP_REPORT: {"validated":true,"decision":"continue","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
+  assert.equal(mod.__test__.parseLoopDecision(typedFinalReport), "continue");
+  assert.equal(mod.__test__.parseValidated(typedFinalReport), true);
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue\npostscript"), undefined);
@@ -643,6 +646,27 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(entries.at(-1).data.active, false);
     assert.equal(entries.at(-1).data.phase, "done");
+
+    await command.handler("start --iterations=1 typed final report", ctx);
+    const typedReportRunId = entries.at(-1).data.runId;
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: [
+          "Typed delivery evidence follows.",
+          'DEV_LOOP_REPORT: {"validated":true,"decision":"done","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed"}',
+        ].join("\n"),
+      }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, false, "typed final reports should complete the loop without marker recovery");
+    assert.equal(entries.at(-1).data.phase, "done");
+    const typedReportRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const typedReportFinished = typedReportRecords.find((record) => record.event === "loop_finished" && record.runId === typedReportRunId);
+    assert.equal(typedReportFinished.decision, "done");
+    assert.deepEqual(typedReportFinished.changedFiles, ["README.md"]);
+    assert.deepEqual(typedReportFinished.validationCommands, ["git diff --check", "npm test"]);
+    assert.equal(typedReportFinished.commitHash, "abc1234");
+    assert.equal(typedReportFinished.pushStatus, "pushed");
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
