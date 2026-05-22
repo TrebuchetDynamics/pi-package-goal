@@ -279,6 +279,7 @@ function printLogRecord(record, repoDir) {
     "LOG",
     record.loopName,
     repoDir,
+    `log_path=.pi/${record.loopName}/logs.jsonl`,
     `lines=${record.lineCount}`,
     `parsed=${record.events.length}`,
     `bad_json=${record.badJson}`,
