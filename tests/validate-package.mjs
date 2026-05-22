@@ -1801,6 +1801,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /Did you mean/);
   assert.match(source, /--attention-only/);
   assert.match(source, /pi_dirs_without_logs/);
+  assert.match(source, /pi_dirs_with_configs_without_logs/);
   assert.match(source, /HISTORY/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
@@ -1859,15 +1860,17 @@ async function testPiLogAuditScript() {
     assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\treason=temporary missing marker/);
     assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json/);
-    assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=2\tbad_json=1\tpi_dirs=4\tpi_dirs_without_logs=1\tconfig_files=1/);
+    assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json\treason=config files present but no loop logs/);
+    assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=1/);
     assert.doesNotMatch(output, /node_modules/);
 
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b/);
     assert.doesNotMatch(attentionOnly, /repo-d/);
-    assert.doesNotMatch(attentionOnly, /repo-e/);
-    assert.match(attentionOnly, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=2\tbad_json=1\tfiltered_out=1\tpi_dirs=4\tpi_dirs_without_logs=1\tconfig_files=1/);
+    assert.match(attentionOnly, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json/);
+    assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json\treason=config files present but no loop logs/);
+    assert.match(attentionOnly, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tfiltered_out=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=1/);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -1919,6 +1922,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /Did you mean/);
   assert.match(logAuditReference, /--attention-only/);
   assert.match(logAuditReference, /pi_dirs_without_logs/);
+  assert.match(logAuditReference, /pi_dirs_with_configs_without_logs/);
   assert.match(logAuditReference, /historical failure/);
 }
 

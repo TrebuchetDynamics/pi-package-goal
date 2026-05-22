@@ -165,6 +165,7 @@ const summary = {
   filteredOut: 0,
   piDirs: 0,
   piDirsWithoutLogs: 0,
+  piDirsWithConfigsWithoutLogs: 0,
   configFiles: 0,
 };
 
@@ -180,6 +181,10 @@ function incrementSummary(status, attention, badJson) {
 function incrementPiDirSummary(logCount, configCount) {
   summary.piDirs += 1;
   if (logCount === 0) summary.piDirsWithoutLogs += 1;
+  if (logCount === 0 && configCount > 0) {
+    summary.piDirsWithConfigsWithoutLogs += 1;
+    summary.issues += 1;
+  }
   summary.configFiles += configCount;
 }
 
@@ -199,6 +204,16 @@ function buildLogRecord(loopName, logPath) {
   const size = fs.statSync(logPath).size;
   incrementSummary(status, attention, badJson);
   return { loopName, events, badJson, lineCount, latest, lastFailure, status, attention, size };
+}
+
+function printPiConfigIssue(configNames, repoDir) {
+  console.log([
+    "ISSUE",
+    ".pi-config",
+    repoDir,
+    `configs=${configNames.join(",")}`,
+    "reason=config files present but no loop logs",
+  ].join("\t"));
 }
 
 function printLogRecord(record, repoDir) {
@@ -237,14 +252,19 @@ for (const piDir of piDirs) {
   const repoDir = path.dirname(piDir);
   const logs = findLoopLogs(piDir);
   const configNames = ["development-loop.json", "e2e-loop.json"].filter((name) => fs.existsSync(path.join(piDir, name)));
+  const configOnlyIssue = logs.length === 0 && configNames.length > 0;
   incrementPiDirSummary(logs.length, configNames.length);
 
   const records = logs.map(({ loopName, logPath }) => buildLogRecord(loopName, logPath));
   const visibleRecords = options.attentionOnly ? records.filter((record) => record.attention) : records;
-  if (options.attentionOnly && visibleRecords.length === 0) continue;
+  if (options.attentionOnly && visibleRecords.length === 0 && !configOnlyIssue) continue;
 
   const loopNames = (options.attentionOnly ? visibleRecords : records).map((record) => record.loopName);
   console.log(`PI_DIR\t${repoDir}\tlogs=${loopNames.join(",") || "-"}\tconfigs=${configNames.join(",") || "-"}`);
+
+  if (configOnlyIssue) {
+    printPiConfigIssue(configNames, repoDir);
+  }
 
   for (const record of visibleRecords) {
     printLogRecord(record, repoDir);
@@ -267,6 +287,7 @@ if (options.attentionOnly) summaryParts.push(`filtered_out=${summary.filteredOut
 summaryParts.push(
   `pi_dirs=${summary.piDirs}`,
   `pi_dirs_without_logs=${summary.piDirsWithoutLogs}`,
+  `pi_dirs_with_configs_without_logs=${summary.piDirsWithConfigsWithoutLogs}`,
   `config_files=${summary.configFiles}`,
 );
 console.log(summaryParts.join("\t"));
