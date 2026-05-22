@@ -1784,7 +1784,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /--delete-state/);
   assert.match(reference, /--i-understand-local-state-will-be-lost/);
   assert.match(reference, /rm -rf ~\/\.codex\/tmp/);
-  assert.match(reference, /backup_dir="\$HOME\/\.codex\/backup\/codex-state-\$\(date \+%Y%m%d-%H%M%S\)"/);
+  assert.match(reference, /mkdir -p "\$HOME\/\.codex\/backup"/);
+  assert.match(reference, /backup_dir="\$\(mktemp -d "\$HOME\/\.codex\/backup\/codex-state-\$\(date \+%Y%m%d-%H%M%S\)\.XXXXXX"\)"/);
   assert.match(reference, /mv ~\/\.codex\/state_\*\.sqlite\* "\$backup_dir"\//);
   assert.match(reference, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(reference, /Do not run `rm -rf ~\/\.codex`/);
@@ -1850,7 +1851,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /path must end in `\/\.codex`/);
   assert.match(readme, /codex-storage-cleanup\.sh --execute/);
   assert.match(readme, /--delete-state --i-understand-local-state-will-be-lost/);
-  assert.match(readme, /backup_dir="\$HOME\/\.codex\/backup\/codex-state-\$\(date \+%Y%m%d-%H%M%S\)"/);
+  assert.match(readme, /mkdir -p "\$HOME\/\.codex\/backup"/);
+  assert.match(readme, /backup_dir="\$\(mktemp -d "\$HOME\/\.codex\/backup\/codex-state-\$\(date \+%Y%m%d-%H%M%S\)\.XXXXXX"\)"/);
   assert.match(readme, /mv ~\/\.codex\/state_\*\.sqlite\* "\$backup_dir"\//);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-loop status/);

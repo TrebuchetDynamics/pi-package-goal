@@ -157,8 +157,8 @@ rm -rf ~/.codex/tmp
 If Codex offers `Repair Codex local data now?`, prefer accepting the repair after free space is available. If you must reset the local state database manually, back it up instead of deleting it outright:
 
 ```bash
-backup_dir="$HOME/.codex/backup/codex-state-$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$backup_dir"
+mkdir -p "$HOME/.codex/backup"
+backup_dir="$(mktemp -d "$HOME/.codex/backup/codex-state-$(date +%Y%m%d-%H%M%S).XXXXXX")"
 mv ~/.codex/state_*.sqlite* "$backup_dir"/ 2>/dev/null || true
 ```
 
