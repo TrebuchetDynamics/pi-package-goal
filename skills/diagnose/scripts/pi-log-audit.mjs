@@ -212,6 +212,13 @@ function findLastAt(events) {
   return undefined;
 }
 
+function findLastRunId(events) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    if (events[index]?.runId) return events[index].runId;
+  }
+  return undefined;
+}
+
 function findLastResult(events) {
   for (let index = events.length - 1; index >= 0; index -= 1) {
     if (events[index]?.event === "iteration_result") return events[index];
@@ -225,6 +232,7 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
   const lastAt = findLastAt(events);
+  const runId = findLastRunId(events);
   const lastResult = findLastResult(events);
   const status = classifyStatus(latest, badJson);
   const missingConfig = !hasMatchingConfig;
@@ -234,7 +242,7 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
   incrementSummary(status, attention, badJson, missingConfig);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig };
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -263,6 +271,7 @@ function printLogRecord(record, repoDir) {
     `iteration=${formatValue(record.latest.iteration)}/${formatValue(record.latest.maxIterations)}`,
     `phase=${formatValue(record.latest.phase)}`,
     `decision=${formatValue(record.latest.decision)}`,
+    `run_id=${formatValue(record.runId)}`,
     `last_result_at=${formatValue(record.lastResult?.at)}`,
     `last_decision=${formatValue(record.lastResult?.decision)}`,
     `last_commit=${formatValue(record.lastResult?.commitHash)}`,

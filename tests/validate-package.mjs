@@ -1811,6 +1811,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /failure_at/);
   assert.match(source, /last_result_at/);
   assert.match(source, /last_push/);
+  assert.match(source, /run_id=/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1824,7 +1825,7 @@ async function testPiLogAuditScript() {
     const repoA = path.join(fixtureRoot, "repo-a");
     fs.mkdirSync(path.join(repoA, ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(repoA, ".pi", "development-loop", "logs.jsonl"), [
-      JSON.stringify({ at: "2026-05-22T01:00:00.000Z", event: "loop_started", iteration: 1, maxIterations: 3, phase: "started" }),
+      JSON.stringify({ at: "2026-05-22T01:00:00.000Z", event: "loop_started", runId: "run-fixture", iteration: 1, maxIterations: 3, phase: "started" }),
       JSON.stringify({ at: "2026-05-22T01:01:00.000Z", event: "iteration_result", iteration: 1, maxIterations: 3, phase: "reported", decision: "continue", commitHash: "abc123", pushStatus: "pushed" }),
       JSON.stringify({ at: "2026-05-22T01:02:00.000Z", event: "compaction_failed_before_next_iteration", iteration: 2, maxIterations: 3, phase: "queued", reason: "Summarization failed: WebSocket error" }),
     ].join("\n") + "\n");
@@ -1868,6 +1869,7 @@ async function testPiLogAuditScript() {
     const output = execFileSync("node", [path.join(root, scriptRel), fixtureRoot], { encoding: "utf8" });
     assert.match(output, /PI_DIR_COUNT 5/);
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-a/);
+    assert.match(output, /decision=-\trun_id=run-fixture\tlast_result_at=2026-05-22T01:01:00.000Z/);
     assert.match(output, /last_result_at=2026-05-22T01:01:00.000Z\tlast_decision=continue\tlast_commit=abc123\tlast_push=pushed/);
     assert.match(output, /latest=compaction_failed_before_next_iteration/);
     assert.match(output, /status=needs_attention/);
@@ -1959,6 +1961,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /mtime=/);
   assert.match(logAuditReference, /failure_at/);
   assert.match(logAuditReference, /last_push/);
+  assert.match(logAuditReference, /run_id=/);
 }
 
 async function testNoticesAndDocs() {
