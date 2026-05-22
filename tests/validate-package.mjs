@@ -617,6 +617,18 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent.at(-1).content, /Development loop iteration 1\/2/);
     assert.equal(entries.at(-1).data.lastReason, "retrying_after_empty_provider_response");
 
+    const sentBeforeSecondEmptyRetry = sent.length;
+    await handlers.get("agent_end")({ messages: [] }, ctx);
+    assert.equal(entries.at(-1).data.active, true, "a second empty provider-error turn should retry once more before blocking");
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "empty_agent_response_waiting_for_compaction");
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    assert.equal(sent.length, sentBeforeSecondEmptyRetry + 1, "second empty provider-error turns should get one more automatic retry");
+    assert.match(sent.at(-1).content, /Retry development loop iteration after empty provider response/);
+    assert.match(sent.at(-1).content, /Development loop iteration 1\/2/);
+    assert.equal(entries.at(-1).data.lastReason, "retrying_after_empty_provider_response");
+
     await handlers.get("session_before_compact")({
       preparation: { tokensBefore: 272879 },
     }, ctx);
