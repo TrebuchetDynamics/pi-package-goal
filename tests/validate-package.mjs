@@ -532,6 +532,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
     assert.match(sent[0].content, /"blockerState":"why blocked"/);
     assert.match(sent[0].content, /Blocked DEV_LOOP_REPORT objects should include blockerState and nextSteps/);
+    assert.match(sent[0].content, /Example continue end report/);
+    assert.match(sent[0].content, /Validation evidence: npm test \(pass\); git diff --check \(pass\)/);
+    assert.match(sent[0].content, /Blocker state: none/);
+    assert.match(sent[0].content, /Possible next steps: next smallest verifiable slice/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2097,6 +2101,10 @@ async function testNoticesAndDocs() {
   assert.match(readme, /continue should name the next smallest verifiable slice/);
   assert.match(readme, /blocked should name concrete unblocking actions/);
   assert.match(readme, /blocked typed reports should include `blockerState`/);
+  assert.match(readme, /Example continue end report/);
+  assert.match(readme, /Validation evidence: npm test \(pass\); git diff --check \(pass\)/);
+  assert.match(readme, /Blocker state: none/);
+  assert.match(readme, /Possible next steps: next smallest verifiable slice/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);

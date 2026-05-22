@@ -2210,6 +2210,15 @@ DEV_LOOP_DECISION: continue|stop|blocked|done
 Blocked DEV_LOOP_REPORT objects should include blockerState and nextSteps, for example:
 DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"brief blocker","blockerState":"why blocked","nextSteps":["unblock action"]}
 
+Example continue end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: one small verifiable improvement.
+Changed files: path/to/file.ts — what changed and why.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: abc1234 pushed to current branch.
+Blocker state: none.
+Possible next steps: next smallest verifiable slice, named concretely.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

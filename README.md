@@ -118,6 +118,21 @@ Tips:
 - Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, and Possible next steps. Use decision-specific next steps: continue should name the next smallest verifiable slice, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_LOOP_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into loop logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_LOOP_REPORT and final markers last so automation can parse them.
 - Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, and next-step counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--html` to write a self-contained health report to the OS temp directory.
 
+Example continue end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: one small verifiable improvement.
+Changed files: path/to/file.ts — what changed and why.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: abc1234 pushed to current branch.
+Blocker state: none.
+Possible next steps: next smallest verifiable slice, named concretely.
+DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path/to/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
+DEV_LOOP_VALIDATED: yes
+DEV_LOOP_DECISION: continue
+```
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
