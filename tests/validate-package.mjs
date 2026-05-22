@@ -584,10 +584,29 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue",
+        content: [
+          "Changed files:",
+          "- `README.md`",
+          "- `extensions/development-loop.ts`",
+          "",
+          "Validation evidence:",
+          "- `git diff --check` exited 0",
+          "- `npm test` exited 0",
+          "",
+          "Committed/pushed slice: `6da2dcd feat: test evidence`",
+          "",
+          "DEV_LOOP_VALIDATED: yes",
+          "DEV_LOOP_DECISION: continue",
+        ].join("\n"),
       }],
     }, ctx);
     await new Promise((resolve) => setTimeout(resolve, 10));
+    const deliveryEvidenceRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const iterationResultWithEvidence = deliveryEvidenceRecords.find((record) => record.event === "iteration_result" && record.decision === "continue");
+    assert.deepEqual(iterationResultWithEvidence.changedFiles, ["README.md", "extensions/development-loop.ts"]);
+    assert.deepEqual(iterationResultWithEvidence.validationCommands, ["git diff --check", "npm test"]);
+    assert.equal(iterationResultWithEvidence.commitHash, "6da2dcd");
+    assert.equal(iterationResultWithEvidence.pushStatus, "pushed");
     assert.equal(sent.length, sentBeforeContinue + 1);
     assert.match(sent.at(-1).content, /Development loop iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
