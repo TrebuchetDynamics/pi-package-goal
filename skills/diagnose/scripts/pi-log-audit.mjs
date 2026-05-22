@@ -221,10 +221,12 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const status = classifyStatus(latest, badJson);
   const missingConfig = !hasMatchingConfig;
   const attention = needsAttention(status, lastFailure, badJson, missingConfig);
-  const size = fs.statSync(logPath).size;
+  const stats = fs.statSync(logPath);
+  const size = stats.size;
+  const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
   incrementSummary(status, attention, badJson, missingConfig);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size, matchingConfigName, missingConfig };
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size, mtime, matchingConfigName, missingConfig };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -248,6 +250,7 @@ function printLogRecord(record, repoDir) {
     `bytes=${record.size}`,
     `at=${formatValue(record.latest.at)}`,
     `last_at=${formatValue(record.lastAt)}`,
+    `mtime=${formatValue(record.mtime)}`,
     `latest=${formatValue(record.latest.event)}`,
     `iteration=${formatValue(record.latest.iteration)}/${formatValue(record.latest.maxIterations)}`,
     `phase=${formatValue(record.latest.phase)}`,

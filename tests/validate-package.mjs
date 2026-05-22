@@ -1807,6 +1807,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /missing_config/);
   assert.match(source, /HISTORY/);
   assert.match(source, /last_at/);
+  assert.match(source, /mtime=/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1849,13 +1850,14 @@ async function testPiLogAuditScript() {
 
     const repoF = path.join(fixtureRoot, "repo-f");
     fs.mkdirSync(path.join(repoF, ".pi", "custom-loop"), { recursive: true });
-    fs.writeFileSync(path.join(repoF, ".pi", "custom-loop", "logs.jsonl"), JSON.stringify({
-      at: "2026-05-22T03:00:00.000Z",
+    const repoFLog = path.join(repoF, ".pi", "custom-loop", "logs.jsonl");
+    fs.writeFileSync(repoFLog, JSON.stringify({
       event: "iteration_queued",
       iteration: 2,
       maxIterations: 4,
       phase: "queued",
     }) + "\n");
+    fs.utimesSync(repoFLog, new Date("2026-05-22T04:00:00.000Z"), new Date("2026-05-22T04:00:00.000Z"));
 
     fs.mkdirSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop", "logs.jsonl"), "{}\n");
@@ -1879,7 +1881,7 @@ async function testPiLogAuditScript() {
     assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
     assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
-    assert.match(output, /LOG\tcustom-loop\t.*repo-f.*status=queued.*config=missing.*attention=yes/);
+    assert.match(output, /LOG\tcustom-loop\t.*repo-f.*at=-\tlast_at=-\tmtime=2026-05-22T04:00:00.000Z.*status=queued.*config=missing.*attention=yes/);
     assert.match(output, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config/);
     assert.match(output, /SUMMARY\tlogs=4\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=1\tunknown=0\tissues=4\tbad_json=1\tlogs_without_configs=1\tpi_dirs=5\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=5/);
     assert.doesNotMatch(output, /node_modules/);
@@ -1887,7 +1889,7 @@ async function testPiLogAuditScript() {
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b/);
-    assert.match(attentionOnly, /LOG\tcustom-loop\t.*repo-f.*config=missing.*attention=yes/);
+    assert.match(attentionOnly, /LOG\tcustom-loop\t.*repo-f.*mtime=2026-05-22T04:00:00.000Z.*config=missing.*attention=yes/);
     assert.match(attentionOnly, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config/);
     assert.doesNotMatch(attentionOnly, /repo-d/);
     assert.match(attentionOnly, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
@@ -1950,6 +1952,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /matching loop config/);
   assert.match(logAuditReference, /historical failure/);
   assert.match(logAuditReference, /last_at/);
+  assert.match(logAuditReference, /mtime=/);
 }
 
 async function testNoticesAndDocs() {
