@@ -411,6 +411,24 @@ async function testExtensionLoadsAndRegistersCommands() {
       pushStatus: "pushed",
     },
   });
+  assert.equal(typeof mod.__test__.parseLoopDeliveryEvidence, "function");
+  assert.deepEqual(mod.__test__.parseLoopDeliveryEvidence([
+    "Summary: improved report parsing locality.",
+    "Changed files:",
+    "- `extensions/development-loop-report-parser.ts` — moved prose parser behind report parser module.",
+    "Validation evidence:",
+    "- `npm test` exited 0",
+    "Commit/push evidence: `abc1234` pushed to current branch.",
+    "Possible next steps:",
+    "- Extract log analysis helpers.",
+  ].join("\n")), {
+    summary: "improved report parsing locality.",
+    nextSteps: ["Extract log analysis helpers."],
+    changedFiles: ["extensions/development-loop-report-parser.ts"],
+    validationCommands: ["npm test"],
+    commitHash: "abc1234",
+    pushStatus: "pushed",
+  });
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue\npostscript"), undefined);
