@@ -900,7 +900,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(4).toISOString(), event: "loop_postmortem", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers", likelyCause: "assistant_response_missing_final_markers", nextSafeAction: "return only final markers" }),
         JSON.stringify({ at: new Date(5).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
         JSON.stringify({ at: new Date(6).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
-        JSON.stringify({ at: new Date(7).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(7).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
+        JSON.stringify({ at: new Date(8).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
       const analysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${analysisLog}`, {
@@ -914,7 +915,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 8/);
+      assert.match(messages.at(-1).content, /Records: 9/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
@@ -923,6 +924,12 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Top postmortem cause: assistant_response_missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Top next safe action: return only final markers \(1 record\)/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 1/);
+      assert.match(messages.at(-1).content, /Changed-file evidence records: 1/);
+      assert.match(messages.at(-1).content, /Validation evidence records: 1/);
+      assert.match(messages.at(-1).content, /Commit evidence records: 1/);
+      assert.match(messages.at(-1).content, /Push evidence records: 1/);
+      assert.match(messages.at(-1).content, /Top push status: pushed \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
@@ -936,9 +943,10 @@ async function testExtensionLoadsAndRegistersCommands() {
       fs.writeFileSync(customLog, [
         JSON.stringify({ timestamp: new Date(10).toISOString(), event: "loop_start", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(11).toISOString(), event: "assistant_decision", iteration: 1, decision: "continue", ciGreen: true, finalLine: "LOOP_DECISION: continue" }),
-        JSON.stringify({ timestamp: new Date(12).toISOString(), event: "done", iteration: 1, reason: "assistant reported LOOP_DECISION: done with CI_GREEN: yes" }),
-        JSON.stringify({ timestamp: new Date(13).toISOString(), event: "loop_start", topic: "custom blocked", iteration: 1, maxIterations: 3 }),
-        JSON.stringify({ timestamp: new Date(14).toISOString(), event: "blocked", iteration: 1, reason: "assistant_decision_missing", ciGreen: false }),
+        JSON.stringify({ timestamp: new Date(12).toISOString(), event: "iteration_result", iteration: 1, decision: "continue", files: ["lib/profile.dart"], validation: ["flutter test"], commit: "def5678", pushed: "origin/main", ci_green: "yes" }),
+        JSON.stringify({ timestamp: new Date(13).toISOString(), event: "done", iteration: 1, reason: "assistant reported LOOP_DECISION: done with CI_GREEN: yes" }),
+        JSON.stringify({ timestamp: new Date(14).toISOString(), event: "loop_start", topic: "custom blocked", iteration: 1, maxIterations: 3 }),
+        JSON.stringify({ timestamp: new Date(15).toISOString(), event: "blocked", iteration: 1, reason: "assistant_decision_missing", ciGreen: false }),
       ].join("\n") + "\n", "utf8");
       const customAnalysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${customLog}`, {
@@ -950,12 +958,16 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, customAnalysisMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Records: 5/);
+      assert.match(messages.at(-1).content, /Records: 6/);
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: assistant_decision_missing \(1 record\)/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 1/);
+      assert.match(messages.at(-1).content, /Top push status: origin\/main \(1 record\)/);
+      assert.match(messages.at(-1).content, /CI-green records: 2/);
+      assert.match(messages.at(-1).content, /CI-red records: 1/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
 
       const aggregateAnalysisMessagesBefore = messages.length;
@@ -969,11 +981,16 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 13/);
+      assert.match(messages.at(-1).content, /Records: 15/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
+      assert.match(messages.at(-1).content, /Validation evidence records: 2/);
+      assert.match(messages.at(-1).content, /Commit evidence records: 2/);
+      assert.match(messages.at(-1).content, /Push evidence records: 2/);
+      assert.match(messages.at(-1).content, /CI-red records: 1/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);

@@ -107,6 +107,15 @@ type LoopLogAnalysis = {
   topPostmortemCauseCount: number;
   topNextSafeAction?: string;
   topNextSafeActionCount: number;
+  deliveryEvidenceRecords: number;
+  changedFileEvidenceRecords: number;
+  validationEvidenceRecords: number;
+  commitEvidenceRecords: number;
+  pushEvidenceRecords: number;
+  topPushStatus?: string;
+  topPushStatusCount: number;
+  ciGreenRecords: number;
+  ciRedRecords: number;
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   contextOverflowResponses: number;
@@ -126,6 +135,7 @@ type LoopLogAccumulator = {
   finishDecisionCounts: Map<string, number>;
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
+  pushStatusCounts: Map<string, number>;
   startedRunIds: Set<string>;
   terminalRunIds: Set<string>;
   legacyLoopStarts: number;
@@ -990,6 +1000,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     finishDecisionCounts: new Map<string, number>(),
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
+    pushStatusCounts: new Map<string, number>(),
     startedRunIds: new Set<string>(),
     terminalRunIds: new Set<string>(),
     legacyLoopStarts: 0,
@@ -999,7 +1010,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1054,6 +1065,25 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
         }
       }
     }
+    const hasChangedFiles = recordChangedFiles(record).length > 0;
+    const hasValidationEvidence = recordValidationEvidence(record).length > 0;
+    const hasCommitEvidence = Boolean(recordCommitHash(record));
+    const pushStatus = recordPushStatus(record);
+    if (hasChangedFiles || hasValidationEvidence || hasCommitEvidence || pushStatus) analysis.deliveryEvidenceRecords++;
+    if (hasChangedFiles) analysis.changedFileEvidenceRecords++;
+    if (hasValidationEvidence) analysis.validationEvidenceRecords++;
+    if (hasCommitEvidence) analysis.commitEvidenceRecords++;
+    if (pushStatus) {
+      analysis.pushEvidenceRecords++;
+      const count = incrementCount(pushStatusCounts, pushStatus);
+      if (count > analysis.topPushStatusCount) {
+        analysis.topPushStatus = pushStatus;
+        analysis.topPushStatusCount = count;
+      }
+    }
+    const ciGreen = recordCiGreen(record, event);
+    if (ciGreen === true) analysis.ciGreenRecords++;
+    if (ciGreen === false) analysis.ciRedRecords++;
     if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
     if (event === "context_overflow_waiting_for_compaction" || String(record.reason || "").includes("context_overflow")) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
@@ -1099,6 +1129,14 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     postmortems: 0,
     topPostmortemCauseCount: 0,
     topNextSafeActionCount: 0,
+    deliveryEvidenceRecords: 0,
+    changedFileEvidenceRecords: 0,
+    validationEvidenceRecords: 0,
+    commitEvidenceRecords: 0,
+    pushEvidenceRecords: 0,
+    topPushStatusCount: 0,
+    ciGreenRecords: 0,
+    ciRedRecords: 0,
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     contextOverflowResponses: 0,
@@ -1132,6 +1170,43 @@ function recordTopicLength(record: Record<string, unknown>): number {
   return typeof record.topic === "string" ? singleLineText(record.topic).length : 0;
 }
 
+function recordChangedFiles(record: Record<string, unknown>): string[] {
+  return stringArrayOrUndefined(record.changedFiles) || stringArrayOrUndefined(record.files) || [];
+}
+
+function recordValidationEvidence(record: Record<string, unknown>): string[] {
+  return stringArrayOrUndefined(record.validationCommands)
+    || stringArrayOrUndefined(record.validation)
+    || stringArrayOrUndefined(record.validations)
+    || objectKeys(record.validation)
+    || objectKeys(record.validations)
+    || [];
+}
+
+function recordCommitHash(record: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record.commitHash) || stringOrUndefined(record.commit);
+}
+
+function recordPushStatus(record: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record.pushStatus) || stringOrUndefined(record.pushed) || stringOrUndefined(record.push);
+}
+
+function recordCiGreen(record: Record<string, unknown>, event: string): boolean | undefined {
+  const explicit = booleanOrUndefined(record.ciGreen) ?? booleanOrUndefined(record.ci_green);
+  if (explicit !== undefined) return explicit;
+  const text = stringOrUndefined(record.ciGreen) || stringOrUndefined(record.ci_green) || stringOrUndefined(record.ciGate) || stringOrUndefined(record.ci_gate);
+  if (text && /^(yes|true|green|passed|pass|local_full_gate_passed)$/i.test(text)) return true;
+  if (text && /^(no|false|red|failed|fail|missing|missing_CI_GREEN_yes)$/i.test(text)) return false;
+  if (event === "ci_gate_missing") return false;
+  return undefined;
+}
+
+function objectKeys(value: unknown): string[] | undefined {
+  if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
+  const keys = Object.keys(value).filter(Boolean);
+  return keys.length ? keys : undefined;
+}
+
 function incrementCount(counts: Map<string, number>, key: string): number {
   const count = (counts.get(key) || 0) + 1;
   counts.set(key, count);
@@ -1147,6 +1222,8 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
+  if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
+  if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
   return recommendations.length ? recommendations : ["No obvious loop health issues detected in this log."];
@@ -1167,6 +1244,14 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Postmortems: ${analysis.postmortems}`,
     analysis.topPostmortemCause ? `Top postmortem cause: ${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount} ${analysis.topPostmortemCauseCount === 1 ? "record" : "records"})` : undefined,
     analysis.topNextSafeAction ? `Top next safe action: ${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount} ${analysis.topNextSafeActionCount === 1 ? "record" : "records"})` : undefined,
+    `Delivery evidence records: ${analysis.deliveryEvidenceRecords}`,
+    `Changed-file evidence records: ${analysis.changedFileEvidenceRecords}`,
+    `Validation evidence records: ${analysis.validationEvidenceRecords}`,
+    `Commit evidence records: ${analysis.commitEvidenceRecords}`,
+    `Push evidence records: ${analysis.pushEvidenceRecords}`,
+    analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,
+    `CI-green records: ${analysis.ciGreenRecords}`,
+    `CI-red records: ${analysis.ciRedRecords}`,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
