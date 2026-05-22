@@ -135,6 +135,8 @@ type LoopLogAnalysis = {
   topNextSafeAction?: string;
   topNextSafeActionCount: number;
   finalMarkerRecoveryRequests: number;
+  topFinalMarkerRecoverySource?: string;
+  topFinalMarkerRecoverySourceCount: number;
   topFinalMarkerRecoveryReason?: string;
   topFinalMarkerRecoveryReasonCount: number;
   finalMarkerRecoverySuccesses: number;
@@ -213,6 +215,7 @@ type LoopLogAccumulator = {
   sourceIterationResultCounts: Map<string, number>;
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
+  finalMarkerRecoverySourceCounts: Map<string, number>;
   finalMarkerRecoveryReasonCounts: Map<string, number>;
   finalMarkerRecoveryBlockReasonCounts: Map<string, number>;
   selfImprovementSourceCounts: Map<string, number>;
@@ -1113,6 +1116,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     sourceIterationResultCounts: new Map<string, number>(),
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
+    finalMarkerRecoverySourceCounts: new Map<string, number>(),
     finalMarkerRecoveryReasonCounts: new Map<string, number>(),
     finalMarkerRecoveryBlockReasonCounts: new Map<string, number>(),
     selfImprovementSourceCounts: new Map<string, number>(),
@@ -1150,7 +1154,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1183,6 +1187,13 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     const recoveryKey = markerRecoveryKey(record, runId);
     if (event === "missing_final_marker_recovery_requested") {
       analysis.finalMarkerRecoveryRequests++;
+      if (sourceKey) {
+        const sourceCount = incrementCount(finalMarkerRecoverySourceCounts, sourceKey);
+        if (sourceCount > analysis.topFinalMarkerRecoverySourceCount) {
+          analysis.topFinalMarkerRecoverySource = sourceKey;
+          analysis.topFinalMarkerRecoverySourceCount = sourceCount;
+        }
+      }
       const reason = recordReason(record, event) || "<missing reason>";
       const reasonCount = incrementCount(finalMarkerRecoveryReasonCounts, reason);
       if (reasonCount > analysis.topFinalMarkerRecoveryReasonCount) {
@@ -1574,6 +1585,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topPostmortemCauseCount: 0,
     topNextSafeActionCount: 0,
     finalMarkerRecoveryRequests: 0,
+    topFinalMarkerRecoverySourceCount: 0,
     topFinalMarkerRecoveryReasonCount: 0,
     finalMarkerRecoverySuccesses: 0,
     finalMarkerRecoveryBlocks: 0,
@@ -1787,7 +1799,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review the top queued source/reason/action after blocked custom-loop runs and promote repeatable policy into this package.");
   if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
-  if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
+  if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery source/reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block reason and prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: inspect the top CI-gate missing source and require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: inspect the top commit-without-push source and record pushStatus when push delivery is expected, or use an explicit skipped push status.");
@@ -1866,6 +1878,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topPromptResultImbalanceSource ? ["Top prompt/result imbalance source", `${relativeToCwd(cwd, analysis.topPromptResultImbalanceSource)} (${promptResultImbalanceDeltaText(analysis.topPromptResultImbalanceSourceDelta)})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
+    analysis.topFinalMarkerRecoverySource ? ["Top final-marker recovery log source", `${relativeToCwd(cwd, analysis.topFinalMarkerRecoverySource)} (${analysis.topFinalMarkerRecoverySourceCount})`] : undefined,
     analysis.topFinalMarkerRecoveryReason ? ["Top final-marker recovery reason", `${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount})`] : undefined,
     analysis.topFinalMarkerRecoveryBlockReason ? ["Top final-marker recovery block reason", `${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount})`] : undefined,
     analysis.topCommitWithoutPushSource ? ["Top commit-without-push log source", `${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount})`] : undefined,
@@ -1970,6 +1983,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topPostmortemCause ? `Top postmortem cause: ${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount} ${analysis.topPostmortemCauseCount === 1 ? "record" : "records"})` : undefined,
     analysis.topNextSafeAction ? `Top next safe action: ${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount} ${analysis.topNextSafeActionCount === 1 ? "record" : "records"})` : undefined,
     `Final-marker recovery requests: ${analysis.finalMarkerRecoveryRequests}`,
+    analysis.topFinalMarkerRecoverySource ? `Top final-marker recovery log source: ${relativeToCwd(cwd, analysis.topFinalMarkerRecoverySource)} (${analysis.topFinalMarkerRecoverySourceCount} ${analysis.topFinalMarkerRecoverySourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topFinalMarkerRecoveryReason ? `Top final-marker recovery reason: ${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount} ${analysis.topFinalMarkerRecoveryReasonCount === 1 ? "record" : "records"})` : undefined,
     `Final-marker recovery successes: ${analysis.finalMarkerRecoverySuccesses}`,
     `Final-marker recovery blocks: ${analysis.finalMarkerRecoveryBlocks}`,
