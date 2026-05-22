@@ -17,6 +17,11 @@ import {
   shouldCompactBeforeNextIteration,
 } from "./development-loop-compaction.ts";
 import {
+  appendLoopLogRecord,
+  buildLoopLogRecord,
+  type LoopLogRecord,
+} from "./development-loop-logger.ts";
+import {
   parseLoopLogRecord as parseLogRecord,
   recordDecision,
   recordEvent,
@@ -57,14 +62,12 @@ import {
 } from "./development-loop-status.ts";
 import {
   hashText,
-  objectiveInfo,
   objectiveIntakeSummary,
   promptObjectiveText,
 } from "./development-loop-topic.ts";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
-type ObjectiveKind = "short" | "oversized" | "provider-noise";
 
 type LoopAdapter = {
   name: string;
@@ -102,34 +105,6 @@ type LoopState = {
   push: boolean;
   emptyResponseRetries?: number;
   markerRecoveryRetries?: number;
-};
-
-type LoopLogRecord = {
-  at: string;
-  event: string;
-  adapterName: string;
-  runId?: string;
-  topic: string;
-  topicLength?: number;
-  topicTruncated?: boolean;
-  topicHash?: string;
-  topicKind?: ObjectiveKind;
-  topicSanitized?: boolean;
-  iteration: number;
-  maxIterations: number;
-  phase: LoopPhase;
-  decision?: string;
-  reason?: string;
-  summary?: string;
-  blockerState?: string;
-  nextSteps?: string[];
-  changedFiles?: string[];
-  validationCommands?: string[];
-  commitHash?: string;
-  pushStatus?: string;
-  likelyCause?: string;
-  nextSafeAction?: string;
-  logPath: string;
 };
 
 type LoopLogAnalysisOptions = {
@@ -2437,45 +2412,7 @@ function refreshUi(ctx: UiLikeContext) {
 
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   const logPath = state.logPath || path.join(process.cwd(), DEFAULT_LOG_RELATIVE);
-  const record: LoopLogRecord = {
-    at: new Date().toISOString(),
-    event,
-    adapterName: state.adapterName,
-    ...(state.runId ? { runId: state.runId } : {}),
-    ...loopLogTopicFields(state.topic),
-    iteration: state.iteration,
-    maxIterations: state.maxIterations,
-    phase: state.phase,
-    logPath,
-    ...extra,
-  };
-  try {
-    fs.mkdirSync(path.dirname(logPath), { recursive: true });
-    fs.appendFileSync(logPath, `${JSON.stringify(record)}\n`, "utf8");
-  } catch {
-    // Logging must never break the agent loop.
-  }
-}
-
-function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated" | "topicHash" | "topicKind" | "topicSanitized"> {
-  const info = objectiveInfo(value, LOG_TOPIC_MAX);
-  if (info.topic.length <= LOG_TOPIC_MAX) {
-    return {
-      topic: info.topic,
-      topicLength: info.rawLength,
-      topicHash: info.topicHash,
-      topicKind: info.kind,
-      ...(info.sanitized ? { topicSanitized: true } : {}),
-    };
-  }
-  return {
-    topic: `${info.topic.slice(0, LOG_TOPIC_MAX - 1)}…`,
-    topicLength: info.rawLength,
-    topicTruncated: true,
-    topicHash: info.topicHash,
-    topicKind: info.kind,
-    ...(info.sanitized ? { topicSanitized: true } : {}),
-  };
+  appendLoopLogRecord(logPath, buildLoopLogRecord({ ...state, logPath }, event, extra, new Date().toISOString(), LOG_TOPIC_MAX));
 }
 
 function recordSelfImprovementAction(record: Record<string, unknown>): string | undefined {

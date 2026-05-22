@@ -440,6 +440,23 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(statusMod.readRecentReportRecords(statusLogPath).map((record) => record.iteration), [2, 1]);
   assert.deepEqual(statusMod.statusWidgetLines(statusState, statusTemp), ["last loop_finished · 20:05:00 · i2 · blocker none · log .pi/development-loop/logs.jsonl"]);
 
+  const loggerMod = await jiti.import(path.join(root, "extensions", "development-loop-logger.ts"));
+  const loggerTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-logger-"));
+  const loggerLogPath = path.join(loggerTemp, ".pi", "development-loop", "logs.jsonl");
+  const loggerState = { adapterName: "generic-git", runId: "dl-test", topic: "ship logs Error: Codex error: {code:context_length_exceeded}", iteration: 2, maxIterations: 5, phase: "running", logPath: loggerLogPath };
+  const builtLogRecord = loggerMod.buildLoopLogRecord(loggerState, "iteration_result", { decision: "continue" }, "2026-05-22T20:00:00.000Z");
+  assert.equal(builtLogRecord.at, "2026-05-22T20:00:00.000Z");
+  assert.equal(builtLogRecord.topic, "ship logs");
+  assert.equal(builtLogRecord.topicKind, "provider-noise");
+  assert.equal(builtLogRecord.topicSanitized, true);
+  loggerMod.appendLoopLogRecord(loggerLogPath, builtLogRecord);
+  assert.equal(JSON.parse(fs.readFileSync(loggerLogPath, "utf8").trim()).event, "iteration_result");
+  assert.equal(loggerMod.appendLoopLogRecord(path.join(loggerTemp, "missing", "logs.jsonl"), builtLogRecord), true);
+  const longTopicFields = loggerMod.loopLogTopicFields("x".repeat(605), 600);
+  assert.equal(longTopicFields.topic.length, 600);
+  assert.equal(longTopicFields.topicTruncated, true);
+  assert.equal(longTopicFields.topicLength, 605);
+
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
