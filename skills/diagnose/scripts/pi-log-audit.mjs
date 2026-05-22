@@ -266,6 +266,7 @@ function printLogRecord(record, repoDir) {
       record.loopName,
       repoDir,
       `failure=${formatValue(record.lastFailure.event)}`,
+      `failure_at=${formatValue(record.lastFailure.at)}`,
       `reason=${formatValue(record.lastFailure.reason)}`,
     ].join("\t"));
   }

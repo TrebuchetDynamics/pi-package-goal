@@ -1808,6 +1808,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /HISTORY/);
   assert.match(source, /last_at/);
   assert.match(source, /mtime=/);
+  assert.match(source, /failure_at/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1868,7 +1869,7 @@ async function testPiLogAuditScript() {
     assert.match(output, /latest=compaction_failed_before_next_iteration/);
     assert.match(output, /status=needs_attention/);
     assert.match(output, /attention=yes/);
-    assert.match(output, /failure=compaction_failed_before_next_iteration/);
+    assert.match(output, /failure=compaction_failed_before_next_iteration\tfailure_at=2026-05-22T01:02:00.000Z/);
     assert.match(output, /Summarization failed: WebSocket error/);
     assert.match(output, /LOG\te2e-loop\t.*repo-b/);
     assert.match(output, /status=blocked/);
@@ -1877,7 +1878,7 @@ async function testPiLogAuditScript() {
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-d.*at=-\tlast_at=2026-05-22T02:50:00.000Z/);
     assert.match(output, /status=done/);
     assert.match(output, /attention=no/);
-    assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\treason=temporary missing marker/);
+    assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\tfailure_at=2026-05-22T02:50:00.000Z\treason=temporary missing marker/);
     assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
     assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
@@ -1953,6 +1954,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /historical failure/);
   assert.match(logAuditReference, /last_at/);
   assert.match(logAuditReference, /mtime=/);
+  assert.match(logAuditReference, /failure_at/);
 }
 
 async function testNoticesAndDocs() {

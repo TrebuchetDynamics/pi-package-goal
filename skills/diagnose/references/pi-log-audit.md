@@ -15,7 +15,7 @@ For each log it reports:
 
 - parsed line count and `bad_json` count
 - latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, log file `mtime=`, `status=`, matching config state (`config=present|missing`), and `attention=yes|no`
-- current `ISSUE` reason, including missing matching loop config such as `.pi/navivox-loop.json`, or `HISTORY` for a historical failure in a log that later finished cleanly
+- current `ISSUE` reason with `failure_at=` for the last failure event, including missing matching loop config such as `.pi/navivox-loop.json`, or `HISTORY` for a historical failure in a log that later finished cleanly
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
 
 Use `--attention-only` when you only want logs that need action; it suppresses clean loop records, including completed logs with only historical failure context, and adds `filtered_out=` to the summary.
