@@ -20,6 +20,14 @@ import {
   recordProviderErrorCode,
 } from "./development-loop-provider-error.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
+import {
+  compactTopic,
+  hashText,
+  objectiveInfo,
+  objectiveIntakeSummary,
+  objectiveText,
+  promptObjectiveText,
+} from "./development-loop-topic.ts";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
@@ -2331,8 +2339,8 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Run id: ${s.runId || "legacy"}
-Topic/objective: ${promptObjectiveText(s.topic)}
-Objective intake: ${objectiveIntakeSummary(s.topic)}
+Topic/objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
+Objective intake: ${objectiveIntakeSummary(s.topic, PROMPT_OBJECTIVE_MAX)}
 Preferred language: ${language}
 Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
 Loop log path: ${relativeToCwd(cwd, s.logPath)}
@@ -2496,7 +2504,7 @@ Current development loop state:
 - Project root: ${cwd}
 - Adapter: ${resolved.adapter.name}
 - Run id: ${s.runId || "legacy"}
-- Objective: ${promptObjectiveText(s.topic)}
+- Objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 - Iteration: ${s.iteration}/${s.maxIterations}
 - Phase: ${s.phase}
 - Git delivery: ${s.push ? "push" : s.commit ? "commit" : "manual"}
@@ -2517,7 +2525,7 @@ function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Current loop iteration: ${s.iteration}/${s.maxIterations}
-Current objective: ${promptObjectiveText(s.topic)}
+Current objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 User steering request: ${steeringText}
 
 Incorporate this steering into the current or next safe vertical slice. Preserve unrelated dirty work. Keep using the configured validation commands before any continue/done decision.
@@ -2609,7 +2617,7 @@ function statusReport(s: LoopState, cwd = process.cwd()): string {
   return [
     statusLine(s),
     `adapter: ${s.adapterName}`,
-    `topic: ${objectiveText(s.topic)}`,
+    `topic: ${objectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}`,
     `state: ${stateExplanation(s, last)}`,
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
@@ -2671,7 +2679,7 @@ function deliverySegment(s: LoopState): string {
 }
 
 function statusContext(s: LoopState): string | undefined {
-  if (s.active) return compactTopic(objectiveText(s.topic));
+  if (s.active) return compactTopic(objectiveText(s.topic, PROMPT_OBJECTIVE_MAX), STATUS_TOPIC_MAX);
   if (s.phase === "blocked") return compactStatusText(s.lastReason || String(s.lastDecision || "blocked"));
   if (s.phase === "done") return compactStatusText(s.lastReason || "complete");
   return s.lastDecision ? compactStatusText(String(s.lastDecision)) : undefined;
@@ -3289,54 +3297,10 @@ function clampIterations(value: number): number {
   return Math.max(1, Math.min(Math.floor(value), HARD_MAX_ITERATIONS));
 }
 
-function compactTopic(topic: string): string {
-  if (topic.length <= STATUS_TOPIC_MAX) return topic;
-  return `${topic.slice(0, STATUS_TOPIC_MAX - 1)}…`;
-}
-
-function promptObjectiveText(value: unknown): string {
-  const info = objectiveInfo(value, PROMPT_OBJECTIVE_MAX);
-  if (info.topic.length <= PROMPT_OBJECTIVE_MAX) return info.topic;
-  return `${info.topic.slice(0, PROMPT_OBJECTIVE_MAX - 1)}…`;
-}
-
-function objectiveIntakeSummary(value: unknown): string {
-  const info = objectiveInfo(value, PROMPT_OBJECTIVE_MAX);
-  return `${info.kind} objective · length ${info.rawLength} · hash ${info.topicHash}`;
-}
-
-function objectiveInfo(value: unknown, oversizedThreshold: number): { topic: string; rawLength: number; topicHash: string; kind: ObjectiveKind; sanitized: boolean } {
-  const rawTopic = singleLineText(value);
-  const topic = stripProviderErrorSuffix(rawTopic);
-  const sanitized = topic !== rawTopic;
-  const kind: ObjectiveKind = sanitized ? "provider-noise" : rawTopic.length > oversizedThreshold ? "oversized" : "short";
-  return {
-    topic,
-    rawLength: rawTopic.length,
-    topicHash: hashText(topic),
-    kind,
-    sanitized,
-  };
-}
-
-function objectiveText(value: unknown): string {
-  return objectiveInfo(value, PROMPT_OBJECTIVE_MAX).topic;
-}
-
-function stripProviderErrorSuffix(text: string): string {
-  const errorIndex = text.search(/\bError:\s+Codex error:.*context[\s_-]*length[\s_-]*exceeded/i);
-  if (errorIndex > 0) return text.slice(0, errorIndex).trim();
-  return text;
-}
-
 function createRunId(startedAt: string): string {
   const timestamp = Date.parse(startedAt);
   const encodedTime = Number.isFinite(timestamp) ? timestamp.toString(36) : Date.now().toString(36);
   return `dl-${encodedTime}-${crypto.randomBytes(3).toString("hex")}`;
-}
-
-function hashText(text: string): string {
-  return crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {

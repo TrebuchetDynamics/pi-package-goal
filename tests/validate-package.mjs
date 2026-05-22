@@ -416,6 +416,21 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(providerErrorMod.recordProviderErrorCategory({ providerError: "WebSocket error" }, "provider_error", "<missing code>"), "transport");
   assert.equal(providerErrorMod.recordProviderErrorCategory({ provider_error: { message: "too many requests" } }, "provider_error", "429"), "rate-limit");
 
+  const topicMod = await jiti.import(path.join(root, "extensions", "development-loop-topic.ts"));
+  assert.equal(topicMod.compactTopic("abcdefghij", 6), "abcde…");
+  assert.equal(topicMod.promptObjectiveText("abcdefghij", 6), "abcde…");
+  assert.equal(topicMod.objectiveText("line one\nline two", 600), "line one line two");
+  assert.equal(topicMod.stripProviderErrorSuffix("read logs Error: Codex error: {code:context_length_exceeded}"), "read logs");
+  assert.equal(topicMod.hashText("read logs").length, 12);
+  assert.deepEqual(topicMod.objectiveInfo("read logs Error: Codex error: {code:context_length_exceeded}", 6), {
+    topic: "read logs",
+    rawLength: "read logs Error: Codex error: {code:context_length_exceeded}".length,
+    topicHash: topicMod.hashText("read logs"),
+    kind: "provider-noise",
+    sanitized: true,
+  });
+  assert.match(topicMod.objectiveIntakeSummary("abcdefghij", 6), /^oversized objective · length 10 · hash [0-9a-f]{12}$/);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
