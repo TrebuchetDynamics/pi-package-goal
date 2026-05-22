@@ -528,6 +528,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
     assert.match(sent[0].content, /DEV_LOOP_REPORT/);
+    assert.match(sent[0].content, /Human-readable end report/);
+    assert.match(sent[0].content, /What changed and why/);
+    assert.match(sent[0].content, /Possible next steps/);
+    assert.match(sent[0].content, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
     assert.match(sent[0].content, /Task discovery cues/);
     assert.match(sent[0].content, /TODO\.md/);
     assert.match(sent[0].content, /progress\.json/);
@@ -2025,6 +2029,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /preview the generated config without writing/);
   assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
+  assert.match(readme, /Human-readable end report/);
+  assert.match(readme, /Possible next steps/);
+  assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
   assert.match(readme, /context_length_exceeded/);
