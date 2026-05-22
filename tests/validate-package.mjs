@@ -1702,6 +1702,29 @@ async function testCodexStorageCleanupScript() {
       "state_5.sqlite-wal",
     ]);
 
+    const fakeBin = path.join(fixtureRoot, "fake-bin");
+    fs.mkdirSync(fakeBin);
+    fs.writeFileSync(path.join(fakeBin, "date"), "#!/usr/bin/env bash\nprintf '20240101-000000\\n'\n");
+    fs.chmodSync(path.join(fakeBin, "date"), 0o755);
+
+    const collisionDir = path.join(fixtureRoot, "collision-case", ".codex");
+    const existingBackup = path.join(collisionDir, "backup", "codex-state-20240101-000000");
+    fs.mkdirSync(path.join(collisionDir, "tmp"), { recursive: true });
+    fs.mkdirSync(existingBackup, { recursive: true });
+    fs.writeFileSync(path.join(collisionDir, "state_8.sqlite"), "new state\n");
+    fs.writeFileSync(path.join(existingBackup, "state_8.sqlite"), "old backup\n");
+
+    execFileSync("bash", [script, "--execute", "--codex-dir", collisionDir], {
+      encoding: "utf8",
+      env: { ...process.env, PATH: `${fakeBin}${path.delimiter}${process.env.PATH}` },
+    });
+    assert.equal(fs.readFileSync(path.join(existingBackup, "state_8.sqlite"), "utf8"), "old backup\n");
+    const collisionBackups = fs.readdirSync(path.join(collisionDir, "backup")).sort();
+    assert.equal(collisionBackups.length, 2);
+    assert.ok(collisionBackups.some((entry) => /^codex-state-20240101-000000\./.test(entry)));
+    const newBackup = collisionBackups.find((entry) => entry !== "codex-state-20240101-000000");
+    assert.equal(fs.readFileSync(path.join(collisionDir, "backup", newBackup, "state_8.sqlite"), "utf8"), "new state\n");
+
     const deleteDir = path.join(fixtureRoot, "delete-case", ".codex");
     fs.mkdirSync(path.join(deleteDir, "tmp"), { recursive: true });
     fs.writeFileSync(path.join(deleteDir, "config.toml"), "model = \"codex\"\n");
@@ -1749,6 +1772,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /SQLite cannot extend the state database/);
   assert.match(reference, /prints free space and Codex path sizes/);
   assert.match(reference, /post-cleanup disk report/);
+  assert.match(reference, /unique timestamped backup directory/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
   assert.match(reference, /--tmp-only/);
   assert.match(reference, /leave `state_\*\.sqlite\*` untouched/);
@@ -1815,6 +1839,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /leave `state_\*\.sqlite\*` untouched/);
   assert.match(readme, /prints free space and Codex path sizes/);
   assert.match(readme, /post-cleanup disk report/);
+  assert.match(readme, /unique timestamped backup directory/);
   assert.match(readme, /path must end in `\/\.codex`/);
   assert.match(readme, /codex-storage-cleanup\.sh --execute/);
   assert.match(readme, /--delete-state --i-understand-local-state-will-be-lost/);

@@ -120,7 +120,8 @@ if [ "$EXECUTE" -eq 1 ] && [ "$DELETE_STATE" -eq 1 ] && [ "$CONFIRM_DELETE_STATE
 fi
 
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP_DIR="$CODEX_DIR/backup/codex-state-$TIMESTAMP"
+BACKUP_PARENT="$CODEX_DIR/backup"
+BACKUP_TEMPLATE="$BACKUP_PARENT/codex-state-$TIMESTAMP.XXXXXX"
 
 shopt -s nullglob
 STATE_FILES=("$CODEX_DIR"/state_*.sqlite*)
@@ -136,7 +137,7 @@ if [ "$EXECUTE" -ne 1 ]; then
     elif [ "$DELETE_STATE" -eq 1 ]; then
       echo "Would delete Codex state files:"
     else
-      echo "Would back up Codex state files to: $BACKUP_DIR"
+      echo "Would back up Codex state files to a unique timestamped backup directory matching: $BACKUP_TEMPLATE"
     fi
     printf '  %s\n' "${STATE_FILES[@]}"
   else
@@ -161,7 +162,8 @@ if [ "${#STATE_FILES[@]}" -gt 0 ]; then
     rm -f -- "${STATE_FILES[@]}"
     echo "Deleted Codex state files from: $CODEX_DIR"
   else
-    mkdir -p "$BACKUP_DIR"
+    mkdir -p "$BACKUP_PARENT"
+    BACKUP_DIR="$(mktemp -d "$BACKUP_TEMPLATE")"
     mv "${STATE_FILES[@]}" "$BACKUP_DIR"/
     echo "Backed up Codex state files to: $BACKUP_DIR"
   fi
