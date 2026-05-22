@@ -108,6 +108,8 @@ type LoopLogAnalysis = {
   iterationResultRecords: number;
   iterationResultWithoutValidationRecords: number;
   iterationPromptSentRecords: number;
+  topPromptResultImbalanceSource?: string;
+  topPromptResultImbalanceSourceDelta: number;
   duplicatePromptSentGroups: number;
   duplicatePromptSentExtraRecords: number;
   assistantDecisionRecords: number;
@@ -191,6 +193,8 @@ type LoopLogAccumulator = {
   finishDecisionCounts: Map<string, number>;
   assistantDecisionCounts: Map<string, number>;
   promptSentCounts: Map<string, number>;
+  sourcePromptSentCounts: Map<string, number>;
+  sourceIterationResultCounts: Map<string, number>;
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
   finalMarkerRecoveryReasonCounts: Map<string, number>;
@@ -1081,6 +1085,8 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     finishDecisionCounts: new Map<string, number>(),
     assistantDecisionCounts: new Map<string, number>(),
     promptSentCounts: new Map<string, number>(),
+    sourcePromptSentCounts: new Map<string, number>(),
+    sourceIterationResultCounts: new Map<string, number>(),
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
     finalMarkerRecoveryReasonCounts: new Map<string, number>(),
@@ -1112,7 +1118,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1125,10 +1131,12 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     const runId = recordRunId(record);
     if (event === "iteration_result") {
       analysis.iterationResultRecords++;
+      if (sourceKey) incrementCount(sourceIterationResultCounts, sourceKey);
       if (recordValidationEvidence(record).length === 0) analysis.iterationResultWithoutValidationRecords++;
     }
     if (event === "iteration_prompt_sent") {
       analysis.iterationPromptSentRecords++;
+      if (sourceKey) incrementCount(sourcePromptSentCounts, sourceKey);
       incrementCount(promptSentCounts, promptSentGroupKey(record, sourceKey));
     }
     if (event === "assistant_decision") {
@@ -1389,7 +1397,10 @@ function hasPromptResultImbalance(analysis: LoopLogAnalysis): boolean {
 }
 
 function promptResultImbalanceText(analysis: LoopLogAnalysis): string {
-  const delta = analysis.iterationPromptSentRecords - analysis.iterationResultRecords;
+  return promptResultImbalanceDeltaText(analysis.iterationPromptSentRecords - analysis.iterationResultRecords);
+}
+
+function promptResultImbalanceDeltaText(delta: number): string {
   if (delta === 0) return "0";
   if (delta > 0) return `${delta} more ${delta === 1 ? "prompt" : "prompts"} than results`;
   const resultDelta = Math.abs(delta);
@@ -1402,6 +1413,17 @@ function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalys
     if (count > 1) {
       analysis.duplicatePromptSentGroups++;
       analysis.duplicatePromptSentExtraRecords += count - 1;
+    }
+  }
+  const promptResultSources = new Set<string>([
+    ...accumulator.sourcePromptSentCounts.keys(),
+    ...accumulator.sourceIterationResultCounts.keys(),
+  ]);
+  for (const source of promptResultSources) {
+    const delta = (accumulator.sourcePromptSentCounts.get(source) || 0) - (accumulator.sourceIterationResultCounts.get(source) || 0);
+    if (delta !== 0 && Math.abs(delta) > Math.abs(analysis.topPromptResultImbalanceSourceDelta)) {
+      analysis.topPromptResultImbalanceSource = source;
+      analysis.topPromptResultImbalanceSourceDelta = delta;
     }
   }
   const unresolvedRunIds = [...accumulator.startedRunIds].filter((runId) => !accumulator.terminalRunIds.has(runId)).length;
@@ -1441,6 +1463,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     iterationResultRecords: 0,
     iterationResultWithoutValidationRecords: 0,
     iterationPromptSentRecords: 0,
+    topPromptResultImbalanceSourceDelta: 0,
     duplicatePromptSentGroups: 0,
     duplicatePromptSentExtraRecords: 0,
     assistantDecisionRecords: 0,
@@ -1650,7 +1673,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
   if (analysis.queuedIterationRecords > 0) recommendations.push("Queued iterations: inspect the top queued reason and verify compaction/resume hooks flush queued prompts without leaving runs waiting silently.");
   if (analysis.providerErrorRecords > 0) recommendations.push("Provider errors: group provider error codes and categories so context, rate-limit, auth, and transport failures drive different recovery paths.");
-  if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
+  if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: inspect the top imbalance source and reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
   if (analysis.duplicatePromptSentGroups > 0) recommendations.push("Duplicate prompt sends: investigate repeated iteration_prompt_sent groups before trusting prompt/result lifecycle counts.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect the top unresolved log source to see whether loops are still active or missing terminal loop_finished/loop_blocked records.");
@@ -1737,6 +1760,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topAssistantDecision ? ["Top assistant decision", `${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount})`] : undefined,
     analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
     analysis.topBlockedSource ? ["Top blocked log source", `${relativeToCwd(cwd, analysis.topBlockedSource)} (${analysis.topBlockedSourceCount})`] : undefined,
+    analysis.topPromptResultImbalanceSource ? ["Top prompt/result imbalance source", `${relativeToCwd(cwd, analysis.topPromptResultImbalanceSource)} (${promptResultImbalanceDeltaText(analysis.topPromptResultImbalanceSourceDelta)})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
     analysis.topFinalMarkerRecoveryReason ? ["Top final-marker recovery reason", `${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount})`] : undefined,
@@ -1818,6 +1842,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Iteration-result-without-validation records: ${analysis.iterationResultWithoutValidationRecords}`,
     `Iteration prompt sent records: ${analysis.iterationPromptSentRecords}`,
     `Prompt/result imbalance: ${promptResultImbalanceText(analysis)}`,
+    analysis.topPromptResultImbalanceSource ? `Top prompt/result imbalance source: ${relativeToCwd(cwd, analysis.topPromptResultImbalanceSource)} (${promptResultImbalanceDeltaText(analysis.topPromptResultImbalanceSourceDelta)})` : undefined,
     `Duplicate prompt-sent groups: ${analysis.duplicatePromptSentGroups}`,
     `Duplicate prompt-sent extra records: ${analysis.duplicatePromptSentExtraRecords}`,
     `Assistant decision records: ${analysis.assistantDecisionRecords}`,

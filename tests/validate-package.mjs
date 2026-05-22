@@ -1082,6 +1082,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Iteration prompt sent records: 2/);
       assert.match(messages.at(-1).content, /Prompt\/result imbalance: 2 more results than prompts/);
+      assert.match(messages.at(-1).content, /Top prompt\/result imbalance source: \.pi\/development-loop\/logs\.jsonl \(2 more results than prompts\)/);
       assert.match(messages.at(-1).content, /Duplicate prompt-sent groups: 1/);
       assert.match(messages.at(-1).content, /Duplicate prompt-sent extra records: 1/);
       assert.match(messages.at(-1).content, /Assistant decision records: 1/);
@@ -1148,6 +1149,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Iteration-result-without-validation records/);
         assert.match(html, /Iteration prompt sent records/);
         assert.match(html, /Prompt\/result imbalance/);
+        assert.match(html, /Top prompt\/result imbalance source/);
         assert.match(html, /Duplicate prompt-sent groups/);
         assert.match(html, /Duplicate prompt-sent extra records/);
         assert.match(html, /Finished-without-validation records/);
