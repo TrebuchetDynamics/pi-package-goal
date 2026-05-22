@@ -819,6 +819,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 5/);
+      assert.match(messages.at(-1).content, /Most repeated oversized topic: 5 records/);
       assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
     } finally {

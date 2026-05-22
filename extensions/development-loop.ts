@@ -79,6 +79,8 @@ type LoopLogAnalysis = {
   contextOverflowResponses: number;
   compactionEvents: number;
   truncatedTopics: number;
+  oversizedTopicRecords: number;
+  mostRepeatedOversizedTopicRecords: number;
   maxTopicLength: number;
   readError?: string;
   recommendations: string[];
@@ -850,6 +852,7 @@ function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
 
 function analyzeLoopLogText(content: string): LoopLogAnalysis {
   const analysis = emptyLoopLogAnalysis();
+  const oversizedTopicCounts = new Map<string, number>();
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -865,7 +868,15 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     if (event === "context_overflow_waiting_for_compaction" || String(record.reason || "").includes("context_overflow")) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (record.topicTruncated === true) analysis.truncatedTopics++;
-    analysis.maxTopicLength = Math.max(analysis.maxTopicLength, recordTopicLength(record));
+    const topicLength = recordTopicLength(record);
+    if (topicLength > LOG_TOPIC_MAX) {
+      analysis.oversizedTopicRecords++;
+      const key = typeof record.topic === "string" ? record.topic : `<missing-topic:${topicLength}>`;
+      const count = (oversizedTopicCounts.get(key) || 0) + 1;
+      oversizedTopicCounts.set(key, count);
+      analysis.mostRepeatedOversizedTopicRecords = Math.max(analysis.mostRepeatedOversizedTopicRecords, count);
+    }
+    analysis.maxTopicLength = Math.max(analysis.maxTopicLength, topicLength);
   }
   analysis.recommendations = loopLogRecommendations(analysis);
   return analysis;
@@ -881,6 +892,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     contextOverflowResponses: 0,
     compactionEvents: 0,
     truncatedTopics: 0,
+    oversizedTopicRecords: 0,
+    mostRepeatedOversizedTopicRecords: 0,
     maxTopicLength: 0,
     recommendations: [],
   };
@@ -894,6 +907,7 @@ function recordTopicLength(record: Record<string, unknown>): number {
 function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   const recommendations: string[] = [];
   if (analysis.maxTopicLength > PROMPT_OBJECTIVE_MAX) recommendations.push("Oversized topics: cap prompt and log objective text before repeating it in every event.");
+  if (analysis.mostRepeatedOversizedTopicRecords > 1) recommendations.push("Repeated oversized topics: summarize copied objectives once instead of carrying the same paste through every event.");
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
@@ -913,6 +927,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
     `Truncated topics: ${analysis.truncatedTopics}`,
+    `Oversized topic records: ${analysis.oversizedTopicRecords}`,
+    `Most repeated oversized topic: ${analysis.mostRepeatedOversizedTopicRecords} records`,
     `Max topic length: ${analysis.maxTopicLength}`,
     "Recommendations:",
     ...analysis.recommendations.map((item) => `- ${item}`),
