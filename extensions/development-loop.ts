@@ -1920,11 +1920,17 @@ function recordBlockerKind(record: Record<string, unknown>): string | undefined 
   ].filter(Boolean).join(" ").toLowerCase();
   if (!text) return undefined;
   if (/\bgit\s+push\b/.test(text) && /(fetch-first|non[-\s]?fast[-\s]?forward|rejected|failed to push some refs|remote contains work)/.test(text)) return "git_push_fetch_first";
+  if (isValidationFailedTwiceText(text)) return "validation_failed_twice";
   return undefined;
+}
+
+function isValidationFailedTwiceText(text: string): boolean {
+  return /\b(failed|fails|failure)\s+twice\b/.test(text) && /\b(validation|tests?|npm|flutter|pytest|cargo|mvn|gradle|assertion|check)\b/.test(text);
 }
 
 function blockerKindRecommendation(kind: string | undefined): string | undefined {
   if (kind === "git_push_fetch_first") return "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.";
+  if (kind === "validation_failed_twice") return "Validation failed twice blockers: fix the first failing assertion, rerun required validation, then commit/push only after green.";
   return undefined;
 }
 

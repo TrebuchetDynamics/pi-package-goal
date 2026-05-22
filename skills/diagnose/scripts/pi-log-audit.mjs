@@ -217,11 +217,17 @@ function recordBlockerKind(record) {
   ].filter(Boolean).join(" ").toLowerCase();
   if (!text) return undefined;
   if (/\bgit\s+push\b/.test(text) && /(fetch-first|non[-\s]?fast[-\s]?forward|rejected|failed to push some refs|remote contains work)/.test(text)) return "git_push_fetch_first";
+  if (isValidationFailedTwiceText(text)) return "validation_failed_twice";
   return undefined;
+}
+
+function isValidationFailedTwiceText(text) {
+  return /\b(failed|fails|failure)\s+twice\b/.test(text) && /\b(validation|tests?|npm|flutter|pytest|cargo|mvn|gradle|assertion|check)\b/.test(text);
 }
 
 function blockerKindNextAction(blockerKind) {
   if (blockerKind === "git_push_fetch_first") return "approve fetch/rebase/merge workflow, rerun validation, then push";
+  if (blockerKind === "validation_failed_twice") return "fix first failing validation failure, rerun required validation, then commit/push only after green";
   return undefined;
 }
 

@@ -1195,6 +1195,25 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.equal(blockerKindJson.blockerKindRecords, 1);
         assert.equal(blockerKindJson.topBlockerKind, "git_push_fetch_first");
         assert.ok(blockerKindJson.recommendations.includes("Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push."));
+
+        const validationBlockerLog = path.join(blockerKindRoot, ".pi", "validation-loop", "logs.jsonl");
+        fs.mkdirSync(path.dirname(validationBlockerLog), { recursive: true });
+        fs.writeFileSync(validationBlockerLog, [
+          JSON.stringify({ at: new Date(19).toISOString(), event: "loop_finished", runId: "run-validation-failed", iteration: 1, maxIterations: 1, phase: "blocked", decision: "blocked", reason: "blocked", blockerState: "flutter test failed twice; first failing assertion in test/e2e/connect_and_talk_web_e2e_test.dart:74 expected http://127.0.0.1:8765 but got null" }),
+        ].join("\n") + "\n", "utf8");
+        const validationBlockerMessagesBefore = messages.length;
+        await command.handler(`analyze-logs ${validationBlockerLog}`, {
+          ...ctx,
+          cwd: blockerKindRoot,
+          sessionManager: {
+            getCwd: () => blockerKindRoot,
+            getEntries: () => [],
+          },
+        });
+        assert.equal(messages.length, validationBlockerMessagesBefore + 1);
+        assert.match(messages.at(-1).content, /Blocker kind records: 1/);
+        assert.match(messages.at(-1).content, /Top blocker kind: validation_failed_twice \(1 record\)/);
+        assert.match(messages.at(-1).content, /Validation failed twice blockers: fix the first failing assertion, rerun required validation, then commit\/push only after green/);
       } finally {
         fs.rmSync(blockerKindRoot, { recursive: true, force: true });
       }
@@ -2197,10 +2216,25 @@ async function testPiLogAuditScript() {
       }) + "\n");
       fs.writeFileSync(path.join(fetchFirstFallbackRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
 
+      const validationFailedRepo = path.join(blockedReportRoot, "repo-m");
+      fs.mkdirSync(path.join(validationFailedRepo, ".pi", "development-loop"), { recursive: true });
+      fs.writeFileSync(path.join(validationFailedRepo, ".pi", "development-loop", "logs.jsonl"), JSON.stringify({
+        at: "2026-05-22T03:12:00.000Z",
+        event: "loop_finished",
+        iteration: 1,
+        maxIterations: 10,
+        phase: "blocked",
+        decision: "blocked",
+        reason: "blocked",
+        blockerState: "flutter test failed twice; first failing assertion in test/e2e/connect_and_talk_web_e2e_test.dart:74 expected http://127.0.0.1:8765 but got null",
+      }) + "\n");
+      fs.writeFileSync(path.join(validationFailedRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
+
       const blockedReportOutput = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", blockedReportRoot], { encoding: "utf8" });
       assert.match(blockedReportOutput, /ISSUE\tdevelopment-loop\t.*repo-j\tfailure=loop_finished\tfailure_at=2026-05-22T03:10:00.000Z\treason=blocked\tblocker=git push origin main rejected with fetch-first\tblocker_kind=git_push_fetch_first\tnext_action=Approve fetch\/rebase\/merge workflow, rerun validation, then push commits 650edde and e969435\./);
       assert.match(blockedReportOutput, /ISSUE\tdevelopment-loop\t.*repo-l\tfailure=loop_finished\tfailure_at=2026-05-22T03:11:00.000Z\treason=blocked\tblocker=git push origin main rejected with fetch-first\tblocker_kind=git_push_fetch_first\tnext_action=approve fetch\/rebase\/merge workflow, rerun validation, then push/);
-      assert.match(blockedReportOutput, /SUMMARY\t.*attention_logs=2\tblocker_kind_records=2\ttop_blocker_kind=git_push_fetch_first:2\tissues=2/);
+      assert.match(blockedReportOutput, /ISSUE\tdevelopment-loop\t.*repo-m\tfailure=loop_finished\tfailure_at=2026-05-22T03:12:00.000Z\treason=blocked\tblocker=flutter test failed twice; first failing assertion.*\tblocker_kind=validation_failed_twice\tnext_action=fix first failing validation failure, rerun required validation, then commit\/push only after green/);
+      assert.match(blockedReportOutput, /SUMMARY\t.*attention_logs=3\tblocker_kind_records=3\ttop_blocker_kind=git_push_fetch_first:2\tissues=3/);
     } finally {
       fs.rmSync(blockedReportRoot, { recursive: true, force: true });
     }
