@@ -255,12 +255,13 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         return;
       }
       if (isContextOverflowProviderError(assistantText)) {
+        const alreadyWaitingForContextOverflowCompaction = state.lastReason === "context_overflow_waiting_for_compaction";
         state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0 };
         appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development loop is waiting for compaction after a provider context-overflow error.", "warning");
-        requestContextOverflowCompaction(pi, ctx);
+        if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
         return;
       }
       blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");

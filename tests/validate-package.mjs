@@ -615,6 +615,16 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(contextOverflowCompactCalls.at(-1).customInstructions, /Preserve development loop state/);
     assert.equal(sent.length, sentBeforeContextOverflow, "context-overflow provider errors should not retry before compaction");
 
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: "Error: Codex error: {type:error,error:{type:invalid_request_error,code:context_length_exceeded,message:Your input exceeds the context window of this model. Please adjust your input and try again.,param:input},sequence_number:3}",
+      }],
+    }, ctx);
+    assert.equal(contextOverflowCompactCalls.length, compactCallsBeforeContextOverflow + 1, "duplicate context-overflow events while waiting should not request duplicate compactions");
+    assert.equal(entries.at(-1).data.lastReason, "context_overflow_waiting_for_compaction");
+    assert.equal(sent.length, sentBeforeContextOverflow, "duplicate context-overflow events should not retry before compaction");
+
     await handlers.get("session_before_compact")({ preparation: { tokensBefore: 272879 } }, ctx);
     const sentBeforeContextOverflowResume = sent.length;
     await handlers.get("session_compact")({ compactionEntry: { tokensBefore: 272879 } }, ctx);
