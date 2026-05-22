@@ -1672,6 +1672,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /WebSocket error/);
   assert.match(readme, /context_length_exceeded/);
   assert.match(readme, /empty provider response/);
+  assert.match(readme, /### Troubleshooting local Codex storage failures/);
+  assert.match(readme, /No space left on device/);
+  assert.match(readme, /database or disk is full/);
+  assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
+  assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-loop status/);
   assert.match(readme, /`grill-me`/);
   assert.match(readme, /`greploop`/);

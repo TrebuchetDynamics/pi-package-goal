@@ -125,6 +125,38 @@ If the provider reports `context_length_exceeded` or “input exceeds the contex
 
 If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and `DEV_LOOP_DECISION`, the loop records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the loop to avoid infinite retries.
 
+### Troubleshooting local Codex storage failures
+
+If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-loop log failure.
+
+Check free space and the largest Codex paths:
+
+```bash
+df -h "$HOME"
+du -sh ~/.codex/* 2>/dev/null | sort -h
+```
+
+Remove transient Codex temp files first:
+
+```bash
+rm -rf ~/.codex/tmp
+```
+
+If Codex offers `Repair Codex local data now?`, prefer accepting the repair after free space is available. If you must reset the local state database manually, back it up instead of deleting it outright:
+
+```bash
+mkdir -p ~/.codex/backup
+mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
+```
+
+Only delete the local state database when you accept losing local Codex session state:
+
+```bash
+rm -f ~/.codex/state_*.sqlite ~/.codex/state_*.sqlite-shm ~/.codex/state_*.sqlite-wal
+```
+
+Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local Codex settings, caches, and state.
+
 ### Status bar integration
 
 `/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · loop 2/3 · generic-git · git:manual · release checks`. If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote it into a dedicated segment:
