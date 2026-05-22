@@ -2101,6 +2101,25 @@ async function testPiLogAuditScript() {
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-g.*adapter=bad_json\tattention=yes/);
     assert.match(attentionOnly, /ISSUE\tdevelopment-loop\t.*repo-g\tconfig=\.pi\/development-loop\.json\treason=matching loop config is not valid JSON\tnext_action=repair or regenerate the loop config/);
     assert.match(attentionOnly, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tfiltered_out=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
+
+    const hygieneRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-hygiene-"));
+    try {
+      const doneMissingConfigRepo = path.join(hygieneRoot, "repo-h");
+      fs.mkdirSync(path.join(doneMissingConfigRepo, ".pi", "development-loop"), { recursive: true });
+      fs.writeFileSync(path.join(doneMissingConfigRepo, ".pi", "development-loop", "logs.jsonl"), [
+        JSON.stringify({ at: "2026-05-22T03:00:00.000Z", event: "loop_finished", iteration: 1, maxIterations: 1, phase: "done", decision: "done" }),
+      ].join("\n") + "\n");
+
+      const sinceHygieneOutput = execFileSync("node", [path.join(root, scriptRel), "--since=2026-05-22T02:30:00.000Z", hygieneRoot], { encoding: "utf8" });
+      assert.match(sinceHygieneOutput, /LOG\tdevelopment-loop\t.*repo-h.*status=done.*config=missing\tadapter=-\tattention=no/);
+      assert.doesNotMatch(sinceHygieneOutput, /ISSUE\tdevelopment-loop\t.*repo-h/);
+
+      const sinceAttentionOnlyHygieneOutput = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", hygieneRoot], { encoding: "utf8" });
+      assert.doesNotMatch(sinceAttentionOnlyHygieneOutput, /repo-h/);
+      assert.match(sinceAttentionOnlyHygieneOutput, /SUMMARY\tlogs=1\tneeds_attention=0\tblocked=0\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=1\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=1\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=0/);
+    } finally {
+      fs.rmSync(hygieneRoot, { recursive: true, force: true });
+    }
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }

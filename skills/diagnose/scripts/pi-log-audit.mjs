@@ -223,6 +223,10 @@ function classifyStatus(latest, badJson) {
   return "unknown";
 }
 
+function isSinceWindowTerminalConfigHygiene(status, lastFailure, badJson, missingConfig, configBadJson) {
+  return Boolean(options.since && status === "done" && !lastFailure && badJson === 0 && (missingConfig || configBadJson));
+}
+
 const summary = {
   logs: 0,
   needs_attention: 0,
@@ -309,13 +313,14 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const missingConfig = !hasMatchingConfig;
   const configAdapter = configDetails?.adapter;
   const configBadJson = Boolean(configDetails?.badJson);
-  const attention = outsideSinceWindow ? false : needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
+  const configHygieneOnly = isSinceWindowTerminalConfigHygiene(status, lastFailure, badJson, missingConfig, configBadJson);
+  const attention = outsideSinceWindow || configHygieneOnly ? false : needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
   const stats = fs.statSync(logPath);
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
-  incrementSummary(status, attention, outsideSinceWindow ? 0 : badJson, outsideSinceWindow ? false : missingConfig, outsideSinceWindow ? false : configBadJson, sinceFiltered);
-  return { loopName, events, badJson, lineCount, sinceFiltered, outsideSinceWindow, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
+  incrementSummary(status, attention, outsideSinceWindow ? 0 : badJson, outsideSinceWindow || configHygieneOnly ? false : missingConfig, outsideSinceWindow || configHygieneOnly ? false : configBadJson, sinceFiltered);
+  return { loopName, events, badJson, lineCount, sinceFiltered, outsideSinceWindow, configHygieneOnly, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -372,7 +377,7 @@ function printLogRecord(record, repoDir) {
     console.log(failureFields.join("\t"));
   }
 
-  if (record.missingConfig && !record.outsideSinceWindow) {
+  if (record.missingConfig && !record.outsideSinceWindow && !record.configHygieneOnly) {
     console.log([
       "ISSUE",
       record.loopName,
@@ -383,7 +388,7 @@ function printLogRecord(record, repoDir) {
     ].join("\t"));
   }
 
-  if (record.configBadJson && !record.outsideSinceWindow) {
+  if (record.configBadJson && !record.outsideSinceWindow && !record.configHygieneOnly) {
     console.log([
       "ISSUE",
       record.loopName,
