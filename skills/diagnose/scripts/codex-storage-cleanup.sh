@@ -154,4 +154,7 @@ else
   echo "No Codex state_*.sqlite files found to back up or delete."
 fi
 
+echo "Post-cleanup disk report:"
+print_disk_report
+
 echo "Retry Codex. If it offers safe repair, accept it after free space is available."

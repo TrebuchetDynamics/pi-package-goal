@@ -26,7 +26,7 @@ bash skills/diagnose/scripts/codex-storage-cleanup.sh
 bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
 ```
 
-The script dry run prints free space and Codex path sizes, then shows the cleanup it would perform. With `--execute`, it removes only transient temp files and moves state databases into `~/.codex/backup/`; it does not delete `~/.codex`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
+The script dry run prints free space and Codex path sizes, then shows the cleanup it would perform. With `--execute`, it removes only transient temp files, moves state databases into `~/.codex/backup/`, and prints a post-cleanup disk report; it does not delete `~/.codex`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
 
 Delete transient Codex temp files before deleting durable state:
 
