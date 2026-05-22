@@ -1116,7 +1116,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     if (ciGreen === true) analysis.ciGreenRecords++;
     if (ciGreen === false) analysis.ciRedRecords++;
     if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
-    if (event === "context_overflow_waiting_for_compaction" || String(record.reason || "").includes("context_overflow")) analysis.contextOverflowResponses++;
+    if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (record.topicTruncated === true) analysis.truncatedTopics++;
     const topicLength = recordTopicLength(record);
@@ -1857,6 +1857,26 @@ function finalLineLoopDecision(record: Record<string, unknown>): string | undefi
 
 function isContextOverflowProviderError(text: string): boolean {
   return /context[\s_-]*length[\s_-]*exceeded|input exceeds the context window|context overflow detected/i.test(text);
+}
+
+function recordHasContextOverflowProviderError(record: Record<string, unknown>, event: string): boolean {
+  if (event === "context_overflow_waiting_for_compaction" || isContextOverflowProviderError(event)) return true;
+  return [
+    record.reason,
+    record.message,
+    record.error,
+    record.code,
+    record.content,
+    record.warning,
+    record.providerError,
+    record.provider_error,
+  ].some((value) => valueHasContextOverflowProviderError(value));
+}
+
+function valueHasContextOverflowProviderError(value: unknown): boolean {
+  if (typeof value === "string") return isContextOverflowProviderError(value);
+  if (!value || Array.isArray(value) || typeof value !== "object") return false;
+  return Object.values(value as Record<string, unknown>).some((child) => valueHasContextOverflowProviderError(child));
 }
 
 function hasContextOverflowProviderError(messages: Array<{ role?: string; content?: unknown }>): boolean {
