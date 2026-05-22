@@ -953,6 +953,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
+      assert.match(messages.at(-1).content, /Finished-without-delivery records: 1/);
       assert.match(messages.at(-1).content, /Iteration result records: 2/);
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
@@ -1009,6 +1010,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
+      assert.match(messages.at(-1).content, /Finished-without-delivery records: 1/);
       assert.match(messages.at(-1).content, /Iteration result records: 2/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
@@ -1037,6 +1039,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
+      assert.match(messages.at(-1).content, /Finished-without-delivery records: 2/);
       assert.match(messages.at(-1).content, /Iteration result records: 4/);
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
@@ -1082,6 +1085,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Iteration result records/);
         assert.match(html, /Iteration-result-without-validation records/);
         assert.match(html, /Finished-without-validation records/);
+        assert.match(html, /Finished-without-delivery records/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);

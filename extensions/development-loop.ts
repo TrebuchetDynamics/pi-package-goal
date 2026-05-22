@@ -104,6 +104,7 @@ type LoopLogAnalysis = {
   loopsStarted: number;
   finishedLoops: number;
   finishedWithoutValidationRecords: number;
+  finishedWithoutDeliveryRecords: number;
   iterationResultRecords: number;
   iterationResultWithoutValidationRecords: number;
   topFinishDecision?: string;
@@ -1073,6 +1074,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     if (event === "loop_finished") {
       analysis.finishedLoops++;
       if (recordValidationEvidence(record).length === 0) analysis.finishedWithoutValidationRecords++;
+      if (!recordHasDeliveryEvidence(record)) analysis.finishedWithoutDeliveryRecords++;
       if (runId) terminalRunIds.add(runId);
       else accumulator.legacyFinishedLoops++;
       const decision = recordDecision(record, event) || "<missing decision>";
@@ -1191,6 +1193,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     loopsStarted: 0,
     finishedLoops: 0,
     finishedWithoutValidationRecords: 0,
+    finishedWithoutDeliveryRecords: 0,
     iterationResultRecords: 0,
     iterationResultWithoutValidationRecords: 0,
     topFinishDecisionCount: 0,
@@ -1259,6 +1262,13 @@ function recordTopicLength(record: Record<string, unknown>): number {
   return typeof record.topic === "string" ? singleLineText(record.topic).length : 0;
 }
 
+function recordHasDeliveryEvidence(record: Record<string, unknown>): boolean {
+  return recordChangedFiles(record).length > 0
+    || recordValidationEvidence(record).length > 0
+    || Boolean(recordCommitHash(record))
+    || Boolean(recordPushStatus(record));
+}
+
 function recordChangedFiles(record: Record<string, unknown>): string[] {
   return stringArrayOrUndefined(record.changedFiles) || stringArrayOrUndefined(record.files) || [];
 }
@@ -1320,6 +1330,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
   if (analysis.iterationResultWithoutValidationRecords > 0) recommendations.push("Iteration results without validation evidence: require validationCommands on every continue/done iteration result before scheduling follow-up work.");
+  if (analysis.finishedWithoutDeliveryRecords > 0) recommendations.push("Finished loops without delivery evidence: include changed files, validation, commit, and push evidence on terminal done records.");
   if (analysis.finishedWithoutValidationRecords > 0) recommendations.push("Finished loops without validation evidence: include validationCommands in terminal done records or link the final report to recorded validation evidence.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
@@ -1343,6 +1354,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Loops started", String(analysis.loopsStarted)],
     ["Finished loops", String(analysis.finishedLoops)],
     ["Finished-without-validation records", String(analysis.finishedWithoutValidationRecords)],
+    ["Finished-without-delivery records", String(analysis.finishedWithoutDeliveryRecords)],
     ["Iteration result records", String(analysis.iterationResultRecords)],
     ["Iteration-result-without-validation records", String(analysis.iterationResultWithoutValidationRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
@@ -1439,6 +1451,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Loops started: ${analysis.loopsStarted}`,
     `Finished loops: ${analysis.finishedLoops}`,
     `Finished-without-validation records: ${analysis.finishedWithoutValidationRecords}`,
+    `Finished-without-delivery records: ${analysis.finishedWithoutDeliveryRecords}`,
     `Iteration result records: ${analysis.iterationResultRecords}`,
     `Iteration-result-without-validation records: ${analysis.iterationResultWithoutValidationRecords}`,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
