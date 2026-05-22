@@ -235,11 +235,22 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (!state.active) return;
     if (state.phase !== "running") return;
 
-    const assistantText = lastAssistantText(event.messages ?? []);
+    const messages = event.messages ?? [];
+    const assistantText = lastAssistantText(messages);
     const decision = parseLoopDecision(assistantText);
     const validated = parseValidated(assistantText);
 
     if (!decision) {
+      if (hasContextOverflowProviderError(messages)) {
+        const alreadyWaitingForContextOverflowCompaction = state.lastReason === "context_overflow_waiting_for_compaction";
+        state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0 };
+        appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
+        pi.appendEntry(CUSTOM_STATE_TYPE, state);
+        refreshUi(ctx);
+        notify(ctx, "Development loop is waiting for compaction after a provider context-overflow error.", "warning");
+        if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
+        return;
+      }
       if (!assistantText.trim()) {
         const emptyResponseRetries = (state.emptyResponseRetries ?? 0) + 1;
         if (emptyResponseRetries > EMPTY_RESPONSE_MAX_RETRIES) {
@@ -252,16 +263,6 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         refreshUi(ctx);
         notify(ctx, "Development loop is waiting for compaction or retry after an empty provider response.", "warning");
         scheduleEmptyResponseRetry(pi, ctx, state.iteration, emptyResponseRetries);
-        return;
-      }
-      if (isContextOverflowProviderError(assistantText)) {
-        const alreadyWaitingForContextOverflowCompaction = state.lastReason === "context_overflow_waiting_for_compaction";
-        state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0 };
-        appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
-        pi.appendEntry(CUSTOM_STATE_TYPE, state);
-        refreshUi(ctx);
-        notify(ctx, "Development loop is waiting for compaction after a provider context-overflow error.", "warning");
-        if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
         return;
       }
       blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");
@@ -1173,6 +1174,10 @@ function recordEvent(record?: Record<string, unknown>): string | undefined {
 
 function isContextOverflowProviderError(text: string): boolean {
   return /context[\s_-]*length[\s_-]*exceeded|input exceeds the context window|context overflow detected/i.test(text);
+}
+
+function hasContextOverflowProviderError(messages: Array<{ role?: string; content?: unknown }>): boolean {
+  return messages.some((message) => message.role !== "user" && isContextOverflowProviderError(messageText(message)));
 }
 
 function parseFinalMarkerBlock(text: string): RegExpMatchArray | null {

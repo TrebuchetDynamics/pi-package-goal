@@ -642,6 +642,30 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
 
+    await command.handler("start --iterations=1 non-assistant context overflow", ctx);
+    const sentBeforeNonAssistantContextOverflow = sent.length;
+    const compactCallsBeforeNonAssistantContextOverflow = contextOverflowCompactCalls.length;
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "system",
+        content: "Error: Codex error: {type:error,error:{type:invalid_request_error,code:context_length_exceeded,message:Your input exceeds the context window of this model. Please adjust your input and try again.,param:input},sequence_number:4}",
+      }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, true, "non-assistant context-overflow provider errors should wait for compaction instead of retrying as empty responses");
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "context_overflow_waiting_for_compaction");
+    assert.equal(contextOverflowCompactCalls.length, compactCallsBeforeNonAssistantContextOverflow + 1, "non-assistant context-overflow provider errors should request compaction when available");
+    assert.equal(sent.length, sentBeforeNonAssistantContextOverflow, "non-assistant context-overflow provider errors should not retry before compaction");
+
+    await handlers.get("session_compact")({ compactionEntry: { tokensBefore: 272879 } }, ctx);
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done",
+      }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.phase, "done");
+
     await command.handler("start --iterations=1 blocker", ctx);
     await handlers.get("agent_end")({
       messages: [{ role: "assistant", content: "No markers here." }],
