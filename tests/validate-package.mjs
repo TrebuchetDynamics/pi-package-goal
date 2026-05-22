@@ -1036,6 +1036,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing_assistant_text" }),
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_provider_response_retry_sent", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", reason: "retry 1/1" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "iteration_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "compaction_before_next_iteration" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_before_next_iteration", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "tokens=120000 · context_window=272000" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_resume_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_failed_before_next_iteration", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "compaction command failed" }),
@@ -1064,7 +1065,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 19/);
+      assert.match(messages.at(-1).content, /Records: 20/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
@@ -1122,8 +1123,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top provider error code: context_length_exceeded \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
-      assert.match(messages.at(-1).content, /Compaction events: 3/);
-      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(3 records\)/);
+      assert.match(messages.at(-1).content, /Compaction events: 4/);
+      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(4 records\)/);
+      assert.match(messages.at(-1).content, /Premature compaction records: 1/);
+      assert.match(messages.at(-1).content, /Top premature compaction log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
+      assert.match(messages.at(-1).content, /Premature compaction churn: reload stale Pi sessions or inspect compaction policy when compaction happens below current token and context-ratio thresholds/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
@@ -1207,7 +1211,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(3 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 31/);
+      assert.match(messages.at(-1).content, /Records: 32/);
       assert.match(messages.at(-1).content, /Loops started: 6/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
@@ -1259,8 +1263,10 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top provider error code: context_length_exceeded \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
-      assert.match(messages.at(-1).content, /Compaction events: 3/);
-      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(3 records\)/);
+      assert.match(messages.at(-1).content, /Compaction events: 4/);
+      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(4 records\)/);
+      assert.match(messages.at(-1).content, /Premature compaction records: 1/);
+      assert.match(messages.at(-1).content, /Top premature compaction log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
@@ -1282,7 +1288,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, sinceAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(3 log files\)/);
       assert.match(messages.at(-1).content, /Since: 1970-01-01T00:00:00.012Z/);
-      assert.match(messages.at(-1).content, /Since-filtered records: 23/);
+      assert.match(messages.at(-1).content, /Since-filtered records: 24/);
       assert.match(messages.at(-1).content, /Records: 8/);
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
@@ -1355,6 +1361,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Top provider error code/);
         assert.match(html, /Top provider error category/);
         assert.match(html, /Top compaction log source/);
+        assert.match(html, /Premature compaction records/);
+        assert.match(html, /Top premature compaction log source/);
         assert.match(html, /Compaction resume records/);
         assert.match(html, /Compaction failure records/);
         assert.match(html, /Top compaction failure reason/);
