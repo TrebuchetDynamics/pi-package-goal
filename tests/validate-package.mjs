@@ -987,6 +987,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Compaction events: 3/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
+      assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
       assert.match(messages.at(-1).content, /User steering records: 1/);
       assert.match(messages.at(-1).content, /Max user steering length: 25/);
       assert.match(messages.at(-1).content, /Provider-noise topic records: 1/);
@@ -1090,6 +1091,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Compaction events: 3/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
+      assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
       assert.match(messages.at(-1).content, /User steering records: 1/);
       assert.match(messages.at(-1).content, /Max user steering length: 25/);
       assert.match(messages.at(-1).content, /Provider-noise topic records: 1/);
@@ -1131,6 +1133,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Queued iteration records/);
         assert.match(html, /Compaction resume records/);
         assert.match(html, /Compaction failure records/);
+        assert.match(html, /Top compaction failure reason/);
         assert.match(html, /User steering records/);
         assert.match(html, /Max user steering length/);
         assert.match(html, /Provider-noise topic records/);

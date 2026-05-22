@@ -148,6 +148,8 @@ type LoopLogAnalysis = {
   compactionEvents: number;
   compactionResumeRecords: number;
   compactionFailureRecords: number;
+  topCompactionFailureReason?: string;
+  topCompactionFailureReasonCount: number;
   userSteeringRecords: number;
   maxUserSteeringLength: number;
   providerNoiseTopicRecords: number;
@@ -171,6 +173,7 @@ type LoopLogAccumulator = {
   nextSafeActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
+  compactionFailureReasonCounts: Map<string, number>;
   markerRecoveryKeys: Set<string>;
   markerRecoverySucceededKeys: Set<string>;
   markerRecoveryBlockedKeys: Set<string>;
@@ -1046,6 +1049,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     nextSafeActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
+    compactionFailureReasonCounts: new Map<string, number>(),
     markerRecoveryKeys: new Set<string>(),
     markerRecoverySucceededKeys: new Set<string>(),
     markerRecoveryBlockedKeys: new Set<string>(),
@@ -1059,7 +1063,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1180,7 +1184,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (isCompactionResumeEvent(event)) analysis.compactionResumeRecords++;
-    if (isCompactionFailureEvent(event)) analysis.compactionFailureRecords++;
+    if (isCompactionFailureEvent(event)) {
+      analysis.compactionFailureRecords++;
+      const reason = recordReason(record, event) || "<missing reason>";
+      const count = incrementCount(compactionFailureReasonCounts, reason);
+      if (count > analysis.topCompactionFailureReasonCount) {
+        analysis.topCompactionFailureReason = reason;
+        analysis.topCompactionFailureReasonCount = count;
+      }
+    }
     if (event === "user_steering") {
       analysis.userSteeringRecords++;
       analysis.maxUserSteeringLength = Math.max(analysis.maxUserSteeringLength, recordUserSteeringLength(record));
@@ -1314,6 +1326,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     compactionEvents: 0,
     compactionResumeRecords: 0,
     compactionFailureRecords: 0,
+    topCompactionFailureReasonCount: 0,
     userSteeringRecords: 0,
     maxUserSteeringLength: 0,
     providerNoiseTopicRecords: 0,
@@ -1501,6 +1514,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
+    analysis.topCompactionFailureReason ? ["Top compaction failure reason", `${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount})`] : undefined,
     analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
   ].filter((fact): fact is [string, string] => Boolean(fact));
   const factRows = topFacts.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("\n");
@@ -1602,6 +1616,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Compaction events: ${analysis.compactionEvents}`,
     `Compaction resume records: ${analysis.compactionResumeRecords}`,
     `Compaction failure records: ${analysis.compactionFailureRecords}`,
+    analysis.topCompactionFailureReason ? `Top compaction failure reason: ${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount} ${analysis.topCompactionFailureReasonCount === 1 ? "record" : "records"})` : undefined,
     `User steering records: ${analysis.userSteeringRecords}`,
     `Max user steering length: ${analysis.maxUserSteeringLength}`,
     `Provider-noise topic records: ${analysis.providerNoiseTopicRecords}`,
