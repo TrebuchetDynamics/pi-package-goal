@@ -324,6 +324,7 @@ const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-loop", "logs.jsonl");
 const DEFAULT_ITERATIONS = 3;
 const HARD_MAX_ITERATIONS = 25;
 const STATUS_TOPIC_MAX = 72;
+const STATUS_REPORT_HISTORY_LIMIT = 3;
 const STEERING_TOPIC_MAX = 240;
 const PROMPT_OBJECTIVE_MAX = 600;
 const LOG_TOPIC_MAX = 600;
@@ -2336,6 +2337,7 @@ function statusReport(s: LoopState, cwd = process.cwd()): string {
     `topic: ${objectiveText(s.topic)}`,
     `state: ${stateExplanation(s, last)}`,
     summarizeLastLoopRecord(last),
+    ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
     "Commands: /development-loop status | /development-loop analyze-logs | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
   ].join("\n");
@@ -2455,6 +2457,24 @@ function reportNextStepSummaryParts(nextSteps: string[], limit = 3): string[] {
   return parts;
 }
 
+function summarizeRecentReportContext(records: Record<string, unknown>[]): string[] {
+  if (!records.length) return [];
+  return [
+    "Recent report context:",
+    ...records.map((record) => `- ${formatRecentReportRecord(record)}`),
+  ];
+}
+
+function formatRecentReportRecord(record: Record<string, unknown>): string {
+  const summary = recordReportSummary(record);
+  return compactJoin([
+    typeof record.iteration === "number" ? `i${record.iteration}` : undefined,
+    typeof record.decision === "string" ? record.decision : undefined,
+    summary ? `summary ${compactStatusText(summary)}` : undefined,
+    ...reportNextStepSummaryParts(recordReportNextSteps(record)).map(compactStatusText),
+  ]);
+}
+
 function widgetNextStepsSummary(nextSteps: string[]): string | undefined {
   if (!nextSteps[0]) return undefined;
   const suffix = nextSteps.length > 1 ? ` (+${nextSteps.length - 1} more)` : "";
@@ -2531,6 +2551,22 @@ function readLastLoopRecord(logPath: string): Record<string, unknown> | undefine
     return undefined;
   }
   return undefined;
+}
+
+function readRecentReportRecords(logPath: string, limit = STATUS_REPORT_HISTORY_LIMIT): Record<string, unknown>[] {
+  try {
+    const content = fs.readFileSync(logPath, "utf8").trim();
+    if (!content) return [];
+    const lines = content.split(/\r?\n/).filter(Boolean);
+    const records: Record<string, unknown>[] = [];
+    for (let i = lines.length - 1; i >= 0 && records.length < limit; i--) {
+      const parsed = parseLogRecord(lines[i]);
+      if (parsed && (recordReportSummary(parsed) || recordReportNextSteps(parsed).length > 0)) records.push(parsed);
+    }
+    return records;
+  } catch {
+    return [];
+  }
 }
 
 function parseLogRecord(line: string): Record<string, unknown> | undefined {
