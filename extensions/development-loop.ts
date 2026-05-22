@@ -2228,6 +2228,15 @@ Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
 Possible next steps: provide TEST_SERVICE_TOKEN; rerun \`npm test\`; restart /development-loop with the same objective.
 
+Example stop handoff end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: final documentation cleanup and handoff.
+Changed files: README.md — documented the completed workflow and resume notes.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: def5678 pushed to current branch.
+Blocker state: none; stopping because the selected objective is complete.
+Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

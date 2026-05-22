@@ -148,6 +148,21 @@ DEV_LOOP_VALIDATED: no
 DEV_LOOP_DECISION: blocked
 ```
 
+Example stop handoff end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: final documentation cleanup and handoff.
+Changed files: README.md — documented the completed workflow and resume notes.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: def5678 pushed to current branch.
+Blocker state: none; stopping because the selected objective is complete.
+Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
+DEV_LOOP_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-loop status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
+DEV_LOOP_VALIDATED: yes
+DEV_LOOP_DECISION: stop
+```
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.

@@ -540,6 +540,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
     assert.match(sent[0].content, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
     assert.match(sent[0].content, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-loop with the same objective/);
+    assert.match(sent[0].content, /Example stop handoff end report/);
+    assert.match(sent[0].content, /Selected slice: final documentation cleanup and handoff/);
+    assert.match(sent[0].content, /Blocker state: none; stopping because the selected objective is complete/);
+    assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2113,6 +2117,10 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
   assert.match(readme, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
   assert.match(readme, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-loop with the same objective/);
+  assert.match(readme, /Example stop handoff end report/);
+  assert.match(readme, /Selected slice: final documentation cleanup and handoff/);
+  assert.match(readme, /Blocker state: none; stopping because the selected objective is complete/);
+  assert.match(readme, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
