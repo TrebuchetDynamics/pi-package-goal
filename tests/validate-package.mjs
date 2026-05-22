@@ -544,6 +544,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Selected slice: final documentation cleanup and handoff/);
     assert.match(sent[0].content, /Blocker state: none; stopping because the selected objective is complete/);
     assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+    assert.match(sent[0].content, /Example interrupted resume end report/);
+    assert.match(sent[0].content, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
+    assert.match(sent[0].content, /Blocker state: none; provider interruption recovered, same slice resumed/);
+    assert.match(sent[0].content, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2121,6 +2125,10 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Selected slice: final documentation cleanup and handoff/);
   assert.match(readme, /Blocker state: none; stopping because the selected objective is complete/);
   assert.match(readme, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+  assert.match(readme, /Example interrupted resume end report/);
+  assert.match(readme, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
+  assert.match(readme, /Blocker state: none; provider interruption recovered, same slice resumed/);
+  assert.match(readme, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);

@@ -2237,6 +2237,15 @@ Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
 Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
 
+Example interrupted resume end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: resumed the same iteration after compaction without advancing the loop.
+Changed files: none committed; resume prompt preserved current dirty state.
+Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
+Commit/push evidence: not attempted; no deliverable slice yet.
+Blocker state: none; provider interruption recovered, same slice resumed.
+Possible next steps: inspect \`.pi/development-loop/logs.jsonl\`; run \`/development-loop status\`; continue the same smallest slice.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

@@ -163,6 +163,21 @@ DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: stop
 ```
 
+Example interrupted resume end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: resumed the same iteration after compaction without advancing the loop.
+Changed files: none committed; resume prompt preserved current dirty state.
+Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
+Commit/push evidence: not attempted; no deliverable slice yet.
+Blocker state: none; provider interruption recovered, same slice resumed.
+Possible next steps: inspect `.pi/development-loop/logs.jsonl`; run `/development-loop status`; continue the same smallest slice.
+DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-loop/logs.jsonl","Run /development-loop status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
+DEV_LOOP_VALIDATED: yes
+DEV_LOOP_DECISION: continue
+```
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
