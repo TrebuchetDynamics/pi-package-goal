@@ -226,6 +226,13 @@ End report quality checklist:
 - Blocker state: none, or the specific missing prerequisite or unsafe condition.
 - Next step: one concrete action matched to continue, blocked, stop, or done.
 
+End report anti-patterns to avoid:
+
+- Do not write vague summaries like "fixed stuff" or "all good".
+- Do not claim tests pass without naming the exact commands and outcomes.
+- Do not choose continue when validation is red or required evidence is missing.
+- Do not omit why commit or push was skipped.
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.

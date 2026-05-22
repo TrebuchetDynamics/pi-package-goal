@@ -2278,6 +2278,12 @@ End report quality checklist:
 - Blocker state: none, or the specific missing prerequisite or unsafe condition.
 - Next step: one concrete action matched to continue, blocked, stop, or done.
 
+End report anti-patterns to avoid:
+- Do not write vague summaries like "fixed stuff" or "all good".
+- Do not claim tests pass without naming the exact commands and outcomes.
+- Do not choose continue when validation is red or required evidence is missing.
+- Do not omit why commit or push was skipped.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

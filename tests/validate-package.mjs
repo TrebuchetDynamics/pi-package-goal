@@ -568,6 +568,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Validation: each command with pass, fail, or not-run reason/);
     assert.match(sent[0].content, /Delivery: commit hash and push status, or why delivery was skipped/);
     assert.match(sent[0].content, /Next step: one concrete action matched to continue, blocked, stop, or done/);
+    assert.match(sent[0].content, /End report anti-patterns to avoid/);
+    assert.match(sent[0].content, /Do not write vague summaries like "fixed stuff" or "all good"/);
+    assert.match(sent[0].content, /Do not claim tests pass without naming the exact commands and outcomes/);
+    assert.match(sent[0].content, /Do not choose continue when validation is red or required evidence is missing/);
+    assert.match(sent[0].content, /Do not omit why commit or push was skipped/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2170,6 +2175,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Validation: each command with pass, fail, or not-run reason/);
   assert.match(readme, /Delivery: commit hash and push status, or why delivery was skipped/);
   assert.match(readme, /Next step: one concrete action matched to continue, blocked, stop, or done/);
+  assert.match(readme, /End report anti-patterns to avoid/);
+  assert.match(readme, /Do not write vague summaries like "fixed stuff" or "all good"/);
+  assert.match(readme, /Do not claim tests pass without naming the exact commands and outcomes/);
+  assert.match(readme, /Do not choose continue when validation is red or required evidence is missing/);
+  assert.match(readme, /Do not omit why commit or push was skipped/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
