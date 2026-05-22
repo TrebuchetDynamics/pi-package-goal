@@ -103,6 +103,7 @@ type LoopLogAnalysis = {
   invalidRecords: number;
   loopsStarted: number;
   finishedLoops: number;
+  iterationResultRecords: number;
   topFinishDecision?: string;
   topFinishDecisionCount: number;
   blockedLoops: number;
@@ -1047,6 +1048,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     analysis.records++;
     const event = recordEvent(record) || "";
     const runId = recordRunId(record);
+    if (event === "iteration_result") analysis.iterationResultRecords++;
     const recoveryKey = markerRecoveryKey(record, runId);
     if (event === "missing_final_marker_recovery_requested") {
       analysis.finalMarkerRecoveryRequests++;
@@ -1172,6 +1174,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     invalidRecords: 0,
     loopsStarted: 0,
     finishedLoops: 0,
+    iterationResultRecords: 0,
     topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
@@ -1313,6 +1316,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Records", `${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`],
     ["Loops started", String(analysis.loopsStarted)],
     ["Finished loops", String(analysis.finishedLoops)],
+    ["Iteration result records", String(analysis.iterationResultRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
     ["Self-improvement queued records", String(analysis.selfImprovementQueuedRecords)],
@@ -1403,6 +1407,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
     `Finished loops: ${analysis.finishedLoops}`,
+    `Iteration result records: ${analysis.iterationResultRecords}`,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
@@ -1841,7 +1846,9 @@ function recordEvent(record?: Record<string, unknown>): string | undefined {
 
 function rawRecordEvent(record?: Record<string, unknown>): string | undefined {
   const value = record?.event;
-  return typeof value === "string" ? value : undefined;
+  if (typeof value === "string") return value;
+  const type = record?.type;
+  return typeof type === "string" ? type : undefined;
 }
 
 function normalizeLoopLogEvent(value: string | undefined): string | undefined {

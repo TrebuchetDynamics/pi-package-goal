@@ -978,6 +978,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ timestamp: new Date(10).toISOString(), event: "loop_start", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(11).toISOString(), event: "assistant_decision", iteration: 1, decision: "continue", ciGreen: true, finalLine: "LOOP_DECISION: continue" }),
         JSON.stringify({ timestamp: new Date(12).toISOString(), event: "iteration_result", iteration: 1, decision: "continue", files: ["lib/profile.dart"], validation: ["flutter test"], commit: "def5678", pushed: "origin/main", ci_green: "yes" }),
+        JSON.stringify({ timestamp: new Date(12).toISOString(), type: "iteration_result", iteration: "1/3", loop_decision: "continue", validation: ["npm test"], commit: "typed123", push: "origin/main", ci_gate: "local_full_gate_passed" }),
         JSON.stringify({ timestamp: new Date(13).toISOString(), event: "done", iteration: 1, reason: "assistant reported LOOP_DECISION: done with CI_GREEN: yes" }),
         JSON.stringify({ timestamp: new Date(14).toISOString(), event: "loop_start", topic: "custom blocked", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(15).toISOString(), event: "blocked", iteration: 1, reason: "assistant_decision_missing", ciGreen: false }),
@@ -994,15 +995,16 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, customAnalysisMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Records: 8/);
+      assert.match(messages.at(-1).content, /Records: 9/);
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
+      assert.match(messages.at(-1).content, /Iteration result records: 2/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: assistant_decision_missing \(1 record\)/);
-      assert.match(messages.at(-1).content, /Delivery evidence records: 1/);
-      assert.match(messages.at(-1).content, /Top push status: origin\/main \(1 record\)/);
-      assert.match(messages.at(-1).content, /CI-green records: 2/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
+      assert.match(messages.at(-1).content, /Top push status: origin\/main \(2 records\)/);
+      assert.match(messages.at(-1).content, /CI-green records: 3/);
       assert.match(messages.at(-1).content, /CI-red records: 2/);
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Top CI-gate missing reason: missing_CI_GREEN_yes \(1 record\)/);
@@ -1020,18 +1022,19 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 20/);
+      assert.match(messages.at(-1).content, /Records: 21/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
+      assert.match(messages.at(-1).content, /Iteration result records: 3/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
       assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
-      assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
-      assert.match(messages.at(-1).content, /Validation evidence records: 2/);
-      assert.match(messages.at(-1).content, /Commit evidence records: 2/);
-      assert.match(messages.at(-1).content, /Push evidence records: 2/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 3/);
+      assert.match(messages.at(-1).content, /Validation evidence records: 3/);
+      assert.match(messages.at(-1).content, /Commit evidence records: 3/);
+      assert.match(messages.at(-1).content, /Push evidence records: 3/);
       assert.match(messages.at(-1).content, /CI-red records: 2/);
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
@@ -1060,6 +1063,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         const html = fs.readFileSync(htmlPath, "utf8");
         assert.match(html, /<html lang="en">/);
         assert.match(html, /Development Loop Health Report/);
+        assert.match(html, /Iteration result records/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /CI-red records/);
