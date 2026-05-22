@@ -105,6 +105,7 @@ type LoopLogAnalysis = {
   finishedLoops: number;
   finishedWithoutValidationRecords: number;
   iterationResultRecords: number;
+  iterationResultWithoutValidationRecords: number;
   topFinishDecision?: string;
   topFinishDecisionCount: number;
   blockedLoops: number;
@@ -1052,7 +1053,10 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     analysis.records++;
     const event = recordEvent(record) || "";
     const runId = recordRunId(record);
-    if (event === "iteration_result") analysis.iterationResultRecords++;
+    if (event === "iteration_result") {
+      analysis.iterationResultRecords++;
+      if (recordValidationEvidence(record).length === 0) analysis.iterationResultWithoutValidationRecords++;
+    }
     const recoveryKey = markerRecoveryKey(record, runId);
     if (event === "missing_final_marker_recovery_requested") {
       analysis.finalMarkerRecoveryRequests++;
@@ -1188,6 +1192,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     finishedLoops: 0,
     finishedWithoutValidationRecords: 0,
     iterationResultRecords: 0,
+    iterationResultWithoutValidationRecords: 0,
     topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
@@ -1314,6 +1319,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
+  if (analysis.iterationResultWithoutValidationRecords > 0) recommendations.push("Iteration results without validation evidence: require validationCommands on every continue/done iteration result before scheduling follow-up work.");
   if (analysis.finishedWithoutValidationRecords > 0) recommendations.push("Finished loops without validation evidence: include validationCommands in terminal done records or link the final report to recorded validation evidence.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
@@ -1338,6 +1344,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Finished loops", String(analysis.finishedLoops)],
     ["Finished-without-validation records", String(analysis.finishedWithoutValidationRecords)],
     ["Iteration result records", String(analysis.iterationResultRecords)],
+    ["Iteration-result-without-validation records", String(analysis.iterationResultWithoutValidationRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
     ["Self-improvement queued records", String(analysis.selfImprovementQueuedRecords)],
@@ -1433,6 +1440,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Finished loops: ${analysis.finishedLoops}`,
     `Finished-without-validation records: ${analysis.finishedWithoutValidationRecords}`,
     `Iteration result records: ${analysis.iterationResultRecords}`,
+    `Iteration-result-without-validation records: ${analysis.iterationResultWithoutValidationRecords}`,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,

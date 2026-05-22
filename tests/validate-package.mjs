@@ -934,7 +934,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(7).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
         JSON.stringify({ at: new Date(8).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
         JSON.stringify({ at: new Date(9).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
-        JSON.stringify({ at: new Date(10).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "continue", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "unpushed123" }),
+        JSON.stringify({ at: new Date(10).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "continue", changedFiles: ["README.md"], commitHash: "unpushed123" }),
         JSON.stringify({ at: new Date(11).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
       const analysisMessagesBefore = messages.length;
@@ -954,6 +954,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Iteration result records: 2/);
+      assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
@@ -965,7 +966,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
       assert.match(messages.at(-1).content, /Changed-file evidence records: 2/);
-      assert.match(messages.at(-1).content, /Validation evidence records: 2/);
+      assert.match(messages.at(-1).content, /Validation evidence records: 1/);
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
       assert.match(messages.at(-1).content, /Push evidence records: 1/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
@@ -1037,13 +1038,14 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
       assert.match(messages.at(-1).content, /Iteration result records: 4/);
+      assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
       assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 4/);
-      assert.match(messages.at(-1).content, /Validation evidence records: 4/);
+      assert.match(messages.at(-1).content, /Validation evidence records: 3/);
       assert.match(messages.at(-1).content, /Commit evidence records: 4/);
       assert.match(messages.at(-1).content, /Push evidence records: 3/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
@@ -1078,6 +1080,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /<html lang="en">/);
         assert.match(html, /Development Loop Health Report/);
         assert.match(html, /Iteration result records/);
+        assert.match(html, /Iteration-result-without-validation records/);
         assert.match(html, /Finished-without-validation records/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
