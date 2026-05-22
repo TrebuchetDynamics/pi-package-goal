@@ -2,6 +2,8 @@
 set -euo pipefail
 
 EXECUTE=0
+DELETE_STATE=0
+CONFIRM_DELETE_STATE=0
 if [ -n "${HOME:-}" ]; then
   CODEX_DIR="$HOME/.codex"
 else
@@ -10,7 +12,7 @@ fi
 
 usage() {
   cat <<'USAGE'
-Usage: codex-storage-cleanup.sh [--execute] [--codex-dir PATH]
+Usage: codex-storage-cleanup.sh [--execute] [--delete-state --i-understand-local-state-will-be-lost] [--codex-dir PATH]
 
 Safely prepares local Codex storage for repair after errors such as:
 - No space left on device
@@ -19,7 +21,9 @@ Safely prepares local Codex storage for repair after errors such as:
 
 Default mode is a dry run. With --execute, the script removes only transient
 ~/.codex/tmp and moves state_*.sqlite* files into ~/.codex/backup/<timestamp>/.
-It never deletes the whole ~/.codex directory.
+Use --delete-state only as a last resort; it also requires
+--i-understand-local-state-will-be-lost. The script never deletes the whole
+~/.codex directory.
 USAGE
 }
 
@@ -27,6 +31,12 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --execute)
       EXECUTE=1
+      ;;
+    --delete-state)
+      DELETE_STATE=1
+      ;;
+    --i-understand-local-state-will-be-lost)
+      CONFIRM_DELETE_STATE=1
       ;;
     --codex-dir)
       shift
@@ -64,6 +74,11 @@ if [ ! -d "$CODEX_DIR" ]; then
   exit 0
 fi
 
+if [ "$EXECUTE" -eq 1 ] && [ "$DELETE_STATE" -eq 1 ] && [ "$CONFIRM_DELETE_STATE" -ne 1 ]; then
+  echo "--delete-state requires --i-understand-local-state-will-be-lost" >&2
+  exit 2
+fi
+
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_DIR="$CODEX_DIR/backup/codex-state-$TIMESTAMP"
 
@@ -75,10 +90,14 @@ if [ "$EXECUTE" -ne 1 ]; then
   echo "Dry run: no files changed."
   echo "Would remove transient temp directory: $CODEX_DIR/tmp"
   if [ "${#STATE_FILES[@]}" -gt 0 ]; then
-    echo "Would back up Codex state files to: $BACKUP_DIR"
+    if [ "$DELETE_STATE" -eq 1 ]; then
+      echo "Would delete Codex state files:"
+    else
+      echo "Would back up Codex state files to: $BACKUP_DIR"
+    fi
     printf '  %s\n' "${STATE_FILES[@]}"
   else
-    echo "No Codex state_*.sqlite files found to back up."
+    echo "No Codex state_*.sqlite files found to back up or delete."
   fi
   echo "Run again with --execute after confirming enough free disk space."
   exit 0
@@ -92,11 +111,16 @@ else
 fi
 
 if [ "${#STATE_FILES[@]}" -gt 0 ]; then
-  mkdir -p "$BACKUP_DIR"
-  mv "${STATE_FILES[@]}" "$BACKUP_DIR"/
-  echo "Backed up Codex state files to: $BACKUP_DIR"
+  if [ "$DELETE_STATE" -eq 1 ]; then
+    rm -f -- "${STATE_FILES[@]}"
+    echo "Deleted Codex state files from: $CODEX_DIR"
+  else
+    mkdir -p "$BACKUP_DIR"
+    mv "${STATE_FILES[@]}" "$BACKUP_DIR"/
+    echo "Backed up Codex state files to: $BACKUP_DIR"
+  fi
 else
-  echo "No Codex state_*.sqlite files found to back up."
+  echo "No Codex state_*.sqlite files found to back up or delete."
 fi
 
 echo "Retry Codex. If it offers safe repair, accept it after free space is available."

@@ -1639,6 +1639,8 @@ async function testCodexStorageCleanupScript() {
   const source = read(scriptRel);
   assert.match(source, /--execute/);
   assert.match(source, /--codex-dir/);
+  assert.match(source, /--delete-state/);
+  assert.match(source, /--i-understand-local-state-will-be-lost/);
   assert.doesNotMatch(source, /rm -rf "?\$\{?CODEX_DIR\}?"?\s*$/m);
   assert.doesNotMatch(source, /rm -rf "?\$\{?codex_dir\}?"?\s*$/m);
 
@@ -1673,6 +1675,34 @@ async function testCodexStorageCleanupScript() {
       "state_5.sqlite-shm",
       "state_5.sqlite-wal",
     ]);
+
+    const deleteDir = path.join(fixtureRoot, ".codex-delete");
+    fs.mkdirSync(path.join(deleteDir, "tmp"), { recursive: true });
+    fs.writeFileSync(path.join(deleteDir, "config.toml"), "model = \"codex\"\n");
+    fs.writeFileSync(path.join(deleteDir, "state_6.sqlite"), "sqlite\n");
+
+    const deleteDryRun = execFileSync("bash", [script, "--delete-state", "--codex-dir", deleteDir], { encoding: "utf8" });
+    assert.match(deleteDryRun, /Would delete Codex state files/);
+    assert.ok(fs.existsSync(path.join(deleteDir, "state_6.sqlite")), "delete dry run removed sqlite state");
+
+    assert.throws(
+      () => execFileSync("bash", [script, "--execute", "--delete-state", "--codex-dir", deleteDir], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+      /requires --i-understand-local-state-will-be-lost/,
+    );
+    assert.ok(fs.existsSync(path.join(deleteDir, "state_6.sqlite")), "unguarded delete removed sqlite state");
+
+    const deleted = execFileSync("bash", [
+      script,
+      "--execute",
+      "--delete-state",
+      "--i-understand-local-state-will-be-lost",
+      "--codex-dir",
+      deleteDir,
+    ], { encoding: "utf8" });
+    assert.match(deleted, /Deleted Codex state files/);
+    assert.equal(fs.existsSync(path.join(deleteDir, "tmp")), false);
+    assert.equal(fs.existsSync(path.join(deleteDir, "state_6.sqlite")), false);
+    assert.equal(fs.readFileSync(path.join(deleteDir, "config.toml"), "utf8"), "model = \"codex\"\n");
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -1688,6 +1718,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /database or disk is full/);
   assert.match(reference, /df -h "\$HOME"/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
+  assert.match(reference, /--delete-state/);
+  assert.match(reference, /--i-understand-local-state-will-be-lost/);
   assert.match(reference, /rm -rf ~\/\.codex\/tmp/);
   assert.match(reference, /mv ~\/\.codex\/state_\*\.sqlite\* ~\/\.codex\/backup\//);
   assert.match(reference, /rm -f ~\/\.codex\/state_\*\.sqlite/);
@@ -1742,6 +1774,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
   assert.match(readme, /codex-storage-cleanup\.sh --execute/);
+  assert.match(readme, /--delete-state --i-understand-local-state-will-be-lost/);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-loop status/);
   assert.match(readme, /`grill-me`/);

@@ -43,7 +43,13 @@ mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
 
 ## Last-resort reset command
 
-Only delete the local state database when backup or repair is not possible and losing local Codex session state is acceptable:
+Only delete the local state database when backup or repair is not possible and losing local Codex session state is acceptable. The helper requires an explicit acknowledgement for that path:
+
+```bash
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --delete-state --i-understand-local-state-will-be-lost
+```
+
+Equivalent manual last-resort command:
 
 ```bash
 rm -f ~/.codex/state_*.sqlite ~/.codex/state_*.sqlite-shm ~/.codex/state_*.sqlite-wal

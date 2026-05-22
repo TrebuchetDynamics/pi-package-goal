@@ -158,7 +158,13 @@ mkdir -p ~/.codex/backup
 mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
 ```
 
-Only delete the local state database when you accept losing local Codex session state:
+Only delete the local state database when you accept losing local Codex session state. The helper requires an explicit acknowledgement for that last-resort path:
+
+```bash
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --delete-state --i-understand-local-state-will-be-lost
+```
+
+Equivalent manual command:
 
 ```bash
 rm -f ~/.codex/state_*.sqlite ~/.codex/state_*.sqlite-shm ~/.codex/state_*.sqlite-wal
