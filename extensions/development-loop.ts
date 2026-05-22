@@ -107,6 +107,7 @@ type LoopLogAnalysis = {
   finishedWithoutDeliveryRecords: number;
   iterationResultRecords: number;
   iterationResultWithoutValidationRecords: number;
+  iterationPromptSentRecords: number;
   assistantDecisionRecords: number;
   topAssistantDecision?: string;
   topAssistantDecisionCount: number;
@@ -1063,6 +1064,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
       analysis.iterationResultRecords++;
       if (recordValidationEvidence(record).length === 0) analysis.iterationResultWithoutValidationRecords++;
     }
+    if (event === "iteration_prompt_sent") analysis.iterationPromptSentRecords++;
     if (event === "assistant_decision") {
       analysis.assistantDecisionRecords++;
       const decision = recordDecision(record, event) || "<missing decision>";
@@ -1180,6 +1182,18 @@ function isQueuedIterationEvent(event: string): boolean {
   return event === "iteration_queued" || event === "iteration_prompt_queued" || event === "compaction_continue_queued_iteration" || event === "compaction_resume_queued";
 }
 
+function hasPromptResultImbalance(analysis: LoopLogAnalysis): boolean {
+  return analysis.iterationPromptSentRecords !== analysis.iterationResultRecords;
+}
+
+function promptResultImbalanceText(analysis: LoopLogAnalysis): string {
+  const delta = analysis.iterationPromptSentRecords - analysis.iterationResultRecords;
+  if (delta === 0) return "0";
+  if (delta > 0) return `${delta} more ${delta === 1 ? "prompt" : "prompts"} than results`;
+  const resultDelta = Math.abs(delta);
+  return `${resultDelta} more ${resultDelta === 1 ? "result" : "results"} than prompts`;
+}
+
 function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalysis {
   const analysis = accumulator.analysis;
   const unresolvedRunIds = [...accumulator.startedRunIds].filter((runId) => !accumulator.terminalRunIds.has(runId)).length;
@@ -1210,6 +1224,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     finishedWithoutDeliveryRecords: 0,
     iterationResultRecords: 0,
     iterationResultWithoutValidationRecords: 0,
+    iterationPromptSentRecords: 0,
     assistantDecisionRecords: 0,
     topAssistantDecisionCount: 0,
     topFinishDecisionCount: 0,
@@ -1335,6 +1350,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
   if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
   if (analysis.queuedIterationRecords > 0) recommendations.push("Queued iterations: verify compaction/resume hooks flush queued prompts and do not leave runs waiting silently.");
+  if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
@@ -1374,6 +1390,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Finished-without-delivery records", String(analysis.finishedWithoutDeliveryRecords)],
     ["Iteration result records", String(analysis.iterationResultRecords)],
     ["Iteration-result-without-validation records", String(analysis.iterationResultWithoutValidationRecords)],
+    ["Iteration prompt sent records", String(analysis.iterationPromptSentRecords)],
+    ["Prompt/result imbalance", promptResultImbalanceText(analysis)],
     ["Assistant decision records", String(analysis.assistantDecisionRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
@@ -1473,6 +1491,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Finished-without-delivery records: ${analysis.finishedWithoutDeliveryRecords}`,
     `Iteration result records: ${analysis.iterationResultRecords}`,
     `Iteration-result-without-validation records: ${analysis.iterationResultWithoutValidationRecords}`,
+    `Iteration prompt sent records: ${analysis.iterationPromptSentRecords}`,
+    `Prompt/result imbalance: ${promptResultImbalanceText(analysis)}`,
     `Assistant decision records: ${analysis.assistantDecisionRecords}`,
     analysis.topAssistantDecision ? `Top assistant decision: ${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount} ${analysis.topAssistantDecisionCount === 1 ? "record" : "records"})` : undefined,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
