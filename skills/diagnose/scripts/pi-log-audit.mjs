@@ -128,6 +128,19 @@ function findLoopConfigs(piDir) {
     .sort((a, b) => a.localeCompare(b));
 }
 
+function readConfigAdapters(piDir, configNames) {
+  const adapters = new Map();
+  for (const configName of configNames) {
+    try {
+      const config = JSON.parse(fs.readFileSync(path.join(piDir, configName), "utf8"));
+      adapters.set(configName, config.adapter);
+    } catch {
+      adapters.set(configName, "bad_json");
+    }
+  }
+  return adapters;
+}
+
 function formatValue(value) {
   if (value === undefined || value === null || value === "") return "-";
   return String(value).replace(/\s+/g, " ").slice(0, 180);
@@ -226,7 +239,7 @@ function findLastResult(events) {
   return undefined;
 }
 
-function buildLogRecord(loopName, logPath, hasMatchingConfig) {
+function buildLogRecord(loopName, logPath, hasMatchingConfig, configAdapter) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
@@ -242,7 +255,7 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
   incrementSummary(status, attention, badJson, missingConfig);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig };
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -278,6 +291,7 @@ function printLogRecord(record, repoDir) {
     `last_push=${formatValue(record.lastResult?.pushStatus)}`,
     `status=${record.status}`,
     `config=${record.missingConfig ? "missing" : "present"}`,
+    `adapter=${formatValue(record.configAdapter)}`,
     `attention=${record.attention ? "yes" : "no"}`,
   ].join("\t"));
 
@@ -311,10 +325,14 @@ for (const piDir of piDirs) {
   const logs = findLoopLogs(piDir);
   const configNames = findLoopConfigs(piDir);
   const configNameSet = new Set(configNames);
+  const configAdapters = readConfigAdapters(piDir, configNames);
   const configOnlyIssue = logs.length === 0 && configNames.length > 0;
   incrementPiDirSummary(logs.length, configNames.length);
 
-  const records = logs.map(({ loopName, logPath }) => buildLogRecord(loopName, logPath, configNameSet.has(`${loopName}.json`)));
+  const records = logs.map(({ loopName, logPath }) => {
+    const matchingConfigName = `${loopName}.json`;
+    return buildLogRecord(loopName, logPath, configNameSet.has(matchingConfigName), configAdapters.get(matchingConfigName));
+  });
   const visibleRecords = options.attentionOnly ? records.filter((record) => record.attention) : records;
   if (options.attentionOnly && visibleRecords.length === 0 && !configOnlyIssue) continue;
 
