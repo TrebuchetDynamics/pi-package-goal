@@ -526,6 +526,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Development loop iteration 1\/2/);
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
+    assert.match(sent[0].content, /DEV_LOOP_REPORT/);
     assert.match(sent[0].content, /Task discovery cues/);
     assert.match(sent[0].content, /TODO\.md/);
     assert.match(sent[0].content, /progress\.json/);
@@ -655,6 +656,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         content: [
           "Typed delivery evidence follows.",
           'DEV_LOOP_REPORT: {"validated":true,"decision":"done","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed"}',
+          "DEV_LOOP_VALIDATED: yes",
+          "DEV_LOOP_DECISION: done",
         ].join("\n"),
       }],
     }, ctx);

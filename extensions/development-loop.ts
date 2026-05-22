@@ -1420,11 +1420,12 @@ Run one complete vertical development iteration:
 6. Run the validation commands above. If a command is not applicable, explain exact evidence and substitute the closest project-appropriate check.
 7. If validation fails twice with the same cause, stop and report the first failing stderr line.
 8. Apply the commit/push policy above.
-9. End with exact changed files, validations, blocker state, and these two final marker lines:
+9. End with exact changed files, validations, blocker state, a machine-readable delivery line when evidence exists, and these final marker lines:
+DEV_LOOP_REPORT: {"validated":true,"decision":"continue","changedFiles":["path"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
 DEV_LOOP_VALIDATED: yes|no
 DEV_LOOP_DECISION: continue|stop|blocked|done
 
-Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
+Omit unavailable DEV_LOOP_REPORT fields. Use false and blocked when validation is red. Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
 }
 
 function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -1932,7 +1933,9 @@ function parseValidated(text: string): boolean | undefined {
 }
 
 function parseTypedFinalReport(text: string): FinalReport | undefined {
-  const match = text.match(/(?:^|\r?\n)\s*DEV_LOOP_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
+  const markerBlock = parseFinalMarkerBlock(text);
+  const reportText = markerBlock && markerBlock.index !== undefined ? text.slice(0, markerBlock.index) : text;
+  const match = reportText.match(/(?:^|\r?\n)\s*DEV_LOOP_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
   if (!match) return undefined;
   const rawReport = parseLogRecord(match[1]);
   if (!rawReport) return undefined;
