@@ -136,7 +136,16 @@ df -h "$HOME"
 du -sh ~/.codex/* 2>/dev/null | sort -h
 ```
 
-Remove transient Codex temp files first:
+From this package checkout, you can preview the bundled safe cleanup helper before it changes anything:
+
+```bash
+bash skills/diagnose/scripts/codex-storage-cleanup.sh
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
+```
+
+The helper removes only transient Codex temp files and moves `state_*.sqlite*` files into a timestamped backup directory.
+
+Remove transient Codex temp files manually only if you are not using the helper:
 
 ```bash
 rm -rf ~/.codex/tmp

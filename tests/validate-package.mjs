@@ -1740,6 +1740,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /No space left on device/);
   assert.match(readme, /database or disk is full/);
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
+  assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
+  assert.match(readme, /codex-storage-cleanup\.sh --execute/);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-loop status/);
   assert.match(readme, /`grill-me`/);
