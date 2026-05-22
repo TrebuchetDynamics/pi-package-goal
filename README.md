@@ -111,7 +111,7 @@ Tips:
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration after an empty provider-error response.
 - If validation is red or credentials are needed, the loop should report `blocked`.
 - Progress logs go to `.pi/development-loop/logs.jsonl` by default.
-- Oversized objectives are capped in prompts and logs; logs keep `topicLength`, `topicHash`, and `topicKind` so repeated pasted context can be deduplicated without repeating the full paste.
+- Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
 - Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
 - Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, completion outcomes, unresolved starts, blocker reasons, empty provider responses, context overflows, compactions, topic sizes, repeated oversized topics, and likely improvement areas.
 

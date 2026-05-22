@@ -5,7 +5,7 @@ import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEven
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
-type ObjectiveKind = "short" | "oversized";
+type ObjectiveKind = "short" | "oversized" | "provider-noise";
 
 type DeliveryEvidence = {
   changedFiles?: string[];
@@ -74,6 +74,7 @@ type LoopLogRecord = {
   topicTruncated?: boolean;
   topicHash?: string;
   topicKind?: ObjectiveKind;
+  topicSanitized?: boolean;
   iteration: number;
   maxIterations: number;
   phase: LoopPhase;
@@ -1304,7 +1305,7 @@ function statusReport(s: LoopState, cwd = process.cwd()): string {
   return [
     statusLine(s),
     `adapter: ${s.adapterName}`,
-    `topic: ${singleLineText(s.topic)}`,
+    `topic: ${objectiveText(s.topic)}`,
     `state: ${stateExplanation(s, last)}`,
     summarizeLastLoopRecord(last),
     `log: ${relativeToCwd(cwd, logPath)}`,
@@ -1361,7 +1362,7 @@ function deliverySegment(s: LoopState): string {
 }
 
 function statusContext(s: LoopState): string | undefined {
-  if (s.active) return compactTopic(singleLineText(s.topic));
+  if (s.active) return compactTopic(objectiveText(s.topic));
   if (s.phase === "blocked") return compactStatusText(s.lastReason || String(s.lastDecision || "blocked"));
   if (s.phase === "done") return compactStatusText(s.lastReason || "complete");
   return s.lastDecision ? compactStatusText(String(s.lastDecision)) : undefined;
@@ -1447,16 +1448,24 @@ function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   }
 }
 
-function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated" | "topicHash" | "topicKind"> {
-  const topic = singleLineText(value);
-  const topicHash = hashText(topic);
-  if (topic.length <= LOG_TOPIC_MAX) return { topic, topicLength: topic.length, topicHash, topicKind: "short" };
+function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated" | "topicHash" | "topicKind" | "topicSanitized"> {
+  const info = objectiveInfo(value, LOG_TOPIC_MAX);
+  if (info.topic.length <= LOG_TOPIC_MAX) {
+    return {
+      topic: info.topic,
+      topicLength: info.rawLength,
+      topicHash: info.topicHash,
+      topicKind: info.kind,
+      ...(info.sanitized ? { topicSanitized: true } : {}),
+    };
+  }
   return {
-    topic: `${topic.slice(0, LOG_TOPIC_MAX - 1)}…`,
-    topicLength: topic.length,
+    topic: `${info.topic.slice(0, LOG_TOPIC_MAX - 1)}…`,
+    topicLength: info.rawLength,
     topicTruncated: true,
-    topicHash,
-    topicKind: "oversized",
+    topicHash: info.topicHash,
+    topicKind: info.kind,
+    ...(info.sanitized ? { topicSanitized: true } : {}),
   };
 }
 
@@ -2009,15 +2018,38 @@ function compactTopic(topic: string): string {
 }
 
 function promptObjectiveText(value: unknown): string {
-  const text = singleLineText(value);
-  if (text.length <= PROMPT_OBJECTIVE_MAX) return text;
-  return `${text.slice(0, PROMPT_OBJECTIVE_MAX - 1)}…`;
+  const info = objectiveInfo(value, PROMPT_OBJECTIVE_MAX);
+  if (info.topic.length <= PROMPT_OBJECTIVE_MAX) return info.topic;
+  return `${info.topic.slice(0, PROMPT_OBJECTIVE_MAX - 1)}…`;
 }
 
 function objectiveIntakeSummary(value: unknown): string {
-  const text = singleLineText(value);
-  const kind: ObjectiveKind = text.length > PROMPT_OBJECTIVE_MAX ? "oversized" : "short";
-  return `${kind} objective · length ${text.length} · hash ${hashText(text)}`;
+  const info = objectiveInfo(value, PROMPT_OBJECTIVE_MAX);
+  return `${info.kind} objective · length ${info.rawLength} · hash ${info.topicHash}`;
+}
+
+function objectiveInfo(value: unknown, oversizedThreshold: number): { topic: string; rawLength: number; topicHash: string; kind: ObjectiveKind; sanitized: boolean } {
+  const rawTopic = singleLineText(value);
+  const topic = stripProviderErrorSuffix(rawTopic);
+  const sanitized = topic !== rawTopic;
+  const kind: ObjectiveKind = sanitized ? "provider-noise" : rawTopic.length > oversizedThreshold ? "oversized" : "short";
+  return {
+    topic,
+    rawLength: rawTopic.length,
+    topicHash: hashText(topic),
+    kind,
+    sanitized,
+  };
+}
+
+function objectiveText(value: unknown): string {
+  return objectiveInfo(value, PROMPT_OBJECTIVE_MAX).topic;
+}
+
+function stripProviderErrorSuffix(text: string): string {
+  const errorIndex = text.search(/\bError:\s+Codex error:.*context[\s_-]*length[\s_-]*exceeded/i);
+  if (errorIndex > 0) return text.slice(0, errorIndex).trim();
+  return text;
 }
 
 function hashText(text: string): string {

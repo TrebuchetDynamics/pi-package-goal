@@ -434,6 +434,24 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(objectiveIntakeLine ?? "", /Objective intake: oversized objective · length \d+ · hash [0-9a-f]{12}/);
     assert.doesNotMatch(objectiveIntakeLine ?? "", new RegExp(longTailMarker));
     assert.doesNotMatch(longPrompt, new RegExp(longTailMarker));
+
+    const providerNoiseTopic = "read source loop logs Error: Codex error: {type:error,error:{type:invalid_request_error,code:context_length _exceeded,message:Your input exceeds the context window of this model. Please adjust your input and try again.,param:input},sequence_number:2} Warning: Development loop is waiting for compaction";
+    const providerNoisePrompt = mod.__test__.buildIterationPrompt({
+      active: true,
+      adapterName: "generic-git",
+      topic: providerNoiseTopic,
+      iteration: 1,
+      maxIterations: 1,
+      startedAt: new Date(0).toISOString(),
+      logPath: path.join(promptRoot, ".pi", "development-loop", "logs.jsonl"),
+      phase: "running",
+      commit: false,
+      push: false,
+    }, resolved, promptRoot);
+    const providerNoiseObjectiveLine = providerNoisePrompt.split("\n").find((line) => line.startsWith("Topic/objective: "));
+    assert.equal(providerNoiseObjectiveLine, "Topic/objective: read source loop logs");
+    assert.match(providerNoisePrompt, /Objective intake: provider-noise objective · length \d+ · hash [0-9a-f]{12}/);
+    assert.doesNotMatch(providerNoisePrompt, /Codex error|context_length|input exceeds the context window|Warning: Development loop/i);
   } finally {
     fs.rmSync(promptRoot, { recursive: true, force: true });
   }
@@ -726,6 +744,19 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(statusUpdates.at(-1).value, /git:manual/);
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-loop widget should show only detail because footer already shows status");
+
+    const providerNoiseTopic = "read source loop logs Error: Codex error: {type:error,error:{type:invalid_request_error,code:context_length _exceeded,message:Your input exceeds the context window of this model. Please adjust your input and try again.,param:input},sequence_number:2} Warning: Development loop is waiting for compaction";
+    await command.handler(`start --iterations=1 ${providerNoiseTopic}`, ctx);
+    const providerNoiseRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const providerNoiseStart = providerNoiseRecords.filter((record) => record.event === "loop_started").at(-1);
+    assert.equal(providerNoiseStart.topic, "read source loop logs");
+    assert.equal(providerNoiseStart.topicKind, "provider-noise");
+    assert.equal(providerNoiseStart.topicSanitized, true);
+    assert.ok(providerNoiseStart.topicLength > providerNoiseStart.topic.length, "provider-noise logs should preserve raw topic length for diagnostics");
+    assert.doesNotMatch(statusUpdates.at(-1).value, /Codex error|context_length|input exceeds the context window|Warning: Development loop/i);
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "DEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done" }],
+    }, ctx);
 
     const noisySteeringRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-noisy-steering-"));
     fs.mkdirSync(path.join(noisySteeringRoot, ".git"));
