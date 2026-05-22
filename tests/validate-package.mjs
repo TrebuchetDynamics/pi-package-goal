@@ -856,6 +856,26 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: assistant_decision_missing \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
+
+      const aggregateAnalysisMessagesBefore = messages.length;
+      await command.handler(`analyze-logs ${path.join(analysisRoot, ".pi")}`, {
+        ...ctx,
+        cwd: analysisRoot,
+        sessionManager: {
+          getCwd: () => analysisRoot,
+          getEntries: () => [],
+        },
+      });
+      assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
+      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
+      assert.match(messages.at(-1).content, /Records: 12/);
+      assert.match(messages.at(-1).content, /Loops started: 5/);
+      assert.match(messages.at(-1).content, /Finished loops: 2/);
+      assert.match(messages.at(-1).content, /Blocked loops: 2/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
+      assert.match(messages.at(-1).content, /Empty provider responses: 1/);
+      assert.match(messages.at(-1).content, /Compaction events: 1/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 7/);
     } finally {
       fs.rmSync(analysisRoot, { recursive: true, force: true });
     }

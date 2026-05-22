@@ -71,6 +71,7 @@ type LoopLogRecord = {
 };
 
 type LoopLogAnalysis = {
+  logFiles: number;
   records: number;
   invalidRecords: number;
   loopsStarted: number;
@@ -90,6 +91,13 @@ type LoopLogAnalysis = {
   maxTopicLength: number;
   readError?: string;
   recommendations: string[];
+};
+
+type LoopLogAccumulator = {
+  analysis: LoopLogAnalysis;
+  oversizedTopicCounts: Map<string, number>;
+  blockReasonCounts: Map<string, number>;
+  finishDecisionCounts: Map<string, number>;
 };
 
 type ParsedCommand = {
@@ -794,7 +802,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop stop — stop the active loop",
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
-    "- /development-loop analyze-logs [path] — summarize loop logs and likely improvement areas",
+    "- /development-loop analyze-logs [path] — summarize one log file or a directory of loop logs",
     "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
     "Configurable init options:",
@@ -835,32 +843,74 @@ function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
 
 function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand) {
   const cwd = contextCwd(ctx);
-  const logPath = absoluteLogPath(cwd, parsed.topic || state.logPath || DEFAULT_LOG_RELATIVE);
-  const analysis = analyzeLoopLogFile(logPath);
-  const text = formatLoopLogAnalysis(analysis, cwd, logPath);
+  const targetPath = absoluteLogPath(cwd, parsed.topic || state.logPath || DEFAULT_LOG_RELATIVE);
+  const analysis = analyzeLoopLogPath(targetPath);
+  const text = formatLoopLogAnalysis(analysis, cwd, targetPath);
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-loop-log-analysis", content: text, display: true });
   }
 }
 
+function analyzeLoopLogPath(targetPath: string): LoopLogAnalysis {
+  try {
+    const stats = fs.statSync(targetPath);
+    if (stats.isDirectory()) return analyzeLoopLogDirectory(targetPath);
+    return analyzeLoopLogFile(targetPath);
+  } catch (error) {
+    return unreadableLoopLogAnalysis(error);
+  }
+}
+
 function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
   try {
-    return analyzeLoopLogText(fs.readFileSync(logPath, "utf8"));
+    const accumulator = createLoopLogAccumulator();
+    accumulator.analysis.logFiles = 1;
+    accumulateLoopLogText(fs.readFileSync(logPath, "utf8"), accumulator);
+    return finalizeLoopLogAnalysis(accumulator);
   } catch (error) {
-    return {
-      ...emptyLoopLogAnalysis(),
-      readError: error instanceof Error ? error.message : String(error),
-      recommendations: ["Log unavailable: check the configured log path or run a loop first."],
-    };
+    return unreadableLoopLogAnalysis(error);
+  }
+}
+
+function analyzeLoopLogDirectory(dirPath: string): LoopLogAnalysis {
+  try {
+    const logFiles = discoverLoopLogFiles(dirPath);
+    if (logFiles.length === 0) {
+      return {
+        ...emptyLoopLogAnalysis(),
+        readError: "No logs.jsonl files found under directory.",
+        recommendations: ["Log unavailable: pass a loop log file or a directory containing .pi/**/logs.jsonl files."],
+      };
+    }
+    const accumulator = createLoopLogAccumulator();
+    for (const logFile of logFiles) {
+      accumulator.analysis.logFiles++;
+      accumulateLoopLogText(fs.readFileSync(logFile, "utf8"), accumulator);
+    }
+    return finalizeLoopLogAnalysis(accumulator);
+  } catch (error) {
+    return unreadableLoopLogAnalysis(error);
   }
 }
 
 function analyzeLoopLogText(content: string): LoopLogAnalysis {
-  const analysis = emptyLoopLogAnalysis();
-  const oversizedTopicCounts = new Map<string, number>();
-  const blockReasonCounts = new Map<string, number>();
-  const finishDecisionCounts = new Map<string, number>();
+  const accumulator = createLoopLogAccumulator();
+  accumulateLoopLogText(content, accumulator);
+  return finalizeLoopLogAnalysis(accumulator);
+}
+
+function createLoopLogAccumulator(): LoopLogAccumulator {
+  return {
+    analysis: emptyLoopLogAnalysis(),
+    oversizedTopicCounts: new Map<string, number>(),
+    blockReasonCounts: new Map<string, number>(),
+    finishDecisionCounts: new Map<string, number>(),
+  };
+}
+
+function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -874,8 +924,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     if (event === "loop_finished") {
       analysis.finishedLoops++;
       const decision = recordDecision(record, event) || "<missing decision>";
-      const count = (finishDecisionCounts.get(decision) || 0) + 1;
-      finishDecisionCounts.set(decision, count);
+      const count = incrementCount(finishDecisionCounts, decision);
       if (count > analysis.topFinishDecisionCount) {
         analysis.topFinishDecision = decision;
         analysis.topFinishDecisionCount = count;
@@ -884,8 +933,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     if (event === "loop_blocked") {
       analysis.blockedLoops++;
       const reason = recordReason(record, event) || "<missing reason>";
-      const count = (blockReasonCounts.get(reason) || 0) + 1;
-      blockReasonCounts.set(reason, count);
+      const count = incrementCount(blockReasonCounts, reason);
       if (count > analysis.topBlockReasonCount) {
         analysis.topBlockReason = reason;
         analysis.topBlockReasonCount = count;
@@ -899,19 +947,31 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     if (topicLength > LOG_TOPIC_MAX) {
       analysis.oversizedTopicRecords++;
       const key = typeof record.topic === "string" ? record.topic : `<missing-topic:${topicLength}>`;
-      const count = (oversizedTopicCounts.get(key) || 0) + 1;
-      oversizedTopicCounts.set(key, count);
+      const count = incrementCount(oversizedTopicCounts, key);
       analysis.mostRepeatedOversizedTopicRecords = Math.max(analysis.mostRepeatedOversizedTopicRecords, count);
     }
     analysis.maxTopicLength = Math.max(analysis.maxTopicLength, topicLength);
   }
+}
+
+function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalysis {
+  const analysis = accumulator.analysis;
   analysis.unresolvedLoopStarts = Math.max(0, analysis.loopsStarted - analysis.finishedLoops - analysis.blockedLoops);
   analysis.recommendations = loopLogRecommendations(analysis);
   return analysis;
 }
 
+function unreadableLoopLogAnalysis(error: unknown): LoopLogAnalysis {
+  return {
+    ...emptyLoopLogAnalysis(),
+    readError: error instanceof Error ? error.message : String(error),
+    recommendations: ["Log unavailable: check the configured log path or run a loop first."],
+  };
+}
+
 function emptyLoopLogAnalysis(): LoopLogAnalysis {
   return {
+    logFiles: 0,
     records: 0,
     invalidRecords: 0,
     loopsStarted: 0,
@@ -931,9 +991,31 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
   };
 }
 
+function discoverLoopLogFiles(dirPath: string): string[] {
+  const logFiles: string[] = [];
+  const skipDirs = new Set([".git", "node_modules"]);
+  const walk = (currentDir: string) => {
+    for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) walk(path.join(currentDir, entry.name));
+        continue;
+      }
+      if (entry.isFile() && entry.name === "logs.jsonl") logFiles.push(path.join(currentDir, entry.name));
+    }
+  };
+  walk(dirPath);
+  return logFiles.sort();
+}
+
 function recordTopicLength(record: Record<string, unknown>): number {
   if (typeof record.topicLength === "number" && Number.isFinite(record.topicLength)) return record.topicLength;
   return typeof record.topic === "string" ? singleLineText(record.topic).length : 0;
+}
+
+function incrementCount(counts: Map<string, number>, key: string): number {
+  const count = (counts.get(key) || 0) + 1;
+  counts.set(key, count);
+  return count;
 }
 
 function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
@@ -950,8 +1032,10 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
 }
 
 function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
+  const source = relativeToCwd(cwd, logPath);
+  const sourceLabel = analysis.logFiles > 1 ? `${source} (${analysis.logFiles} log files)` : source;
   return [
-    `Development loop log analysis: ${relativeToCwd(cwd, logPath)}`,
+    `Development loop log analysis: ${sourceLabel}`,
     analysis.readError ? `Error: ${analysis.readError}` : undefined,
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
