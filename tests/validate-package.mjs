@@ -521,6 +521,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await command.handler("start --iterations=2 README polish", ctx);
     assert.equal(sent.length, 1);
     assert.match(sent[0].content, /Development loop iteration 1\/2/);
+    assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
     assert.match(sent[0].content, /Task discovery cues/);
     assert.match(sent[0].content, /TODO\.md/);
@@ -533,6 +534,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Do not trigger Greptile/);
     assert.equal(entries.at(-1).customType, "development-loop-state");
     assert.equal(entries.at(-1).data.phase, "running");
+    const firstRunId = entries.at(-1).data.runId;
+    assert.match(firstRunId, /^dl-[0-9a-z]+-[0-9a-f]{6}$/);
+    const firstRunLogRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    assert.equal(firstRunLogRecords[0].runId, firstRunId);
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
     assert.match(statusUpdates.at(-1).value, /loop 1\/2 · generic-git · git:manual · README polish/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
@@ -621,6 +626,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await new Promise((resolve) => setTimeout(resolve, 10));
     const deliveryEvidenceRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const iterationResultWithEvidence = deliveryEvidenceRecords.find((record) => record.event === "iteration_result" && record.decision === "continue");
+    assert.equal(iterationResultWithEvidence.runId, firstRunId);
     assert.deepEqual(iterationResultWithEvidence.changedFiles, ["README.md", "extensions/development-loop.ts"]);
     assert.deepEqual(iterationResultWithEvidence.validationCommands, ["git diff --check", "npm test"]);
     assert.equal(iterationResultWithEvidence.commitHash, "6da2dcd");
@@ -881,13 +887,13 @@ async function testExtensionLoadsAndRegistersCommands() {
       fs.mkdirSync(path.dirname(analysisLog), { recursive: true });
       const oversizedTopic = `${"browser dump ".repeat(80)}TAIL_SHOULD_BE_DIAGNOSTIC_ONLY`;
       fs.writeFileSync(analysisLog, [
-        JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
-        JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
-        JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
-        JSON.stringify({ at: new Date(3).toISOString(), event: "loop_blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
-        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
-        JSON.stringify({ at: new Date(5).toISOString(), event: "loop_finished", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
-        JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
+        JSON.stringify({ at: new Date(3).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
+        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(5).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
+        JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
       const analysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${analysisLog}`, {
@@ -907,7 +913,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
-      assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
       assert.match(messages.at(-1).content, /Oversized topic records: 7/);
@@ -957,7 +963,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
-      assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
       assert.match(messages.at(-1).content, /Oversized topic records: 7/);

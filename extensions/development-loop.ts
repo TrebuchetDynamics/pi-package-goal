@@ -51,6 +51,7 @@ type ResolvedProjectAdapter = {
 type LoopState = {
   active: boolean;
   adapterName: string;
+  runId?: string;
   topic: string;
   iteration: number;
   maxIterations: number;
@@ -69,6 +70,7 @@ type LoopLogRecord = {
   at: string;
   event: string;
   adapterName: string;
+  runId?: string;
   topic: string;
   topicLength?: number;
   topicTruncated?: boolean;
@@ -115,6 +117,11 @@ type LoopLogAccumulator = {
   oversizedTopicCounts: Map<string, number>;
   blockReasonCounts: Map<string, number>;
   finishDecisionCounts: Map<string, number>;
+  startedRunIds: Set<string>;
+  terminalRunIds: Set<string>;
+  legacyLoopStarts: number;
+  legacyFinishedLoops: number;
+  legacyBlockedLoops: number;
 };
 
 type ParsedCommand = {
@@ -484,14 +491,17 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
   const maxIterations = clampIterations(parsed.iterations ?? resolved.config.maxIterations ?? DEFAULT_ITERATIONS);
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, resolved.config.commit, resolved.config.push);
   const logPath = absoluteLogPath(cwd, resolved.config.logPath);
+  const startedAt = new Date().toISOString();
+  const runId = createRunId(startedAt);
 
   state = {
     active: true,
     adapterName: adapter.name,
+    runId,
     topic,
     iteration: 1,
     maxIterations,
-    startedAt: new Date().toISOString(),
+    startedAt,
     logPath,
     phase: "started",
     commit,
@@ -948,11 +958,16 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     oversizedTopicCounts: new Map<string, number>(),
     blockReasonCounts: new Map<string, number>(),
     finishDecisionCounts: new Map<string, number>(),
+    startedRunIds: new Set<string>(),
+    terminalRunIds: new Set<string>(),
+    legacyLoopStarts: 0,
+    legacyFinishedLoops: 0,
+    legacyBlockedLoops: 0,
   };
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -962,9 +977,16 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     }
     analysis.records++;
     const event = recordEvent(record) || "";
-    if (event === "loop_started") analysis.loopsStarted++;
+    const runId = recordRunId(record);
+    if (event === "loop_started") {
+      analysis.loopsStarted++;
+      if (runId) startedRunIds.add(runId);
+      else accumulator.legacyLoopStarts++;
+    }
     if (event === "loop_finished") {
       analysis.finishedLoops++;
+      if (runId) terminalRunIds.add(runId);
+      else accumulator.legacyFinishedLoops++;
       const decision = recordDecision(record, event) || "<missing decision>";
       const count = incrementCount(finishDecisionCounts, decision);
       if (count > analysis.topFinishDecisionCount) {
@@ -974,6 +996,8 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     }
     if (event === "loop_blocked") {
       analysis.blockedLoops++;
+      if (runId) terminalRunIds.add(runId);
+      else accumulator.legacyBlockedLoops++;
       const reason = recordReason(record, event) || "<missing reason>";
       const count = incrementCount(blockReasonCounts, reason);
       if (count > analysis.topBlockReasonCount) {
@@ -998,7 +1022,9 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
 
 function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalysis {
   const analysis = accumulator.analysis;
-  analysis.unresolvedLoopStarts = Math.max(0, analysis.loopsStarted - analysis.finishedLoops - analysis.blockedLoops);
+  const unresolvedRunIds = [...accumulator.startedRunIds].filter((runId) => !accumulator.terminalRunIds.has(runId)).length;
+  const unresolvedLegacyStarts = Math.max(0, accumulator.legacyLoopStarts - accumulator.legacyFinishedLoops - accumulator.legacyBlockedLoops);
+  analysis.unresolvedLoopStarts = unresolvedRunIds + unresolvedLegacyStarts;
   analysis.recommendations = loopLogRecommendations(analysis);
   return analysis;
 }
@@ -1116,6 +1142,7 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
 
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
+Run id: ${s.runId || "legacy"}
 Topic/objective: ${promptObjectiveText(s.topic)}
 Objective intake: ${objectiveIntakeSummary(s.topic)}
 Preferred language: ${language}
@@ -1192,6 +1219,7 @@ function buildDevelopmentLoopCompactionInstructions(s: LoopState, resolved: Reso
 Current development loop state:
 - Project root: ${cwd}
 - Adapter: ${resolved.adapter.name}
+- Run id: ${s.runId || "legacy"}
 - Objective: ${promptObjectiveText(s.topic)}
 - Iteration: ${s.iteration}/${s.maxIterations}
 - Phase: ${s.phase}
@@ -1433,6 +1461,7 @@ function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
     at: new Date().toISOString(),
     event,
     adapterName: state.adapterName,
+    ...(state.runId ? { runId: state.runId } : {}),
     ...loopLogTopicFields(state.topic),
     iteration: state.iteration,
     maxIterations: state.maxIterations,
@@ -1512,6 +1541,10 @@ function normalizeLoopLogEvent(value: string | undefined): string | undefined {
 
 function recordTimestamp(record?: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record?.at) || stringOrUndefined(record?.timestamp);
+}
+
+function recordRunId(record?: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record?.runId) || stringOrUndefined(record?.run_id);
 }
 
 function recordDecision(record: Record<string, unknown>, event: string): string | undefined {
@@ -2050,6 +2083,12 @@ function stripProviderErrorSuffix(text: string): string {
   const errorIndex = text.search(/\bError:\s+Codex error:.*context[\s_-]*length[\s_-]*exceeded/i);
   if (errorIndex > 0) return text.slice(0, errorIndex).trim();
   return text;
+}
+
+function createRunId(startedAt: string): string {
+  const timestamp = Date.parse(startedAt);
+  const encodedTime = Number.isFinite(timestamp) ? timestamp.toString(36) : Date.now().toString(36);
+  return `dl-${encodedTime}-${crypto.randomBytes(3).toString("hex")}`;
 }
 
 function hashText(text: string): string {
