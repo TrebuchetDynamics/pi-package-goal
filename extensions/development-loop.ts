@@ -2361,10 +2361,14 @@ function statusWidgetLines(s: LoopState, cwd: string, theme?: UiThemeLike): stri
   if (!s.active && s.phase === "idle" && !s.lastDecision) return undefined;
   const logPath = s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE);
   const last = readLastLoopRecord(logPath);
+  const reportSummary = last ? recordReportSummary(last) : undefined;
+  const reportNextSteps = last ? recordReportNextSteps(last) : [];
   const detail = compactJoin([
     recordEvent(last) ? `last ${recordEvent(last)}` : "last none",
     recordTime(last),
     last?.iteration !== undefined ? `i${String(last.iteration)}` : undefined,
+    reportSummary ? `summary ${compactStatusText(reportSummary)}` : undefined,
+    reportNextSteps[0] ? `next ${compactStatusText(reportNextSteps[0])}` : undefined,
     `log ${relativeToCwd(cwd, logPath)}`,
   ]);
   return [paint(theme, "dim", detail)];
@@ -2435,9 +2439,10 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (record.iteration !== undefined) parts.push(`iteration ${String(record.iteration)}`);
   if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
-  if (typeof record.summary === "string") parts.push(`summary ${record.summary}`);
-  const nextSteps = stringArrayOrUndefined(record.nextSteps);
-  if (nextSteps?.[0]) parts.push(`next ${nextSteps[0]}`);
+  const reportSummary = recordReportSummary(record);
+  if (reportSummary) parts.push(`summary ${reportSummary}`);
+  const nextSteps = recordReportNextSteps(record);
+  if (nextSteps[0]) parts.push(`next ${nextSteps[0]}`);
   return parts.join("; ");
 }
 
