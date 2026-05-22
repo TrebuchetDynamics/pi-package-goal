@@ -120,6 +120,10 @@ type LoopLogAnalysis = {
   topBlockReasonCount: number;
   postmortems: number;
   selfImprovementQueuedRecords: number;
+  topSelfImprovementReason?: string;
+  topSelfImprovementReasonCount: number;
+  topSelfImprovementAction?: string;
+  topSelfImprovementActionCount: number;
   topPostmortemCause?: string;
   topPostmortemCauseCount: number;
   topNextSafeAction?: string;
@@ -180,6 +184,8 @@ type LoopLogAccumulator = {
   promptSentCounts: Map<string, number>;
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
+  selfImprovementReasonCounts: Map<string, number>;
+  selfImprovementActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
   emptyProviderReasonCounts: Map<string, number>;
@@ -1060,6 +1066,8 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     promptSentCounts: new Map<string, number>(),
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
+    selfImprovementReasonCounts: new Map<string, number>(),
+    selfImprovementActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
     emptyProviderReasonCounts: new Map<string, number>(),
@@ -1080,7 +1088,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1165,7 +1173,23 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
         }
       }
     }
-    if (event === "self_improvement_queued") analysis.selfImprovementQueuedRecords++;
+    if (event === "self_improvement_queued") {
+      analysis.selfImprovementQueuedRecords++;
+      const reason = recordReason(record, event) || "<missing reason>";
+      const reasonCount = incrementCount(selfImprovementReasonCounts, reason);
+      if (reasonCount > analysis.topSelfImprovementReasonCount) {
+        analysis.topSelfImprovementReason = reason;
+        analysis.topSelfImprovementReasonCount = reasonCount;
+      }
+      const action = recordSelfImprovementAction(record);
+      if (action) {
+        const actionCount = incrementCount(selfImprovementActionCounts, action);
+        if (actionCount > analysis.topSelfImprovementActionCount) {
+          analysis.topSelfImprovementAction = action;
+          analysis.topSelfImprovementActionCount = actionCount;
+        }
+      }
+    }
     const hasChangedFiles = recordChangedFiles(record).length > 0;
     const hasValidationEvidence = recordValidationEvidence(record).length > 0;
     const hasCommitEvidence = Boolean(recordCommitHash(record));
@@ -1350,6 +1374,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topBlockReasonCount: 0,
     postmortems: 0,
     selfImprovementQueuedRecords: 0,
+    topSelfImprovementReasonCount: 0,
+    topSelfImprovementActionCount: 0,
     topPostmortemCauseCount: 0,
     topNextSafeActionCount: 0,
     finalMarkerRecoveryRequests: 0,
@@ -1538,7 +1564,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.providerNoiseTopicRecords > 0) recommendations.push("Provider-noise topics: verify provider error text is sanitized out of repeated objectives while topic hashes preserve diagnostics.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
-  if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
+  if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review the top queued reason/action after blocked custom-loop runs and promote repeatable policy into this package.");
   if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare recovery successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
@@ -1616,6 +1642,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
+    analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
+    analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
     analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
     analysis.topQueuedIterationReason ? ["Top queued iteration reason", `${analysis.topQueuedIterationReason} (${analysis.topQueuedIterationReasonCount})`] : undefined,
@@ -1699,6 +1727,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     `Postmortems: ${analysis.postmortems}`,
     `Self-improvement queued records: ${analysis.selfImprovementQueuedRecords}`,
+    analysis.topSelfImprovementReason ? `Top self-improvement reason: ${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount} ${analysis.topSelfImprovementReasonCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topSelfImprovementAction ? `Top self-improvement action: ${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount} ${analysis.topSelfImprovementActionCount === 1 ? "record" : "records"})` : undefined,
     analysis.topPostmortemCause ? `Top postmortem cause: ${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount} ${analysis.topPostmortemCauseCount === 1 ? "record" : "records"})` : undefined,
     analysis.topNextSafeAction ? `Top next safe action: ${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount} ${analysis.topNextSafeActionCount === 1 ? "record" : "records"})` : undefined,
     `Final-marker recovery requests: ${analysis.finalMarkerRecoveryRequests}`,
@@ -2182,6 +2212,13 @@ function recordReason(record: Record<string, unknown>, event: string): string | 
   if (explicit) return explicit;
   if (event === "loop_blocked" && rawRecordEvent(record) === "blocked") return "blocked";
   return undefined;
+}
+
+function recordSelfImprovementAction(record: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record.nextAction)
+    || stringOrUndefined(record.next_action)
+    || stringOrUndefined(record.nextSafeAction)
+    || stringOrUndefined(record.action);
 }
 
 function finalLineLoopDecision(record: Record<string, unknown>): string | undefined {
