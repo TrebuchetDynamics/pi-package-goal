@@ -135,6 +135,7 @@ type LoopLogAnalysis = {
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   emptyProviderRetryRecords: number;
+  queuedIterationRecords: number;
   contextOverflowResponses: number;
   compactionEvents: number;
   truncatedTopics: number;
@@ -1140,6 +1141,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     }
     if (event === "empty_agent_response_waiting_for_compaction" || event === "empty_provider_response_retry_sent") analysis.emptyProviderResponses++;
     if (event === "empty_provider_response_retry_sent") analysis.emptyProviderRetryRecords++;
+    if (isQueuedIterationEvent(event)) analysis.queuedIterationRecords++;
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (record.topicTruncated === true) analysis.truncatedTopics++;
@@ -1152,6 +1154,10 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     }
     analysis.maxTopicLength = Math.max(analysis.maxTopicLength, topicLength);
   }
+}
+
+function isQueuedIterationEvent(event: string): boolean {
+  return event === "iteration_queued" || event === "iteration_prompt_queued" || event === "compaction_continue_queued_iteration" || event === "compaction_resume_queued";
 }
 
 function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalysis {
@@ -1206,6 +1212,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     emptyProviderRetryRecords: 0,
+    queuedIterationRecords: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
     truncatedTopics: 0,
@@ -1296,6 +1303,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.mostRepeatedOversizedTopicRecords > 1) recommendations.push("Repeated oversized topics: summarize copied objectives once instead of carrying the same paste through every event.");
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
   if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
+  if (analysis.queuedIterationRecords > 0) recommendations.push("Queued iterations: verify compaction/resume hooks flush queued prompts and do not leave runs waiting silently.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
@@ -1347,6 +1355,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Unresolved loop starts", String(analysis.unresolvedLoopStarts)],
     ["Empty provider responses", String(analysis.emptyProviderResponses)],
     ["Empty provider retry records", String(analysis.emptyProviderRetryRecords)],
+    ["Queued iteration records", String(analysis.queuedIterationRecords)],
     ["Context overflow responses", String(analysis.contextOverflowResponses)],
     ["Compaction events", String(analysis.compactionEvents)],
     ["Oversized topic records", String(analysis.oversizedTopicRecords)],
@@ -1448,6 +1457,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Empty provider retry records: ${analysis.emptyProviderRetryRecords}`,
+    `Queued iteration records: ${analysis.queuedIterationRecords}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
     `Truncated topics: ${analysis.truncatedTopics}`,

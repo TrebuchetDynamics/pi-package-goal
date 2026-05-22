@@ -923,6 +923,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_provider_response_retry_sent", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", reason: "retry 1/1" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "iteration_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "compaction_before_next_iteration" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_resume_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
         JSON.stringify({ at: new Date(3).toISOString(), event: "provider_error", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", error: { type: "invalid_request_error", code: "context_length_exceeded", message: "Your input exceeds the context window of this model." } }),
         JSON.stringify({ at: new Date(4).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
@@ -947,7 +949,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 14/);
+      assert.match(messages.at(-1).content, /Records: 16/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
@@ -971,8 +973,9 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
       assert.match(messages.at(-1).content, /Empty provider retry records: 1/);
+      assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
-      assert.match(messages.at(-1).content, /Compaction events: 1/);
+      assert.match(messages.at(-1).content, /Compaction events: 2/);
       assert.match(messages.at(-1).content, /Oversized topic records: 10/);
       assert.match(messages.at(-1).content, /Most repeated oversized topic: 10 records/);
       assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
@@ -1029,7 +1032,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 23/);
+      assert.match(messages.at(-1).content, /Records: 25/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
@@ -1050,8 +1053,9 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
       assert.match(messages.at(-1).content, /Empty provider retry records: 1/);
+      assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
-      assert.match(messages.at(-1).content, /Compaction events: 1/);
+      assert.match(messages.at(-1).content, /Compaction events: 2/);
       assert.match(messages.at(-1).content, /Oversized topic records: 10/);
 
       const htmlMessagesBefore = messages.length;
@@ -1079,6 +1083,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);
         assert.match(html, /Empty provider retry records/);
+        assert.match(html, /Queued iteration records/);
         assert.match(html, /CI-red records/);
         assert.match(html, /CI-gate missing records/);
         assert.match(html, /Self-improvement queued records/);
