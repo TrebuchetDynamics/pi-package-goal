@@ -1966,6 +1966,8 @@ async function testPiLogAuditScript() {
   assert.match(source, /bad_json/);
   assert.match(source, /Did you mean/);
   assert.match(source, /--attention-only/);
+  assert.match(source, /--since/);
+  assert.match(source, /since_filtered/);
   assert.match(source, /pi_dirs_without_logs/);
   assert.match(source, /pi_dirs_with_configs_without_logs/);
   assert.match(source, /findLoopConfigs/);
@@ -2074,6 +2076,12 @@ async function testPiLogAuditScript() {
     assert.match(output, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
     assert.doesNotMatch(output, /node_modules/);
 
+    const sinceOutput = execFileSync("node", [path.join(root, scriptRel), "--since=2026-05-22T02:30:00.000Z", fixtureRoot], { encoding: "utf8" });
+    assert.match(sinceOutput, /PI_DIR_COUNT 6\tsince=2026-05-22T02:30:00.000Z/);
+    assert.match(sinceOutput, /LOG\tdevelopment-loop\t.*repo-d.*parsed=1\tsince_filtered=1.*latest=loop_blocked.*status=blocked/);
+    assert.doesNotMatch(sinceOutput, /LOG\tdevelopment-loop\t.*repo-d.*status=done/);
+    assert.match(sinceOutput, /SUMMARY\t.*since=2026-05-22T02:30:00.000Z\tsince_filtered=/);
+
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a\tlog_path=\.pi\/development-loop\/logs\.jsonl\tconfig_path=\.pi\/development-loop\.json/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b\tlog_path=\.pi\/e2e-loop\/logs\.jsonl\tconfig_path=\.pi\/e2e-loop\.json/);
@@ -2135,6 +2143,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /SUMMARY/);
   assert.match(logAuditReference, /Did you mean/);
   assert.match(logAuditReference, /--attention-only/);
+  assert.match(logAuditReference, /--since=2h/);
+  assert.match(logAuditReference, /since_filtered/);
   assert.match(logAuditReference, /pi_dirs_without_logs/);
   assert.match(logAuditReference, /pi_dirs_with_configs_without_logs/);
   assert.match(logAuditReference, /custom loop configs/);

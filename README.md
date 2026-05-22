@@ -242,6 +242,8 @@ If the provider reports `context_length_exceeded` or “input exceeds the contex
 
 If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and `DEV_LOOP_DECISION`, the loop records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the loop to avoid infinite retries.
 
+For workspace-wide `.pi` loop triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only logs/configs that need action.
+
 ### Troubleshooting local Codex storage failures
 
 If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-loop log failure.

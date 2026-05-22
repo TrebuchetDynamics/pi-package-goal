@@ -4,16 +4,17 @@ Use this read-only helper when you need to check `.pi` folders and loop logs acr
 
 ```bash
 node skills/diagnose/scripts/pi-log-audit.mjs /home/xel/git/sages-openclaw
-node skills/diagnose/scripts/pi-log-audit.mjs --attention-only /home/xel/git/sages-openclaw
+node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git/sages-openclaw
+node skills/diagnose/scripts/pi-log-audit.mjs --attention-only --since=2h /home/xel/git/sages-openclaw
 ```
 
 If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /home/xel/git/sages-openclaw`.
 
-The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names. It reports config files matching `*-loop.json`, including custom loop configs.
+The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names. It reports config files matching `*-loop.json`, including custom loop configs. Add `--since=2h` or `--since=2026-05-22T02:30:00.000Z` to classify each log from timestamped records at or after the cutoff; records without parseable timestamps are excluded from the window and counted as `since_filtered=`.
 
 For each log it reports:
 
-- repo-relative `log_path=` and `config_path=` for the loop artifacts to inspect, parsed line count, and `bad_json` count
+- repo-relative `log_path=` and `config_path=` for the loop artifacts to inspect, parsed line count, optional `since_filtered=` count, and `bad_json` count
 - latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, newest available `run_id=`, log file `mtime=`, last `iteration_result` delivery fields (`last_result_at=`, `last_decision=`, `last_commit=`, `last_push=`), `status=`, matching config state (`config=present|missing`), matching config `adapter=`, and `attention=yes|no`
 - current `ISSUE` reason with `failure_at=` for the last failure event, missing matching loop config such as `.pi/navivox-loop.json`, or malformed matching config JSON, plus `next_action=` guidance; historical failures in logs that later finished cleanly are reported as `HISTORY` without action guidance
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`

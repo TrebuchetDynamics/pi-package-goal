@@ -5,9 +5,10 @@ import path from "node:path";
 const options = parseArgs(process.argv.slice(2));
 
 if (options.help) {
-  console.log("Usage: pi-log-audit.mjs [--attention-only] [ROOT]");
+  console.log("Usage: pi-log-audit.mjs [--attention-only] [--since=2h|ISO] [ROOT]");
   console.log("Read-only summary of .pi/*/logs.jsonl files under ROOT.");
   console.log("Includes development-loop, e2e-loop, and custom *-loop logs/configs.");
+  console.log("Use --since=2h or --since=2026-05-22T02:30:00.000Z to summarize only timestamped records at or after the cutoff.");
   process.exit(0);
 }
 
@@ -22,23 +23,52 @@ if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
 const ignoredDirs = new Set([".git", "node_modules"]);
 
 function parseArgs(args) {
-  const parsed = { attentionOnly: false, help: false, rootArg: undefined };
-  for (const arg of args) {
+  const parsed = { attentionOnly: false, help: false, rootArg: undefined, since: undefined };
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
     if (["-h", "--help"].includes(arg)) {
       parsed.help = true;
     } else if (arg === "--attention-only") {
       parsed.attentionOnly = true;
+    } else if (arg === "--since") {
+      const value = args[index + 1];
+      if (!value) failUsage("Missing value for --since");
+      parsed.since = parseSinceFilter(value);
+      index += 1;
+    } else if (arg.startsWith("--since=")) {
+      parsed.since = parseSinceFilter(arg.slice("--since=".length));
     } else if (arg.startsWith("-")) {
-      console.error(`Unknown option: ${arg}`);
-      process.exit(2);
+      failUsage(`Unknown option: ${arg}`);
     } else if (!parsed.rootArg) {
       parsed.rootArg = arg;
     } else {
-      console.error(`Unexpected extra root path: ${arg}`);
-      process.exit(2);
+      failUsage(`Unexpected extra root path: ${arg}`);
     }
   }
   return parsed;
+}
+
+function failUsage(message) {
+  console.error(message);
+  process.exit(2);
+}
+
+function parseSinceFilter(value, nowMs = Date.now()) {
+  const text = String(value ?? "").trim();
+  if (!text) failUsage("Missing value for --since");
+
+  const duration = text.match(/^(\d+)(ms|s|m|h|d)$/i);
+  if (duration) {
+    const amount = Number(duration[1]);
+    const unit = duration[2].toLowerCase();
+    const unitMs = { ms: 1, s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 }[unit];
+    const cutoffMs = nowMs - amount * unitMs;
+    return { label: text, cutoffMs, cutoffIso: new Date(cutoffMs).toISOString() };
+  }
+
+  const cutoffMs = Date.parse(text);
+  if (!Number.isFinite(cutoffMs)) failUsage(`Invalid --since value: ${text}`);
+  return { label: text, cutoffMs, cutoffIso: new Date(cutoffMs).toISOString() };
 }
 
 function findClosestExistingSibling(target) {
@@ -111,6 +141,26 @@ function parseJsonl(file) {
   }
 
   return { events, badJson, lineCount: events.length + badJson };
+}
+
+function filterEventsBySince(events) {
+  if (!options.since) return { events, sinceFiltered: 0 };
+  const filtered = [];
+  let sinceFiltered = 0;
+  for (const event of events) {
+    const timestampMs = eventTimestampMs(event);
+    if (timestampMs !== undefined && timestampMs >= options.since.cutoffMs) filtered.push(event);
+    else sinceFiltered += 1;
+  }
+  return { events: filtered, sinceFiltered };
+}
+
+function eventTimestampMs(event) {
+  const value = event?.at ?? event?.timestamp;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return undefined;
+  const timestampMs = Date.parse(value);
+  return Number.isFinite(timestampMs) ? timestampMs : undefined;
 }
 
 function findLoopLogs(piDir) {
@@ -186,18 +236,20 @@ const summary = {
   logsWithoutConfigs: 0,
   configBadJson: 0,
   filteredOut: 0,
+  sinceFiltered: 0,
   piDirs: 0,
   piDirsWithoutLogs: 0,
   piDirsWithConfigsWithoutLogs: 0,
   configFiles: 0,
 };
 
-function incrementSummary(status, attention, badJson, missingConfig, configBadJson) {
+function incrementSummary(status, attention, badJson, missingConfig, configBadJson, sinceFiltered) {
   summary.logs += 1;
   if (Object.hasOwn(summary, status)) summary[status] += 1;
   else summary.unknown += 1;
   if (attention) summary.issues += 1;
   summary.badJson += badJson;
+  summary.sinceFiltered += sinceFiltered;
   if (missingConfig) summary.logsWithoutConfigs += 1;
   if (configBadJson) summary.configBadJson += 1;
   if (options.attentionOnly && !attention) summary.filteredOut += 1;
@@ -243,7 +295,9 @@ function findLastResult(events) {
 }
 
 function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
-  const { events, badJson, lineCount } = parseJsonl(logPath);
+  const parsedLog = parseJsonl(logPath);
+  const { events, sinceFiltered } = filterEventsBySince(parsedLog.events);
+  const { badJson, lineCount } = parsedLog;
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
@@ -259,8 +313,8 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
-  incrementSummary(status, attention, badJson, missingConfig, configBadJson);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
+  incrementSummary(status, attention, badJson, missingConfig, configBadJson, sinceFiltered);
+  return { loopName, events, badJson, lineCount, sinceFiltered, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -283,6 +337,7 @@ function printLogRecord(record, repoDir) {
     `config_path=.pi/${record.matchingConfigName}`,
     `lines=${record.lineCount}`,
     `parsed=${record.events.length}`,
+    ...(options.since ? [`since_filtered=${record.sinceFiltered}`] : []),
     `bad_json=${record.badJson}`,
     `bytes=${record.size}`,
     `at=${formatValue(record.latest.at)}`,
@@ -340,7 +395,7 @@ function printLogRecord(record, repoDir) {
 }
 
 const piDirs = findPiDirs(root).sort();
-console.log(`PI_DIR_COUNT ${piDirs.length}`);
+console.log(options.since ? `PI_DIR_COUNT ${piDirs.length}\tsince=${options.since.cutoffIso}` : `PI_DIR_COUNT ${piDirs.length}`);
 
 for (const piDir of piDirs) {
   const repoDir = path.dirname(piDir);
@@ -385,6 +440,7 @@ const summaryParts = [
   `config_bad_json=${summary.configBadJson}`,
 ];
 if (options.attentionOnly) summaryParts.push(`filtered_out=${summary.filteredOut}`);
+if (options.since) summaryParts.push(`since=${options.since.cutoffIso}`, `since_filtered=${summary.sinceFiltered}`);
 summaryParts.push(
   `pi_dirs=${summary.piDirs}`,
   `pi_dirs_without_logs=${summary.piDirsWithoutLogs}`,
