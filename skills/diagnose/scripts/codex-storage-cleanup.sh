@@ -32,6 +32,8 @@ USAGE
 print_disk_report() {
   echo "Disk space containing Codex directory:"
   df -h "$CODEX_DIR" 2>/dev/null || true
+  echo "Inode usage containing Codex directory:"
+  df -ih "$CODEX_DIR" 2>/dev/null || true
 
   local codex_children=()
   shopt -s nullglob

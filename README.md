@@ -129,7 +129,7 @@ If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and 
 
 If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-loop log failure.
 
-Likely causes include a full home filesystem, Codex being unable to create PATH wrapper files under `~/.codex/tmp`, and SQLite cannot extend the state database or write its WAL/SHM sidecars while disk space is exhausted.
+Likely causes include a full home filesystem, inode exhaustion can also cause `No space left on device`, Codex being unable to create PATH wrapper files under `~/.codex/tmp`, and SQLite cannot extend the state database or write its WAL/SHM sidecars while disk space is exhausted.
 
 Check free space and the largest Codex paths:
 
@@ -145,7 +145,7 @@ bash skills/diagnose/scripts/codex-storage-cleanup.sh
 bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
 ```
 
-The helper dry run prints free space and Codex path sizes, then shows the cleanup it would perform. With `--execute`, it removes only transient Codex temp files, moves `state_*.sqlite*` files into a unique timestamped backup directory, and prints a post-cleanup disk report. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
+The helper dry run prints free space, inode usage, and Codex path sizes, then shows the cleanup it would perform. With `--execute`, it removes only transient Codex temp files, moves `state_*.sqlite*` files into a unique timestamped backup directory, and prints a post-cleanup disk report. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
 
 Remove transient Codex temp files manually only if you are not using the helper:
 

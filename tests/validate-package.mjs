@@ -1668,6 +1668,7 @@ async function testCodexStorageCleanupScript() {
     const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], { encoding: "utf8" });
     assert.match(dryRun, /Dry run/);
     assert.match(dryRun, /Disk space containing Codex directory/);
+    assert.match(dryRun, /Inode usage containing Codex directory/);
     assert.match(dryRun, /Codex path sizes/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
@@ -1689,6 +1690,7 @@ async function testCodexStorageCleanupScript() {
     assert.match(executed, /Backed up Codex state files/);
     assert.match(executed, /Post-cleanup disk report/);
     assert.match(executed, /Disk space containing Codex directory/);
+    assert.match(executed, /Inode usage containing Codex directory/);
     assert.equal(fs.existsSync(path.join(codexDir, "tmp")), false);
     assert.equal(fs.existsSync(path.join(codexDir, "state_5.sqlite")), false);
     assert.equal(fs.readFileSync(path.join(codexDir, "config.toml"), "utf8"), "model = \"codex\"\n");
@@ -1770,7 +1772,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /home filesystem is full/);
   assert.match(reference, /PATH wrapper files under `~\/\.codex\/tmp`/);
   assert.match(reference, /SQLite cannot extend the state database/);
-  assert.match(reference, /prints free space and Codex path sizes/);
+  assert.match(reference, /prints free space, inode usage, and Codex path sizes/);
+  assert.match(reference, /inode exhaustion can also cause `No space left on device`/);
   assert.match(reference, /post-cleanup disk report/);
   assert.match(reference, /unique timestamped backup directory/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
@@ -1837,7 +1840,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
   assert.match(readme, /--tmp-only/);
   assert.match(readme, /leave `state_\*\.sqlite\*` untouched/);
-  assert.match(readme, /prints free space and Codex path sizes/);
+  assert.match(readme, /prints free space, inode usage, and Codex path sizes/);
+  assert.match(readme, /inode exhaustion can also cause `No space left on device`/);
   assert.match(readme, /post-cleanup disk report/);
   assert.match(readme, /unique timestamped backup directory/);
   assert.match(readme, /path must end in `\/\.codex`/);
