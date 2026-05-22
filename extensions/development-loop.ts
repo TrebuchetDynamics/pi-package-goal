@@ -123,6 +123,7 @@ type LoopLogAnalysis = {
   validationEvidenceRecords: number;
   commitEvidenceRecords: number;
   pushEvidenceRecords: number;
+  commitWithoutPushRecords: number;
   topPushStatus?: string;
   topPushStatusCount: number;
   ciGreenRecords: number;
@@ -1113,6 +1114,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     if (hasChangedFiles) analysis.changedFileEvidenceRecords++;
     if (hasValidationEvidence) analysis.validationEvidenceRecords++;
     if (hasCommitEvidence) analysis.commitEvidenceRecords++;
+    if (hasCommitEvidence && !pushStatus) analysis.commitWithoutPushRecords++;
     if (pushStatus) {
       analysis.pushEvidenceRecords++;
       const count = incrementCount(pushStatusCounts, pushStatus);
@@ -1190,6 +1192,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     validationEvidenceRecords: 0,
     commitEvidenceRecords: 0,
     pushEvidenceRecords: 0,
+    commitWithoutPushRecords: 0,
     topPushStatusCount: 0,
     ciGreenRecords: 0,
     ciRedRecords: 0,
@@ -1294,6 +1297,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare recovery successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
+  if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
@@ -1327,6 +1331,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Validation evidence records", String(analysis.validationEvidenceRecords)],
     ["Commit evidence records", String(analysis.commitEvidenceRecords)],
     ["Push evidence records", String(analysis.pushEvidenceRecords)],
+    ["Commit-without-push records", String(analysis.commitWithoutPushRecords)],
     ["CI-green records", String(analysis.ciGreenRecords)],
     ["CI-red records", String(analysis.ciRedRecords)],
     ["CI-gate missing records", String(analysis.ciGateMissingRecords)],
@@ -1423,6 +1428,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Validation evidence records: ${analysis.validationEvidenceRecords}`,
     `Commit evidence records: ${analysis.commitEvidenceRecords}`,
     `Push evidence records: ${analysis.pushEvidenceRecords}`,
+    `Commit-without-push records: ${analysis.commitWithoutPushRecords}`,
     analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,
     `CI-green records: ${analysis.ciGreenRecords}`,
     `CI-red records: ${analysis.ciRedRecords}`,
