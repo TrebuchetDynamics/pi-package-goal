@@ -153,6 +153,7 @@ type ParsedCommand = {
   force?: boolean;
   dryRun?: boolean;
   yes?: boolean;
+  html?: boolean;
   logPath?: string;
   validationCommands: string[];
   preflightCommands: string[];
@@ -894,6 +895,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
     "- /development-loop analyze-logs [path] — summarize one log file or a directory of loop logs",
+    "- /development-loop analyze-logs --html [path] — also write a self-contained HTML health report",
     "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
     "Configurable init options:",
@@ -937,7 +939,8 @@ function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: Parsed
   const cwd = contextCwd(ctx);
   const targetPath = absoluteLogPath(cwd, parsed.topic || state.logPath || DEFAULT_LOG_RELATIVE);
   const analysis = analyzeLoopLogPath(targetPath);
-  const text = formatLoopLogAnalysis(analysis, cwd, targetPath);
+  const htmlPath = parsed.html ? writeLoopLogHtmlReport(analysis, cwd, targetPath) : undefined;
+  const text = [formatLoopLogAnalysis(analysis, cwd, targetPath), htmlPath ? `HTML health report: ${htmlPath}` : undefined].filter(Boolean).join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-loop-log-analysis", content: text, display: true });
@@ -1227,6 +1230,96 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
   return recommendations.length ? recommendations : ["No obvious loop health issues detected in this log."];
+}
+
+function writeLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
+  const tmpDir = process.env.TMPDIR || process.env.TEMP || "/tmp";
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const reportPath = path.join(tmpDir, `development-loop-health-${timestamp}.html`);
+  fs.writeFileSync(reportPath, buildLoopLogHtmlReport(analysis, cwd, logPath), "utf8");
+  return reportPath;
+}
+
+function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
+  const source = analysis.logFiles > 1 ? `${relativeToCwd(cwd, logPath)} (${analysis.logFiles} log files)` : relativeToCwd(cwd, logPath);
+  const metrics: Array<[string, string]> = [
+    ["Records", `${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`],
+    ["Loops started", String(analysis.loopsStarted)],
+    ["Finished loops", String(analysis.finishedLoops)],
+    ["Blocked loops", String(analysis.blockedLoops)],
+    ["Postmortems", String(analysis.postmortems)],
+    ["Delivery evidence records", String(analysis.deliveryEvidenceRecords)],
+    ["Validation evidence records", String(analysis.validationEvidenceRecords)],
+    ["Commit evidence records", String(analysis.commitEvidenceRecords)],
+    ["Push evidence records", String(analysis.pushEvidenceRecords)],
+    ["CI-green records", String(analysis.ciGreenRecords)],
+    ["CI-red records", String(analysis.ciRedRecords)],
+    ["Unresolved loop starts", String(analysis.unresolvedLoopStarts)],
+    ["Empty provider responses", String(analysis.emptyProviderResponses)],
+    ["Context overflow responses", String(analysis.contextOverflowResponses)],
+    ["Compaction events", String(analysis.compactionEvents)],
+    ["Oversized topic records", String(analysis.oversizedTopicRecords)],
+    ["Max topic length", String(analysis.maxTopicLength)],
+  ];
+  const metricCards = metrics.map(([label, value]) => `<section class="card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></section>`).join("\n");
+  const recommendations = analysis.recommendations.map((item) => `<li>${escapeHtml(item)}</li>`).join("\n");
+  const topFacts = [
+    analysis.topFinishDecision ? ["Top finish decision", `${analysis.topFinishDecision} (${analysis.topFinishDecisionCount})`] : undefined,
+    analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
+    analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
+    analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
+    analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
+  ].filter((fact): fact is [string, string] => Boolean(fact));
+  const factRows = topFacts.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("\n");
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development Loop Health Report</title>
+<style>
+:root { color-scheme: light dark; --bg: #0f172a; --panel: #111827; --text: #e5e7eb; --muted: #94a3b8; --accent: #38bdf8; --warn: #fb7185; --ok: #34d399; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+header { margin-bottom: 1.5rem; }
+h1 { margin: 0 0 .5rem; font-size: clamp(2rem, 5vw, 3.5rem); }
+.source { color: var(--muted); word-break: break-all; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; }
+.card { border: 1px solid rgba(148,163,184,.25); border-radius: 1rem; background: rgba(17,24,39,.78); padding: 1rem; box-shadow: 0 12px 30px rgba(0,0,0,.22); }
+.card span { display: block; color: var(--muted); font-size: .85rem; }
+.card strong { display: block; margin-top: .4rem; font-size: 1.6rem; color: var(--accent); }
+.panel { margin-top: 1.5rem; border-radius: 1rem; background: rgba(17,24,39,.78); padding: 1.25rem; border: 1px solid rgba(148,163,184,.25); }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .65rem; border-bottom: 1px solid rgba(148,163,184,.18); }
+th { color: var(--muted); width: 16rem; }
+li { margin: .45rem 0; }
+.badge { display: inline-block; border-radius: 999px; padding: .25rem .65rem; background: rgba(56,189,248,.15); color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="badge">Loop health</p>
+<h1>Development Loop Health Report</h1>
+<p class="source">Source: ${escapeHtml(source)}</p>
+</header>
+<section class="grid">${metricCards}</section>
+<section class="panel">
+<h2>Top signals</h2>
+${factRows ? `<table>${factRows}</table>` : `<p>No top signal counts were present.</p>`}
+</section>
+<section class="panel">
+<h2>Recommendations</h2>
+<ul>${recommendations}</ul>
+</section>
+</main>
+</body>
+</html>`;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char] || char));
 }
 
 function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
@@ -1924,12 +2017,24 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.dryRun = true;
       continue;
     }
+    if (token === "--html" || token === "--report-html") {
+      parsed.html = true;
+      continue;
+    }
+    if (token === "--no-html" || token === "--no-report-html") {
+      parsed.html = false;
+      continue;
+    }
     if (token === "--no-dry-run") {
       parsed.dryRun = false;
       continue;
     }
     if (token.startsWith("--dry-run=") || token.startsWith("--preview=")) {
       parsed.dryRun = parseBoolean(token.split("=").slice(1).join("="));
+      continue;
+    }
+    if (token.startsWith("--html=") || token.startsWith("--report-html=")) {
+      parsed.html = parseBoolean(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--yes" || token === "-y" || token === "--defaults" || token === "--non-interactive" || token === "--no-prompt" || token === "--no-prompts") {

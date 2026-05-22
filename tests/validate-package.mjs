@@ -995,6 +995,32 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
       assert.match(messages.at(-1).content, /Oversized topic records: 8/);
+
+      const htmlMessagesBefore = messages.length;
+      await command.handler(`analyze-logs --html ${path.join(analysisRoot, ".pi")}`, {
+        ...ctx,
+        cwd: analysisRoot,
+        sessionManager: {
+          getCwd: () => analysisRoot,
+          getEntries: () => [],
+        },
+      });
+      assert.equal(messages.length, htmlMessagesBefore + 1);
+      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
+      const htmlMatch = messages.at(-1).content.match(/HTML health report: (.+\.html)/);
+      assert.ok(htmlMatch, "analyze-logs --html should report the generated HTML health report path");
+      const htmlPath = htmlMatch[1].trim();
+      try {
+        assert.ok(fs.existsSync(htmlPath), "analyze-logs --html should write the HTML health report file");
+        const html = fs.readFileSync(htmlPath, "utf8");
+        assert.match(html, /<html lang="en">/);
+        assert.match(html, /Development Loop Health Report/);
+        assert.match(html, /Delivery evidence records/);
+        assert.match(html, /CI-red records/);
+        assert.match(html, /Blocked loops/);
+      } finally {
+        fs.rmSync(htmlPath, { force: true });
+      }
     } finally {
       fs.rmSync(analysisRoot, { recursive: true, force: true });
     }
