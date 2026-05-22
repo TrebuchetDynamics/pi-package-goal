@@ -42,8 +42,9 @@ Retry Codex after removing temp files. If it still reports `database or disk is 
 If the sqlite state is still blocking startup and you accept that local Codex session state may be rebuilt, move the database files aside first:
 
 ```bash
-mkdir -p ~/.codex/backup
-mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
+backup_dir="$HOME/.codex/backup/codex-state-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$backup_dir"
+mv ~/.codex/state_*.sqlite* "$backup_dir"/ 2>/dev/null || true
 ```
 
 ## Last-resort reset command

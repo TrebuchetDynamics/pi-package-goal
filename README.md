@@ -157,8 +157,9 @@ rm -rf ~/.codex/tmp
 If Codex offers `Repair Codex local data now?`, prefer accepting the repair after free space is available. If you must reset the local state database manually, back it up instead of deleting it outright:
 
 ```bash
-mkdir -p ~/.codex/backup
-mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
+backup_dir="$HOME/.codex/backup/codex-state-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$backup_dir"
+mv ~/.codex/state_*.sqlite* "$backup_dir"/ 2>/dev/null || true
 ```
 
 Only delete the local state database when you accept losing local Codex session state. The helper requires an explicit acknowledgement for that last-resort path:
