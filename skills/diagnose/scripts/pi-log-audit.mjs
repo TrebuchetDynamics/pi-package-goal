@@ -72,11 +72,51 @@ function formatValue(value) {
   return String(value).replace(/\s+/g, " ").slice(0, 180);
 }
 
-function isFailureEvent(event) {
+function isBlockedEvent(event) {
   const eventName = String(event.event ?? "").toLowerCase();
   const phase = String(event.phase ?? "").toLowerCase();
   const reason = String(event.reason ?? "").toLowerCase();
-  return eventName.includes("failed") || eventName.includes("blocked") || phase === "blocked" || reason.includes("error");
+  const decision = String(event.decision ?? "").toLowerCase();
+  return eventName.includes("blocked") || phase === "blocked" || decision === "blocked" || reason.includes("blocked");
+}
+
+function isFailureEvent(event) {
+  const eventName = String(event.event ?? "").toLowerCase();
+  const reason = String(event.reason ?? "").toLowerCase();
+  return isBlockedEvent(event) || eventName.includes("failed") || reason.includes("error");
+}
+
+function classifyStatus(latest, badJson) {
+  const eventName = String(latest.event ?? "").toLowerCase();
+  const phase = String(latest.phase ?? "").toLowerCase();
+  const decision = String(latest.decision ?? "").toLowerCase();
+
+  if (isBlockedEvent(latest)) return "blocked";
+  if (badJson > 0 || isFailureEvent(latest)) return "needs_attention";
+  if (phase === "done" || decision === "done" || eventName === "loop_finished") return "done";
+  if (phase === "running" || eventName === "iteration_prompt_sent") return "running";
+  if (phase === "queued" || eventName === "iteration_queued") return "queued";
+  return "unknown";
+}
+
+const summary = {
+  logs: 0,
+  needs_attention: 0,
+  blocked: 0,
+  running: 0,
+  queued: 0,
+  done: 0,
+  unknown: 0,
+  issues: 0,
+  badJson: 0,
+};
+
+function incrementSummary(status, attention, badJson) {
+  summary.logs += 1;
+  if (Object.hasOwn(summary, status)) summary[status] += 1;
+  else summary.unknown += 1;
+  if (attention) summary.issues += 1;
+  summary.badJson += badJson;
 }
 
 const piDirs = findPiDirs(root).sort();
@@ -93,7 +133,10 @@ for (const piDir of piDirs) {
     const latest = events.at(-1) ?? {};
     const failures = events.filter(isFailureEvent);
     const lastFailure = failures.at(-1);
+    const status = classifyStatus(latest, badJson);
+    const attention = status === "needs_attention" || Boolean(lastFailure) || badJson > 0;
     const size = fs.statSync(logPath).size;
+    incrementSummary(status, attention, badJson);
 
     console.log([
       "LOG",
@@ -108,6 +151,8 @@ for (const piDir of piDirs) {
       `iteration=${formatValue(latest.iteration)}/${formatValue(latest.maxIterations)}`,
       `phase=${formatValue(latest.phase)}`,
       `decision=${formatValue(latest.decision)}`,
+      `status=${status}`,
+      `attention=${attention ? "yes" : "no"}`,
     ].join("\t"));
 
     if (lastFailure) {
@@ -121,3 +166,16 @@ for (const piDir of piDirs) {
     }
   }
 }
+
+console.log([
+  "SUMMARY",
+  `logs=${summary.logs}`,
+  `needs_attention=${summary.needs_attention}`,
+  `blocked=${summary.blocked}`,
+  `running=${summary.running}`,
+  `queued=${summary.queued}`,
+  `done=${summary.done}`,
+  `unknown=${summary.unknown}`,
+  `issues=${summary.issues}`,
+  `bad_json=${summary.badJson}`,
+].join("\t"));

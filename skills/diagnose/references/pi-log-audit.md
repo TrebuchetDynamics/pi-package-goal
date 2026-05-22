@@ -11,8 +11,10 @@ The helper scans for `.pi` directories while skipping `.git` and `node_modules`,
 For each log it reports:
 
 - parsed line count and `bad_json` count
-- latest event, iteration, phase, and decision
+- latest event, iteration, phase, decision, `status=`, and `attention=yes|no`
 - last failure or blocked event reason
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
+
+The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs with attention-worthy issues, and totals malformed JSON lines.
 
 The script does not edit files, resolve loops, commit, push, or delete `.pi` state. Use it to decide which loop needs continuation, compaction retry, or marker recovery.

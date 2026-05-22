@@ -1823,11 +1823,15 @@ async function testPiLogAuditScript() {
     assert.match(output, /PI_DIR_COUNT 2/);
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(output, /latest=compaction_failed_before_next_iteration/);
+    assert.match(output, /status=needs_attention/);
+    assert.match(output, /attention=yes/);
     assert.match(output, /failure=compaction_failed_before_next_iteration/);
     assert.match(output, /Summarization failed: WebSocket error/);
     assert.match(output, /LOG\te2e-loop\t.*repo-b/);
+    assert.match(output, /status=blocked/);
     assert.match(output, /bad_json=1/);
     assert.match(output, /missing E2E_LOOP_DECISION final marker/);
+    assert.match(output, /SUMMARY\tlogs=2\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=0\tunknown=0\tissues=2\tbad_json=1/);
     assert.doesNotMatch(output, /node_modules/);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
@@ -1875,6 +1879,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /e2e-loop/);
   assert.match(logAuditReference, /WebSocket error/);
   assert.match(logAuditReference, /missing E2E_LOOP_DECISION final marker/);
+  assert.match(logAuditReference, /status=/);
+  assert.match(logAuditReference, /SUMMARY/);
 }
 
 async function testNoticesAndDocs() {
