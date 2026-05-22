@@ -2013,6 +2013,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /config_bad_json/);
   assert.match(source, /log_path=/);
   assert.match(source, /config_path=/);
+  assert.match(source, /attention_logs/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -2101,7 +2102,7 @@ async function testPiLogAuditScript() {
     assert.match(output, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config\tnext_action=restore matching loop config or archive\/remove stale log directory/);
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-g.*status=done.*config=present\tadapter=bad_json\tattention=yes/);
     assert.match(output, /ISSUE\tdevelopment-loop\t.*repo-g\tconfig=\.pi\/development-loop\.json\treason=matching loop config is not valid JSON\tnext_action=repair or regenerate the loop config/);
-    assert.match(output, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
+    assert.match(output, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tattention_logs=4\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
     assert.doesNotMatch(output, /node_modules/);
 
     const sinceOutput = execFileSync("node", [path.join(root, scriptRel), "--since=2026-05-22T02:30:00.000Z", fixtureRoot], { encoding: "utf8" });
@@ -2116,7 +2117,7 @@ async function testPiLogAuditScript() {
     assert.doesNotMatch(sinceAttentionOnly, /repo-e/);
     assert.doesNotMatch(sinceAttentionOnly, /repo-f/);
     assert.doesNotMatch(sinceAttentionOnly, /repo-g/);
-    assert.match(sinceAttentionOnly, /SUMMARY\t.*issues=1.*filtered_out=4.*since=2026-05-22T02:30:00.000Z\tsince_filtered=/);
+    assert.match(sinceAttentionOnly, /SUMMARY\t.*attention_logs=1.*issues=1.*filtered_out=4.*since=2026-05-22T02:30:00.000Z\tsince_filtered=/);
 
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a\tlog_path=\.pi\/development-loop\/logs\.jsonl\tconfig_path=\.pi\/development-loop\.json/);
@@ -2128,7 +2129,7 @@ async function testPiLogAuditScript() {
     assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs\tnext_action=start a loop for these configs or remove stale config files/);
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-g.*adapter=bad_json\tattention=yes/);
     assert.match(attentionOnly, /ISSUE\tdevelopment-loop\t.*repo-g\tconfig=\.pi\/development-loop\.json\treason=matching loop config is not valid JSON\tnext_action=repair or regenerate the loop config/);
-    assert.match(attentionOnly, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tfiltered_out=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
+    assert.match(attentionOnly, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tattention_logs=4\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tfiltered_out=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
 
     const blockedReportRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-blocked-report-"));
     try {
@@ -2197,7 +2198,7 @@ async function testPiLogAuditScript() {
       const recoveredAttentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", recoveredRoot], { encoding: "utf8" });
       assert.doesNotMatch(recoveredAttentionOnly, /repo-i/);
       assert.doesNotMatch(recoveredAttentionOnly, /repo-k/);
-      assert.match(recoveredAttentionOnly, /SUMMARY\tlogs=2\tneeds_attention=0\tblocked=0\trunning=1\tqueued=1\tdone=0\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=2\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=2\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=2/);
+      assert.match(recoveredAttentionOnly, /SUMMARY\tlogs=2\tneeds_attention=0\tblocked=0\trunning=1\tqueued=1\tdone=0\tunknown=0\tattention_logs=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=2\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=2\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=2/);
     } finally {
       fs.rmSync(recoveredRoot, { recursive: true, force: true });
     }
@@ -2216,7 +2217,7 @@ async function testPiLogAuditScript() {
 
       const sinceAttentionOnlyHygieneOutput = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", hygieneRoot], { encoding: "utf8" });
       assert.doesNotMatch(sinceAttentionOnlyHygieneOutput, /repo-h/);
-      assert.match(sinceAttentionOnlyHygieneOutput, /SUMMARY\tlogs=1\tneeds_attention=0\tblocked=0\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=1\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=1\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=0/);
+      assert.match(sinceAttentionOnlyHygieneOutput, /SUMMARY\tlogs=1\tneeds_attention=0\tblocked=0\trunning=0\tqueued=0\tdone=1\tunknown=0\tattention_logs=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=1\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=1\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=0/);
     } finally {
       fs.rmSync(hygieneRoot, { recursive: true, force: true });
     }

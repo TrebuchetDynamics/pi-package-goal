@@ -280,6 +280,7 @@ const summary = {
   queued: 0,
   done: 0,
   unknown: 0,
+  attentionLogs: 0,
   issues: 0,
   badJson: 0,
   logsWithoutConfigs: 0,
@@ -296,7 +297,10 @@ function incrementSummary(status, attention, badJson, missingConfig, configBadJs
   summary.logs += 1;
   if (Object.hasOwn(summary, status)) summary[status] += 1;
   else summary.unknown += 1;
-  if (attention) summary.issues += 1;
+  if (attention) {
+    summary.attentionLogs += 1;
+    summary.issues += 1;
+  }
   summary.badJson += badJson;
   summary.sinceFiltered += sinceFiltered;
   if (missingConfig) summary.logsWithoutConfigs += 1;
@@ -503,6 +507,7 @@ const summaryParts = [
   `queued=${summary.queued}`,
   `done=${summary.done}`,
   `unknown=${summary.unknown}`,
+  `attention_logs=${summary.attentionLogs}`,
   `issues=${summary.issues}`,
   `bad_json=${summary.badJson}`,
   `logs_without_configs=${summary.logsWithoutConfigs}`,
