@@ -114,7 +114,7 @@ Tips:
 - New loop runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
 - Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
-- Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, completion outcomes, unresolved starts, blocker reasons, empty provider responses, context overflows, compactions, topic sizes, repeated oversized topics, and likely improvement areas.
+- Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, completion outcomes, unresolved starts, blocker reasons, postmortem causes/actions, empty provider responses, context overflows, compactions, topic sizes, repeated oversized topics, and likely improvement areas.
 
 ### Troubleshooting provider interruptions
 

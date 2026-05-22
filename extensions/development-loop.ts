@@ -102,6 +102,11 @@ type LoopLogAnalysis = {
   blockedLoops: number;
   topBlockReason?: string;
   topBlockReasonCount: number;
+  postmortems: number;
+  topPostmortemCause?: string;
+  topPostmortemCauseCount: number;
+  topNextSafeAction?: string;
+  topNextSafeActionCount: number;
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   contextOverflowResponses: number;
@@ -119,6 +124,8 @@ type LoopLogAccumulator = {
   oversizedTopicCounts: Map<string, number>;
   blockReasonCounts: Map<string, number>;
   finishDecisionCounts: Map<string, number>;
+  postmortemCauseCounts: Map<string, number>;
+  nextSafeActionCounts: Map<string, number>;
   startedRunIds: Set<string>;
   terminalRunIds: Set<string>;
   legacyLoopStarts: number;
@@ -981,6 +988,8 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     oversizedTopicCounts: new Map<string, number>(),
     blockReasonCounts: new Map<string, number>(),
     finishDecisionCounts: new Map<string, number>(),
+    postmortemCauseCounts: new Map<string, number>(),
+    nextSafeActionCounts: new Map<string, number>(),
     startedRunIds: new Set<string>(),
     terminalRunIds: new Set<string>(),
     legacyLoopStarts: 0,
@@ -990,7 +999,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1026,6 +1035,23 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
       if (count > analysis.topBlockReasonCount) {
         analysis.topBlockReason = reason;
         analysis.topBlockReasonCount = count;
+      }
+    }
+    if (event === "loop_postmortem") {
+      analysis.postmortems++;
+      const likelyCause = stringOrUndefined(record.likelyCause) || "<missing likelyCause>";
+      const causeCount = incrementCount(postmortemCauseCounts, likelyCause);
+      if (causeCount > analysis.topPostmortemCauseCount) {
+        analysis.topPostmortemCause = likelyCause;
+        analysis.topPostmortemCauseCount = causeCount;
+      }
+      const nextSafeAction = stringOrUndefined(record.nextSafeAction);
+      if (nextSafeAction) {
+        const actionCount = incrementCount(nextSafeActionCounts, nextSafeAction);
+        if (actionCount > analysis.topNextSafeActionCount) {
+          analysis.topNextSafeAction = nextSafeAction;
+          analysis.topNextSafeActionCount = actionCount;
+        }
       }
     }
     if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
@@ -1070,6 +1096,9 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
+    postmortems: 0,
+    topPostmortemCauseCount: 0,
+    topNextSafeActionCount: 0,
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     contextOverflowResponses: 0,
@@ -1117,6 +1146,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
+  if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
   return recommendations.length ? recommendations : ["No obvious loop health issues detected in this log."];
@@ -1134,6 +1164,9 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
+    `Postmortems: ${analysis.postmortems}`,
+    analysis.topPostmortemCause ? `Top postmortem cause: ${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount} ${analysis.topPostmortemCauseCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topNextSafeAction ? `Top next safe action: ${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount} ${analysis.topNextSafeActionCount === 1 ? "record" : "records"})` : undefined,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
