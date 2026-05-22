@@ -255,12 +255,12 @@ function incrementSummary(status, attention, badJson, missingConfig, configBadJs
   if (options.attentionOnly && !attention) summary.filteredOut += 1;
 }
 
-function incrementPiDirSummary(logCount, configCount) {
+function incrementPiDirSummary(logCount, configCount, countConfigOnlyIssue) {
   summary.piDirs += 1;
   if (logCount === 0) summary.piDirsWithoutLogs += 1;
   if (logCount === 0 && configCount > 0) {
     summary.piDirsWithConfigsWithoutLogs += 1;
-    summary.issues += 1;
+    if (countConfigOnlyIssue) summary.issues += 1;
   }
   summary.configFiles += configCount;
 }
@@ -304,17 +304,18 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const lastAt = findLastAt(events);
   const runId = findLastRunId(events);
   const lastResult = findLastResult(events);
-  const status = classifyStatus(latest, badJson);
+  const outsideSinceWindow = Boolean(options.since && events.length === 0);
+  const status = outsideSinceWindow ? "unknown" : classifyStatus(latest, badJson);
   const missingConfig = !hasMatchingConfig;
   const configAdapter = configDetails?.adapter;
   const configBadJson = Boolean(configDetails?.badJson);
-  const attention = needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
+  const attention = outsideSinceWindow ? false : needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
   const stats = fs.statSync(logPath);
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
-  incrementSummary(status, attention, badJson, missingConfig, configBadJson, sinceFiltered);
-  return { loopName, events, badJson, lineCount, sinceFiltered, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
+  incrementSummary(status, attention, outsideSinceWindow ? 0 : badJson, outsideSinceWindow ? false : missingConfig, outsideSinceWindow ? false : configBadJson, sinceFiltered);
+  return { loopName, events, badJson, lineCount, sinceFiltered, outsideSinceWindow, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -371,7 +372,7 @@ function printLogRecord(record, repoDir) {
     console.log(failureFields.join("\t"));
   }
 
-  if (record.missingConfig) {
+  if (record.missingConfig && !record.outsideSinceWindow) {
     console.log([
       "ISSUE",
       record.loopName,
@@ -382,7 +383,7 @@ function printLogRecord(record, repoDir) {
     ].join("\t"));
   }
 
-  if (record.configBadJson) {
+  if (record.configBadJson && !record.outsideSinceWindow) {
     console.log([
       "ISSUE",
       record.loopName,
@@ -403,8 +404,8 @@ for (const piDir of piDirs) {
   const configNames = findLoopConfigs(piDir);
   const configNameSet = new Set(configNames);
   const configDetails = readConfigDetails(piDir, configNames);
-  const configOnlyIssue = logs.length === 0 && configNames.length > 0;
-  incrementPiDirSummary(logs.length, configNames.length);
+  const configOnlyIssue = logs.length === 0 && configNames.length > 0 && !options.since;
+  incrementPiDirSummary(logs.length, configNames.length, !options.since);
 
   const records = logs.map(({ loopName, logPath }) => {
     const matchingConfigName = `${loopName}.json`;

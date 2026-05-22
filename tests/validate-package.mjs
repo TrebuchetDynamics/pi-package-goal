@@ -2082,6 +2082,14 @@ async function testPiLogAuditScript() {
     assert.doesNotMatch(sinceOutput, /LOG\tdevelopment-loop\t.*repo-d.*status=done/);
     assert.match(sinceOutput, /SUMMARY\t.*since=2026-05-22T02:30:00.000Z\tsince_filtered=/);
 
+    const sinceAttentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", fixtureRoot], { encoding: "utf8" });
+    assert.match(sinceAttentionOnly, /LOG\tdevelopment-loop\t.*repo-d.*parsed=1\tsince_filtered=1.*latest=loop_blocked.*status=blocked.*attention=yes/);
+    assert.doesNotMatch(sinceAttentionOnly, /repo-a/);
+    assert.doesNotMatch(sinceAttentionOnly, /repo-e/);
+    assert.doesNotMatch(sinceAttentionOnly, /repo-f/);
+    assert.doesNotMatch(sinceAttentionOnly, /repo-g/);
+    assert.match(sinceAttentionOnly, /SUMMARY\t.*issues=1.*filtered_out=4.*since=2026-05-22T02:30:00.000Z\tsince_filtered=/);
+
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a\tlog_path=\.pi\/development-loop\/logs\.jsonl\tconfig_path=\.pi\/development-loop\.json/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b\tlog_path=\.pi\/e2e-loop\/logs\.jsonl\tconfig_path=\.pi\/e2e-loop\.json/);

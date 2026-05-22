@@ -10,7 +10,7 @@ node skills/diagnose/scripts/pi-log-audit.mjs --attention-only --since=2h /home/
 
 If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /home/xel/git/sages-openclaw`.
 
-The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names. It reports config files matching `*-loop.json`, including custom loop configs. Add `--since=2h` or `--since=2026-05-22T02:30:00.000Z` to classify each log from timestamped records at or after the cutoff; records without parseable timestamps are excluded from the window and counted as `since_filtered=`.
+The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names. It reports config files matching `*-loop.json`, including custom loop configs. Add `--since=2h` or `--since=2026-05-22T02:30:00.000Z` to classify each log from timestamped records at or after the cutoff; records without parseable timestamps are excluded from the window and counted as `since_filtered=`. When `--attention-only` is combined with `--since`, logs with no in-window records and config-only `.pi` directories are hidden so a recent audit is not dominated by stale loop hygiene.
 
 For each log it reports:
 
