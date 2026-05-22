@@ -1802,6 +1802,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /--attention-only/);
   assert.match(source, /pi_dirs_without_logs/);
   assert.match(source, /pi_dirs_with_configs_without_logs/);
+  assert.match(source, /findLoopConfigs/);
   assert.match(source, /HISTORY/);
   assert.match(source, /last_at/);
 
@@ -1839,6 +1840,7 @@ async function testPiLogAuditScript() {
     const repoE = path.join(fixtureRoot, "repo-e");
     fs.mkdirSync(path.join(repoE, ".pi"), { recursive: true });
     fs.writeFileSync(path.join(repoE, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
+    fs.writeFileSync(path.join(repoE, ".pi", "navivox-loop.json"), JSON.stringify({ adapter: "navivox" }) + "\n");
 
     fs.mkdirSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop", "logs.jsonl"), "{}\n");
@@ -1860,18 +1862,18 @@ async function testPiLogAuditScript() {
     assert.match(output, /attention=no/);
     assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\treason=temporary missing marker/);
     assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
-    assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json/);
-    assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json\treason=config files present but no loop logs/);
-    assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=1/);
+    assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
+    assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
+    assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=2/);
     assert.doesNotMatch(output, /node_modules/);
 
     const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b/);
     assert.doesNotMatch(attentionOnly, /repo-d/);
-    assert.match(attentionOnly, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json/);
-    assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json\treason=config files present but no loop logs/);
-    assert.match(attentionOnly, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tfiltered_out=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=1/);
+    assert.match(attentionOnly, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
+    assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
+    assert.match(attentionOnly, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=3\tbad_json=1\tfiltered_out=1\tpi_dirs=4\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=2/);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -1924,6 +1926,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /--attention-only/);
   assert.match(logAuditReference, /pi_dirs_without_logs/);
   assert.match(logAuditReference, /pi_dirs_with_configs_without_logs/);
+  assert.match(logAuditReference, /custom loop configs/);
   assert.match(logAuditReference, /historical failure/);
   assert.match(logAuditReference, /last_at/);
 }

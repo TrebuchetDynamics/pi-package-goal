@@ -7,6 +7,7 @@ const options = parseArgs(process.argv.slice(2));
 if (options.help) {
   console.log("Usage: pi-log-audit.mjs [--attention-only] [ROOT]");
   console.log("Read-only summary of .pi/*/logs.jsonl files under ROOT.");
+  console.log("Includes development-loop, e2e-loop, and custom *-loop logs/configs.");
   process.exit(0);
 }
 
@@ -118,6 +119,13 @@ function findLoopLogs(piDir) {
     .map((entry) => ({ loopName: entry.name, logPath: path.join(piDir, entry.name, "logs.jsonl") }))
     .filter(({ logPath }) => fs.existsSync(logPath) && fs.statSync(logPath).isFile())
     .sort((a, b) => a.loopName.localeCompare(b.loopName));
+}
+
+function findLoopConfigs(piDir) {
+  return safeReaddir(piDir)
+    .filter((entry) => entry.isFile() && entry.name.endsWith("-loop.json"))
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function formatValue(value) {
@@ -260,7 +268,7 @@ console.log(`PI_DIR_COUNT ${piDirs.length}`);
 for (const piDir of piDirs) {
   const repoDir = path.dirname(piDir);
   const logs = findLoopLogs(piDir);
-  const configNames = ["development-loop.json", "e2e-loop.json"].filter((name) => fs.existsSync(path.join(piDir, name)));
+  const configNames = findLoopConfigs(piDir);
   const configOnlyIssue = logs.length === 0 && configNames.length > 0;
   incrementPiDirSummary(logs.length, configNames.length);
 

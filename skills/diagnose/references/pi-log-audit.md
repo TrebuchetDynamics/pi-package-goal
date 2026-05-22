@@ -9,7 +9,7 @@ node skills/diagnose/scripts/pi-log-audit.mjs --attention-only /home/xel/git/sag
 
 If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /home/xel/git/sages-openclaw`.
 
-The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names.
+The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-loop`, `e2e-loop`, and custom loop names. It reports config files matching `*-loop.json`, including custom loop configs.
 
 For each log it reports:
 
