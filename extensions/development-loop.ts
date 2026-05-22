@@ -150,6 +150,8 @@ type LoopLogAnalysis = {
   ciGreenRecords: number;
   ciRedRecords: number;
   ciGateMissingRecords: number;
+  topCiGateMissingSource?: string;
+  topCiGateMissingSourceCount: number;
   topCiGateMissingReason?: string;
   topCiGateMissingReasonCount: number;
   unresolvedLoopStarts: number;
@@ -206,6 +208,7 @@ type LoopLogAccumulator = {
   selfImprovementReasonCounts: Map<string, number>;
   selfImprovementActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
+  ciGateMissingSourceCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
   emptyProviderReasonCounts: Map<string, number>;
   queuedIterationReasonCounts: Map<string, number>;
@@ -1100,6 +1103,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     selfImprovementReasonCounts: new Map<string, number>(),
     selfImprovementActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
+    ciGateMissingSourceCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
     emptyProviderReasonCounts: new Map<string, number>(),
     queuedIterationReasonCounts: new Map<string, number>(),
@@ -1126,7 +1130,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1296,6 +1300,13 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     if (ciGreen === false) analysis.ciRedRecords++;
     if (event === "ci_gate_missing") {
       analysis.ciGateMissingRecords++;
+      if (sourceKey) {
+        const sourceCount = incrementCount(ciGateMissingSourceCounts, sourceKey);
+        if (sourceCount > analysis.topCiGateMissingSourceCount) {
+          analysis.topCiGateMissingSource = sourceKey;
+          analysis.topCiGateMissingSourceCount = sourceCount;
+        }
+      }
       const reason = recordReason(record, event) || "<missing reason>";
       const count = incrementCount(ciGateMissingReasonCounts, reason);
       if (count > analysis.topCiGateMissingReasonCount) {
@@ -1517,6 +1528,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     ciGreenRecords: 0,
     ciRedRecords: 0,
     ciGateMissingRecords: 0,
+    topCiGateMissingSourceCount: 0,
     topCiGateMissingReasonCount: 0,
     unresolvedLoopStarts: 0,
     topUnresolvedSourceCount: 0,
@@ -1713,7 +1725,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block reason and prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
-  if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
+  if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: inspect the top CI-gate missing source and require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
   if (analysis.iterationResultWithoutValidationRecords > 0) recommendations.push("Iteration results without validation evidence: require validationCommands on every continue/done iteration result before scheduling follow-up work.");
@@ -1794,6 +1806,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topFinalMarkerRecoveryBlockReason ? ["Top final-marker recovery block reason", `${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount})`] : undefined,
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
+    analysis.topCiGateMissingSource ? ["Top CI-gate missing log source", `${relativeToCwd(cwd, analysis.topCiGateMissingSource)} (${analysis.topCiGateMissingSourceCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
     analysis.topUnresolvedSource ? ["Top unresolved log source", `${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount})`] : undefined,
     analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
@@ -1901,6 +1914,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `CI-green records: ${analysis.ciGreenRecords}`,
     `CI-red records: ${analysis.ciRedRecords}`,
     `CI-gate missing records: ${analysis.ciGateMissingRecords}`,
+    analysis.topCiGateMissingSource ? `Top CI-gate missing log source: ${relativeToCwd(cwd, analysis.topCiGateMissingSource)} (${analysis.topCiGateMissingSourceCount} ${analysis.topCiGateMissingSourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topCiGateMissingReason ? `Top CI-gate missing reason: ${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount} ${analysis.topCiGateMissingReasonCount === 1 ? "record" : "records"})` : undefined,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     analysis.topUnresolvedSource ? `Top unresolved log source: ${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount} ${analysis.topUnresolvedSourceCount === 1 ? "record" : "records"})` : undefined,
