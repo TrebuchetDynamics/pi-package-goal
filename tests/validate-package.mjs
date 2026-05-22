@@ -430,6 +430,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.ok(objectiveLine, "iteration prompt should include an objective line");
     assert.ok(objectiveLine.length <= "Topic/objective: ".length + 600, "iteration prompt objective should be capped before it can bloat provider context");
     assert.match(objectiveLine, /…$/);
+    const objectiveIntakeLine = longPrompt.split("\n").find((line) => line.startsWith("Objective intake: "));
+    assert.match(objectiveIntakeLine ?? "", /Objective intake: oversized objective · length \d+ · hash [0-9a-f]{12}/);
+    assert.doesNotMatch(objectiveIntakeLine ?? "", new RegExp(longTailMarker));
     assert.doesNotMatch(longPrompt, new RegExp(longTailMarker));
   } finally {
     fs.rmSync(promptRoot, { recursive: true, force: true });
@@ -788,6 +791,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.ok(proactiveLogRecord.topic.length <= 600, "development-loop logs should compact copied long topics before repeating them in every event");
       assert.equal(proactiveLogRecord.topicLength, proactiveTopic.length, "development-loop logs should preserve original topic length for diagnostics");
       assert.equal(proactiveLogRecord.topicTruncated, true, "development-loop logs should mark truncated topics");
+      assert.match(proactiveLogRecord.topicHash, /^[0-9a-f]{12}$/, "development-loop logs should hash long topics for deduplication without repeating the full paste");
+      assert.equal(proactiveLogRecord.topicKind, "oversized");
       assert.doesNotMatch(proactiveLogRecord.topic, new RegExp(proactiveTailMarker));
       const proactivePromptObjectiveLine = sent.at(-1).content.split("\n").find((line) => line.startsWith("Topic/objective: "));
       assert.ok(proactivePromptObjectiveLine, "initial prompt should include an objective line");

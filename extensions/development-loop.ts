@@ -1,9 +1,11 @@
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
+type ObjectiveKind = "short" | "oversized";
 
 type ProjectConfig = {
   adapter?: string;
@@ -63,6 +65,8 @@ type LoopLogRecord = {
   topic: string;
   topicLength?: number;
   topicTruncated?: boolean;
+  topicHash?: string;
+  topicKind?: ObjectiveKind;
   iteration: number;
   maxIterations: number;
   phase: LoopPhase;
@@ -971,7 +975,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     const topicLength = recordTopicLength(record);
     if (topicLength > LOG_TOPIC_MAX) {
       analysis.oversizedTopicRecords++;
-      const key = typeof record.topic === "string" ? record.topic : `<missing-topic:${topicLength}>`;
+      const key = stringOrUndefined(record.topicHash) || (typeof record.topic === "string" ? record.topic : `<missing-topic:${topicLength}>`);
       const count = incrementCount(oversizedTopicCounts, key);
       analysis.mostRepeatedOversizedTopicRecords = Math.max(analysis.mostRepeatedOversizedTopicRecords, count);
     }
@@ -1100,6 +1104,7 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Topic/objective: ${promptObjectiveText(s.topic)}
+Objective intake: ${objectiveIntakeSummary(s.topic)}
 Preferred language: ${language}
 Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
 Loop log path: ${relativeToCwd(cwd, s.logPath)}
@@ -1430,13 +1435,16 @@ function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   }
 }
 
-function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated"> {
+function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated" | "topicHash" | "topicKind"> {
   const topic = singleLineText(value);
-  if (topic.length <= LOG_TOPIC_MAX) return { topic, topicLength: topic.length };
+  const topicHash = hashText(topic);
+  if (topic.length <= LOG_TOPIC_MAX) return { topic, topicLength: topic.length, topicHash, topicKind: "short" };
   return {
     topic: `${topic.slice(0, LOG_TOPIC_MAX - 1)}…`,
     topicLength: topic.length,
     topicTruncated: true,
+    topicHash,
+    topicKind: "oversized",
   };
 }
 
@@ -1897,6 +1905,16 @@ function promptObjectiveText(value: unknown): string {
   const text = singleLineText(value);
   if (text.length <= PROMPT_OBJECTIVE_MAX) return text;
   return `${text.slice(0, PROMPT_OBJECTIVE_MAX - 1)}…`;
+}
+
+function objectiveIntakeSummary(value: unknown): string {
+  const text = singleLineText(value);
+  const kind: ObjectiveKind = text.length > PROMPT_OBJECTIVE_MAX ? "oversized" : "short";
+  return `${kind} objective · length ${text.length} · hash ${hashText(text)}`;
+}
+
+function hashText(text: string): string {
+  return crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {
