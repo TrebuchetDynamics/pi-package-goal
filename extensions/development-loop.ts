@@ -2261,6 +2261,14 @@ Decision guide for final markers:
 - stop: use for clean handoff or review before more automation.
 - done: use when the objective is complete and no follow-up loop work remains.
 
+End report quality checklist:
+- Scope and slice: exact project path, adapter, and selected slice.
+- Changes: exact files plus what changed and why.
+- Validation: each command with pass, fail, or not-run reason.
+- Delivery: commit hash and push status, or why delivery was skipped.
+- Blocker state: none, or the specific missing prerequisite or unsafe condition.
+- Next step: one concrete action matched to continue, blocked, stop, or done.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

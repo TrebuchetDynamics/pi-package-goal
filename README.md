@@ -202,6 +202,15 @@ Decision guide for final markers:
 | stop: use for clean handoff or review before more automation | The user should review, hand off, or restart with a different objective. | Name handoff state and safe resume actions. |
 | done: use when the objective is complete and no follow-up loop work remains | Final requested work is validated, delivered when policy allows, and has no remaining loop slice. | Summarize completion evidence and optional post-loop cleanup. |
 
+End report quality checklist:
+
+- Scope and slice: exact project path, adapter, and selected slice.
+- Changes: exact files plus what changed and why.
+- Validation: each command with pass, fail, or not-run reason.
+- Delivery: commit hash and push status, or why delivery was skipped.
+- Blocker state: none, or the specific missing prerequisite or unsafe condition.
+- Next step: one concrete action matched to continue, blocked, stop, or done.
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
