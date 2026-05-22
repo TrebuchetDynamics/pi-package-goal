@@ -1,0 +1,43 @@
+# Codex local storage failures
+
+Use this quick path when Codex fails before the agent starts with messages such as `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` database.
+
+## Triage first
+
+Confirm whether the failure is disk pressure, not the project under test:
+
+```bash
+df -h "$HOME"
+du -sh ~/.codex/* 2>/dev/null | sort -h
+```
+
+If `$HOME` is full, free space outside Codex too. The sqlite repair flow needs enough free space to copy or rebuild state.
+
+## Safest deletion first
+
+Delete transient Codex temp files before deleting durable state:
+
+```bash
+rm -rf ~/.codex/tmp
+```
+
+Retry Codex after removing temp files. If it still reports `database or disk is full`, prefer the built-in repair prompt once free space exists.
+
+## Back up damaged local state
+
+If the sqlite state is still blocking startup and you accept that local Codex session state may be rebuilt, move the database files aside first:
+
+```bash
+mkdir -p ~/.codex/backup
+mv ~/.codex/state_*.sqlite* ~/.codex/backup/ 2>/dev/null || true
+```
+
+## Last-resort reset command
+
+Only delete the local state database when backup or repair is not possible and losing local Codex session state is acceptable:
+
+```bash
+rm -f ~/.codex/state_*.sqlite ~/.codex/state_*.sqlite-shm ~/.codex/state_*.sqlite-wal
+```
+
+Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local Codex settings, caches, and state.

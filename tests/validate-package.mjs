@@ -1630,6 +1630,21 @@ async function testThirdPartyNoticePaths() {
   assert.deepEqual(collectThirdPartyNoticePathIssues(root), []);
 }
 
+async function testDiagnoseCodexStorageReference() {
+  const skill = read("skills/diagnose/SKILL.md");
+  assert.match(skill, /\[Codex local storage failures\]\(references\/codex-storage\.md\)/);
+  assert.ok(exists("skills/diagnose/references/codex-storage.md"), "missing Codex storage reference");
+
+  const reference = read("skills/diagnose/references/codex-storage.md");
+  assert.match(reference, /No space left on device/);
+  assert.match(reference, /database or disk is full/);
+  assert.match(reference, /df -h "\$HOME"/);
+  assert.match(reference, /rm -rf ~\/\.codex\/tmp/);
+  assert.match(reference, /mv ~\/\.codex\/state_\*\.sqlite\* ~\/\.codex\/backup\//);
+  assert.match(reference, /rm -f ~\/\.codex\/state_\*\.sqlite/);
+  assert.match(reference, /Do not run `rm -rf ~\/\.codex`/);
+}
+
 async function testNoticesAndDocs() {
   const readme = read("README.md");
   assert.match(readme, /## Quick start/);
@@ -1717,5 +1732,6 @@ await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
 await testMarkdownLinks();
 await testThirdPartyNoticePaths();
+await testDiagnoseCodexStorageReference();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");
