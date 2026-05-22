@@ -1012,6 +1012,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Finished-without-delivery records: 1/);
       assert.match(messages.at(-1).content, /Iteration result records: 2/);
+      assert.match(messages.at(-1).content, /Assistant decision records: 1/);
+      assert.match(messages.at(-1).content, /Top assistant decision: continue \(1 record\)/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: assistant_decision_missing \(1 record\)/);
@@ -1042,6 +1044,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Finished-without-delivery records: 2/);
       assert.match(messages.at(-1).content, /Iteration result records: 4/);
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
+      assert.match(messages.at(-1).content, /Assistant decision records: 1/);
+      assert.match(messages.at(-1).content, /Top assistant decision: continue \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
@@ -1086,6 +1090,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Iteration-result-without-validation records/);
         assert.match(html, /Finished-without-validation records/);
         assert.match(html, /Finished-without-delivery records/);
+        assert.match(html, /Assistant decision records/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);

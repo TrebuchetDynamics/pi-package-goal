@@ -107,6 +107,9 @@ type LoopLogAnalysis = {
   finishedWithoutDeliveryRecords: number;
   iterationResultRecords: number;
   iterationResultWithoutValidationRecords: number;
+  assistantDecisionRecords: number;
+  topAssistantDecision?: string;
+  topAssistantDecisionCount: number;
   topFinishDecision?: string;
   topFinishDecisionCount: number;
   blockedLoops: number;
@@ -153,6 +156,7 @@ type LoopLogAccumulator = {
   oversizedTopicCounts: Map<string, number>;
   blockReasonCounts: Map<string, number>;
   finishDecisionCounts: Map<string, number>;
+  assistantDecisionCounts: Map<string, number>;
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
@@ -1026,6 +1030,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     oversizedTopicCounts: new Map<string, number>(),
     blockReasonCounts: new Map<string, number>(),
     finishDecisionCounts: new Map<string, number>(),
+    assistantDecisionCounts: new Map<string, number>(),
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
@@ -1043,7 +1048,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1057,6 +1062,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     if (event === "iteration_result") {
       analysis.iterationResultRecords++;
       if (recordValidationEvidence(record).length === 0) analysis.iterationResultWithoutValidationRecords++;
+    }
+    if (event === "assistant_decision") {
+      analysis.assistantDecisionRecords++;
+      const decision = recordDecision(record, event) || "<missing decision>";
+      const count = incrementCount(assistantDecisionCounts, decision);
+      if (count > analysis.topAssistantDecisionCount) {
+        analysis.topAssistantDecision = decision;
+        analysis.topAssistantDecisionCount = count;
+      }
     }
     const recoveryKey = markerRecoveryKey(record, runId);
     if (event === "missing_final_marker_recovery_requested") {
@@ -1196,6 +1210,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     finishedWithoutDeliveryRecords: 0,
     iterationResultRecords: 0,
     iterationResultWithoutValidationRecords: 0,
+    assistantDecisionRecords: 0,
+    topAssistantDecisionCount: 0,
     topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
@@ -1324,6 +1340,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
+  if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare recovery successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
@@ -1357,6 +1374,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Finished-without-delivery records", String(analysis.finishedWithoutDeliveryRecords)],
     ["Iteration result records", String(analysis.iterationResultRecords)],
     ["Iteration-result-without-validation records", String(analysis.iterationResultWithoutValidationRecords)],
+    ["Assistant decision records", String(analysis.assistantDecisionRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
     ["Self-improvement queued records", String(analysis.selfImprovementQueuedRecords)],
@@ -1384,6 +1402,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
   const recommendations = analysis.recommendations.map((item) => `<li>${escapeHtml(item)}</li>`).join("\n");
   const topFacts = [
     analysis.topFinishDecision ? ["Top finish decision", `${analysis.topFinishDecision} (${analysis.topFinishDecisionCount})`] : undefined,
+    analysis.topAssistantDecision ? ["Top assistant decision", `${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount})`] : undefined,
     analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
@@ -1454,6 +1473,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Finished-without-delivery records: ${analysis.finishedWithoutDeliveryRecords}`,
     `Iteration result records: ${analysis.iterationResultRecords}`,
     `Iteration-result-without-validation records: ${analysis.iterationResultWithoutValidationRecords}`,
+    `Assistant decision records: ${analysis.assistantDecisionRecords}`,
+    analysis.topAssistantDecision ? `Top assistant decision: ${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount} ${analysis.topAssistantDecisionCount === 1 ? "record" : "records"})` : undefined,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
