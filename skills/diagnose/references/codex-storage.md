@@ -8,12 +8,13 @@ These failures usually mean the home filesystem is full or so close to full that
 
 ## Triage first
 
-Confirm whether the failure is disk pressure, not the project under test:
+Confirm whether the failure is disk pressure, not the project under test, and whether the pressure is inside Codex or elsewhere in `$HOME`:
 
 ```bash
 df -h "$HOME"
 df -ih "$HOME"
 du -sh ~/.codex/* 2>/dev/null | sort -h
+du -x -h -d 1 "$HOME" 2>/dev/null | sort -h | tail -20
 ```
 
 If `$HOME` is full, free space outside Codex too. The sqlite repair flow needs enough free space to copy or rebuild state.

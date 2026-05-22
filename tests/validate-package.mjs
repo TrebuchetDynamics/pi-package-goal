@@ -1769,6 +1769,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /database or disk is full/);
   assert.match(reference, /df -h "\$HOME"/);
   assert.match(reference, /df -ih "\$HOME"/);
+  assert.match(reference, /du -x -h -d 1 "\$HOME" 2>\/dev\/null \| sort -h \| tail -20/);
   assert.match(reference, /## Likely causes/);
   assert.match(reference, /home filesystem is full/);
   assert.match(reference, /PATH wrapper files under `~\/\.codex\/tmp`/);
@@ -1837,6 +1838,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /No space left on device/);
   assert.match(readme, /database or disk is full/);
   assert.match(readme, /df -ih "\$HOME"/);
+  assert.match(readme, /du -x -h -d 1 "\$HOME" 2>\/dev\/null \| sort -h \| tail -20/);
   assert.match(readme, /Likely causes include a full home filesystem/);
   assert.match(readme, /PATH wrapper files under `~\/\.codex\/tmp`/);
   assert.match(readme, /SQLite cannot extend the state database/);
