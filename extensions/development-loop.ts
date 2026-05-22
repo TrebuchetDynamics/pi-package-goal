@@ -9,6 +9,7 @@ type ObjectiveKind = "short" | "oversized" | "provider-noise";
 
 type DeliveryEvidence = {
   summary?: string;
+  blockerState?: string;
   nextSteps?: string[];
   changedFiles?: string[];
   validationCommands?: string[];
@@ -91,6 +92,7 @@ type LoopLogRecord = {
   decision?: string;
   reason?: string;
   summary?: string;
+  blockerState?: string;
   nextSteps?: string[];
   changedFiles?: string[];
   validationCommands?: string[];
@@ -1727,6 +1729,7 @@ function recordHasDeliveryEvidence(record: Record<string, unknown>): boolean {
     || recordValidationEvidence(record).length > 0
     || Boolean(recordCommitHash(record))
     || Boolean(recordReportSummary(record))
+    || Boolean(recordBlockerState(record))
     || recordReportNextSteps(record).length > 0
     || Boolean(recordPushStatus(record));
 }
@@ -1750,6 +1753,14 @@ function recordCommitHash(record: Record<string, unknown>): string | undefined {
 
 function recordReportSummary(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.summary) || stringOrUndefined(record.whatChanged);
+}
+
+function recordBlockerState(record: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record.blockerState)
+    || stringOrUndefined(record.blockerReason)
+    || stringOrUndefined(record.blockedReason)
+    || stringOrUndefined(record.blockers)
+    || stringOrUndefined(record.missingPrerequisites);
 }
 
 function recordReportNextSteps(record: Record<string, unknown>): string[] {
@@ -2175,6 +2186,9 @@ DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"brief result
 DEV_LOOP_VALIDATED: yes|no
 DEV_LOOP_DECISION: continue|stop|blocked|done
 
+Blocked DEV_LOOP_REPORT objects should include blockerState and nextSteps, for example:
+DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"brief blocker","blockerState":"why blocked","nextSteps":["unblock action"]}
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.
@@ -2446,6 +2460,8 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
   const reportSummary = recordReportSummary(record);
   if (reportSummary) parts.push(`summary ${reportSummary}`);
+  const blockerState = recordBlockerState(record);
+  if (blockerState) parts.push(`blocker ${blockerState}`);
   parts.push(...reportNextStepSummaryParts(recordReportNextSteps(record)));
   return parts.join("; ");
 }
@@ -2467,10 +2483,12 @@ function summarizeRecentReportContext(records: Record<string, unknown>[]): strin
 
 function formatRecentReportRecord(record: Record<string, unknown>): string {
   const summary = recordReportSummary(record);
+  const blockerState = recordBlockerState(record);
   return compactJoin([
     typeof record.iteration === "number" ? `i${record.iteration}` : undefined,
     typeof record.decision === "string" ? record.decision : undefined,
     summary ? `summary ${compactStatusText(summary)}` : undefined,
+    blockerState ? `blocker ${compactStatusText(blockerState)}` : undefined,
     ...reportNextStepSummaryParts(recordReportNextSteps(record)).map(compactStatusText),
   ]);
 }
@@ -2561,7 +2579,7 @@ function readRecentReportRecords(logPath: string, limit = STATUS_REPORT_HISTORY_
     const records: Record<string, unknown>[] = [];
     for (let i = lines.length - 1; i >= 0 && records.length < limit; i--) {
       const parsed = parseLogRecord(lines[i]);
-      if (parsed && (recordReportSummary(parsed) || recordReportNextSteps(parsed).length > 0)) records.push(parsed);
+      if (parsed && (recordReportSummary(parsed) || recordBlockerState(parsed) || recordReportNextSteps(parsed).length > 0)) records.push(parsed);
     }
     return records;
   } catch {
@@ -2674,10 +2692,11 @@ function parseDeliveryEvidence(text: string): DeliveryEvidence {
   const changedFiles: string[] = [];
   const validationCommands: string[] = [];
   const nextSteps: string[] = [];
+  const blockerStateLines: string[] = [];
   let summary: string | undefined;
   let commitHash: string | undefined;
   let pushStatus: string | undefined;
-  let section: "changed" | "validation" | "nextSteps" | undefined;
+  let section: "changed" | "validation" | "nextSteps" | "blocker" | undefined;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -2697,6 +2716,13 @@ function parseDeliveryEvidence(text: string): DeliveryEvidence {
     if (nextStepsHeader) {
       section = "nextSteps";
       addInlineListItems(nextSteps, nextStepsHeader[1], cleanReportText);
+      continue;
+    }
+
+    const blockerHeader = trimmed.match(/^(?:Blocker state|Blocked because|Blocking reason|Missing prerequisites?|Blockers?)(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (blockerHeader) {
+      section = "blocker";
+      addInlineListItems(blockerStateLines, blockerHeader[1], cleanReportText);
       continue;
     }
 
@@ -2733,10 +2759,13 @@ function parseDeliveryEvidence(text: string): DeliveryEvidence {
     if (section === "changed") addUnique(changedFiles, cleanChangedFileEvidence(bullet[1]));
     if (section === "validation") addUnique(validationCommands, cleanValidationEvidence(bullet[1]));
     if (section === "nextSteps") addUnique(nextSteps, cleanReportText(bullet[1]));
+    if (section === "blocker") addUnique(blockerStateLines, cleanReportText(bullet[1]));
   }
 
+  const blockerState = blockerStateLines.join("; ");
   return {
     ...(summary ? { summary } : {}),
+    ...(blockerState ? { blockerState } : {}),
     ...(nextSteps.length ? { nextSteps } : {}),
     ...(changedFiles.length ? { changedFiles } : {}),
     ...(validationCommands.length ? { validationCommands } : {}),
@@ -2815,12 +2844,14 @@ function parseTypedFinalReport(text: string): FinalReport | undefined {
   const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
   const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
   const summary = stringOrUndefined(rawReport.summary) || stringOrUndefined(rawReport.whatChanged);
+  const blockerState = recordBlockerState(rawReport);
   const nextSteps = stringArrayOrSingleString(rawReport.nextSteps) || stringArrayOrSingleString(rawReport.possibleNextSteps) || stringArrayOrSingleString(rawReport.nextStep) || stringArrayOrSingleString(rawReport.nextActions);
   return {
     ...(decision ? { decision } : {}),
     ...(validated !== undefined ? { validated } : {}),
     deliveryEvidence: {
       ...(summary ? { summary } : {}),
+      ...(blockerState ? { blockerState } : {}),
       ...(nextSteps ? { nextSteps } : {}),
       ...(changedFiles ? { changedFiles } : {}),
       ...(validationCommands ? { validationCommands } : {}),

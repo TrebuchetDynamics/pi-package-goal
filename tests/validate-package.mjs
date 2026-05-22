@@ -530,6 +530,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /DEV_LOOP_REPORT/);
     assert.match(sent[0].content, /"summary":"brief result"/);
     assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
+    assert.match(sent[0].content, /"blockerState":"why blocked"/);
+    assert.match(sent[0].content, /Blocked DEV_LOOP_REPORT objects should include blockerState and nextSteps/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -697,6 +699,28 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(widgetUpdates.at(-1).value[0], /summary Profile Control Center TUI shell and draft apply flow/);
     assert.match(widgetUpdates.at(-1).value[0], /next Exercise real profile apply command/);
     assert.match(widgetUpdates.at(-1).value[0], /\+1 more/);
+
+    await command.handler("start --iterations=1 typed blocked report", ctx);
+    const typedBlockedRunId = entries.at(-1).data.runId;
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: [
+          "Blocked report.",
+          'DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate profile apply flow","blockerState":"Missing GORMES_PROFILE_TOKEN credential for integration validation","nextSteps":["Provide GORMES_PROFILE_TOKEN","Restart /development-loop with the same profile apply objective"]}',
+          "DEV_LOOP_VALIDATED: no",
+          "DEV_LOOP_DECISION: blocked",
+        ].join("\n"),
+      }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, false);
+    assert.equal(entries.at(-1).data.phase, "blocked");
+    const typedBlockedRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const typedBlockedFinished = typedBlockedRecords.find((record) => record.event === "loop_finished" && record.runId === typedBlockedRunId);
+    assert.equal(typedBlockedFinished.blockerState, "Missing GORMES_PROFILE_TOKEN credential for integration validation");
+    const typedBlockedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
+    assert.match(typedBlockedStatus, /blocker Missing GORMES_PROFILE_TOKEN credential for integration validation/);
+    assert.match(typedBlockedStatus, /next 1 Provide GORMES_PROFILE_TOKEN/);
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
@@ -2062,12 +2086,13 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /Human-readable end report/);
-  assert.match(readme, /structured `summary` and `nextSteps`/);
+  assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary and next-step counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
   assert.match(readme, /continue should name the next smallest verifiable slice/);
   assert.match(readme, /blocked should name concrete unblocking actions/);
+  assert.match(readme, /blocked typed reports should include `blockerState`/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
