@@ -163,6 +163,8 @@ type LoopLogAnalysis = {
   topUnresolvedSourceCount: number;
   emptyProviderResponses: number;
   emptyProviderRetryRecords: number;
+  topEmptyProviderSource?: string;
+  topEmptyProviderSourceCount: number;
   topEmptyProviderReason?: string;
   topEmptyProviderReasonCount: number;
   queuedIterationRecords: number;
@@ -216,6 +218,7 @@ type LoopLogAccumulator = {
   ciRedSourceCounts: Map<string, number>;
   ciGateMissingSourceCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
+  emptyProviderSourceCounts: Map<string, number>;
   emptyProviderReasonCounts: Map<string, number>;
   queuedIterationReasonCounts: Map<string, number>;
   providerErrorSourceCounts: Map<string, number>;
@@ -1113,6 +1116,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     ciRedSourceCounts: new Map<string, number>(),
     ciGateMissingSourceCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
+    emptyProviderSourceCounts: new Map<string, number>(),
     emptyProviderReasonCounts: new Map<string, number>(),
     queuedIterationReasonCounts: new Map<string, number>(),
     providerErrorSourceCounts: new Map<string, number>(),
@@ -1138,7 +1142,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1342,6 +1346,13 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     }
     if (event === "empty_agent_response_waiting_for_compaction" || event === "empty_provider_response_retry_sent") {
       analysis.emptyProviderResponses++;
+      if (sourceKey) {
+        const sourceCount = incrementCount(emptyProviderSourceCounts, sourceKey);
+        if (sourceCount > analysis.topEmptyProviderSourceCount) {
+          analysis.topEmptyProviderSource = sourceKey;
+          analysis.topEmptyProviderSourceCount = sourceCount;
+        }
+      }
       const reason = recordReason(record, event) || "<missing reason>";
       const count = incrementCount(emptyProviderReasonCounts, reason);
       if (count > analysis.topEmptyProviderReasonCount) {
@@ -1562,6 +1573,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topUnresolvedSourceCount: 0,
     emptyProviderResponses: 0,
     emptyProviderRetryRecords: 0,
+    topEmptyProviderSourceCount: 0,
     topEmptyProviderReasonCount: 0,
     queuedIterationRecords: 0,
     topQueuedIterationReasonCount: 0,
@@ -1735,7 +1747,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   const recommendations: string[] = [];
   if (analysis.maxTopicLength > PROMPT_OBJECTIVE_MAX) recommendations.push("Oversized topics: cap prompt and log objective text before repeating it in every event.");
   if (analysis.mostRepeatedOversizedTopicRecords > 1) recommendations.push("Repeated oversized topics: summarize copied objectives once instead of carrying the same paste through every event.");
-  if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
+  if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: inspect the top empty-provider source, retry the same iteration, and prefer compaction before blocking.");
   if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
   if (analysis.queuedIterationRecords > 0) recommendations.push("Queued iterations: inspect the top queued reason and verify compaction/resume hooks flush queued prompts without leaving runs waiting silently.");
   if (analysis.providerErrorRecords > 0) recommendations.push("Provider errors: inspect the top provider error source and group codes/categories so context, rate-limit, auth, and transport failures drive different recovery paths.");
@@ -1839,6 +1851,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topCiGateMissingSource ? ["Top CI-gate missing log source", `${relativeToCwd(cwd, analysis.topCiGateMissingSource)} (${analysis.topCiGateMissingSourceCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
     analysis.topUnresolvedSource ? ["Top unresolved log source", `${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount})`] : undefined,
+    analysis.topEmptyProviderSource ? ["Top empty provider log source", `${relativeToCwd(cwd, analysis.topEmptyProviderSource)} (${analysis.topEmptyProviderSourceCount})`] : undefined,
     analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
     analysis.topQueuedIterationReason ? ["Top queued iteration reason", `${analysis.topQueuedIterationReason} (${analysis.topQueuedIterationReasonCount})`] : undefined,
     analysis.topProviderErrorSource ? ["Top provider error log source", `${relativeToCwd(cwd, analysis.topProviderErrorSource)} (${analysis.topProviderErrorSourceCount})`] : undefined,
@@ -1952,6 +1965,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topUnresolvedSource ? `Top unresolved log source: ${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount} ${analysis.topUnresolvedSourceCount === 1 ? "record" : "records"})` : undefined,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Empty provider retry records: ${analysis.emptyProviderRetryRecords}`,
+    analysis.topEmptyProviderSource ? `Top empty provider log source: ${relativeToCwd(cwd, analysis.topEmptyProviderSource)} (${analysis.topEmptyProviderSourceCount} ${analysis.topEmptyProviderSourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topEmptyProviderReason ? `Top empty provider reason: ${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount} ${analysis.topEmptyProviderReasonCount === 1 ? "record" : "records"})` : undefined,
     `Queued iteration records: ${analysis.queuedIterationRecords}`,
     analysis.topQueuedIterationReason ? `Top queued iteration reason: ${analysis.topQueuedIterationReason} (${analysis.topQueuedIterationReasonCount} ${analysis.topQueuedIterationReasonCount === 1 ? "record" : "records"})` : undefined,
