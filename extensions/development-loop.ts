@@ -4,6 +4,15 @@ import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
 import { loadProjectConfig, resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
 import {
+  absoluteLogPath,
+  contextCwd,
+  dirExists,
+  relativeToCwd,
+  safeRead,
+  splitLines,
+  writeJsonFileAtomic,
+} from "./development-loop-files.ts";
+import {
   parseArgs,
   parseSinceFilter,
   tokenizeArgs,
@@ -2435,60 +2444,8 @@ function messageText(message: { content?: unknown }): string {
   return "";
 }
 
-function contextCwd(ctx: UiLikeContext): string {
-  return ctx.sessionManager?.getCwd?.() || ctx.cwd || process.cwd();
-}
-
-function absoluteLogPath(cwd: string, configured?: string): string {
-  const target = configured || DEFAULT_LOG_RELATIVE;
-  return path.isAbsolute(target) ? target : path.join(cwd, target);
-}
-
-function relativeToCwd(cwd: string, target: string): string {
-  const absolute = path.isAbsolute(target) ? target : path.join(cwd, target);
-  const relative = path.relative(cwd, absolute);
-  return relative && !relative.startsWith("..") ? relative : absolute;
-}
-
-function writeJsonFileAtomic(target: string, value: unknown) {
-  const dir = path.dirname(target);
-  fs.mkdirSync(dir, { recursive: true });
-  const temp = path.join(dir, `.${path.basename(target)}.${process.pid}.${Date.now()}.tmp`);
-  try {
-    fs.writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-    fs.renameSync(temp, target);
-  } catch (error) {
-    try {
-      fs.rmSync(temp, { force: true });
-    } catch {
-      // Best effort cleanup; keep the original config untouched when possible.
-    }
-    throw error;
-  }
-}
-
-function safeRead(file: string): string {
-  try {
-    return fs.readFileSync(file, "utf8");
-  } catch {
-    return "";
-  }
-}
-
-function dirExists(target: string): boolean {
-  try {
-    return fs.statSync(target).isDirectory();
-  } catch {
-    return false;
-  }
-}
-
 function nonEmpty(value: string[] | undefined): value is string[] {
   return Array.isArray(value) && value.length > 0;
-}
-
-function splitLines(value: string): string[] {
-  return value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
 function ensureMandatorySkills(skills: string[]): string[] {

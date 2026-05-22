@@ -483,6 +483,23 @@ async function testExtensionLoadsAndRegistersCommands() {
     { type: "custom", customType: "development-loop-state", data: validLoopState },
   ]), validLoopState);
 
+  const fileMod = await jiti.import(path.join(root, "extensions", "development-loop-files.ts"));
+  const fileTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-files-"));
+  const nestedJsonPath = path.join(fileTemp, "nested", "state.json");
+  assert.equal(fileMod.absoluteLogPath(fileTemp, ".pi/logs.jsonl"), path.join(fileTemp, ".pi", "logs.jsonl"));
+  assert.equal(fileMod.absoluteLogPath(fileTemp, nestedJsonPath), nestedJsonPath);
+  assert.equal(fileMod.relativeToCwd(fileTemp, path.join(fileTemp, "nested", "state.json")), path.join("nested", "state.json"));
+  assert.equal(fileMod.relativeToCwd(fileTemp, path.dirname(fileTemp)), path.dirname(fileTemp));
+  fileMod.writeJsonFileAtomic(nestedJsonPath, { ok: true, count: 2 });
+  assert.deepEqual(JSON.parse(fs.readFileSync(nestedJsonPath, "utf8")), { ok: true, count: 2 });
+  assert.match(fileMod.safeRead(nestedJsonPath), /"ok": true/);
+  assert.equal(fileMod.safeRead(path.join(fileTemp, "missing.txt")), "");
+  assert.equal(fileMod.dirExists(fileTemp), true);
+  assert.equal(fileMod.dirExists(nestedJsonPath), false);
+  assert.deepEqual(fileMod.splitLines(" one\n\n two \r\n three "), ["one", "two", "three"]);
+  assert.equal(fileMod.contextCwd({ sessionManager: { getCwd: () => fileTemp }, cwd: "ignored" }), fileTemp);
+  assert.equal(fileMod.contextCwd({ cwd: fileTemp }), fileTemp);
+
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
