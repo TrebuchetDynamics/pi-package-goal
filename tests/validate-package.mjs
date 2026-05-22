@@ -923,12 +923,14 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
-        JSON.stringify({ at: new Date(3).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
-        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_postmortem", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers", likelyCause: "assistant_response_missing_final_markers", nextSafeAction: "return only final markers" }),
-        JSON.stringify({ at: new Date(5).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
-        JSON.stringify({ at: new Date(6).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
-        JSON.stringify({ at: new Date(7).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
-        JSON.stringify({ at: new Date(8).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(3).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
+        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
+        JSON.stringify({ at: new Date(5).toISOString(), event: "loop_postmortem", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers", likelyCause: "assistant_response_missing_final_markers", nextSafeAction: "return only final markers" }),
+        JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(7).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
+        JSON.stringify({ at: new Date(8).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
+        JSON.stringify({ at: new Date(9).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
+        JSON.stringify({ at: new Date(10).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
       const analysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${analysisLog}`, {
@@ -942,7 +944,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 9/);
+      assert.match(messages.at(-1).content, /Records: 11/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
@@ -951,6 +953,9 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Top postmortem cause: assistant_response_missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Top next safe action: return only final markers \(1 record\)/);
+      assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
+      assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
+      assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 1/);
       assert.match(messages.at(-1).content, /Changed-file evidence records: 1/);
       assert.match(messages.at(-1).content, /Validation evidence records: 1/);
@@ -960,8 +965,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
-      assert.match(messages.at(-1).content, /Oversized topic records: 8/);
-      assert.match(messages.at(-1).content, /Most repeated oversized topic: 8 records/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 10/);
+      assert.match(messages.at(-1).content, /Most repeated oversized topic: 10 records/);
       assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
 
@@ -1008,11 +1013,14 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 15/);
+      assert.match(messages.at(-1).content, /Records: 17/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
+      assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
+      assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
+      assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
       assert.match(messages.at(-1).content, /Validation evidence records: 2/);
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
@@ -1021,7 +1029,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
-      assert.match(messages.at(-1).content, /Oversized topic records: 8/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 10/);
 
       const htmlMessagesBefore = messages.length;
       await command.handler(`analyze-logs --html ${path.join(analysisRoot, ".pi")}`, {
@@ -1042,6 +1050,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         const html = fs.readFileSync(htmlPath, "utf8");
         assert.match(html, /<html lang="en">/);
         assert.match(html, /Development Loop Health Report/);
+        assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /CI-red records/);
         assert.match(html, /Blocked loops/);
