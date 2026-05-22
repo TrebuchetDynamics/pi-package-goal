@@ -134,6 +134,7 @@ type LoopLogAnalysis = {
   topCiGateMissingReasonCount: number;
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
+  emptyProviderRetryRecords: number;
   contextOverflowResponses: number;
   compactionEvents: number;
   truncatedTopics: number;
@@ -1137,7 +1138,8 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
         analysis.topCiGateMissingReasonCount = count;
       }
     }
-    if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
+    if (event === "empty_agent_response_waiting_for_compaction" || event === "empty_provider_response_retry_sent") analysis.emptyProviderResponses++;
+    if (event === "empty_provider_response_retry_sent") analysis.emptyProviderRetryRecords++;
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (record.topicTruncated === true) analysis.truncatedTopics++;
@@ -1203,6 +1205,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topCiGateMissingReasonCount: 0,
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
+    emptyProviderRetryRecords: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
     truncatedTopics: 0,
@@ -1292,6 +1295,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.maxTopicLength > PROMPT_OBJECTIVE_MAX) recommendations.push("Oversized topics: cap prompt and log objective text before repeating it in every event.");
   if (analysis.mostRepeatedOversizedTopicRecords > 1) recommendations.push("Repeated oversized topics: summarize copied objectives once instead of carrying the same paste through every event.");
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
+  if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
@@ -1342,6 +1346,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["CI-gate missing records", String(analysis.ciGateMissingRecords)],
     ["Unresolved loop starts", String(analysis.unresolvedLoopStarts)],
     ["Empty provider responses", String(analysis.emptyProviderResponses)],
+    ["Empty provider retry records", String(analysis.emptyProviderRetryRecords)],
     ["Context overflow responses", String(analysis.contextOverflowResponses)],
     ["Compaction events", String(analysis.compactionEvents)],
     ["Oversized topic records", String(analysis.oversizedTopicRecords)],
@@ -1442,6 +1447,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topCiGateMissingReason ? `Top CI-gate missing reason: ${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount} ${analysis.topCiGateMissingReasonCount === 1 ? "record" : "records"})` : undefined,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
+    `Empty provider retry records: ${analysis.emptyProviderRetryRecords}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
     `Truncated topics: ${analysis.truncatedTopics}`,
