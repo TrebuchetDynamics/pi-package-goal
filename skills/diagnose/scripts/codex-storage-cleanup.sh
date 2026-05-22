@@ -2,6 +2,7 @@
 set -euo pipefail
 
 EXECUTE=0
+TMP_ONLY=0
 DELETE_STATE=0
 CONFIRM_DELETE_STATE=0
 if [ -n "${HOME:-}" ]; then
@@ -12,7 +13,7 @@ fi
 
 usage() {
   cat <<'USAGE'
-Usage: codex-storage-cleanup.sh [--execute] [--delete-state --i-understand-local-state-will-be-lost] [--codex-dir PATH]
+Usage: codex-storage-cleanup.sh [--execute] [--tmp-only] [--delete-state --i-understand-local-state-will-be-lost] [--codex-dir PATH]
 
 Safely prepares local Codex storage for repair after errors such as:
 - No space left on device
@@ -21,7 +22,8 @@ Safely prepares local Codex storage for repair after errors such as:
 
 Default mode is a dry run. With --execute, the script removes only transient
 ~/.codex/tmp and moves state_*.sqlite* files into ~/.codex/backup/<timestamp>/.
-Use --delete-state only as a last resort; it also requires
+Use --tmp-only to remove temp files and leave state_*.sqlite* untouched. Use
+--delete-state only as a last resort; it also requires
 --i-understand-local-state-will-be-lost. A custom --codex-dir path must end in
 /.codex. The script never deletes the whole ~/.codex directory.
 USAGE
@@ -48,6 +50,9 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --execute)
       EXECUTE=1
+      ;;
+    --tmp-only)
+      TMP_ONLY=1
       ;;
     --delete-state)
       DELETE_STATE=1
@@ -104,6 +109,11 @@ if [ ! -d "$CODEX_DIR" ]; then
   exit 0
 fi
 
+if [ "$TMP_ONLY" -eq 1 ] && [ "$DELETE_STATE" -eq 1 ]; then
+  echo "--tmp-only cannot be combined with --delete-state" >&2
+  exit 2
+fi
+
 if [ "$EXECUTE" -eq 1 ] && [ "$DELETE_STATE" -eq 1 ] && [ "$CONFIRM_DELETE_STATE" -ne 1 ]; then
   echo "--delete-state requires --i-understand-local-state-will-be-lost" >&2
   exit 2
@@ -121,7 +131,9 @@ if [ "$EXECUTE" -ne 1 ]; then
   print_disk_report
   echo "Would remove transient temp directory: $CODEX_DIR/tmp"
   if [ "${#STATE_FILES[@]}" -gt 0 ]; then
-    if [ "$DELETE_STATE" -eq 1 ]; then
+    if [ "$TMP_ONLY" -eq 1 ]; then
+      echo "Would leave Codex state files unchanged because --tmp-only is set:"
+    elif [ "$DELETE_STATE" -eq 1 ]; then
       echo "Would delete Codex state files:"
     else
       echo "Would back up Codex state files to: $BACKUP_DIR"
@@ -142,7 +154,10 @@ else
 fi
 
 if [ "${#STATE_FILES[@]}" -gt 0 ]; then
-  if [ "$DELETE_STATE" -eq 1 ]; then
+  if [ "$TMP_ONLY" -eq 1 ]; then
+    echo "Left Codex state files unchanged because --tmp-only is set:"
+    printf '  %s\n' "${STATE_FILES[@]}"
+  elif [ "$DELETE_STATE" -eq 1 ]; then
     rm -f -- "${STATE_FILES[@]}"
     echo "Deleted Codex state files from: $CODEX_DIR"
   else

@@ -1639,6 +1639,7 @@ async function testCodexStorageCleanupScript() {
   const source = read(scriptRel);
   assert.match(source, /--execute/);
   assert.match(source, /--codex-dir/);
+  assert.match(source, /--tmp-only/);
   assert.match(source, /--delete-state/);
   assert.match(source, /--i-understand-local-state-will-be-lost/);
   assert.doesNotMatch(source, /rm -rf "?\$\{?CODEX_DIR\}?"?\s*$/m);
@@ -1670,6 +1671,18 @@ async function testCodexStorageCleanupScript() {
     assert.match(dryRun, /Codex path sizes/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
+
+    const tmpOnlyDir = path.join(fixtureRoot, "tmp-only-case", ".codex");
+    fs.mkdirSync(path.join(tmpOnlyDir, "tmp"), { recursive: true });
+    fs.writeFileSync(path.join(tmpOnlyDir, "config.toml"), "model = \"codex\"\n");
+    fs.writeFileSync(path.join(tmpOnlyDir, "tmp", "arg0"), "temporary wrapper state\n");
+    fs.writeFileSync(path.join(tmpOnlyDir, "state_7.sqlite"), "sqlite\n");
+
+    const tmpOnly = execFileSync("bash", [script, "--execute", "--tmp-only", "--codex-dir", tmpOnlyDir], { encoding: "utf8" });
+    assert.match(tmpOnly, /Left Codex state files unchanged/);
+    assert.equal(fs.existsSync(path.join(tmpOnlyDir, "tmp")), false);
+    assert.equal(fs.existsSync(path.join(tmpOnlyDir, "state_7.sqlite")), true);
+    assert.equal(fs.existsSync(path.join(tmpOnlyDir, "backup")), false);
 
     const executed = execFileSync("bash", [script, "--execute", "--codex-dir", codexDir], { encoding: "utf8" });
     assert.match(executed, /Removed transient temp directory/);
@@ -1737,6 +1750,8 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /prints free space and Codex path sizes/);
   assert.match(reference, /post-cleanup disk report/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
+  assert.match(reference, /--tmp-only/);
+  assert.match(reference, /leave `state_\*\.sqlite\*` untouched/);
   assert.match(reference, /path must end in `\/\.codex`/);
   assert.match(reference, /--delete-state/);
   assert.match(reference, /--i-understand-local-state-will-be-lost/);
@@ -1796,6 +1811,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /SQLite cannot extend the state database/);
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
+  assert.match(readme, /--tmp-only/);
+  assert.match(readme, /leave `state_\*\.sqlite\*` untouched/);
   assert.match(readme, /prints free space and Codex path sizes/);
   assert.match(readme, /post-cleanup disk report/);
   assert.match(readme, /path must end in `\/\.codex`/);
