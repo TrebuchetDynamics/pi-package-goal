@@ -2102,6 +2102,28 @@ async function testPiLogAuditScript() {
     assert.match(attentionOnly, /ISSUE\tdevelopment-loop\t.*repo-g\tconfig=\.pi\/development-loop\.json\treason=matching loop config is not valid JSON\tnext_action=repair or regenerate the loop config/);
     assert.match(attentionOnly, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tfiltered_out=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
 
+    const recoveredRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-recovered-"));
+    try {
+      const recoveredRepo = path.join(recoveredRoot, "repo-i");
+      fs.mkdirSync(path.join(recoveredRepo, ".pi", "development-loop"), { recursive: true });
+      fs.writeFileSync(path.join(recoveredRepo, ".pi", "development-loop", "logs.jsonl"), [
+        JSON.stringify({ at: "2026-05-22T02:40:00.000Z", event: "compaction_failed_before_next_iteration", iteration: 2, maxIterations: 3, phase: "queued", reason: "Summarization failed: WebSocket error" }),
+        JSON.stringify({ at: "2026-05-22T02:40:01.000Z", event: "iteration_prompt_sent", iteration: 2, maxIterations: 3, phase: "running" }),
+      ].join("\n") + "\n");
+      fs.writeFileSync(path.join(recoveredRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
+
+      const recoveredOutput = execFileSync("node", [path.join(root, scriptRel), "--since=2026-05-22T02:30:00.000Z", recoveredRoot], { encoding: "utf8" });
+      assert.match(recoveredOutput, /LOG\tdevelopment-loop\t.*repo-i.*latest=iteration_prompt_sent.*status=running\tconfig=present\tadapter=generic-git\tattention=no/);
+      assert.match(recoveredOutput, /HISTORY\tdevelopment-loop\t.*repo-i\tfailure=compaction_failed_before_next_iteration\tfailure_at=2026-05-22T02:40:00.000Z\treason=Summarization failed: WebSocket error/);
+      assert.doesNotMatch(recoveredOutput, /ISSUE\tdevelopment-loop\t.*repo-i/);
+
+      const recoveredAttentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", recoveredRoot], { encoding: "utf8" });
+      assert.doesNotMatch(recoveredAttentionOnly, /repo-i/);
+      assert.match(recoveredAttentionOnly, /SUMMARY\tlogs=1\tneeds_attention=0\tblocked=0\trunning=1\tqueued=0\tdone=0\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=1\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=1\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=1/);
+    } finally {
+      fs.rmSync(recoveredRoot, { recursive: true, force: true });
+    }
+
     const hygieneRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-hygiene-"));
     try {
       const doneMissingConfigRepo = path.join(hygieneRoot, "repo-h");

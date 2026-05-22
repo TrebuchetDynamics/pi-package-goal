@@ -210,6 +210,13 @@ function isFailureEvent(event) {
   return isBlockedEvent(event) || eventName.includes("failed") || reason.includes("error");
 }
 
+function isProgressEvent(event) {
+  const eventName = String(event.event ?? "").toLowerCase();
+  const phase = String(event.phase ?? "").toLowerCase();
+  const decision = String(event.decision ?? "").toLowerCase();
+  return ["compaction_continue_queued_iteration", "iteration_prompt_sent", "iteration_result", "loop_finished"].includes(eventName) || phase === "running" || phase === "reported" || decision === "continue" || decision === "done";
+}
+
 function classifyStatus(latest, badJson) {
   const eventName = String(latest.event ?? "").toLowerCase();
   const phase = String(latest.phase ?? "").toLowerCase();
@@ -298,13 +305,27 @@ function findLastResult(events) {
   return undefined;
 }
 
+function findLastFailureIndex(events) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    if (isFailureEvent(events[index])) return index;
+  }
+  return -1;
+}
+
+function isRecoveredFailure(events, lastFailureIndex) {
+  const latest = events.at(-1);
+  return Boolean(lastFailureIndex >= 0 && lastFailureIndex < events.length - 1 && latest && !isFailureEvent(latest) && isProgressEvent(latest));
+}
+
 function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const parsedLog = parseJsonl(logPath);
   const { events, sinceFiltered } = filterEventsBySince(parsedLog.events);
   const { badJson, lineCount } = parsedLog;
   const latest = events.at(-1) ?? {};
-  const failures = events.filter(isFailureEvent);
-  const lastFailure = failures.at(-1);
+  const lastFailureIndex = findLastFailureIndex(events);
+  const lastFailure = lastFailureIndex >= 0 ? events[lastFailureIndex] : undefined;
+  const failureRecovered = isRecoveredFailure(events, lastFailureIndex);
+  const effectiveLastFailure = failureRecovered ? undefined : lastFailure;
   const lastAt = findLastAt(events);
   const runId = findLastRunId(events);
   const lastResult = findLastResult(events);
@@ -313,8 +334,8 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const missingConfig = !hasMatchingConfig;
   const configAdapter = configDetails?.adapter;
   const configBadJson = Boolean(configDetails?.badJson);
-  const configHygieneOnly = isSinceWindowTerminalConfigHygiene(status, lastFailure, badJson, missingConfig, configBadJson);
-  const attention = outsideSinceWindow || configHygieneOnly ? false : needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
+  const configHygieneOnly = isSinceWindowTerminalConfigHygiene(status, effectiveLastFailure, badJson, missingConfig, configBadJson);
+  const attention = outsideSinceWindow || configHygieneOnly ? false : needsAttention(status, effectiveLastFailure, badJson, missingConfig, configBadJson);
   const stats = fs.statSync(logPath);
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
