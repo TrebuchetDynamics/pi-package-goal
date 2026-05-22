@@ -183,13 +183,19 @@ function incrementPiDirSummary(logCount, configCount) {
   summary.configFiles += configCount;
 }
 
+function needsAttention(status, lastFailure, badJson) {
+  if (badJson > 0) return true;
+  if (["blocked", "needs_attention"].includes(status)) return true;
+  return status !== "done" && Boolean(lastFailure);
+}
+
 function buildLogRecord(loopName, logPath) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
   const status = classifyStatus(latest, badJson);
-  const attention = status === "needs_attention" || Boolean(lastFailure) || badJson > 0;
+  const attention = needsAttention(status, lastFailure, badJson);
   const size = fs.statSync(logPath).size;
   incrementSummary(status, attention, badJson);
   return { loopName, events, badJson, lineCount, latest, lastFailure, status, attention, size };
@@ -215,7 +221,7 @@ function printLogRecord(record, repoDir) {
 
   if (record.lastFailure) {
     console.log([
-      "ISSUE",
+      record.attention ? "ISSUE" : "HISTORY",
       record.loopName,
       repoDir,
       `failure=${formatValue(record.lastFailure.event)}`,

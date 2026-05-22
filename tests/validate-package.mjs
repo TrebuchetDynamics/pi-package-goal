@@ -1801,6 +1801,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /Did you mean/);
   assert.match(source, /--attention-only/);
   assert.match(source, /pi_dirs_without_logs/);
+  assert.match(source, /HISTORY/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1829,6 +1830,7 @@ async function testPiLogAuditScript() {
     const repoD = path.join(fixtureRoot, "repo-d");
     fs.mkdirSync(path.join(repoD, ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(repoD, ".pi", "development-loop", "logs.jsonl"), [
+      JSON.stringify({ at: "2026-05-22T02:50:00.000Z", event: "loop_blocked", iteration: 1, maxIterations: 1, phase: "blocked", reason: "temporary missing marker" }),
       JSON.stringify({ at: "2026-05-22T03:00:00.000Z", event: "loop_finished", iteration: 1, maxIterations: 1, phase: "done", decision: "done" }),
     ].join("\n") + "\n");
 
@@ -1854,6 +1856,8 @@ async function testPiLogAuditScript() {
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /status=done/);
     assert.match(output, /attention=no/);
+    assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\treason=temporary missing marker/);
+    assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json/);
     assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=2\tbad_json=1\tpi_dirs=4\tpi_dirs_without_logs=1\tconfig_files=1/);
     assert.doesNotMatch(output, /node_modules/);
@@ -1915,6 +1919,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /Did you mean/);
   assert.match(logAuditReference, /--attention-only/);
   assert.match(logAuditReference, /pi_dirs_without_logs/);
+  assert.match(logAuditReference, /historical failure/);
 }
 
 async function testNoticesAndDocs() {

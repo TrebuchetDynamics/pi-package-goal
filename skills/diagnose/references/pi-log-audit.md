@@ -15,10 +15,10 @@ For each log it reports:
 
 - parsed line count and `bad_json` count
 - latest event, iteration, phase, decision, `status=`, and `attention=yes|no`
-- last failure or blocked event reason
+- current `ISSUE` reason, or `HISTORY` for a historical failure in a log that later finished cleanly
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
 
-Use `--attention-only` when you only want logs that need action; it suppresses clean loop records and adds `filtered_out=` to the summary.
+Use `--attention-only` when you only want logs that need action; it suppresses clean loop records, including completed logs with only historical failure context, and adds `filtered_out=` to the summary.
 
 The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs with attention-worthy issues, totals malformed JSON lines, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, and `config_files=`.
 
