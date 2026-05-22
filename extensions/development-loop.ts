@@ -2371,7 +2371,7 @@ function statusWidgetLines(s: LoopState, cwd: string, theme?: UiThemeLike): stri
     recordTime(last),
     last?.iteration !== undefined ? `i${String(last.iteration)}` : undefined,
     reportSummary ? `summary ${compactStatusText(reportSummary)}` : undefined,
-    reportNextSteps[0] ? `next ${compactStatusText(reportNextSteps[0])}` : undefined,
+    widgetNextStepsSummary(reportNextSteps),
     `log ${relativeToCwd(cwd, logPath)}`,
   ]);
   return [paint(theme, "dim", detail)];
@@ -2444,9 +2444,21 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
   const reportSummary = recordReportSummary(record);
   if (reportSummary) parts.push(`summary ${reportSummary}`);
-  const nextSteps = recordReportNextSteps(record);
-  if (nextSteps[0]) parts.push(`next ${nextSteps[0]}`);
+  parts.push(...reportNextStepSummaryParts(recordReportNextSteps(record)));
   return parts.join("; ");
+}
+
+function reportNextStepSummaryParts(nextSteps: string[], limit = 3): string[] {
+  const visible = nextSteps.slice(0, Math.max(0, limit));
+  const parts = visible.map((step, index) => `next ${index + 1} ${step}`);
+  if (nextSteps.length > visible.length) parts.push(`next +${nextSteps.length - visible.length} more`);
+  return parts;
+}
+
+function widgetNextStepsSummary(nextSteps: string[]): string | undefined {
+  if (!nextSteps[0]) return undefined;
+  const suffix = nextSteps.length > 1 ? ` (+${nextSteps.length - 1} more)` : "";
+  return `next ${compactStatusText(`${nextSteps[0]}${suffix}`)}`;
 }
 
 function compactionReason(tokensBefore?: number): string {

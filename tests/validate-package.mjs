@@ -690,9 +690,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.deepEqual(typedReportFinished.nextSteps, ["Exercise real profile apply command", "Add profile selection tests"]);
     const typedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
     assert.match(typedStatus, /summary Profile Control Center TUI shell and draft apply flow/);
-    assert.match(typedStatus, /next Exercise real profile apply command/);
+    assert.match(typedStatus, /next 1 Exercise real profile apply command/);
+    assert.match(typedStatus, /next 2 Add profile selection tests/);
     assert.match(widgetUpdates.at(-1).value[0], /summary Profile Control Center TUI shell and draft apply flow/);
     assert.match(widgetUpdates.at(-1).value[0], /next Exercise real profile apply command/);
+    assert.match(widgetUpdates.at(-1).value[0], /\+1 more/);
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
@@ -2043,7 +2045,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /### Status bar integration/);
   assert.match(readme, /pi-powerline-footer/);
   assert.match(readme, /"statusKey": "development-loop"/);
-  assert.match(readme, /below-editor widget includes the last report summary and next step/);
+  assert.match(readme, /below-editor widget includes the last report summary, first next step, and count of additional next steps/);
   assert.match(readme, /### Steer an active loop/);
   assert.match(readme, /plain text becomes a steering request/);
   assert.match(readme, /`\/development-loop init` opens an interactive setup wizard/);
