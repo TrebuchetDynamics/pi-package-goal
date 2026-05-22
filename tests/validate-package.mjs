@@ -404,6 +404,23 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(logRecordMod.recordDecision({ event: "done" }, "loop_finished"), "done");
   assert.equal(logRecordMod.recordReason({ type: "blocked" }, "loop_blocked"), "blocked");
 
+  const reportRecordMod = await jiti.import(path.join(root, "extensions", "development-loop-report-record.ts"));
+  assert.equal(reportRecordMod.recordHasDeliveryEvidence({ changedFiles: ["README.md"] }), true);
+  assert.deepEqual(reportRecordMod.recordChangedFiles({ files: ["src/a.ts", " ", 42] }), ["src/a.ts"]);
+  assert.deepEqual(reportRecordMod.recordValidationEvidence({ validation: { "npm test": true, "git diff --check": true } }), ["npm test", "git diff --check"]);
+  assert.equal(reportRecordMod.recordCommitHash({ commit: "abc1234" }), "abc1234");
+  assert.equal(reportRecordMod.recordReportSummary({ whatChanged: "tightened parsing" }), "tightened parsing");
+  assert.equal(reportRecordMod.recordReportQualityWarning("iteration_result", "fixed stuff"), "vague report summary \"fixed stuff\"");
+  assert.equal(reportRecordMod.recordReportMissingNextStepsDecision("loop_finished", "continue", []), "continue");
+  assert.equal(reportRecordMod.recordBlockerState({ missingPrerequisites: "TEST_TOKEN" }), "TEST_TOKEN");
+  assert.equal(reportRecordMod.recordBlockerKind({ blockerState: "git push rejected: fetch-first" }), "git_push_fetch_first");
+  assert.equal(reportRecordMod.recordBlockerKind({ reason: "validation failed twice on npm test" }), "validation_failed_twice");
+  assert.equal(reportRecordMod.blockerKindRecommendation("git_push_fetch_first"), "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.");
+  assert.deepEqual(reportRecordMod.recordReportNextSteps({ nextStep: "rerun npm test" }), ["rerun npm test"]);
+  assert.equal(reportRecordMod.recordPushStatus({ pushed: "pushed" }), "pushed");
+  assert.equal(reportRecordMod.recordCiGreen({ ci_gate: "missing_CI_GREEN_yes" }, "iteration_result"), false);
+  assert.equal(reportRecordMod.recordCiGreen({}, "ci_gate_missing"), false);
+
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
