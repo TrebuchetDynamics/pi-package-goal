@@ -280,6 +280,7 @@ function printLogRecord(record, repoDir) {
     record.loopName,
     repoDir,
     `log_path=.pi/${record.loopName}/logs.jsonl`,
+    `config_path=.pi/${record.matchingConfigName}`,
     `lines=${record.lineCount}`,
     `parsed=${record.events.length}`,
     `bad_json=${record.badJson}`,

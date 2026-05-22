@@ -13,7 +13,7 @@ The helper scans for `.pi` directories while skipping `.git` and `node_modules`,
 
 For each log it reports:
 
-- repo-relative `log_path=` for the log file to inspect, parsed line count, and `bad_json` count
+- repo-relative `log_path=` and `config_path=` for the loop artifacts to inspect, parsed line count, and `bad_json` count
 - latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, newest available `run_id=`, log file `mtime=`, last `iteration_result` delivery fields (`last_result_at=`, `last_decision=`, `last_commit=`, `last_push=`), `status=`, matching config state (`config=present|missing`), matching config `adapter=`, and `attention=yes|no`
 - current `ISSUE` reason with `failure_at=` for the last failure event, missing matching loop config such as `.pi/navivox-loop.json`, or malformed matching config JSON, plus `next_action=` guidance; historical failures in logs that later finished cleanly are reported as `HISTORY` without action guidance
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
