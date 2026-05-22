@@ -1788,10 +1788,58 @@ async function testCodexStorageCleanupScript() {
   }
 }
 
+async function testPiLogAuditScript() {
+  const scriptRel = "skills/diagnose/scripts/pi-log-audit.mjs";
+  assert.ok(exists(scriptRel), "missing Pi log audit script");
+  assert.notEqual(fs.statSync(path.join(root, scriptRel)).mode & 0o111, 0, "Pi log audit script must be executable");
+
+  const source = read(scriptRel);
+  assert.match(source, /development-loop/);
+  assert.match(source, /e2e-loop/);
+  assert.match(source, /node_modules/);
+  assert.match(source, /bad_json/);
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
+  try {
+    const repoA = path.join(fixtureRoot, "repo-a");
+    fs.mkdirSync(path.join(repoA, ".pi", "development-loop"), { recursive: true });
+    fs.writeFileSync(path.join(repoA, ".pi", "development-loop", "logs.jsonl"), [
+      JSON.stringify({ at: "2026-05-22T01:00:00.000Z", event: "loop_started", iteration: 1, maxIterations: 3, phase: "started" }),
+      JSON.stringify({ at: "2026-05-22T01:01:00.000Z", event: "iteration_result", iteration: 1, maxIterations: 3, phase: "reported", decision: "continue", pushStatus: "pushed" }),
+      JSON.stringify({ at: "2026-05-22T01:02:00.000Z", event: "compaction_failed_before_next_iteration", iteration: 2, maxIterations: 3, phase: "queued", reason: "Summarization failed: WebSocket error" }),
+    ].join("\n") + "\n");
+
+    const repoB = path.join(fixtureRoot, "repo-b");
+    fs.mkdirSync(path.join(repoB, ".pi", "e2e-loop"), { recursive: true });
+    fs.writeFileSync(path.join(repoB, ".pi", "e2e-loop", "logs.jsonl"), [
+      JSON.stringify({ at: "2026-05-22T02:00:00.000Z", event: "loop_blocked", iteration: 1, maxIterations: 1, phase: "blocked", reason: "missing E2E_LOOP_DECISION final marker" }),
+      "not json",
+    ].join("\n") + "\n");
+
+    fs.mkdirSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop"), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop", "logs.jsonl"), "{}\n");
+
+    const output = execFileSync("node", [path.join(root, scriptRel), fixtureRoot], { encoding: "utf8" });
+    assert.match(output, /PI_DIR_COUNT 2/);
+    assert.match(output, /LOG\tdevelopment-loop\t.*repo-a/);
+    assert.match(output, /latest=compaction_failed_before_next_iteration/);
+    assert.match(output, /failure=compaction_failed_before_next_iteration/);
+    assert.match(output, /Summarization failed: WebSocket error/);
+    assert.match(output, /LOG\te2e-loop\t.*repo-b/);
+    assert.match(output, /bad_json=1/);
+    assert.match(output, /missing E2E_LOOP_DECISION final marker/);
+    assert.doesNotMatch(output, /node_modules/);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+}
+
 async function testDiagnoseCodexStorageReference() {
   const skill = read("skills/diagnose/SKILL.md");
   assert.match(skill, /\[Codex local storage failures\]\(references\/codex-storage\.md\)/);
+  assert.match(skill, /\[Pi loop log audits\]\(references\/pi-log-audit\.md\)/);
   assert.ok(exists("skills/diagnose/references/codex-storage.md"), "missing Codex storage reference");
+  assert.ok(exists("skills/diagnose/references/pi-log-audit.md"), "missing Pi log audit reference");
 
   const reference = read("skills/diagnose/references/codex-storage.md");
   assert.match(reference, /No space left on device/);
@@ -1820,6 +1868,13 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /mv ~\/\.codex\/state_\*\.sqlite\* "\$backup_dir"\//);
   assert.match(reference, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(reference, /Do not run `rm -rf ~\/\.codex`/);
+
+  const logAuditReference = read("skills/diagnose/references/pi-log-audit.md");
+  assert.match(logAuditReference, /pi-log-audit\.mjs/);
+  assert.match(logAuditReference, /development-loop/);
+  assert.match(logAuditReference, /e2e-loop/);
+  assert.match(logAuditReference, /WebSocket error/);
+  assert.match(logAuditReference, /missing E2E_LOOP_DECISION final marker/);
 }
 
 async function testNoticesAndDocs() {
@@ -1929,6 +1984,7 @@ await testSkills();
 await testMarkdownLinks();
 await testThirdPartyNoticePaths();
 await testCodexStorageCleanupScript();
+await testPiLogAuditScript();
 await testDiagnoseCodexStorageReference();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");

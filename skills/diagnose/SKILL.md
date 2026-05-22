@@ -12,6 +12,7 @@ When exploring the codebase, use the project's domain glossary to get a clear me
 ## Quick references
 
 - [Codex local storage failures](references/codex-storage.md) — safe local cleanup path for `No space left on device`, `database or disk is full`, and damaged `~/.codex/state_*.sqlite` startup errors.
+- [Pi loop log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-loop`, `e2e-loop`, and custom loop logs across repo trees.
 
 ## Phase 1 — Build a feedback loop
 
