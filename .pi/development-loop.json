@@ -1,7 +1,10 @@
 {
   "adapter": "generic-git",
   "defaultTopic": "discover and complete the smallest safe project task with validation",
+  "language": "English",
   "skills": [
+    "caveman",
+    "improve-codebase-architecture",
     "repo-local skills that match the detected task before package defaults",
     "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
     "zoom-out for source-backed project understanding",
@@ -20,10 +23,10 @@
   "validationCommands": [
     "git diff --check"
   ],
-  "commit": false,
-  "push": false,
+  "commit": true,
+  "push": true,
   "logPath": ".pi/development-loop/logs.jsonl",
-  "maxIterations": 3,
+  "maxIterations": 6,
   "stopConditions": [
     "project instructions are missing or conflict with the requested work",
     "no task can be selected after inspecting TODO.md, progress.json, planning files, and repo-local guidance",
