@@ -873,7 +873,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     if (event === "loop_started") analysis.loopsStarted++;
     if (event === "loop_finished") {
       analysis.finishedLoops++;
-      const decision = stringOrUndefined(record.decision) || "<missing decision>";
+      const decision = recordDecision(record, event) || "<missing decision>";
       const count = (finishDecisionCounts.get(decision) || 0) + 1;
       finishDecisionCounts.set(decision, count);
       if (count > analysis.topFinishDecisionCount) {
@@ -883,7 +883,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     }
     if (event === "loop_blocked") {
       analysis.blockedLoops++;
-      const reason = stringOrUndefined(record.reason) || "<missing reason>";
+      const reason = recordReason(record, event) || "<missing reason>";
       const count = (blockReasonCounts.get(reason) || 0) + 1;
       blockReasonCounts.set(reason, count);
       if (count > analysis.topBlockReasonCount) {
@@ -1245,8 +1245,8 @@ function compactStatusText(text: string): string {
 }
 
 function recordTime(record?: Record<string, unknown>): string | undefined {
-  const at = record?.at;
-  if (typeof at !== "string") return undefined;
+  const at = recordTimestamp(record);
+  if (!at) return undefined;
   const date = new Date(at);
   if (Number.isNaN(date.getTime())) return at;
   return date.toISOString().slice(11, 19);
@@ -1268,8 +1268,8 @@ function stateExplanation(s: LoopState, last?: Record<string, unknown>): string 
 function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (!record) return "Last event: none recorded yet";
   const parts = [`Last event: ${recordEvent(record) ?? "unknown"}`];
-  const at = record.at;
-  if (typeof at === "string") parts.push(`at ${at}`);
+  const at = recordTimestamp(record);
+  if (at) parts.push(`at ${at}`);
   if (record.iteration !== undefined) parts.push(`iteration ${String(record.iteration)}`);
   if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
   if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
@@ -1346,8 +1346,46 @@ function parseLogRecord(line: string): Record<string, unknown> | undefined {
 }
 
 function recordEvent(record?: Record<string, unknown>): string | undefined {
+  return normalizeLoopLogEvent(rawRecordEvent(record));
+}
+
+function rawRecordEvent(record?: Record<string, unknown>): string | undefined {
   const value = record?.event;
   return typeof value === "string" ? value : undefined;
+}
+
+function normalizeLoopLogEvent(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  if (value === "loop_start") return "loop_started";
+  if (value === "done") return "loop_finished";
+  if (value === "blocked") return "loop_blocked";
+  return value;
+}
+
+function recordTimestamp(record?: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record?.at) || stringOrUndefined(record?.timestamp);
+}
+
+function recordDecision(record: Record<string, unknown>, event: string): string | undefined {
+  const explicit = stringOrUndefined(record.decision);
+  if (explicit) return explicit;
+  const finalLineDecision = finalLineLoopDecision(record);
+  if (finalLineDecision) return finalLineDecision;
+  if (event === "loop_finished" && rawRecordEvent(record) === "done") return "done";
+  return undefined;
+}
+
+function recordReason(record: Record<string, unknown>, event: string): string | undefined {
+  const explicit = stringOrUndefined(record.reason);
+  if (explicit) return explicit;
+  if (event === "loop_blocked" && rawRecordEvent(record) === "blocked") return "blocked";
+  return undefined;
+}
+
+function finalLineLoopDecision(record: Record<string, unknown>): string | undefined {
+  const finalLine = stringOrUndefined(record.finalLine);
+  const match = finalLine?.match(/\b(?:DEV_)?LOOP_DECISION:\s*(continue|stop|blocked|done)\b/i);
+  return match?.[1]?.toLowerCase();
 }
 
 function isContextOverflowProviderError(text: string): boolean {

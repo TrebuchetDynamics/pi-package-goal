@@ -829,6 +829,33 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Most repeated oversized topic: 7 records/);
       assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
+
+      const customLog = path.join(analysisRoot, ".pi", "navivox-loop", "logs.jsonl");
+      fs.mkdirSync(path.dirname(customLog), { recursive: true });
+      fs.writeFileSync(customLog, [
+        JSON.stringify({ timestamp: new Date(10).toISOString(), event: "loop_start", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
+        JSON.stringify({ timestamp: new Date(11).toISOString(), event: "assistant_decision", iteration: 1, decision: "continue", ciGreen: true, finalLine: "LOOP_DECISION: continue" }),
+        JSON.stringify({ timestamp: new Date(12).toISOString(), event: "done", iteration: 1, reason: "assistant reported LOOP_DECISION: done with CI_GREEN: yes" }),
+        JSON.stringify({ timestamp: new Date(13).toISOString(), event: "loop_start", topic: "custom blocked", iteration: 1, maxIterations: 3 }),
+        JSON.stringify({ timestamp: new Date(14).toISOString(), event: "blocked", iteration: 1, reason: "assistant_decision_missing", ciGreen: false }),
+      ].join("\n") + "\n", "utf8");
+      const customAnalysisMessagesBefore = messages.length;
+      await command.handler(`analyze-logs ${customLog}`, {
+        ...ctx,
+        cwd: analysisRoot,
+        sessionManager: {
+          getCwd: () => analysisRoot,
+          getEntries: () => [],
+        },
+      });
+      assert.equal(messages.length, customAnalysisMessagesBefore + 1);
+      assert.match(messages.at(-1).content, /Records: 5/);
+      assert.match(messages.at(-1).content, /Loops started: 2/);
+      assert.match(messages.at(-1).content, /Finished loops: 1/);
+      assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
+      assert.match(messages.at(-1).content, /Blocked loops: 1/);
+      assert.match(messages.at(-1).content, /Top block reason: assistant_decision_missing \(1 record\)/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
     } finally {
       fs.rmSync(analysisRoot, { recursive: true, force: true });
     }
