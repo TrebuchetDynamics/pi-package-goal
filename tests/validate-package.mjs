@@ -404,6 +404,18 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(logRecordMod.recordDecision({ event: "done" }, "loop_finished"), "done");
   assert.equal(logRecordMod.recordReason({ type: "blocked" }, "loop_blocked"), "blocked");
 
+  const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
+  assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
+  assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
+  assert.equal(providerErrorMod.hasContextOverflowProviderError([{ role: "assistant", content: [{ type: "text", text: "input exceeds the context window" }] }]), true);
+  assert.equal(providerErrorMod.hasContextOverflowProviderError([{ role: "user", content: "input exceeds the context window" }]), false);
+  assert.equal(providerErrorMod.recordHasContextOverflowProviderError({ provider_error: { error: { message: "Context overflow detected" } } }, "provider_error"), true);
+  assert.equal(providerErrorMod.recordHasProviderError({ providerError: "WebSocket error" }, "iteration_result"), true);
+  assert.equal(providerErrorMod.recordProviderErrorCode({ provider_error: { code: "rate_limit_exceeded" } }), "rate_limit_exceeded");
+  assert.equal(providerErrorMod.recordProviderErrorCode({ message: "input exceeds the context window" }), "context_length_exceeded");
+  assert.equal(providerErrorMod.recordProviderErrorCategory({ providerError: "WebSocket error" }, "provider_error", "<missing code>"), "transport");
+  assert.equal(providerErrorMod.recordProviderErrorCategory({ provider_error: { message: "too many requests" } }, "provider_error", "429"), "rate-limit");
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");

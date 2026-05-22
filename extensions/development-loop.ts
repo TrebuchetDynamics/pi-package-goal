@@ -11,6 +11,14 @@ import {
   recordTimestamp,
   recordTimestampMs,
 } from "./development-loop-log-record.ts";
+import {
+  hasContextOverflowProviderError,
+  isContextOverflowProviderError,
+  recordHasContextOverflowProviderError,
+  recordHasProviderError,
+  recordProviderErrorCategory,
+  recordProviderErrorCode,
+} from "./development-loop-provider-error.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
@@ -1950,54 +1958,6 @@ function recordCiGreen(record: Record<string, unknown>, event: string): boolean 
   return undefined;
 }
 
-function recordHasProviderError(record: Record<string, unknown>, event: string): boolean {
-  return event === "provider_error" || event.endsWith("_provider_error") || record.providerError !== undefined || record.provider_error !== undefined;
-}
-
-function recordProviderErrorCode(record: Record<string, unknown>): string | undefined {
-  return stringOrUndefined(record.code)
-    || providerErrorCodeFromValue(record.error)
-    || providerErrorCodeFromValue(record.providerError)
-    || providerErrorCodeFromValue(record.provider_error)
-    || (recordHasContextOverflowProviderError(record, "") ? "context_length_exceeded" : undefined);
-}
-
-function providerErrorCodeFromValue(value: unknown): string | undefined {
-  if (typeof value === "string") {
-    if (isContextOverflowProviderError(value)) return "context_length_exceeded";
-    return undefined;
-  }
-  if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
-  const record = value as Record<string, unknown>;
-  return stringOrUndefined(record.code) || stringOrUndefined(record.type) || stringOrUndefined(record.status);
-}
-
-function recordProviderErrorCategory(record: Record<string, unknown>, event: string, code: string): string {
-  const text = [
-    event,
-    code,
-    stringOrUndefined(record.reason),
-    stringOrUndefined(record.message),
-    providerErrorTextFromValue(record.error),
-    providerErrorTextFromValue(record.providerError),
-    providerErrorTextFromValue(record.provider_error),
-  ].filter(Boolean).join(" ");
-  if (isContextOverflowProviderError(text)) return "context-overflow";
-  if (/rate[_ -]?limit|too[_ -]?many[_ -]?requests|\b429\b/i.test(text)) return "rate-limit";
-  if (/auth|unauthorized|forbidden|invalid[_ -]?api[_ -]?key|permission|\b401\b|\b403\b/i.test(text)) return "auth";
-  if (/websocket|socket|network|timeout|timed?\s*out|connection|econn|stream/i.test(text)) return "transport";
-  return "other";
-}
-
-function providerErrorTextFromValue(value: unknown): string | undefined {
-  if (typeof value === "string") return value;
-  if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
-  return Object.values(value as Record<string, unknown>)
-    .map((child) => typeof child === "string" ? child : undefined)
-    .filter(Boolean)
-    .join(" ") || undefined;
-}
-
 function isPrematureCompactionRecord(record: Record<string, unknown>, event: string): boolean {
   if (event !== "compaction_before_next_iteration") return false;
   const { tokens, contextWindow } = recordCompactionContextUsage(record);
@@ -2893,34 +2853,6 @@ function recordSelfImprovementAction(record: Record<string, unknown>): string | 
     || stringOrUndefined(record.next_action)
     || stringOrUndefined(record.nextSafeAction)
     || stringOrUndefined(record.action);
-}
-
-function isContextOverflowProviderError(text: string): boolean {
-  return /context[\s_-]*length[\s_-]*exceeded|input exceeds the context window|context overflow detected/i.test(text);
-}
-
-function recordHasContextOverflowProviderError(record: Record<string, unknown>, event: string): boolean {
-  if (event === "context_overflow_waiting_for_compaction" || isContextOverflowProviderError(event)) return true;
-  return [
-    record.reason,
-    record.message,
-    record.error,
-    record.code,
-    record.content,
-    record.warning,
-    record.providerError,
-    record.provider_error,
-  ].some((value) => valueHasContextOverflowProviderError(value));
-}
-
-function valueHasContextOverflowProviderError(value: unknown): boolean {
-  if (typeof value === "string") return isContextOverflowProviderError(value);
-  if (!value || Array.isArray(value) || typeof value !== "object") return false;
-  return Object.values(value as Record<string, unknown>).some((child) => valueHasContextOverflowProviderError(child));
-}
-
-function hasContextOverflowProviderError(messages: Array<{ role?: string; content?: unknown }>): boolean {
-  return messages.some((message) => message.role !== "user" && isContextOverflowProviderError(messageText(message)));
 }
 
 function parseLoopDecision(text: string): LoopDecision | undefined {
