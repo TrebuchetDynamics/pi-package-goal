@@ -982,7 +982,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(2).toISOString(), event: "topic_diagnostic", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "running", topic: "read source loop logs", topicKind: "provider-noise", topicSanitized: true, topicLength: 2346, topicHash: "cfe480c18f24" }),
         JSON.stringify({ at: new Date(3).toISOString(), event: "provider_error", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", error: { type: "invalid_request_error", code: "context_length_exceeded", message: "Your input exceeds the context window of this model." } }),
         JSON.stringify({ at: new Date(4).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
-        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
+        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers", blockerState: "Missing DEV_LOOP_REPORT blockerState after blocked ending" }),
         JSON.stringify({ at: new Date(5).toISOString(), event: "loop_postmortem", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers", likelyCause: "assistant_response_missing_final_markers", nextSafeAction: "return only final markers" }),
         JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
         JSON.stringify({ at: new Date(7).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
@@ -1028,14 +1028,16 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Top final-marker recovery block log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top final-marker recovery block reason: missing_final_markers \(1 record\)/);
-      assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 3/);
       assert.match(messages.at(-1).content, /Changed-file evidence records: 2/);
       assert.match(messages.at(-1).content, /Validation evidence records: 1/);
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
       assert.match(messages.at(-1).content, /Push evidence records: 1/);
       assert.match(messages.at(-1).content, /Report summary records: 1/);
+      assert.match(messages.at(-1).content, /Report blocker-state records: 1/);
       assert.match(messages.at(-1).content, /Report next-step items: 2/);
       assert.match(messages.at(-1).content, /Top report summary: implemented profile control center \(1 record\)/);
+      assert.match(messages.at(-1).content, /Top report blocker state: Missing DEV_LOOP_REPORT blockerState after blocked ending \(1 record\)/);
       assert.match(messages.at(-1).content, /Top report next step: exercise real profile apply command \(1 record\)/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
       assert.match(messages.at(-1).content, /Top commit-without-push log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
@@ -1162,7 +1164,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
       assert.match(messages.at(-1).content, /Top final-marker recovery block log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top final-marker recovery block reason: missing_final_markers \(1 record\)/);
-      assert.match(messages.at(-1).content, /Delivery evidence records: 4/);
+      assert.match(messages.at(-1).content, /Delivery evidence records: 5/);
       assert.match(messages.at(-1).content, /Validation evidence records: 3/);
       assert.match(messages.at(-1).content, /Commit evidence records: 4/);
       assert.match(messages.at(-1).content, /Push evidence records: 3/);
@@ -1239,8 +1241,10 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Top final-marker recovery block reason/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Report summary records/);
+        assert.match(html, /Report blocker-state records/);
         assert.match(html, /Report next-step items/);
         assert.match(html, /Top report summary/);
+        assert.match(html, /Top report blocker state/);
         assert.match(html, /Top report next step/);
         assert.match(html, /Commit-without-push records/);
         assert.match(html, /Top commit-without-push log source/);
@@ -2087,7 +2091,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
-  assert.match(readme, /report summary and next-step counts/);
+  assert.match(readme, /report summary, blocker-state, and next-step counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
   assert.match(readme, /continue should name the next smallest verifiable slice/);
