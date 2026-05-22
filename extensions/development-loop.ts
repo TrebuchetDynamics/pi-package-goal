@@ -153,6 +153,12 @@ type LoopLogAnalysis = {
   changedFileEvidenceRecords: number;
   validationEvidenceRecords: number;
   commitEvidenceRecords: number;
+  reportSummaryRecords: number;
+  reportNextStepItems: number;
+  topReportSummary?: string;
+  topReportSummaryCount: number;
+  topReportNextStep?: string;
+  topReportNextStepCount: number;
   pushEvidenceRecords: number;
   commitWithoutPushRecords: number;
   topCommitWithoutPushSource?: string;
@@ -230,6 +236,8 @@ type LoopLogAccumulator = {
   selfImprovementActionCounts: Map<string, number>;
   commitWithoutPushSourceCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
+  reportSummaryCounts: Map<string, number>;
+  reportNextStepCounts: Map<string, number>;
   ciRedSourceCounts: Map<string, number>;
   ciGateMissingSourceCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
@@ -1132,6 +1140,8 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     selfImprovementActionCounts: new Map<string, number>(),
     commitWithoutPushSourceCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
+    reportSummaryCounts: new Map<string, number>(),
+    reportNextStepCounts: new Map<string, number>(),
     ciRedSourceCounts: new Map<string, number>(),
     ciGateMissingSourceCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
@@ -1162,7 +1172,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportNextStepCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1341,11 +1351,29 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     const hasChangedFiles = recordChangedFiles(record).length > 0;
     const hasValidationEvidence = recordValidationEvidence(record).length > 0;
     const hasCommitEvidence = Boolean(recordCommitHash(record));
+    const reportSummary = recordReportSummary(record);
+    const reportNextSteps = recordReportNextSteps(record);
     const pushStatus = recordPushStatus(record);
-    if (hasChangedFiles || hasValidationEvidence || hasCommitEvidence || pushStatus) analysis.deliveryEvidenceRecords++;
+    if (hasChangedFiles || hasValidationEvidence || hasCommitEvidence || reportSummary || reportNextSteps.length > 0 || pushStatus) analysis.deliveryEvidenceRecords++;
     if (hasChangedFiles) analysis.changedFileEvidenceRecords++;
     if (hasValidationEvidence) analysis.validationEvidenceRecords++;
     if (hasCommitEvidence) analysis.commitEvidenceRecords++;
+    if (reportSummary) {
+      analysis.reportSummaryRecords++;
+      const count = incrementCount(reportSummaryCounts, reportSummary);
+      if (count > analysis.topReportSummaryCount) {
+        analysis.topReportSummary = reportSummary;
+        analysis.topReportSummaryCount = count;
+      }
+    }
+    for (const nextStep of reportNextSteps) {
+      analysis.reportNextStepItems++;
+      const count = incrementCount(reportNextStepCounts, nextStep);
+      if (count > analysis.topReportNextStepCount) {
+        analysis.topReportNextStep = nextStep;
+        analysis.topReportNextStepCount = count;
+      }
+    }
     if (hasCommitEvidence && !pushStatus) {
       analysis.commitWithoutPushRecords++;
       if (sourceKey) {
@@ -1617,6 +1645,10 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     changedFileEvidenceRecords: 0,
     validationEvidenceRecords: 0,
     commitEvidenceRecords: 0,
+    reportSummaryRecords: 0,
+    reportNextStepItems: 0,
+    topReportSummaryCount: 0,
+    topReportNextStepCount: 0,
     pushEvidenceRecords: 0,
     commitWithoutPushRecords: 0,
     topCommitWithoutPushSourceCount: 0,
@@ -1693,6 +1725,8 @@ function recordHasDeliveryEvidence(record: Record<string, unknown>): boolean {
   return recordChangedFiles(record).length > 0
     || recordValidationEvidence(record).length > 0
     || Boolean(recordCommitHash(record))
+    || Boolean(recordReportSummary(record))
+    || recordReportNextSteps(record).length > 0
     || Boolean(recordPushStatus(record));
 }
 
@@ -1711,6 +1745,18 @@ function recordValidationEvidence(record: Record<string, unknown>): string[] {
 
 function recordCommitHash(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.commitHash) || stringOrUndefined(record.commit);
+}
+
+function recordReportSummary(record: Record<string, unknown>): string | undefined {
+  return stringOrUndefined(record.summary) || stringOrUndefined(record.whatChanged);
+}
+
+function recordReportNextSteps(record: Record<string, unknown>): string[] {
+  return stringArrayOrSingleString(record.nextSteps)
+    || stringArrayOrSingleString(record.possibleNextSteps)
+    || stringArrayOrSingleString(record.nextStep)
+    || stringArrayOrSingleString(record.nextActions)
+    || [];
 }
 
 function recordPushStatus(record: Record<string, unknown>): string | undefined {
@@ -1870,6 +1916,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Delivery evidence records", String(analysis.deliveryEvidenceRecords)],
     ["Validation evidence records", String(analysis.validationEvidenceRecords)],
     ["Commit evidence records", String(analysis.commitEvidenceRecords)],
+    ["Report summary records", String(analysis.reportSummaryRecords)],
+    ["Report next-step items", String(analysis.reportNextStepItems)],
     ["Push evidence records", String(analysis.pushEvidenceRecords)],
     ["Commit-without-push records", String(analysis.commitWithoutPushRecords)],
     ["CI-green records", String(analysis.ciGreenRecords)],
@@ -1906,6 +1954,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topFinalMarkerRecoveryBlockSource ? ["Top final-marker recovery block log source", `${relativeToCwd(cwd, analysis.topFinalMarkerRecoveryBlockSource)} (${analysis.topFinalMarkerRecoveryBlockSourceCount})`] : undefined,
     analysis.topFinalMarkerRecoveryBlockReason ? ["Top final-marker recovery block reason", `${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount})`] : undefined,
     analysis.topCommitWithoutPushSource ? ["Top commit-without-push log source", `${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount})`] : undefined,
+    analysis.topReportSummary ? ["Top report summary", `${analysis.topReportSummary} (${analysis.topReportSummaryCount})`] : undefined,
+    analysis.topReportNextStep ? ["Top report next step", `${analysis.topReportNextStep} (${analysis.topReportNextStepCount})`] : undefined,
     analysis.topSelfImprovementSource ? ["Top self-improvement log source", `${relativeToCwd(cwd, analysis.topSelfImprovementSource)} (${analysis.topSelfImprovementSourceCount})`] : undefined,
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
@@ -2018,6 +2068,10 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Validation evidence records: ${analysis.validationEvidenceRecords}`,
     `Commit evidence records: ${analysis.commitEvidenceRecords}`,
     `Push evidence records: ${analysis.pushEvidenceRecords}`,
+    `Report summary records: ${analysis.reportSummaryRecords}`,
+    `Report next-step items: ${analysis.reportNextStepItems}`,
+    analysis.topReportSummary ? `Top report summary: ${analysis.topReportSummary} (${analysis.topReportSummaryCount} ${analysis.topReportSummaryCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topReportNextStep ? `Top report next step: ${analysis.topReportNextStep} (${analysis.topReportNextStepCount} ${analysis.topReportNextStepCount === 1 ? "record" : "records"})` : undefined,
     `Commit-without-push records: ${analysis.commitWithoutPushRecords}`,
     analysis.topCommitWithoutPushSource ? `Top commit-without-push log source: ${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount} ${analysis.topCommitWithoutPushSourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,

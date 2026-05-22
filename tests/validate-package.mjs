@@ -954,7 +954,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
         JSON.stringify({ at: new Date(7).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
         JSON.stringify({ at: new Date(8).toISOString(), event: "loop_finished", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
-        JSON.stringify({ at: new Date(9).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
+        JSON.stringify({ at: new Date(9).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "done", summary: "implemented profile control center", nextSteps: ["exercise real profile apply command", "add profile selection tests"], changedFiles: ["README.md"], validationCommands: ["git diff --check"], commitHash: "abc1234", pushStatus: "pushed" }),
         JSON.stringify({ at: new Date(10).toISOString(), event: "iteration_result", runId: "run-done", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "reported", decision: "continue", changedFiles: ["README.md"], commitHash: "unpushed123" }),
         JSON.stringify({ at: new Date(11).toISOString(), event: "loop_started", runId: "run-done", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
@@ -1000,6 +1000,10 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Validation evidence records: 1/);
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
       assert.match(messages.at(-1).content, /Push evidence records: 1/);
+      assert.match(messages.at(-1).content, /Report summary records: 1/);
+      assert.match(messages.at(-1).content, /Report next-step items: 2/);
+      assert.match(messages.at(-1).content, /Top report summary: implemented profile control center \(1 record\)/);
+      assert.match(messages.at(-1).content, /Top report next step: exercise real profile apply command \(1 record\)/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
       assert.match(messages.at(-1).content, /Top commit-without-push log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top push status: pushed \(1 record\)/);
@@ -1201,6 +1205,10 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Top final-marker recovery block log source/);
         assert.match(html, /Top final-marker recovery block reason/);
         assert.match(html, /Delivery evidence records/);
+        assert.match(html, /Report summary records/);
+        assert.match(html, /Report next-step items/);
+        assert.match(html, /Top report summary/);
+        assert.match(html, /Top report next step/);
         assert.match(html, /Commit-without-push records/);
         assert.match(html, /Top commit-without-push log source/);
         assert.match(html, /Empty provider retry records/);
@@ -2044,6 +2052,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary` and `nextSteps`/);
+  assert.match(readme, /report summary and next-step counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
