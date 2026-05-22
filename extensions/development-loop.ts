@@ -2246,6 +2246,15 @@ Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
 Possible next steps: inspect \`.pi/development-loop/logs.jsonl\`; run \`/development-loop status\`; continue the same smallest slice.
 
+Example partial validation end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: implemented one path but only ran a targeted check.
+Changed files: path/to/file.ts — draft implementation kept local until full validation passes.
+Validation evidence: targeted test command (pass); required validation \`npm test\` not run.
+Commit/push evidence: not attempted because full validation is missing.
+Blocker state: full required validation is missing, so commit and push are unsafe.
+Possible next steps: run \`npm test\`; run \`git diff --check\`; commit and push only after both pass.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

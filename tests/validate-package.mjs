@@ -548,6 +548,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
     assert.match(sent[0].content, /Blocker state: none; provider interruption recovered, same slice resumed/);
     assert.match(sent[0].content, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
+    assert.match(sent[0].content, /Example partial validation end report/);
+    assert.match(sent[0].content, /Selected slice: implemented one path but only ran a targeted check/);
+    assert.match(sent[0].content, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
+    assert.match(sent[0].content, /Blocker state: full required validation is missing, so commit and push are unsafe/);
+    assert.match(sent[0].content, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2129,6 +2134,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
   assert.match(readme, /Blocker state: none; provider interruption recovered, same slice resumed/);
   assert.match(readme, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
+  assert.match(readme, /Example partial validation end report/);
+  assert.match(readme, /Selected slice: implemented one path but only ran a targeted check/);
+  assert.match(readme, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
+  assert.match(readme, /Blocker state: full required validation is missing, so commit and push are unsafe/);
+  assert.match(readme, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);

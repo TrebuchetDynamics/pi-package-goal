@@ -178,6 +178,21 @@ DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: continue
 ```
 
+Example partial validation end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: implemented one path but only ran a targeted check.
+Changed files: path/to/file.ts — draft implementation kept local until full validation passes.
+Validation evidence: targeted test command (pass); required validation `npm test` not run.
+Commit/push evidence: not attempted because full validation is missing.
+Blocker state: full required validation is missing, so commit and push are unsafe.
+Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass.
+DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Targeted check passed but required validation is missing","blockerState":"Full required validation is missing, so commit and push are unsafe","nextSteps":["Run npm test","Run git diff --check","Commit and push only after both pass"],"changedFiles":["path/to/file.ts"],"validationCommands":["targeted test command"]}
+DEV_LOOP_VALIDATED: no
+DEV_LOOP_DECISION: blocked
+```
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
