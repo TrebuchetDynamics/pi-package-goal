@@ -80,6 +80,7 @@ type LoopLogAnalysis = {
   blockedLoops: number;
   topBlockReason?: string;
   topBlockReasonCount: number;
+  unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   contextOverflowResponses: number;
   compactionEvents: number;
@@ -904,6 +905,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     }
     analysis.maxTopicLength = Math.max(analysis.maxTopicLength, topicLength);
   }
+  analysis.unresolvedLoopStarts = Math.max(0, analysis.loopsStarted - analysis.finishedLoops - analysis.blockedLoops);
   analysis.recommendations = loopLogRecommendations(analysis);
   return analysis;
 }
@@ -917,6 +919,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
+    unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
@@ -939,6 +942,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.mostRepeatedOversizedTopicRecords > 1) recommendations.push("Repeated oversized topics: summarize copied objectives once instead of carrying the same paste through every event.");
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
+  if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
@@ -955,6 +959,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
+    `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,

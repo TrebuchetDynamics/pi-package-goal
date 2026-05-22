@@ -800,7 +800,9 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
         JSON.stringify({ at: new Date(3).toISOString(), event: "loop_blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
-        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_finished", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
+        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(5).toISOString(), event: "loop_finished", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
+        JSON.stringify({ at: new Date(6).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
       ].join("\n") + "\n", "utf8");
       const analysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${analysisLog}`, {
@@ -814,16 +816,17 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 5/);
-      assert.match(messages.at(-1).content, /Loops started: 1/);
+      assert.match(messages.at(-1).content, /Records: 7/);
+      assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
-      assert.match(messages.at(-1).content, /Oversized topic records: 5/);
-      assert.match(messages.at(-1).content, /Most repeated oversized topic: 5 records/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 7/);
+      assert.match(messages.at(-1).content, /Most repeated oversized topic: 7 records/);
       assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
     } finally {
