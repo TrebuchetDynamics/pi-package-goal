@@ -754,6 +754,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       const proactiveTailMarker = "TAIL_SHOULD_NOT_REACH_COMPACTION_INSTRUCTIONS";
       const proactiveTopic = `context_length_exceeded ${"token ".repeat(180)}${proactiveTailMarker}`;
       await command.handler(`start --iterations=2 ${proactiveTopic}`, proactiveCtx);
+      const proactiveLogRecord = JSON.parse(fs.readFileSync(path.join(proactiveRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/)[0]);
+      assert.ok(proactiveLogRecord.topic.length <= 600, "development-loop logs should compact copied long topics before repeating them in every event");
+      assert.equal(proactiveLogRecord.topicLength, proactiveTopic.length, "development-loop logs should preserve original topic length for diagnostics");
+      assert.equal(proactiveLogRecord.topicTruncated, true, "development-loop logs should mark truncated topics");
+      assert.doesNotMatch(proactiveLogRecord.topic, new RegExp(proactiveTailMarker));
       const proactivePromptObjectiveLine = sent.at(-1).content.split("\n").find((line) => line.startsWith("Topic/objective: "));
       assert.ok(proactivePromptObjectiveLine, "initial prompt should include an objective line");
       assert.ok(proactivePromptObjectiveLine.length <= "Topic/objective: ".length + 600, "initial prompt objective should be capped before it can bloat provider context");

@@ -60,6 +60,8 @@ type LoopLogRecord = {
   event: string;
   adapterName: string;
   topic: string;
+  topicLength?: number;
+  topicTruncated?: boolean;
   iteration: number;
   maxIterations: number;
   phase: LoopPhase;
@@ -127,6 +129,7 @@ const HARD_MAX_ITERATIONS = 25;
 const STATUS_TOPIC_MAX = 72;
 const STEERING_TOPIC_MAX = 240;
 const PROMPT_OBJECTIVE_MAX = 600;
+const LOG_TOPIC_MAX = 600;
 const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
@@ -1128,7 +1131,7 @@ function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
     at: new Date().toISOString(),
     event,
     adapterName: state.adapterName,
-    topic: state.topic,
+    ...loopLogTopicFields(state.topic),
     iteration: state.iteration,
     maxIterations: state.maxIterations,
     phase: state.phase,
@@ -1141,6 +1144,16 @@ function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   } catch {
     // Logging must never break the agent loop.
   }
+}
+
+function loopLogTopicFields(value: unknown): Pick<LoopLogRecord, "topic" | "topicLength" | "topicTruncated"> {
+  const topic = singleLineText(value);
+  if (topic.length <= LOG_TOPIC_MAX) return { topic, topicLength: topic.length };
+  return {
+    topic: `${topic.slice(0, LOG_TOPIC_MAX - 1)}…`,
+    topicLength: topic.length,
+    topicTruncated: true,
+  };
 }
 
 function readLastLoopRecord(logPath: string): Record<string, unknown> | undefined {
