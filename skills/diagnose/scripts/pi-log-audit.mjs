@@ -194,16 +194,24 @@ function needsAttention(status, lastFailure, badJson) {
   return status !== "done" && Boolean(lastFailure);
 }
 
+function findLastAt(events) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    if (events[index]?.at) return events[index].at;
+  }
+  return undefined;
+}
+
 function buildLogRecord(loopName, logPath) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
+  const lastAt = findLastAt(events);
   const status = classifyStatus(latest, badJson);
   const attention = needsAttention(status, lastFailure, badJson);
   const size = fs.statSync(logPath).size;
   incrementSummary(status, attention, badJson);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, status, attention, size };
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -226,6 +234,7 @@ function printLogRecord(record, repoDir) {
     `bad_json=${record.badJson}`,
     `bytes=${record.size}`,
     `at=${formatValue(record.latest.at)}`,
+    `last_at=${formatValue(record.lastAt)}`,
     `latest=${formatValue(record.latest.event)}`,
     `iteration=${formatValue(record.latest.iteration)}/${formatValue(record.latest.maxIterations)}`,
     `phase=${formatValue(record.latest.phase)}`,

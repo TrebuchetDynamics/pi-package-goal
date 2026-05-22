@@ -14,7 +14,7 @@ The helper scans for `.pi` directories while skipping `.git` and `node_modules`,
 For each log it reports:
 
 - parsed line count and `bad_json` count
-- latest event, iteration, phase, decision, `status=`, and `attention=yes|no`
+- latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, `status=`, and `attention=yes|no`
 - current `ISSUE` reason, or `HISTORY` for a historical failure in a log that later finished cleanly
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
 
