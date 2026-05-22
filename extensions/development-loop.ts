@@ -70,8 +70,22 @@ type LoopLogRecord = {
   logPath: string;
 };
 
+type LoopLogAnalysis = {
+  records: number;
+  invalidRecords: number;
+  loopsStarted: number;
+  blockedLoops: number;
+  emptyProviderResponses: number;
+  contextOverflowResponses: number;
+  compactionEvents: number;
+  truncatedTopics: number;
+  maxTopicLength: number;
+  readError?: string;
+  recommendations: string[];
+};
+
 type ParsedCommand = {
-  command: "start" | "restart" | "stop" | "status" | "init" | "adapters" | "help";
+  command: "start" | "restart" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
   adapter?: string;
   topic?: string;
   iterations?: number;
@@ -367,7 +381,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   const command = {
     description: "Run an adapter-aware project development loop",
-    getArgumentCompletions: (prefix: string) => ["start", "restart", "status", "stop", "init", "adapters", "help"]
+    getArgumentCompletions: (prefix: string) => ["start", "restart", "status", "stop", "init", "adapters", "analyze-logs", "help"]
       .filter((value) => value.startsWith(prefix))
       .map((value) => ({ value, label: value })),
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
@@ -392,6 +406,9 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       return;
     case "adapters":
       publishAdapters(pi, ctx);
+      return;
+    case "analyze-logs":
+      publishLogAnalysis(pi, ctx, parsed);
       return;
     case "help":
       publishHelp(pi, ctx);
@@ -769,6 +786,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop stop — stop the active loop",
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
+    "- /development-loop analyze-logs [path] — summarize loop logs and likely improvement areas",
     "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
     "Configurable init options:",
@@ -805,6 +823,100 @@ function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-loop-adapters", content: text, display: true });
   }
+}
+
+function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand) {
+  const cwd = contextCwd(ctx);
+  const logPath = absoluteLogPath(cwd, parsed.topic || state.logPath || DEFAULT_LOG_RELATIVE);
+  const analysis = analyzeLoopLogFile(logPath);
+  const text = formatLoopLogAnalysis(analysis, cwd, logPath);
+  notify(ctx, text);
+  if (typeof pi.sendMessage === "function") {
+    pi.sendMessage({ customType: "development-loop-log-analysis", content: text, display: true });
+  }
+}
+
+function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
+  try {
+    return analyzeLoopLogText(fs.readFileSync(logPath, "utf8"));
+  } catch (error) {
+    return {
+      ...emptyLoopLogAnalysis(),
+      readError: error instanceof Error ? error.message : String(error),
+      recommendations: ["Log unavailable: check the configured log path or run a loop first."],
+    };
+  }
+}
+
+function analyzeLoopLogText(content: string): LoopLogAnalysis {
+  const analysis = emptyLoopLogAnalysis();
+  const lines = content.split(/\r?\n/).filter(Boolean);
+  for (const line of lines) {
+    const record = parseLogRecord(line);
+    if (!record) {
+      analysis.invalidRecords++;
+      continue;
+    }
+    analysis.records++;
+    const event = recordEvent(record) || "";
+    if (event === "loop_started") analysis.loopsStarted++;
+    if (event === "loop_blocked") analysis.blockedLoops++;
+    if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
+    if (event === "context_overflow_waiting_for_compaction" || String(record.reason || "").includes("context_overflow")) analysis.contextOverflowResponses++;
+    if (event.startsWith("compaction_")) analysis.compactionEvents++;
+    if (record.topicTruncated === true) analysis.truncatedTopics++;
+    analysis.maxTopicLength = Math.max(analysis.maxTopicLength, recordTopicLength(record));
+  }
+  analysis.recommendations = loopLogRecommendations(analysis);
+  return analysis;
+}
+
+function emptyLoopLogAnalysis(): LoopLogAnalysis {
+  return {
+    records: 0,
+    invalidRecords: 0,
+    loopsStarted: 0,
+    blockedLoops: 0,
+    emptyProviderResponses: 0,
+    contextOverflowResponses: 0,
+    compactionEvents: 0,
+    truncatedTopics: 0,
+    maxTopicLength: 0,
+    recommendations: [],
+  };
+}
+
+function recordTopicLength(record: Record<string, unknown>): number {
+  if (typeof record.topicLength === "number" && Number.isFinite(record.topicLength)) return record.topicLength;
+  return typeof record.topic === "string" ? singleLineText(record.topic).length : 0;
+}
+
+function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
+  const recommendations: string[] = [];
+  if (analysis.maxTopicLength > PROMPT_OBJECTIVE_MAX) recommendations.push("Oversized topics: cap prompt and log objective text before repeating it in every event.");
+  if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
+  if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
+  if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
+  if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
+  if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
+  return recommendations.length ? recommendations : ["No obvious loop health issues detected in this log."];
+}
+
+function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
+  return [
+    `Development loop log analysis: ${relativeToCwd(cwd, logPath)}`,
+    analysis.readError ? `Error: ${analysis.readError}` : undefined,
+    `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
+    `Loops started: ${analysis.loopsStarted}`,
+    `Blocked loops: ${analysis.blockedLoops}`,
+    `Empty provider responses: ${analysis.emptyProviderResponses}`,
+    `Context overflow responses: ${analysis.contextOverflowResponses}`,
+    `Compaction events: ${analysis.compactionEvents}`,
+    `Truncated topics: ${analysis.truncatedTopics}`,
+    `Max topic length: ${analysis.maxTopicLength}`,
+    "Recommendations:",
+    ...analysis.recommendations.map((item) => `- ${item}`),
+  ].filter((line): line is string => Boolean(line)).join("\n");
 }
 
 function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -1007,7 +1119,7 @@ function statusReport(s: LoopState, cwd = process.cwd()): string {
     `state: ${stateExplanation(s, last)}`,
     summarizeLastLoopRecord(last),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /development-loop status | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
+    "Commands: /development-loop status | /development-loop analyze-logs | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
   ].join("\n");
 }
 
@@ -1235,7 +1347,7 @@ function messageText(message: { content?: unknown }): string {
 function parseArgs(raw: string | undefined): ParsedCommand {
   const tokens = tokenizeArgs(raw || "");
   const commandToken = tokens[0];
-  const known = new Set(["start", "restart", "stop", "status", "init", "adapters", "help"]);
+  const known = new Set(["start", "restart", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
   const command = known.has(commandToken) ? tokens.shift() as ParsedCommand["command"] : "start";
   const parsed: ParsedCommand = {
     command,

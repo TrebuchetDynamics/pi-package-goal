@@ -789,6 +789,42 @@ async function testExtensionLoadsAndRegistersCommands() {
       fs.rmSync(proactiveRoot, { recursive: true, force: true });
     }
 
+    const analysisRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-analysis-"));
+    fs.mkdirSync(path.join(analysisRoot, ".git"));
+    try {
+      const analysisLog = path.join(analysisRoot, ".pi", "development-loop", "logs.jsonl");
+      fs.mkdirSync(path.dirname(analysisLog), { recursive: true });
+      const oversizedTopic = `${"browser dump ".repeat(80)}TAIL_SHOULD_BE_DIAGNOSTIC_ONLY`;
+      fs.writeFileSync(analysisLog, [
+        JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
+        JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
+        JSON.stringify({ at: new Date(3).toISOString(), event: "loop_blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
+        JSON.stringify({ at: new Date(4).toISOString(), event: "loop_finished", adapterName: "generic-git", topic: oversizedTopic, iteration: 2, maxIterations: 2, phase: "done", decision: "done" }),
+      ].join("\n") + "\n", "utf8");
+      const analysisMessagesBefore = messages.length;
+      await command.handler(`analyze-logs ${analysisLog}`, {
+        ...ctx,
+        cwd: analysisRoot,
+        sessionManager: {
+          getCwd: () => analysisRoot,
+          getEntries: () => [],
+        },
+      });
+      assert.equal(messages.length, analysisMessagesBefore + 1);
+      assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
+      assert.match(messages.at(-1).content, /Development loop log analysis:/);
+      assert.match(messages.at(-1).content, /Records: 5/);
+      assert.match(messages.at(-1).content, /Loops started: 1/);
+      assert.match(messages.at(-1).content, /Blocked loops: 1/);
+      assert.match(messages.at(-1).content, /Empty provider responses: 1/);
+      assert.match(messages.at(-1).content, /Compaction events: 1/);
+      assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
+      assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
+    } finally {
+      fs.rmSync(analysisRoot, { recursive: true, force: true });
+    }
+
     await command.handler("help", ctx);
     assert.match(messages.at(-1).content, /\/development-loop init --dry-run/);
     assert.match(messages.at(-1).content, /--iterations <n>/);
