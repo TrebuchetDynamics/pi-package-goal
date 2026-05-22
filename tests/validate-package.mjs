@@ -1642,6 +1642,8 @@ async function testCodexStorageCleanupScript() {
   assert.match(source, /--tmp-only/);
   assert.match(source, /--delete-state/);
   assert.match(source, /--i-understand-local-state-will-be-lost/);
+  assert.match(source, /Top-level HOME path sizes/);
+  assert.match(source, /du -x -h -d 1 "\$HOME"/);
   assert.doesNotMatch(source, /rm -rf "?\$\{?CODEX_DIR\}?"?\s*$/m);
   assert.doesNotMatch(source, /rm -rf "?\$\{?codex_dir\}?"?\s*$/m);
 
@@ -1665,11 +1667,15 @@ async function testCodexStorageCleanupScript() {
     );
     assert.ok(fs.existsSync(path.join(unsafeDir, "tmp", "arg0")), "unsafe Codex dir removed temp files");
 
-    const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], { encoding: "utf8" });
+    const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: fixtureRoot },
+    });
     assert.match(dryRun, /Dry run/);
     assert.match(dryRun, /Disk space containing Codex directory/);
     assert.match(dryRun, /Inode usage containing Codex directory/);
     assert.match(dryRun, /Codex path sizes/);
+    assert.match(dryRun, /Top-level HOME path sizes/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
 
@@ -1774,7 +1780,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /home filesystem is full/);
   assert.match(reference, /PATH wrapper files under `~\/\.codex\/tmp`/);
   assert.match(reference, /SQLite cannot extend the state database/);
-  assert.match(reference, /prints free space, inode usage, and Codex path sizes/);
+  assert.match(reference, /prints free space, inode usage, Codex path sizes, and top-level `\$HOME` usage/);
   assert.match(reference, /inode exhaustion can also cause `No space left on device`/);
   assert.match(reference, /post-cleanup disk report/);
   assert.match(reference, /unique timestamped backup directory/);
@@ -1846,7 +1852,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
   assert.match(readme, /--tmp-only/);
   assert.match(readme, /leave `state_\*\.sqlite\*` untouched/);
-  assert.match(readme, /prints free space, inode usage, and Codex path sizes/);
+  assert.match(readme, /prints free space, inode usage, Codex path sizes, and top-level `\$HOME` usage/);
   assert.match(readme, /inode exhaustion can also cause `No space left on device`/);
   assert.match(readme, /post-cleanup disk report/);
   assert.match(readme, /unique timestamped backup directory/);

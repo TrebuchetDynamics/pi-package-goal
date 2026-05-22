@@ -46,6 +46,15 @@ print_disk_report() {
   else
     echo "Codex path sizes: no entries found."
   fi
+
+  if [ -n "${HOME:-}" ] && [ -d "$HOME" ]; then
+    case "$CODEX_DIR" in
+      "$HOME"/.codex|"$HOME"/.codex/*)
+        echo "Top-level HOME path sizes:"
+        du -x -h -d 1 "$HOME" 2>/dev/null | sort -h | tail -20 || true
+        ;;
+    esac
+  fi
 }
 
 while [ "$#" -gt 0 ]; do
