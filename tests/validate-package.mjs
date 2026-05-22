@@ -928,6 +928,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_failed_before_next_iteration", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "compaction command failed" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "user_steering", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "running", reason: "focus release checks next" }),
+        JSON.stringify({ at: new Date(2).toISOString(), event: "topic_diagnostic", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "running", topic: "read source loop logs", topicKind: "provider-noise", topicSanitized: true, topicLength: 2346, topicHash: "cfe480c18f24" }),
         JSON.stringify({ at: new Date(3).toISOString(), event: "provider_error", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", error: { type: "invalid_request_error", code: "context_length_exceeded", message: "Your input exceeds the context window of this model." } }),
         JSON.stringify({ at: new Date(4).toISOString(), event: "missing_final_marker_recovery_requested", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing DEV_LOOP_DECISION final marker" }),
         JSON.stringify({ at: new Date(4).toISOString(), event: "loop_blocked", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "blocked", reason: "missing_final_markers" }),
@@ -951,7 +952,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-loop-log-analysis");
       assert.match(messages.at(-1).content, /Development loop log analysis:/);
-      assert.match(messages.at(-1).content, /Records: 18/);
+      assert.match(messages.at(-1).content, /Records: 19/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
@@ -988,9 +989,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /User steering records: 1/);
       assert.match(messages.at(-1).content, /Max user steering length: 25/);
-      assert.match(messages.at(-1).content, /Oversized topic records: 10/);
+      assert.match(messages.at(-1).content, /Provider-noise topic records: 1/);
+      assert.match(messages.at(-1).content, /Sanitized topic records: 1/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 11/);
       assert.match(messages.at(-1).content, /Most repeated oversized topic: 10 records/);
-      assert.match(messages.at(-1).content, new RegExp(`Max topic length: ${oversizedTopic.length}`));
+      assert.match(messages.at(-1).content, /Max topic length: 2346/);
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
 
       const customLog = path.join(analysisRoot, ".pi", "navivox-loop", "logs.jsonl");
@@ -1053,7 +1056,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 29/);
+      assert.match(messages.at(-1).content, /Records: 30/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
@@ -1089,7 +1092,9 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /User steering records: 1/);
       assert.match(messages.at(-1).content, /Max user steering length: 25/);
-      assert.match(messages.at(-1).content, /Oversized topic records: 10/);
+      assert.match(messages.at(-1).content, /Provider-noise topic records: 1/);
+      assert.match(messages.at(-1).content, /Sanitized topic records: 1/);
+      assert.match(messages.at(-1).content, /Oversized topic records: 11/);
 
       const htmlMessagesBefore = messages.length;
       await command.handler(`analyze-logs --html ${path.join(analysisRoot, ".pi")}`, {
@@ -1128,6 +1133,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Compaction failure records/);
         assert.match(html, /User steering records/);
         assert.match(html, /Max user steering length/);
+        assert.match(html, /Provider-noise topic records/);
+        assert.match(html, /Sanitized topic records/);
         assert.match(html, /CI-red records/);
         assert.match(html, /CI-gate missing records/);
         assert.match(html, /Self-improvement queued records/);

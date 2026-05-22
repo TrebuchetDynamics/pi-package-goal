@@ -150,6 +150,8 @@ type LoopLogAnalysis = {
   compactionFailureRecords: number;
   userSteeringRecords: number;
   maxUserSteeringLength: number;
+  providerNoiseTopicRecords: number;
+  sanitizedTopicRecords: number;
   truncatedTopics: number;
   oversizedTopicRecords: number;
   mostRepeatedOversizedTopicRecords: number;
@@ -1183,6 +1185,8 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       analysis.userSteeringRecords++;
       analysis.maxUserSteeringLength = Math.max(analysis.maxUserSteeringLength, recordUserSteeringLength(record));
     }
+    if (record.topicKind === "provider-noise") analysis.providerNoiseTopicRecords++;
+    if (record.topicSanitized === true) analysis.sanitizedTopicRecords++;
     if (record.topicTruncated === true) analysis.truncatedTopics++;
     const topicLength = recordTopicLength(record);
     if (topicLength > LOG_TOPIC_MAX) {
@@ -1312,6 +1316,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     compactionFailureRecords: 0,
     userSteeringRecords: 0,
     maxUserSteeringLength: 0,
+    providerNoiseTopicRecords: 0,
+    sanitizedTopicRecords: 0,
     truncatedTopics: 0,
     oversizedTopicRecords: 0,
     mostRepeatedOversizedTopicRecords: 0,
@@ -1414,6 +1420,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionFailureRecords > 0) recommendations.push("Compaction failures: inspect failure reasons and verify the loop either resumes safely or remains queued for manual recovery.");
   if (analysis.userSteeringRecords > 0) recommendations.push("User steering: review steering records to distinguish intentional scope changes from accidental plain-text turns.");
+  if (analysis.providerNoiseTopicRecords > 0) recommendations.push("Provider-noise topics: verify provider error text is sanitized out of repeated objectives while topic hashes preserve diagnostics.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
@@ -1480,6 +1487,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Compaction failure records", String(analysis.compactionFailureRecords)],
     ["User steering records", String(analysis.userSteeringRecords)],
     ["Max user steering length", String(analysis.maxUserSteeringLength)],
+    ["Provider-noise topic records", String(analysis.providerNoiseTopicRecords)],
+    ["Sanitized topic records", String(analysis.sanitizedTopicRecords)],
     ["Oversized topic records", String(analysis.oversizedTopicRecords)],
     ["Max topic length", String(analysis.maxTopicLength)],
   ];
@@ -1595,6 +1604,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Compaction failure records: ${analysis.compactionFailureRecords}`,
     `User steering records: ${analysis.userSteeringRecords}`,
     `Max user steering length: ${analysis.maxUserSteeringLength}`,
+    `Provider-noise topic records: ${analysis.providerNoiseTopicRecords}`,
+    `Sanitized topic records: ${analysis.sanitizedTopicRecords}`,
     `Truncated topics: ${analysis.truncatedTopics}`,
     `Oversized topic records: ${analysis.oversizedTopicRecords}`,
     `Most repeated oversized topic: ${analysis.mostRepeatedOversizedTopicRecords} records`,
