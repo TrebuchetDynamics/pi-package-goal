@@ -148,6 +148,8 @@ type LoopLogAnalysis = {
   compactionEvents: number;
   compactionResumeRecords: number;
   compactionFailureRecords: number;
+  userSteeringRecords: number;
+  maxUserSteeringLength: number;
   truncatedTopics: number;
   oversizedTopicRecords: number;
   mostRepeatedOversizedTopicRecords: number;
@@ -1177,6 +1179,10 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
     if (isCompactionResumeEvent(event)) analysis.compactionResumeRecords++;
     if (isCompactionFailureEvent(event)) analysis.compactionFailureRecords++;
+    if (event === "user_steering") {
+      analysis.userSteeringRecords++;
+      analysis.maxUserSteeringLength = Math.max(analysis.maxUserSteeringLength, recordUserSteeringLength(record));
+    }
     if (record.topicTruncated === true) analysis.truncatedTopics++;
     const topicLength = recordTopicLength(record);
     if (topicLength > LOG_TOPIC_MAX) {
@@ -1199,6 +1205,11 @@ function isCompactionResumeEvent(event: string): boolean {
 
 function isCompactionFailureEvent(event: string): boolean {
   return event.startsWith("compaction_") && event.includes("failed");
+}
+
+function recordUserSteeringLength(record: Record<string, unknown>): number {
+  const text = stringOrUndefined(record.reason) || stringOrUndefined(record.text) || stringOrUndefined(record.steering) || "";
+  return singleLineText(text).length;
 }
 
 function promptSentGroupKey(record: Record<string, unknown>, sourceKey?: string): string {
@@ -1299,6 +1310,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     compactionEvents: 0,
     compactionResumeRecords: 0,
     compactionFailureRecords: 0,
+    userSteeringRecords: 0,
+    maxUserSteeringLength: 0,
     truncatedTopics: 0,
     oversizedTopicRecords: 0,
     mostRepeatedOversizedTopicRecords: 0,
@@ -1400,6 +1413,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionFailureRecords > 0) recommendations.push("Compaction failures: inspect failure reasons and verify the loop either resumes safely or remains queued for manual recovery.");
+  if (analysis.userSteeringRecords > 0) recommendations.push("User steering: review steering records to distinguish intentional scope changes from accidental plain-text turns.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
@@ -1464,6 +1478,8 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Compaction events", String(analysis.compactionEvents)],
     ["Compaction resume records", String(analysis.compactionResumeRecords)],
     ["Compaction failure records", String(analysis.compactionFailureRecords)],
+    ["User steering records", String(analysis.userSteeringRecords)],
+    ["Max user steering length", String(analysis.maxUserSteeringLength)],
     ["Oversized topic records", String(analysis.oversizedTopicRecords)],
     ["Max topic length", String(analysis.maxTopicLength)],
   ];
@@ -1577,6 +1593,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Compaction events: ${analysis.compactionEvents}`,
     `Compaction resume records: ${analysis.compactionResumeRecords}`,
     `Compaction failure records: ${analysis.compactionFailureRecords}`,
+    `User steering records: ${analysis.userSteeringRecords}`,
+    `Max user steering length: ${analysis.maxUserSteeringLength}`,
     `Truncated topics: ${analysis.truncatedTopics}`,
     `Oversized topic records: ${analysis.oversizedTopicRecords}`,
     `Most repeated oversized topic: ${analysis.mostRepeatedOversizedTopicRecords} records`,
