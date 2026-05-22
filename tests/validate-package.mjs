@@ -387,6 +387,23 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
   assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
 
+  const logRecordMod = await jiti.import(path.join(root, "extensions", "development-loop-log-record.ts"));
+  assert.equal(typeof logRecordMod.parseLoopLogRecord, "function");
+  assert.deepEqual(logRecordMod.parseLoopLogRecord('{"event":"loop_start","timestamp":"2026-05-22T21:00:00.000Z","run_id":"legacy-run"}'), {
+    event: "loop_start",
+    timestamp: "2026-05-22T21:00:00.000Z",
+    run_id: "legacy-run",
+  });
+  assert.equal(logRecordMod.parseLoopLogRecord("not json"), undefined);
+  assert.equal(logRecordMod.recordEvent({ event: "loop_start" }), "loop_started");
+  assert.equal(logRecordMod.recordEvent({ type: "done" }), "loop_finished");
+  assert.equal(logRecordMod.recordTimestamp({ timestamp: "2026-05-22T21:00:00.000Z" }), "2026-05-22T21:00:00.000Z");
+  assert.equal(logRecordMod.recordTimestampMs({ timestamp: "2026-05-22T21:00:00.000Z" }), Date.parse("2026-05-22T21:00:00.000Z"));
+  assert.equal(logRecordMod.recordRunId({ run_id: "legacy-run" }), "legacy-run");
+  assert.equal(logRecordMod.recordDecision({ finalLine: "DEV_LOOP_DECISION: blocked" }, "iteration_result"), "blocked");
+  assert.equal(logRecordMod.recordDecision({ event: "done" }, "loop_finished"), "done");
+  assert.equal(logRecordMod.recordReason({ type: "blocked" }, "loop_blocked"), "blocked");
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");

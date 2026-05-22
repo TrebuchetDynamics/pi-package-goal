@@ -2,6 +2,15 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
+import {
+  parseLoopLogRecord as parseLogRecord,
+  recordDecision,
+  recordEvent,
+  recordReason,
+  recordRunId,
+  recordTimestamp,
+  recordTimestampMs,
+} from "./development-loop-log-record.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
@@ -2879,76 +2888,11 @@ function readRecentReportRecords(logPath: string, limit = STATUS_REPORT_HISTORY_
   }
 }
 
-function parseLogRecord(line: string): Record<string, unknown> | undefined {
-  try {
-    const parsed = JSON.parse(line);
-    return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function recordEvent(record?: Record<string, unknown>): string | undefined {
-  return normalizeLoopLogEvent(rawRecordEvent(record));
-}
-
-function rawRecordEvent(record?: Record<string, unknown>): string | undefined {
-  const value = record?.event;
-  if (typeof value === "string") return value;
-  const type = record?.type;
-  return typeof type === "string" ? type : undefined;
-}
-
-function normalizeLoopLogEvent(value: string | undefined): string | undefined {
-  if (!value) return undefined;
-  if (value === "loop_start") return "loop_started";
-  if (value === "done") return "loop_finished";
-  if (value === "blocked") return "loop_blocked";
-  return value;
-}
-
-function recordTimestamp(record?: Record<string, unknown>): string | undefined {
-  return stringOrUndefined(record?.at) || stringOrUndefined(record?.timestamp);
-}
-
-function recordTimestampMs(record?: Record<string, unknown>): number | undefined {
-  const value = recordTimestamp(record);
-  if (!value) return undefined;
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : undefined;
-}
-
-function recordRunId(record?: Record<string, unknown>): string | undefined {
-  return stringOrUndefined(record?.runId) || stringOrUndefined(record?.run_id);
-}
-
-function recordDecision(record: Record<string, unknown>, event: string): string | undefined {
-  const explicit = stringOrUndefined(record.decision);
-  if (explicit) return explicit;
-  const finalLineDecision = finalLineLoopDecision(record);
-  if (finalLineDecision) return finalLineDecision;
-  if (event === "loop_finished" && rawRecordEvent(record) === "done") return "done";
-  return undefined;
-}
-
-function recordReason(record: Record<string, unknown>, event: string): string | undefined {
-  const explicit = stringOrUndefined(record.reason);
-  if (explicit) return explicit;
-  if (event === "loop_blocked" && rawRecordEvent(record) === "blocked") return "blocked";
-  return undefined;
-}
-
 function recordSelfImprovementAction(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.nextAction)
     || stringOrUndefined(record.next_action)
     || stringOrUndefined(record.nextSafeAction)
     || stringOrUndefined(record.action);
-}
-
-function finalLineLoopDecision(record: Record<string, unknown>): string | undefined {
-  const finalLine = stringOrUndefined(record.finalLine);
-  const match = finalLine?.match(/\b(?:DEV_)?LOOP_DECISION:\s*(continue|stop|blocked|done)\b/i);
-  return match?.[1]?.toLowerCase();
 }
 
 function isContextOverflowProviderError(text: string): boolean {
