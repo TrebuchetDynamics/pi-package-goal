@@ -966,6 +966,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
+      assert.match(messages.at(-1).content, /Top blocked log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Top postmortem cause: assistant_response_missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Top next safe action: return only final markers \(1 record\)/);
@@ -1080,6 +1081,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Assistant decision records: 1/);
       assert.match(messages.at(-1).content, /Top assistant decision: continue \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
+      assert.match(messages.at(-1).content, /Top blocked log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Postmortems: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery requests: 2/);
       assert.match(messages.at(-1).content, /Top final-marker recovery reason: missing DEV_LOOP_DECISION final marker \(2 records\)/);
@@ -1144,6 +1146,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Finished-without-validation records/);
         assert.match(html, /Finished-without-delivery records/);
         assert.match(html, /Assistant decision records/);
+        assert.match(html, /Top blocked log source/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Top final-marker recovery reason/);
         assert.match(html, /Top final-marker recovery block reason/);
