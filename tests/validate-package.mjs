@@ -477,6 +477,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   try {
     const statusUpdates = [];
     const widgetUpdates = [];
+    const contextOverflowCompactCalls = [];
     const ctx = {
       cwd: e2eRoot,
       hasUI: true,
@@ -492,6 +493,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         getCwd: () => e2eRoot,
         getEntries: () => [],
       },
+      compact(options) { contextOverflowCompactCalls.push(options); },
       isIdle: () => true,
     };
 
@@ -598,6 +600,7 @@ async function testExtensionLoadsAndRegistersCommands() {
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
+    const compactCallsBeforeContextOverflow = contextOverflowCompactCalls.length;
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
@@ -607,6 +610,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.active, true, "context-overflow provider errors should wait for compaction instead of blocking the loop");
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.lastReason, "context_overflow_waiting_for_compaction");
+    assert.equal(contextOverflowCompactCalls.length, compactCallsBeforeContextOverflow + 1, "context-overflow provider errors should proactively request compaction when available");
+    assert.match(contextOverflowCompactCalls.at(-1).customInstructions, /provider reported a context-overflow error/);
+    assert.match(contextOverflowCompactCalls.at(-1).customInstructions, /Preserve development loop state/);
     assert.equal(sent.length, sentBeforeContextOverflow, "context-overflow provider errors should not retry before compaction");
 
     await handlers.get("session_before_compact")({ preparation: { tokensBefore: 272879 } }, ctx);

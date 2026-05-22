@@ -260,6 +260,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development loop is waiting for compaction after a provider context-overflow error.", "warning");
+        requestContextOverflowCompaction(pi, ctx);
         return;
       }
       blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker");
@@ -483,6 +484,23 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
     },
   });
   return true;
+}
+
+function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
+  if (typeof ctx.compact !== "function") return;
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  ctx.compact({
+    customInstructions: `The provider reported a context-overflow error before DEV_LOOP markers were emitted. Compact the conversation, preserve the current development-loop state, and continue the same iteration after compaction.\n\n${buildDevelopmentLoopCompactionInstructions(state, resolved, cwd)}`,
+    onComplete: () => notify(ctx, "Development loop context-overflow compaction completed; continuing automatically."),
+    onError: (error) => {
+      state = { ...state, lastReason: "context_overflow_compaction_failed" };
+      appendLoopLog("context_overflow_compaction_failed", { reason: error.message });
+      pi.appendEntry(CUSTOM_STATE_TYPE, state);
+      refreshUi(ctx);
+      notify(ctx, `Compaction failed after provider context-overflow error: ${error.message}. Waiting for manual compaction or retry.`, "warning");
+    },
+  });
 }
 
 function shouldCompactBeforeNextIteration(ctx: UiLikeContext): boolean {
