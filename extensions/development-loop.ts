@@ -2179,6 +2179,9 @@ Human-readable end report requirements, before DEV_LOOP_REPORT:
 - What changed and why, with exact files.
 - Validation evidence, commit/push evidence, and blocker state.
 - Possible next steps, especially if decision is continue, blocked, or stop.
+  - For continue: name the next smallest verifiable slice.
+  - For blocked: name concrete unblocking actions, missing prerequisites, or credentials.
+  - For stop: name handoff or cleanup actions so the user can resume safely.
 - Keep the machine-readable DEV_LOOP_REPORT and final markers last so the loop can parse them.
 
 Omit unavailable DEV_LOOP_REPORT fields. Use false and blocked when validation is red. Only use DEV_LOOP_VALIDATED: yes after validation evidence exists. Use DEV_LOOP_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;

@@ -533,6 +533,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
+    assert.match(sent[0].content, /For continue: name the next smallest verifiable slice/);
+    assert.match(sent[0].content, /For blocked: name concrete unblocking actions/);
+    assert.match(sent[0].content, /For stop: name handoff or cleanup actions/);
     assert.match(sent[0].content, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
     assert.match(sent[0].content, /Task discovery cues/);
     assert.match(sent[0].content, /TODO\.md/);
@@ -2057,6 +2060,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /structured `summary` and `nextSteps`/);
   assert.match(readme, /report summary and next-step counts/);
   assert.match(readme, /Possible next steps/);
+  assert.match(readme, /decision-specific next steps/);
+  assert.match(readme, /continue should name the next smallest verifiable slice/);
+  assert.match(readme, /blocked should name concrete unblocking actions/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
