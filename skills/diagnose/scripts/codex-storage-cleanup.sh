@@ -27,6 +27,23 @@ Use --delete-state only as a last resort; it also requires
 USAGE
 }
 
+print_disk_report() {
+  echo "Disk space containing Codex directory:"
+  df -h "$CODEX_DIR" 2>/dev/null || true
+
+  local codex_children=()
+  shopt -s nullglob
+  codex_children=("$CODEX_DIR"/*)
+  shopt -u nullglob
+
+  if [ "${#codex_children[@]}" -gt 0 ]; then
+    echo "Codex path sizes:"
+    du -sh "${codex_children[@]}" 2>/dev/null | sort -h || true
+  else
+    echo "Codex path sizes: no entries found."
+  fi
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --execute)
@@ -88,6 +105,7 @@ shopt -u nullglob
 
 if [ "$EXECUTE" -ne 1 ]; then
   echo "Dry run: no files changed."
+  print_disk_report
   echo "Would remove transient temp directory: $CODEX_DIR/tmp"
   if [ "${#STATE_FILES[@]}" -gt 0 ]; then
     if [ "$DELETE_STATE" -eq 1 ]; then

@@ -22,7 +22,7 @@ bash skills/diagnose/scripts/codex-storage-cleanup.sh
 bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
 ```
 
-The script removes only transient temp files and moves state databases into `~/.codex/backup/`; it does not delete `~/.codex`.
+The script dry run prints free space and Codex path sizes, then shows the cleanup it would perform. With `--execute`, it removes only transient temp files and moves state databases into `~/.codex/backup/`; it does not delete `~/.codex`.
 
 Delete transient Codex temp files before deleting durable state:
 

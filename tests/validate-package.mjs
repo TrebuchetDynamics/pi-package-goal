@@ -1657,6 +1657,8 @@ async function testCodexStorageCleanupScript() {
     const script = path.join(root, scriptRel);
     const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], { encoding: "utf8" });
     assert.match(dryRun, /Dry run/);
+    assert.match(dryRun, /Disk space containing Codex directory/);
+    assert.match(dryRun, /Codex path sizes/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
 
@@ -1717,6 +1719,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /No space left on device/);
   assert.match(reference, /database or disk is full/);
   assert.match(reference, /df -h "\$HOME"/);
+  assert.match(reference, /prints free space and Codex path sizes/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
   assert.match(reference, /--delete-state/);
   assert.match(reference, /--i-understand-local-state-will-be-lost/);
@@ -1773,6 +1776,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /database or disk is full/);
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
+  assert.match(readme, /prints free space and Codex path sizes/);
   assert.match(readme, /codex-storage-cleanup\.sh --execute/);
   assert.match(readme, /--delete-state --i-understand-local-state-will-be-lost/);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
