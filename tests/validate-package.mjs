@@ -553,6 +553,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
     assert.match(sent[0].content, /Blocker state: full required validation is missing, so commit and push are unsafe/);
     assert.match(sent[0].content, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
+    assert.match(sent[0].content, /Decision guide for final markers/);
+    assert.match(sent[0].content, /continue: use when validation passed and another smallest slice remains/);
+    assert.match(sent[0].content, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
+    assert.match(sent[0].content, /stop: use for clean handoff or review before more automation/);
+    assert.match(sent[0].content, /done: use when the objective is complete and no follow-up loop work remains/);
     assert.match(sent[0].content, /Human-readable end report/);
     assert.match(sent[0].content, /What changed and why/);
     assert.match(sent[0].content, /Possible next steps/);
@@ -2139,6 +2144,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
   assert.match(readme, /Blocker state: full required validation is missing, so commit and push are unsafe/);
   assert.match(readme, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
+  assert.match(readme, /Decision guide for final markers/);
+  assert.match(readme, /continue: use when validation passed and another smallest slice remains/);
+  assert.match(readme, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
+  assert.match(readme, /stop: use for clean handoff or review before more automation/);
+  assert.match(readme, /done: use when the objective is complete and no follow-up loop work remains/);
   assert.match(readme, /Keep the machine-readable DEV_LOOP_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);

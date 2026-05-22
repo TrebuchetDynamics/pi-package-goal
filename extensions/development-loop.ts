@@ -2255,6 +2255,12 @@ Commit/push evidence: not attempted because full validation is missing.
 Blocker state: full required validation is missing, so commit and push are unsafe.
 Possible next steps: run \`npm test\`; run \`git diff --check\`; commit and push only after both pass.
 
+Decision guide for final markers:
+- continue: use when validation passed and another smallest slice remains.
+- blocked: use when validation is red, required evidence is missing, or delivery is unsafe.
+- stop: use for clean handoff or review before more automation.
+- done: use when the objective is complete and no follow-up loop work remains.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

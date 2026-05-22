@@ -193,6 +193,15 @@ DEV_LOOP_VALIDATED: no
 DEV_LOOP_DECISION: blocked
 ```
 
+Decision guide for final markers:
+
+| Decision | Use when | Report emphasis |
+| --- | --- | --- |
+| continue: use when validation passed and another smallest slice remains | The slice is validated and safe; more work remains in the same objective. | Name the next smallest verifiable slice. |
+| blocked: use when validation is red, required evidence is missing, or delivery is unsafe | Tests failed, credentials are missing, required validation was skipped, or commit/push would include unsafe work. | Name the blocker state and concrete unblock actions. |
+| stop: use for clean handoff or review before more automation | The user should review, hand off, or restart with a different objective. | Name handoff state and safe resume actions. |
+| done: use when the objective is complete and no follow-up loop work remains | Final requested work is validated, delivered when policy allows, and has no remaining loop slice. | Summarize completion evidence and optional post-loop cleanup. |
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
