@@ -993,6 +993,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 3/);
+      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(3 records\)/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
@@ -1117,6 +1118,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 3/);
+      assert.match(messages.at(-1).content, /Top compaction log source: \.pi\/development-loop\/logs\.jsonl \(3 records\)/);
       assert.match(messages.at(-1).content, /Compaction resume records: 1/);
       assert.match(messages.at(-1).content, /Compaction failure records: 1/);
       assert.match(messages.at(-1).content, /Top compaction failure reason: compaction command failed \(1 record\)/);
@@ -1169,6 +1171,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Provider error records/);
         assert.match(html, /Top provider error code/);
         assert.match(html, /Top provider error category/);
+        assert.match(html, /Top compaction log source/);
         assert.match(html, /Compaction resume records/);
         assert.match(html, /Compaction failure records/);
         assert.match(html, /Top compaction failure reason/);

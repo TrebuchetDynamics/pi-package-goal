@@ -169,6 +169,8 @@ type LoopLogAnalysis = {
   topProviderErrorCategoryCount: number;
   contextOverflowResponses: number;
   compactionEvents: number;
+  topCompactionSource?: string;
+  topCompactionSourceCount: number;
   compactionResumeRecords: number;
   compactionFailureRecords: number;
   topCompactionFailureReason?: string;
@@ -207,6 +209,7 @@ type LoopLogAccumulator = {
   queuedIterationReasonCounts: Map<string, number>;
   providerErrorCodeCounts: Map<string, number>;
   providerErrorCategoryCounts: Map<string, number>;
+  compactionSourceCounts: Map<string, number>;
   compactionFailureReasonCounts: Map<string, number>;
   markerRecoveryKeys: Set<string>;
   markerRecoverySucceededKeys: Set<string>;
@@ -1099,6 +1102,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     queuedIterationReasonCounts: new Map<string, number>(),
     providerErrorCodeCounts: new Map<string, number>(),
     providerErrorCategoryCounts: new Map<string, number>(),
+    compactionSourceCounts: new Map<string, number>(),
     compactionFailureReasonCounts: new Map<string, number>(),
     markerRecoveryKeys: new Set<string>(),
     markerRecoverySucceededKeys: new Set<string>(),
@@ -1118,7 +1122,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1330,7 +1334,16 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       }
     }
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
-    if (event.startsWith("compaction_")) analysis.compactionEvents++;
+    if (event.startsWith("compaction_")) {
+      analysis.compactionEvents++;
+      if (sourceKey) {
+        const sourceCount = incrementCount(compactionSourceCounts, sourceKey);
+        if (sourceCount > analysis.topCompactionSourceCount) {
+          analysis.topCompactionSource = sourceKey;
+          analysis.topCompactionSourceCount = sourceCount;
+        }
+      }
+    }
     if (isCompactionResumeEvent(event)) analysis.compactionResumeRecords++;
     if (isCompactionFailureEvent(event)) {
       analysis.compactionFailureRecords++;
@@ -1506,6 +1519,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topProviderErrorCategoryCount: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
+    topCompactionSourceCount: 0,
     compactionResumeRecords: 0,
     compactionFailureRecords: 0,
     topCompactionFailureReasonCount: 0,
@@ -1678,6 +1692,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect the top unresolved log source to see whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionFailureRecords > 0) recommendations.push("Compaction failures: inspect failure reasons and verify the loop either resumes safely or remains queued for manual recovery.");
+  if (analysis.topCompactionSource) recommendations.push("Compaction source: inspect the top compaction log source before treating aggregate compaction pressure as evenly distributed.");
   if (analysis.userSteeringRecords > 0) recommendations.push("User steering: review steering records to distinguish intentional scope changes from accidental plain-text turns.");
   if (analysis.providerNoiseTopicRecords > 0) recommendations.push("Provider-noise topics: verify provider error text is sanitized out of repeated objectives while topic hashes preserve diagnostics.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
@@ -1773,6 +1788,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topQueuedIterationReason ? ["Top queued iteration reason", `${analysis.topQueuedIterationReason} (${analysis.topQueuedIterationReasonCount})`] : undefined,
     analysis.topProviderErrorCode ? ["Top provider error code", `${analysis.topProviderErrorCode} (${analysis.topProviderErrorCodeCount})`] : undefined,
     analysis.topProviderErrorCategory ? ["Top provider error category", `${analysis.topProviderErrorCategory} (${analysis.topProviderErrorCategoryCount})`] : undefined,
+    analysis.topCompactionSource ? ["Top compaction log source", `${relativeToCwd(cwd, analysis.topCompactionSource)} (${analysis.topCompactionSourceCount})`] : undefined,
     analysis.topCompactionFailureReason ? ["Top compaction failure reason", `${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount})`] : undefined,
     analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
   ].filter((fact): fact is [string, string] => Boolean(fact));
@@ -1885,6 +1901,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topProviderErrorCategory ? `Top provider error category: ${analysis.topProviderErrorCategory} (${analysis.topProviderErrorCategoryCount} ${analysis.topProviderErrorCategoryCount === 1 ? "record" : "records"})` : undefined,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
+    analysis.topCompactionSource ? `Top compaction log source: ${relativeToCwd(cwd, analysis.topCompactionSource)} (${analysis.topCompactionSourceCount} ${analysis.topCompactionSourceCount === 1 ? "record" : "records"})` : undefined,
     `Compaction resume records: ${analysis.compactionResumeRecords}`,
     `Compaction failure records: ${analysis.compactionFailureRecords}`,
     analysis.topCompactionFailureReason ? `Top compaction failure reason: ${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount} ${analysis.topCompactionFailureReasonCount === 1 ? "record" : "records"})` : undefined,
