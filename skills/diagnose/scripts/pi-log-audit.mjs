@@ -212,12 +212,20 @@ function findLastAt(events) {
   return undefined;
 }
 
+function findLastResult(events) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    if (events[index]?.event === "iteration_result") return events[index];
+  }
+  return undefined;
+}
+
 function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
   const lastAt = findLastAt(events);
+  const lastResult = findLastResult(events);
   const status = classifyStatus(latest, badJson);
   const missingConfig = !hasMatchingConfig;
   const attention = needsAttention(status, lastFailure, badJson, missingConfig);
@@ -226,7 +234,7 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
   incrementSummary(status, attention, badJson, missingConfig);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size, mtime, matchingConfigName, missingConfig };
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -255,6 +263,10 @@ function printLogRecord(record, repoDir) {
     `iteration=${formatValue(record.latest.iteration)}/${formatValue(record.latest.maxIterations)}`,
     `phase=${formatValue(record.latest.phase)}`,
     `decision=${formatValue(record.latest.decision)}`,
+    `last_result_at=${formatValue(record.lastResult?.at)}`,
+    `last_decision=${formatValue(record.lastResult?.decision)}`,
+    `last_commit=${formatValue(record.lastResult?.commitHash)}`,
+    `last_push=${formatValue(record.lastResult?.pushStatus)}`,
     `status=${record.status}`,
     `config=${record.missingConfig ? "missing" : "present"}`,
     `attention=${record.attention ? "yes" : "no"}`,
