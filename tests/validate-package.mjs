@@ -1052,6 +1052,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top push status: origin\/main \(2 records\)/);
       assert.match(messages.at(-1).content, /CI-green records: 3/);
       assert.match(messages.at(-1).content, /CI-red records: 2/);
+      assert.match(messages.at(-1).content, /Top CI-red log source: \.pi\/navivox-loop\/logs\.jsonl \(2 records\)/);
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Top CI-gate missing log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top CI-gate missing reason: missing_CI_GREEN_yes \(1 record\)/);
@@ -1106,6 +1107,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
       assert.match(messages.at(-1).content, /Top commit-without-push log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /CI-red records: 2/);
+      assert.match(messages.at(-1).content, /Top CI-red log source: \.pi\/navivox-loop\/logs\.jsonl \(2 records\)/);
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Top CI-gate missing log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
@@ -1188,6 +1190,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Provider-noise topic records/);
         assert.match(html, /Sanitized topic records/);
         assert.match(html, /CI-red records/);
+        assert.match(html, /Top CI-red log source/);
         assert.match(html, /CI-gate missing records/);
         assert.match(html, /Top CI-gate missing log source/);
         assert.match(html, /Self-improvement queued records/);
