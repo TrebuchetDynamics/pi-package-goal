@@ -989,6 +989,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Top queued iteration reason: compaction_before_next_iteration \(1 record\)/);
       assert.match(messages.at(-1).content, /Provider error records: 1/);
+      assert.match(messages.at(-1).content, /Top provider error log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error code: context_length_exceeded \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
@@ -1114,6 +1115,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Top queued iteration reason: compaction_before_next_iteration \(1 record\)/);
       assert.match(messages.at(-1).content, /Provider error records: 1/);
+      assert.match(messages.at(-1).content, /Top provider error log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error code: context_length_exceeded \(1 record\)/);
       assert.match(messages.at(-1).content, /Top provider error category: context-overflow \(1 record\)/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
@@ -1169,6 +1171,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Queued iteration records/);
         assert.match(html, /Top queued iteration reason/);
         assert.match(html, /Provider error records/);
+        assert.match(html, /Top provider error log source/);
         assert.match(html, /Top provider error code/);
         assert.match(html, /Top provider error category/);
         assert.match(html, /Top compaction log source/);
