@@ -1637,6 +1637,7 @@ async function testCodexStorageCleanupScript() {
   assert.notEqual(fs.statSync(path.join(root, scriptRel)).mode & 0o111, 0, "Codex cleanup script must be executable");
 
   const source = read(scriptRel);
+  assert.match(source, /--dry-run/);
   assert.match(source, /--execute/);
   assert.match(source, /--codex-dir/);
   assert.match(source, /--tmp-only/);
@@ -1679,6 +1680,19 @@ async function testCodexStorageCleanupScript() {
     assert.match(dryRun, /Would remove transient temp directory/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
+
+    const explicitDryRun = execFileSync("bash", [script, "--dry-run", "--codex-dir", codexDir], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: fixtureRoot },
+    });
+    assert.match(explicitDryRun, /Dry run/);
+    assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "explicit dry run removed temp files");
+
+    assert.throws(
+      () => execFileSync("bash", [script, "--dry-run", "--execute", "--codex-dir", codexDir], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+      /--dry-run cannot be combined with --execute/,
+    );
+    assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "conflicting dry run executed cleanup");
 
     const noTmpDir = path.join(fixtureRoot, "no-tmp-case", ".codex");
     fs.mkdirSync(noTmpDir, { recursive: true });
@@ -1794,6 +1808,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /post-cleanup disk report/);
   assert.match(reference, /unique timestamped backup directory/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
+  assert.match(reference, /codex-storage-cleanup\.sh --dry-run/);
   assert.match(reference, /--tmp-only/);
   assert.match(reference, /leave `state_\*\.sqlite\*` untouched/);
   assert.match(reference, /path must end in `\/\.codex`/);
@@ -1859,6 +1874,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /SQLite cannot extend the state database/);
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
+  assert.match(readme, /codex-storage-cleanup\.sh --dry-run/);
   assert.match(readme, /--tmp-only/);
   assert.match(readme, /leave `state_\*\.sqlite\*` untouched/);
   assert.match(readme, /prints free space, inode usage, Codex path sizes, and top-level `\$HOME` usage/);

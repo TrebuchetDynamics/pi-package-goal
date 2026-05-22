@@ -24,11 +24,11 @@ If `$HOME` is full, free space outside Codex too. The sqlite repair flow needs e
 For a guided dry run from this bundled skill, use [`scripts/codex-storage-cleanup.sh`](../scripts/codex-storage-cleanup.sh):
 
 ```bash
-bash skills/diagnose/scripts/codex-storage-cleanup.sh
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --dry-run
 bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
 ```
 
-The script dry run prints free space, inode usage, Codex path sizes, and top-level `$HOME` usage when `~/.codex` is under `$HOME`, then shows the cleanup it would perform. With `--execute`, it removes only transient temp files, moves state databases into a unique timestamped backup directory under `~/.codex/backup/`, and prints a post-cleanup disk report; it does not delete `~/.codex`. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
+The script defaults to a dry run; `--dry-run` makes the preview explicit. Dry-run output prints free space, inode usage, Codex path sizes, and top-level `$HOME` usage when `~/.codex` is under `$HOME`, then shows the cleanup it would perform. With `--execute`, it removes only transient temp files, moves state databases into a unique timestamped backup directory under `~/.codex/backup/`, and prints a post-cleanup disk report; it does not delete `~/.codex`. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
 
 Delete transient Codex temp files before deleting durable state:
 

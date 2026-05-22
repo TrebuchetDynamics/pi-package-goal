@@ -2,6 +2,7 @@
 set -euo pipefail
 
 EXECUTE=0
+DRY_RUN=0
 TMP_ONLY=0
 DELETE_STATE=0
 CONFIRM_DELETE_STATE=0
@@ -13,15 +14,16 @@ fi
 
 usage() {
   cat <<'USAGE'
-Usage: codex-storage-cleanup.sh [--execute] [--tmp-only] [--delete-state --i-understand-local-state-will-be-lost] [--codex-dir PATH]
+Usage: codex-storage-cleanup.sh [--dry-run] [--execute] [--tmp-only] [--delete-state --i-understand-local-state-will-be-lost] [--codex-dir PATH]
 
 Safely prepares local Codex storage for repair after errors such as:
 - No space left on device
 - database or disk is full
 - damaged ~/.codex/state_*.sqlite
 
-Default mode is a dry run. With --execute, the script removes only transient
-~/.codex/tmp and moves state_*.sqlite* files into ~/.codex/backup/<timestamp>/.
+Default mode is a dry run; --dry-run makes that explicit. With --execute, the
+script removes only transient ~/.codex/tmp and moves state_*.sqlite* files into
+~/.codex/backup/<timestamp>/.
 Use --tmp-only to remove temp files and leave state_*.sqlite* untouched. Use
 --delete-state only as a last resort; it also requires
 --i-understand-local-state-will-be-lost. A custom --codex-dir path must end in
@@ -59,6 +61,9 @@ print_disk_report() {
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --dry-run)
+      DRY_RUN=1
+      ;;
     --execute)
       EXECUTE=1
       ;;
@@ -118,6 +123,11 @@ esac
 if [ ! -d "$CODEX_DIR" ]; then
   echo "Codex directory not found: $CODEX_DIR"
   exit 0
+fi
+
+if [ "$DRY_RUN" -eq 1 ] && [ "$EXECUTE" -eq 1 ]; then
+  echo "--dry-run cannot be combined with --execute" >&2
+  exit 2
 fi
 
 if [ "$TMP_ONLY" -eq 1 ] && [ "$DELETE_STATE" -eq 1 ]; then

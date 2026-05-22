@@ -143,11 +143,11 @@ du -x -h -d 1 "$HOME" 2>/dev/null | sort -h | tail -20
 From this package checkout, you can preview the bundled safe cleanup helper before it changes anything:
 
 ```bash
-bash skills/diagnose/scripts/codex-storage-cleanup.sh
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --dry-run
 bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
 ```
 
-The helper dry run prints free space, inode usage, Codex path sizes, and top-level `$HOME` usage when `~/.codex` is under `$HOME`, then shows the cleanup it would perform. With `--execute`, it removes only transient Codex temp files, moves `state_*.sqlite*` files into a unique timestamped backup directory, and prints a post-cleanup disk report. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
+The helper defaults to a dry run; `--dry-run` makes the preview explicit. Dry-run output prints free space, inode usage, Codex path sizes, and top-level `$HOME` usage when `~/.codex` is under `$HOME`, then shows the cleanup it would perform. With `--execute`, it removes only transient Codex temp files, moves `state_*.sqlite*` files into a unique timestamped backup directory, and prints a post-cleanup disk report. If you only want to clear temp files and leave `state_*.sqlite*` untouched, run `bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute --tmp-only`. If you override the target with `--codex-dir`, the path must end in `/.codex` so the helper cannot accidentally clean an unrelated directory.
 
 Remove transient Codex temp files manually only if you are not using the helper:
 
