@@ -973,6 +973,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top final-marker recovery reason: missing DEV_LOOP_DECISION final marker \(2 records\)/);
       assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
+      assert.match(messages.at(-1).content, /Top final-marker recovery block reason: missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 2/);
       assert.match(messages.at(-1).content, /Changed-file evidence records: 2/);
       assert.match(messages.at(-1).content, /Validation evidence records: 1/);
@@ -1084,6 +1085,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top final-marker recovery reason: missing DEV_LOOP_DECISION final marker \(2 records\)/);
       assert.match(messages.at(-1).content, /Final-marker recovery successes: 1/);
       assert.match(messages.at(-1).content, /Final-marker recovery blocks: 1/);
+      assert.match(messages.at(-1).content, /Top final-marker recovery block reason: missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Delivery evidence records: 4/);
       assert.match(messages.at(-1).content, /Validation evidence records: 3/);
       assert.match(messages.at(-1).content, /Commit evidence records: 4/);
@@ -1144,6 +1146,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Assistant decision records/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Top final-marker recovery reason/);
+        assert.match(html, /Top final-marker recovery block reason/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);
         assert.match(html, /Empty provider retry records/);

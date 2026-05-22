@@ -133,6 +133,8 @@ type LoopLogAnalysis = {
   topFinalMarkerRecoveryReasonCount: number;
   finalMarkerRecoverySuccesses: number;
   finalMarkerRecoveryBlocks: number;
+  topFinalMarkerRecoveryBlockReason?: string;
+  topFinalMarkerRecoveryBlockReasonCount: number;
   deliveryEvidenceRecords: number;
   changedFileEvidenceRecords: number;
   validationEvidenceRecords: number;
@@ -187,6 +189,7 @@ type LoopLogAccumulator = {
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
   finalMarkerRecoveryReasonCounts: Map<string, number>;
+  finalMarkerRecoveryBlockReasonCounts: Map<string, number>;
   selfImprovementReasonCounts: Map<string, number>;
   selfImprovementActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
@@ -1070,6 +1073,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
     finalMarkerRecoveryReasonCounts: new Map<string, number>(),
+    finalMarkerRecoveryBlockReasonCounts: new Map<string, number>(),
     selfImprovementReasonCounts: new Map<string, number>(),
     selfImprovementActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
@@ -1092,7 +1096,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1157,9 +1161,25 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       if (runId) terminalRunIds.add(runId);
       else accumulator.legacyBlockedLoops++;
       const rawReason = recordReason(record, event);
-      if (recoveryKey && markerRecoveryKeys.has(recoveryKey)) markerRecoveryBlockedKeys.add(recoveryKey);
-      else if (!recoveryKey && isMissingFinalMarkerReason(rawReason)) accumulator.legacyMarkerRecoveryBlocks++;
       const reason = rawReason || "<missing reason>";
+      if (recoveryKey && markerRecoveryKeys.has(recoveryKey)) {
+        const isFirstRecoveryBlock = !markerRecoveryBlockedKeys.has(recoveryKey);
+        markerRecoveryBlockedKeys.add(recoveryKey);
+        if (isFirstRecoveryBlock) {
+          const recoveryBlockReasonCount = incrementCount(finalMarkerRecoveryBlockReasonCounts, reason);
+          if (recoveryBlockReasonCount > analysis.topFinalMarkerRecoveryBlockReasonCount) {
+            analysis.topFinalMarkerRecoveryBlockReason = reason;
+            analysis.topFinalMarkerRecoveryBlockReasonCount = recoveryBlockReasonCount;
+          }
+        }
+      } else if (!recoveryKey && isMissingFinalMarkerReason(rawReason)) {
+        accumulator.legacyMarkerRecoveryBlocks++;
+        const recoveryBlockReasonCount = incrementCount(finalMarkerRecoveryBlockReasonCounts, reason);
+        if (recoveryBlockReasonCount > analysis.topFinalMarkerRecoveryBlockReasonCount) {
+          analysis.topFinalMarkerRecoveryBlockReason = reason;
+          analysis.topFinalMarkerRecoveryBlockReasonCount = recoveryBlockReasonCount;
+        }
+      }
       const count = incrementCount(blockReasonCounts, reason);
       if (count > analysis.topBlockReasonCount) {
         analysis.topBlockReason = reason;
@@ -1392,6 +1412,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topFinalMarkerRecoveryReasonCount: 0,
     finalMarkerRecoverySuccesses: 0,
     finalMarkerRecoveryBlocks: 0,
+    topFinalMarkerRecoveryBlockReasonCount: 0,
     deliveryEvidenceRecords: 0,
     changedFileEvidenceRecords: 0,
     validationEvidenceRecords: 0,
@@ -1578,7 +1599,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review the top queued reason/action after blocked custom-loop runs and promote repeatable policy into this package.");
   if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
-  if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
+  if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block reason and prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
@@ -1654,6 +1675,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
     analysis.topFinalMarkerRecoveryReason ? ["Top final-marker recovery reason", `${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount})`] : undefined,
+    analysis.topFinalMarkerRecoveryBlockReason ? ["Top final-marker recovery block reason", `${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount})`] : undefined,
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
@@ -1747,6 +1769,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topFinalMarkerRecoveryReason ? `Top final-marker recovery reason: ${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount} ${analysis.topFinalMarkerRecoveryReasonCount === 1 ? "record" : "records"})` : undefined,
     `Final-marker recovery successes: ${analysis.finalMarkerRecoverySuccesses}`,
     `Final-marker recovery blocks: ${analysis.finalMarkerRecoveryBlocks}`,
+    analysis.topFinalMarkerRecoveryBlockReason ? `Top final-marker recovery block reason: ${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount} ${analysis.topFinalMarkerRecoveryBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     `Delivery evidence records: ${analysis.deliveryEvidenceRecords}`,
     `Changed-file evidence records: ${analysis.changedFileEvidenceRecords}`,
     `Validation evidence records: ${analysis.validationEvidenceRecords}`,
