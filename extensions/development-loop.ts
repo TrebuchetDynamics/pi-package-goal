@@ -145,6 +145,8 @@ type LoopLogAnalysis = {
   commitEvidenceRecords: number;
   pushEvidenceRecords: number;
   commitWithoutPushRecords: number;
+  topCommitWithoutPushSource?: string;
+  topCommitWithoutPushSourceCount: number;
   topPushStatus?: string;
   topPushStatusCount: number;
   ciGreenRecords: number;
@@ -207,6 +209,7 @@ type LoopLogAccumulator = {
   finalMarkerRecoveryBlockReasonCounts: Map<string, number>;
   selfImprovementReasonCounts: Map<string, number>;
   selfImprovementActionCounts: Map<string, number>;
+  commitWithoutPushSourceCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
   ciGateMissingSourceCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
@@ -1102,6 +1105,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     finalMarkerRecoveryBlockReasonCounts: new Map<string, number>(),
     selfImprovementReasonCounts: new Map<string, number>(),
     selfImprovementActionCounts: new Map<string, number>(),
+    commitWithoutPushSourceCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
     ciGateMissingSourceCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
@@ -1130,7 +1134,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1286,7 +1290,16 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     if (hasChangedFiles) analysis.changedFileEvidenceRecords++;
     if (hasValidationEvidence) analysis.validationEvidenceRecords++;
     if (hasCommitEvidence) analysis.commitEvidenceRecords++;
-    if (hasCommitEvidence && !pushStatus) analysis.commitWithoutPushRecords++;
+    if (hasCommitEvidence && !pushStatus) {
+      analysis.commitWithoutPushRecords++;
+      if (sourceKey) {
+        const sourceCount = incrementCount(commitWithoutPushSourceCounts, sourceKey);
+        if (sourceCount > analysis.topCommitWithoutPushSourceCount) {
+          analysis.topCommitWithoutPushSource = sourceKey;
+          analysis.topCommitWithoutPushSourceCount = sourceCount;
+        }
+      }
+    }
     if (pushStatus) {
       analysis.pushEvidenceRecords++;
       const count = incrementCount(pushStatusCounts, pushStatus);
@@ -1524,6 +1537,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     commitEvidenceRecords: 0,
     pushEvidenceRecords: 0,
     commitWithoutPushRecords: 0,
+    topCommitWithoutPushSourceCount: 0,
     topPushStatusCount: 0,
     ciGreenRecords: 0,
     ciRedRecords: 0,
@@ -1726,7 +1740,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block reason and prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: inspect the top CI-gate missing source and require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
-  if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
+  if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: inspect the top commit-without-push source and record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
   if (analysis.iterationResultWithoutValidationRecords > 0) recommendations.push("Iteration results without validation evidence: require validationCommands on every continue/done iteration result before scheduling follow-up work.");
   if (analysis.finishedWithoutDeliveryRecords > 0) recommendations.push("Finished loops without delivery evidence: include changed files, validation, commit, and push evidence on terminal done records.");
@@ -1804,6 +1818,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
     analysis.topFinalMarkerRecoveryReason ? ["Top final-marker recovery reason", `${analysis.topFinalMarkerRecoveryReason} (${analysis.topFinalMarkerRecoveryReasonCount})`] : undefined,
     analysis.topFinalMarkerRecoveryBlockReason ? ["Top final-marker recovery block reason", `${analysis.topFinalMarkerRecoveryBlockReason} (${analysis.topFinalMarkerRecoveryBlockReasonCount})`] : undefined,
+    analysis.topCommitWithoutPushSource ? ["Top commit-without-push log source", `${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount})`] : undefined,
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
     analysis.topCiGateMissingSource ? ["Top CI-gate missing log source", `${relativeToCwd(cwd, analysis.topCiGateMissingSource)} (${analysis.topCiGateMissingSourceCount})`] : undefined,
@@ -1910,6 +1925,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Commit evidence records: ${analysis.commitEvidenceRecords}`,
     `Push evidence records: ${analysis.pushEvidenceRecords}`,
     `Commit-without-push records: ${analysis.commitWithoutPushRecords}`,
+    analysis.topCommitWithoutPushSource ? `Top commit-without-push log source: ${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount} ${analysis.topCommitWithoutPushSourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,
     `CI-green records: ${analysis.ciGreenRecords}`,
     `CI-red records: ${analysis.ciRedRecords}`,

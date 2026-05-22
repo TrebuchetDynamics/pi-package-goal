@@ -981,6 +981,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
       assert.match(messages.at(-1).content, /Push evidence records: 1/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
+      assert.match(messages.at(-1).content, /Top commit-without-push log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top push status: pushed \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
@@ -1103,6 +1104,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Commit evidence records: 4/);
       assert.match(messages.at(-1).content, /Push evidence records: 3/);
       assert.match(messages.at(-1).content, /Commit-without-push records: 1/);
+      assert.match(messages.at(-1).content, /Top commit-without-push log source: \.pi\/development-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /CI-red records: 2/);
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Top CI-gate missing log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
@@ -1168,6 +1170,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Top final-marker recovery block reason/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);
+        assert.match(html, /Top commit-without-push log source/);
         assert.match(html, /Empty provider retry records/);
         assert.match(html, /Top empty provider reason/);
         assert.match(html, /Queued iteration records/);
