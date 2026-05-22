@@ -2219,6 +2219,15 @@ Commit/push evidence: abc1234 pushed to current branch.
 Blocker state: none.
 Possible next steps: next smallest verifiable slice, named concretely.
 
+Example blocked end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: validate one integration-dependent path.
+Changed files: none committed; validation stopped before safe delivery.
+Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
+Commit/push evidence: not attempted because validation failed.
+Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
+Possible next steps: provide TEST_SERVICE_TOKEN; rerun \`npm test\`; restart /development-loop with the same objective.
+
 Human-readable end report requirements, before DEV_LOOP_REPORT:
 - Scope and selected slice.
 - What changed and why, with exact files.

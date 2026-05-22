@@ -133,6 +133,21 @@ DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: continue
 ```
 
+Example blocked end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: validate one integration-dependent path.
+Changed files: none committed; validation stopped before safe delivery.
+Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
+Commit/push evidence: not attempted because validation failed.
+Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
+Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart /development-loop with the same objective.
+DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-loop with the same objective"]}
+DEV_LOOP_VALIDATED: no
+DEV_LOOP_DECISION: blocked
+```
+
 ### Troubleshooting provider interruptions
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
