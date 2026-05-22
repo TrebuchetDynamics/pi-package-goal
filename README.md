@@ -112,6 +112,8 @@ Tips:
 
 If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration once or resumes it after compaction instead of advancing to the next iteration.
 
+If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the loop records `context_overflow_waiting_for_compaction` and keeps the same iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_LOOP_DECISION` marker.
+
 ### Status bar integration
 
 `/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · loop 2/3 · generic-git · git:manual · release checks`. If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote it into a dedicated segment:
