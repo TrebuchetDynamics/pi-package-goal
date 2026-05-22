@@ -137,10 +137,13 @@ type LoopLogAnalysis = {
   topFinishDecision?: string;
   topFinishDecisionCount: number;
   blockedLoops: number;
+  blockerKindRecords: number;
   topBlockReason?: string;
   topBlockReasonCount: number;
   topBlockedSource?: string;
   topBlockedSourceCount: number;
+  topBlockerKind?: string;
+  topBlockerKindCount: number;
   postmortems: number;
   selfImprovementQueuedRecords: number;
   topSelfImprovementSource?: string;
@@ -248,6 +251,7 @@ type LoopLogAccumulator = {
   oversizedTopicCounts: Map<string, number>;
   blockReasonCounts: Map<string, number>;
   blockedSourceCounts: Map<string, number>;
+  blockerKindCounts: Map<string, number>;
   finishDecisionCounts: Map<string, number>;
   assistantDecisionCounts: Map<string, number>;
   promptSentCounts: Map<string, number>;
@@ -1166,6 +1170,7 @@ function createLoopLogAccumulator(options: LoopLogAnalysisOptions = {}): LoopLog
     oversizedTopicCounts: new Map<string, number>(),
     blockReasonCounts: new Map<string, number>(),
     blockedSourceCounts: new Map<string, number>(),
+    blockerKindCounts: new Map<string, number>(),
     finishDecisionCounts: new Map<string, number>(),
     assistantDecisionCounts: new Map<string, number>(),
     promptSentCounts: new Map<string, number>(),
@@ -1218,7 +1223,7 @@ function createLoopLogAccumulator(options: LoopLogAnalysisOptions = {}): LoopLog
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, since, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, reportMissingNextStepsDecisionCounts, reportQualityWarningCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, prematureCompactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, since, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, blockerKindCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, reportMissingNextStepsDecisionCounts, reportQualityWarningCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, prematureCompactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1304,7 +1309,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
         analysis.topFinishDecisionCount = count;
       }
     }
-    if (event === "loop_blocked") {
+    if (isBlockedLoopRecord(event, record)) {
       analysis.blockedLoops++;
       if (runId) {
         terminalRunIds.add(runId);
@@ -1351,6 +1356,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       if (count > analysis.topBlockReasonCount) {
         analysis.topBlockReason = reason;
         analysis.topBlockReasonCount = count;
+      }
+      const blockerKind = recordBlockerKind(record);
+      if (blockerKind) {
+        analysis.blockerKindRecords++;
+        const blockerKindCount = incrementCount(blockerKindCounts, blockerKind);
+        if (blockerKindCount > analysis.topBlockerKindCount) {
+          analysis.topBlockerKind = blockerKind;
+          analysis.topBlockerKindCount = blockerKindCount;
+        }
       }
       if (sourceKey) {
         const sourceCount = incrementCount(blockedSourceCounts, sourceKey);
@@ -1724,8 +1738,10 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topAssistantDecisionCount: 0,
     topFinishDecisionCount: 0,
     blockedLoops: 0,
+    blockerKindRecords: 0,
     topBlockReasonCount: 0,
     topBlockedSourceCount: 0,
+    topBlockerKindCount: 0,
     postmortems: 0,
     selfImprovementQueuedRecords: 0,
     topSelfImprovementSourceCount: 0,
@@ -1823,6 +1839,12 @@ function isMissingFinalMarkerReason(reason: string | undefined): boolean {
   return Boolean(reason && /missing(?:_|\s|-)*(?:final(?:_|\s|-)*)?(?:marker|DEV_LOOP_DECISION|assistant_decision)/i.test(reason));
 }
 
+function isBlockedLoopRecord(event: string, record: Record<string, unknown>): boolean {
+  const decision = recordDecision(record, event)?.toLowerCase();
+  const phase = stringOrUndefined(record.phase)?.toLowerCase();
+  return event === "loop_blocked" || (event === "loop_finished" && (decision === "blocked" || phase === "blocked"));
+}
+
 function recordTopicLength(record: Record<string, unknown>): number {
   if (typeof record.topicLength === "number" && Number.isFinite(record.topicLength)) return record.topicLength;
   return typeof record.topic === "string" ? singleLineText(record.topic).length : 0;
@@ -1883,6 +1905,23 @@ function recordBlockerState(record: Record<string, unknown>): string | undefined
     || stringOrUndefined(record.blockedReason)
     || stringOrUndefined(record.blockers)
     || stringOrUndefined(record.missingPrerequisites);
+}
+
+function recordBlockerKind(record: Record<string, unknown>): string | undefined {
+  const text = [
+    recordBlockerState(record),
+    recordReason(record, recordEvent(record) || ""),
+    stringOrUndefined(record.error),
+    stringOrUndefined(record.message),
+  ].filter(Boolean).join(" ").toLowerCase();
+  if (!text) return undefined;
+  if (/\bgit\s+push\b/.test(text) && /(fetch-first|non[-\s]?fast[-\s]?forward|rejected|failed to push some refs|remote contains work)/.test(text)) return "git_push_fetch_first";
+  return undefined;
+}
+
+function blockerKindRecommendation(kind: string | undefined): string | undefined {
+  if (kind === "git_push_fetch_first") return "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.";
+  return undefined;
 }
 
 function recordReportNextSteps(record: Record<string, unknown>): string[] {
@@ -2034,6 +2073,8 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.finishedWithoutValidationRecords > 0) recommendations.push("Finished loops without validation evidence: include validationCommands in terminal done records or link the final report to recorded validation evidence.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > analysis.reportBlockerStateRecords) recommendations.push("Blocked reports without blocker state: include blockerState so log analysis can show the exact missing prerequisite or unsafe condition.");
+  const blockerKindAction = blockerKindRecommendation(analysis.topBlockerKind);
+  if (blockerKindAction) recommendations.push(blockerKindAction);
   if (analysis.reportMissingNextStepsRecords > 0) recommendations.push("Missing report next steps: include nextSteps for continue and blocked reports so queued follow-up work has a concrete next action.");
   if (analysis.reportQualityWarningRecords > 0) recommendations.push("Report quality warnings: replace vague or incomplete summaries with scope, changes, validation, delivery, blocker state, and next-step evidence.");
   if (analysis.topBlockedSource) recommendations.push("Blocked log source: inspect the top blocked log source before treating aggregate blocker counts as evenly distributed.");
@@ -2068,6 +2109,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Duplicate prompt-sent extra records", String(analysis.duplicatePromptSentExtraRecords)],
     ["Assistant decision records", String(analysis.assistantDecisionRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
+    ["Blocker kind records", String(analysis.blockerKindRecords)],
     ["Postmortems", String(analysis.postmortems)],
     ["Self-improvement queued records", String(analysis.selfImprovementQueuedRecords)],
     ["Final-marker recovery requests", String(analysis.finalMarkerRecoveryRequests)],
@@ -2110,6 +2152,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topAssistantDecision ? ["Top assistant decision", `${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount})`] : undefined,
     analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
     analysis.topBlockedSource ? ["Top blocked log source", `${relativeToCwd(cwd, analysis.topBlockedSource)} (${analysis.topBlockedSourceCount})`] : undefined,
+    analysis.topBlockerKind ? ["Top blocker kind", `${analysis.topBlockerKind} (${analysis.topBlockerKindCount})`] : undefined,
     analysis.topPromptResultImbalanceSource ? ["Top prompt/result imbalance source", `${relativeToCwd(cwd, analysis.topPromptResultImbalanceSource)} (${promptResultImbalanceDeltaText(analysis.topPromptResultImbalanceSourceDelta)})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
@@ -2218,8 +2261,10 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topAssistantDecision ? `Top assistant decision: ${analysis.topAssistantDecision} (${analysis.topAssistantDecisionCount} ${analysis.topAssistantDecisionCount === 1 ? "record" : "records"})` : undefined,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
+    `Blocker kind records: ${analysis.blockerKindRecords}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     analysis.topBlockedSource ? `Top blocked log source: ${relativeToCwd(cwd, analysis.topBlockedSource)} (${analysis.topBlockedSourceCount} ${analysis.topBlockedSourceCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topBlockerKind ? `Top blocker kind: ${analysis.topBlockerKind} (${analysis.topBlockerKindCount} ${analysis.topBlockerKindCount === 1 ? "record" : "records"})` : undefined,
     `Postmortems: ${analysis.postmortems}`,
     `Self-improvement queued records: ${analysis.selfImprovementQueuedRecords}`,
     analysis.topSelfImprovementSource ? `Top self-improvement log source: ${relativeToCwd(cwd, analysis.topSelfImprovementSource)} (${analysis.topSelfImprovementSourceCount} ${analysis.topSelfImprovementSourceCount === 1 ? "record" : "records"})` : undefined,

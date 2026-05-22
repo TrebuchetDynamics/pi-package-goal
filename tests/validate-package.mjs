@@ -1140,6 +1140,32 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Max topic length: 2346/);
       assert.match(messages.at(-1).content, /Oversized topics: cap prompt and log objective text/);
 
+      const blockerKindRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-blocker-kind-"));
+      try {
+        const blockerKindLog = path.join(blockerKindRoot, ".pi", "fetch-first-loop", "logs.jsonl");
+        fs.mkdirSync(path.dirname(blockerKindLog), { recursive: true });
+        fs.writeFileSync(blockerKindLog, [
+          JSON.stringify({ at: new Date(18).toISOString(), event: "loop_finished", runId: "run-fetch-first", iteration: 1, maxIterations: 1, phase: "blocked", decision: "blocked", reason: "blocked", blockerState: "git push origin main rejected with fetch-first" }),
+        ].join("\n") + "\n", "utf8");
+        const blockerKindMessagesBefore = messages.length;
+        await command.handler(`analyze-logs ${blockerKindLog}`, {
+          ...ctx,
+          cwd: blockerKindRoot,
+          sessionManager: {
+            getCwd: () => blockerKindRoot,
+            getEntries: () => [],
+          },
+        });
+        assert.equal(messages.length, blockerKindMessagesBefore + 1);
+        assert.match(messages.at(-1).content, /Finished loops: 1/);
+        assert.match(messages.at(-1).content, /Blocked loops: 1/);
+        assert.match(messages.at(-1).content, /Blocker kind records: 1/);
+        assert.match(messages.at(-1).content, /Top blocker kind: git_push_fetch_first \(1 record\)/);
+        assert.match(messages.at(-1).content, /Fetch-first push blockers: approve fetch\/rebase\/merge workflow, rerun validation, then push/);
+      } finally {
+        fs.rmSync(blockerKindRoot, { recursive: true, force: true });
+      }
+
       const customLog = path.join(analysisRoot, ".pi", "navivox-loop", "logs.jsonl");
       fs.mkdirSync(path.dirname(customLog), { recursive: true });
       fs.writeFileSync(customLog, [
