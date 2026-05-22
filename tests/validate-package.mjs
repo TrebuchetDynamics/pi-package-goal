@@ -1059,6 +1059,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top CI-gate missing log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top CI-gate missing reason: missing_CI_GREEN_yes \(1 record\)/);
       assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
+      assert.match(messages.at(-1).content, /Top self-improvement log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top self-improvement reason: ci_gate_missing \(1 record\)/);
       assert.match(messages.at(-1).content, /Top self-improvement action: tighten final marker prompt \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
@@ -1113,6 +1114,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /CI-gate missing records: 1/);
       assert.match(messages.at(-1).content, /Top CI-gate missing log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
+      assert.match(messages.at(-1).content, /Top self-improvement log source: \.pi\/navivox-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Top self-improvement reason: ci_gate_missing \(1 record\)/);
       assert.match(messages.at(-1).content, /Top self-improvement action: tighten final marker prompt \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
@@ -1200,6 +1202,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /CI-gate missing records/);
         assert.match(html, /Top CI-gate missing log source/);
         assert.match(html, /Self-improvement queued records/);
+        assert.match(html, /Top self-improvement log source/);
         assert.match(html, /Top self-improvement reason/);
         assert.match(html, /Top self-improvement action/);
         assert.match(html, /Blocked loops/);
