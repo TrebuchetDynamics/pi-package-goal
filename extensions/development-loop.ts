@@ -348,7 +348,7 @@ const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 1;
 const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
 const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
-const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.35;
+const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.70;
 const DEFAULT_LANGUAGE = "English";
 const COMMON_LANGUAGE_CHOICES = [
   "English",
@@ -3463,6 +3463,7 @@ export const __test__ = {
   parseLoopDecision,
   parseValidated,
   resolveProjectAdapter,
+  shouldCompactBeforeNextIteration,
   statusReport,
   tokenizeArgs,
 };

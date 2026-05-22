@@ -389,6 +389,10 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
+  assert.equal(typeof mod.__test__.shouldCompactBeforeNextIteration, "function");
+  assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false, "moderate 40% context usage should continue directly instead of spending a turn on compaction");
+  assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, contextWindow: 300000 }) }), true, "high 73% context usage should compact before the next iteration");
+  assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }) }), true, "absolute high token usage should still compact even on very large context windows");
   const typedFinalReport = 'Typed final report.\nDEV_LOOP_REPORT: {"validated":true,"decision":"continue","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
   assert.equal(mod.__test__.parseLoopDecision(typedFinalReport), "continue");
   assert.equal(mod.__test__.parseValidated(typedFinalReport), true);
