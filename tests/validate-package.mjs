@@ -400,6 +400,17 @@ async function testExtensionLoadsAndRegistersCommands() {
   const typedFinalReport = 'Typed final report.\nDEV_LOOP_REPORT: {"validated":true,"decision":"continue","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
   assert.equal(mod.__test__.parseLoopDecision(typedFinalReport), "continue");
   assert.equal(mod.__test__.parseValidated(typedFinalReport), true);
+  assert.equal(typeof mod.__test__.parseLoopReport, "function");
+  assert.deepEqual(mod.__test__.parseLoopReport(typedFinalReport), {
+    decision: "continue",
+    validated: true,
+    deliveryEvidence: {
+      changedFiles: ["README.md"],
+      validationCommands: ["npm test"],
+      commitHash: "abc1234",
+      pushStatus: "pushed",
+    },
+  });
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue\npostscript"), undefined);

@@ -2,6 +2,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
+import { parseLoopReport } from "./development-loop-report-parser.ts";
 
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
@@ -15,12 +16,6 @@ type DeliveryEvidence = {
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
-};
-
-type FinalReport = {
-  decision?: LoopDecision;
-  validated?: boolean;
-  deliveryEvidence: DeliveryEvidence;
 };
 
 type ProjectConfig = {
@@ -2994,13 +2989,9 @@ function hasContextOverflowProviderError(messages: Array<{ role?: string; conten
   return messages.some((message) => message.role !== "user" && isContextOverflowProviderError(messageText(message)));
 }
 
-function parseFinalMarkerBlock(text: string): RegExpMatchArray | null {
-  return text.match(/(?:^|\r?\n)\s*DEV_LOOP_VALIDATED:\s*(yes|no)\s*\r?\n\s*DEV_LOOP_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
-}
-
 function parseDeliveryEvidence(text: string): DeliveryEvidence {
-  const typedReport = parseTypedFinalReport(text);
-  if (typedReport) return typedReport.deliveryEvidence;
+  const typedReport = parseLoopReport(text);
+  if (typedReport && Object.keys(typedReport.deliveryEvidence).length > 0) return typedReport.deliveryEvidence;
 
   const lines = text.split(/\r?\n/);
   const changedFiles: string[] = [];
@@ -3132,52 +3123,11 @@ function normalizePushStatus(value: string): string {
 }
 
 function parseLoopDecision(text: string): LoopDecision | undefined {
-  const match = parseFinalMarkerBlock(text);
-  if (match) return match[2]?.toLowerCase() as LoopDecision | undefined;
-  return parseTypedFinalReport(text)?.decision;
+  return parseLoopReport(text)?.decision;
 }
 
 function parseValidated(text: string): boolean | undefined {
-  const match = parseFinalMarkerBlock(text);
-  if (match) return match[1].toLowerCase() === "yes";
-  return parseTypedFinalReport(text)?.validated;
-}
-
-function parseTypedFinalReport(text: string): FinalReport | undefined {
-  const markerBlock = parseFinalMarkerBlock(text);
-  const reportText = markerBlock && markerBlock.index !== undefined ? text.slice(0, markerBlock.index) : text;
-  const match = reportText.match(/(?:^|\r?\n)\s*DEV_LOOP_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
-  if (!match) return undefined;
-  const rawReport = parseLogRecord(match[1]);
-  if (!rawReport) return undefined;
-  const decision = loopDecisionOrUndefined(rawReport.decision);
-  const validated = booleanOrUndefined(rawReport.validated);
-  const changedFiles = stringArrayOrUndefined(rawReport.changedFiles) || stringArrayOrUndefined(rawReport.files);
-  const validationCommands = stringArrayOrUndefined(rawReport.validationCommands) || stringArrayOrUndefined(rawReport.validation);
-  const commitHash = stringOrUndefined(rawReport.commitHash) || stringOrUndefined(rawReport.commit);
-  const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
-  const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
-  const summary = stringOrUndefined(rawReport.summary) || stringOrUndefined(rawReport.whatChanged);
-  const blockerState = recordBlockerState(rawReport);
-  const nextSteps = stringArrayOrSingleString(rawReport.nextSteps) || stringArrayOrSingleString(rawReport.possibleNextSteps) || stringArrayOrSingleString(rawReport.nextStep) || stringArrayOrSingleString(rawReport.nextActions);
-  return {
-    ...(decision ? { decision } : {}),
-    ...(validated !== undefined ? { validated } : {}),
-    deliveryEvidence: {
-      ...(summary ? { summary } : {}),
-      ...(blockerState ? { blockerState } : {}),
-      ...(nextSteps ? { nextSteps } : {}),
-      ...(changedFiles ? { changedFiles } : {}),
-      ...(validationCommands ? { validationCommands } : {}),
-      ...(commitHash ? { commitHash } : {}),
-      ...(pushStatus ? { pushStatus } : {}),
-    },
-  };
-}
-
-function loopDecisionOrUndefined(value: unknown): LoopDecision | undefined {
-  const decision = stringOrUndefined(value)?.toLowerCase();
-  return decision === "continue" || decision === "stop" || decision === "blocked" || decision === "done" ? decision : undefined;
+  return parseLoopReport(text)?.validated;
 }
 
 function requiresValidation(decision: LoopDecision): boolean {
@@ -3669,6 +3619,7 @@ export const __test__ = {
   buildIterationPrompt,
   parseArgs,
   parseLoopDecision,
+  parseLoopReport,
   parseSinceFilter,
   parseValidated,
   resolveProjectAdapter,
