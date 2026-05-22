@@ -126,6 +126,9 @@ type LoopLogAnalysis = {
   topPushStatusCount: number;
   ciGreenRecords: number;
   ciRedRecords: number;
+  ciGateMissingRecords: number;
+  topCiGateMissingReason?: string;
+  topCiGateMissingReasonCount: number;
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   contextOverflowResponses: number;
@@ -146,6 +149,7 @@ type LoopLogAccumulator = {
   postmortemCauseCounts: Map<string, number>;
   nextSafeActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
+  ciGateMissingReasonCounts: Map<string, number>;
   markerRecoveryKeys: Set<string>;
   markerRecoverySucceededKeys: Set<string>;
   markerRecoveryBlockedKeys: Set<string>;
@@ -1018,6 +1022,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     postmortemCauseCounts: new Map<string, number>(),
     nextSafeActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
+    ciGateMissingReasonCounts: new Map<string, number>(),
     markerRecoveryKeys: new Set<string>(),
     markerRecoverySucceededKeys: new Set<string>(),
     markerRecoveryBlockedKeys: new Set<string>(),
@@ -1031,7 +1036,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1117,6 +1122,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     const ciGreen = recordCiGreen(record, event);
     if (ciGreen === true) analysis.ciGreenRecords++;
     if (ciGreen === false) analysis.ciRedRecords++;
+    if (event === "ci_gate_missing") {
+      analysis.ciGateMissingRecords++;
+      const reason = recordReason(record, event) || "<missing reason>";
+      const count = incrementCount(ciGateMissingReasonCounts, reason);
+      if (count > analysis.topCiGateMissingReasonCount) {
+        analysis.topCiGateMissingReason = reason;
+        analysis.topCiGateMissingReasonCount = count;
+      }
+    }
     if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
@@ -1176,6 +1190,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     topPushStatusCount: 0,
     ciGreenRecords: 0,
     ciRedRecords: 0,
+    ciGateMissingRecords: 0,
+    topCiGateMissingReasonCount: 0,
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     contextOverflowResponses: 0,
@@ -1274,6 +1290,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare recovery successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
+  if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
@@ -1308,6 +1325,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Push evidence records", String(analysis.pushEvidenceRecords)],
     ["CI-green records", String(analysis.ciGreenRecords)],
     ["CI-red records", String(analysis.ciRedRecords)],
+    ["CI-gate missing records", String(analysis.ciGateMissingRecords)],
     ["Unresolved loop starts", String(analysis.unresolvedLoopStarts)],
     ["Empty provider responses", String(analysis.emptyProviderResponses)],
     ["Context overflow responses", String(analysis.contextOverflowResponses)],
@@ -1322,6 +1340,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topBlockReason ? ["Top block reason", `${analysis.topBlockReason} (${analysis.topBlockReasonCount})`] : undefined,
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
+    analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
     analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
   ].filter((fact): fact is [string, string] => Boolean(fact));
   const factRows = topFacts.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("\n");
@@ -1402,6 +1421,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,
     `CI-green records: ${analysis.ciGreenRecords}`,
     `CI-red records: ${analysis.ciRedRecords}`,
+    `CI-gate missing records: ${analysis.ciGateMissingRecords}`,
+    analysis.topCiGateMissingReason ? `Top CI-gate missing reason: ${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount} ${analysis.topCiGateMissingReasonCount === 1 ? "record" : "records"})` : undefined,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
