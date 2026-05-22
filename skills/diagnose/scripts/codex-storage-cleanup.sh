@@ -22,8 +22,8 @@ Safely prepares local Codex storage for repair after errors such as:
 Default mode is a dry run. With --execute, the script removes only transient
 ~/.codex/tmp and moves state_*.sqlite* files into ~/.codex/backup/<timestamp>/.
 Use --delete-state only as a last resort; it also requires
---i-understand-local-state-will-be-lost. The script never deletes the whole
-~/.codex directory.
+--i-understand-local-state-will-be-lost. A custom --codex-dir path must end in
+/.codex. The script never deletes the whole ~/.codex directory.
 USAGE
 }
 
@@ -81,10 +81,23 @@ if [ -z "$CODEX_DIR" ]; then
   exit 2
 fi
 
+while [ "$CODEX_DIR" != "/" ] && [ "${CODEX_DIR%/}" != "$CODEX_DIR" ]; do
+  CODEX_DIR="${CODEX_DIR%/}"
+done
+
 if [ "$CODEX_DIR" = "/" ]; then
   echo "Refusing unsafe Codex directory: $CODEX_DIR" >&2
   exit 2
 fi
+
+case "$CODEX_DIR" in
+  .codex|*/.codex)
+    ;;
+  *)
+    echo "Refusing unsafe Codex directory: $CODEX_DIR (path must end in /.codex)" >&2
+    exit 2
+    ;;
+esac
 
 if [ ! -d "$CODEX_DIR" ]; then
   echo "Codex directory not found: $CODEX_DIR"

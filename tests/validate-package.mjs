@@ -1655,6 +1655,15 @@ async function testCodexStorageCleanupScript() {
     fs.writeFileSync(path.join(codexDir, "state_5.sqlite-wal"), "wal\n");
 
     const script = path.join(root, scriptRel);
+    const unsafeDir = path.join(fixtureRoot, "not-codex");
+    fs.mkdirSync(path.join(unsafeDir, "tmp"), { recursive: true });
+    fs.writeFileSync(path.join(unsafeDir, "tmp", "arg0"), "temporary wrapper state\n");
+    assert.throws(
+      () => execFileSync("bash", [script, "--execute", "--codex-dir", unsafeDir], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+      /path must end in \/\.codex/,
+    );
+    assert.ok(fs.existsSync(path.join(unsafeDir, "tmp", "arg0")), "unsafe Codex dir removed temp files");
+
     const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], { encoding: "utf8" });
     assert.match(dryRun, /Dry run/);
     assert.match(dryRun, /Disk space containing Codex directory/);
@@ -1678,7 +1687,7 @@ async function testCodexStorageCleanupScript() {
       "state_5.sqlite-wal",
     ]);
 
-    const deleteDir = path.join(fixtureRoot, ".codex-delete");
+    const deleteDir = path.join(fixtureRoot, "delete-case", ".codex");
     fs.mkdirSync(path.join(deleteDir, "tmp"), { recursive: true });
     fs.writeFileSync(path.join(deleteDir, "config.toml"), "model = \"codex\"\n");
     fs.writeFileSync(path.join(deleteDir, "state_6.sqlite"), "sqlite\n");
@@ -1721,6 +1730,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /df -h "\$HOME"/);
   assert.match(reference, /prints free space and Codex path sizes/);
   assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
+  assert.match(reference, /path must end in `\/\.codex`/);
   assert.match(reference, /--delete-state/);
   assert.match(reference, /--i-understand-local-state-will-be-lost/);
   assert.match(reference, /rm -rf ~\/\.codex\/tmp/);
@@ -1777,6 +1787,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /rm -rf ~\/\.codex\/tmp/);
   assert.match(readme, /skills\/diagnose\/scripts\/codex-storage-cleanup\.sh/);
   assert.match(readme, /prints free space and Codex path sizes/);
+  assert.match(readme, /path must end in `\/\.codex`/);
   assert.match(readme, /codex-storage-cleanup\.sh --execute/);
   assert.match(readme, /--delete-state --i-understand-local-state-will-be-lost/);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
