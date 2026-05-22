@@ -281,6 +281,9 @@ const summary = {
   done: 0,
   unknown: 0,
   attentionLogs: 0,
+  blockerKindRecords: 0,
+  topBlockerKind: undefined,
+  topBlockerKindCount: 0,
   issues: 0,
   badJson: 0,
   logsWithoutConfigs: 0,
@@ -293,13 +296,24 @@ const summary = {
   configFiles: 0,
 };
 
-function incrementSummary(status, attention, badJson, missingConfig, configBadJson, sinceFiltered) {
+const blockerKindCounts = new Map();
+
+function incrementSummary(status, attention, badJson, missingConfig, configBadJson, sinceFiltered, blockerKind) {
   summary.logs += 1;
   if (Object.hasOwn(summary, status)) summary[status] += 1;
   else summary.unknown += 1;
   if (attention) {
     summary.attentionLogs += 1;
     summary.issues += 1;
+    if (blockerKind) {
+      summary.blockerKindRecords += 1;
+      const count = (blockerKindCounts.get(blockerKind) ?? 0) + 1;
+      blockerKindCounts.set(blockerKind, count);
+      if (count > summary.topBlockerKindCount) {
+        summary.topBlockerKind = blockerKind;
+        summary.topBlockerKindCount = count;
+      }
+    }
   }
   summary.badJson += badJson;
   summary.sinceFiltered += sinceFiltered;
@@ -382,7 +396,8 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
-  incrementSummary(status, attention, outsideSinceWindow ? 0 : badJson, outsideSinceWindow || configHygieneOnly ? false : missingConfig, outsideSinceWindow || configHygieneOnly ? false : configBadJson, sinceFiltered);
+  const blockerKind = attention && effectiveLastFailure ? recordBlockerKind(effectiveLastFailure) : undefined;
+  incrementSummary(status, attention, outsideSinceWindow ? 0 : badJson, outsideSinceWindow || configHygieneOnly ? false : missingConfig, outsideSinceWindow || configHygieneOnly ? false : configBadJson, sinceFiltered, blockerKind);
   return { loopName, events, badJson, lineCount, sinceFiltered, outsideSinceWindow, configHygieneOnly, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
 }
 
@@ -508,6 +523,8 @@ const summaryParts = [
   `done=${summary.done}`,
   `unknown=${summary.unknown}`,
   `attention_logs=${summary.attentionLogs}`,
+  `blocker_kind_records=${summary.blockerKindRecords}`,
+  ...(summary.topBlockerKind ? [`top_blocker_kind=${summary.topBlockerKind}:${summary.topBlockerKindCount}`] : []),
   `issues=${summary.issues}`,
   `bad_json=${summary.badJson}`,
   `logs_without_configs=${summary.logsWithoutConfigs}`,

@@ -21,6 +21,6 @@ For each log it reports:
 
 Use `--attention-only` when you only want logs that need action; it suppresses clean loop records, including completed logs with only historical failure context, and adds `filtered_out=` to the summary.
 
-The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), reports `attention_logs=` for log files with `attention=yes`, counts logs or config-only `.pi` folders with attention-worthy `issues=`, totals malformed log JSON lines, reports `logs_without_configs=` and `config_bad_json=`, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
+The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), reports `attention_logs=` for log files with `attention=yes`, reports actionable blocker-kind rollups with `blocker_kind_records=` and `top_blocker_kind=kind:count` when present, counts logs or config-only `.pi` folders with attention-worthy `issues=`, totals malformed log JSON lines, reports `logs_without_configs=` and `config_bad_json=`, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
 
 The script does not edit files, resolve loops, commit, push, or delete `.pi` state. Use it to decide which loop needs continuation, compaction retry, or marker recovery.
