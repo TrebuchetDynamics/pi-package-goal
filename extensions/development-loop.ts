@@ -2237,6 +2237,15 @@ Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
 Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
 
+Example done end report:
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: completed the final objective cleanup.
+Changed files: README.md — captured the final report behavior and no remaining loop work.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: fedcba9 pushed to current branch.
+Blocker state: none; done because the objective is complete and no loop follow-up remains.
+Possible next steps: review the delivered commit; archive development-loop state if desired; start a new objective only if new work appears.
+
 Example interrupted resume end report:
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: resumed the same iteration after compaction without advancing the loop.

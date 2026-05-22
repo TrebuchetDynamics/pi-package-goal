@@ -163,6 +163,21 @@ DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: stop
 ```
 
+Example done end report:
+
+```text
+Scope: /absolute/project/path with adapter generic-git.
+Selected slice: completed the final objective cleanup.
+Changed files: README.md — captured the final report behavior and no remaining loop work.
+Validation evidence: npm test (pass); git diff --check (pass).
+Commit/push evidence: fedcba9 pushed to current branch.
+Blocker state: none; done because the objective is complete and no loop follow-up remains.
+Possible next steps: review the delivered commit; archive development-loop state if desired; start a new objective only if new work appears.
+DEV_LOOP_REPORT: {"validated":true,"decision":"done","summary":"Completed the final objective cleanup","nextSteps":["Review the delivered commit","Archive development-loop state if desired","Start a new objective only if new work appears"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"fedcba9","pushStatus":"pushed"}
+DEV_LOOP_VALIDATED: yes
+DEV_LOOP_DECISION: done
+```
+
 Example interrupted resume end report:
 
 ```text

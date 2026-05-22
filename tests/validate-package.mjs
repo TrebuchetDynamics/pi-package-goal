@@ -544,6 +544,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Selected slice: final documentation cleanup and handoff/);
     assert.match(sent[0].content, /Blocker state: none; stopping because the selected objective is complete/);
     assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+    assert.match(sent[0].content, /Example done end report/);
+    assert.match(sent[0].content, /Selected slice: completed the final objective cleanup/);
+    assert.match(sent[0].content, /Blocker state: none; done because the objective is complete and no loop follow-up remains/);
+    assert.match(sent[0].content, /Possible next steps: review the delivered commit; archive development-loop state if desired; start a new objective only if new work appears/);
     assert.match(sent[0].content, /Example interrupted resume end report/);
     assert.match(sent[0].content, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
     assert.match(sent[0].content, /Blocker state: none; provider interruption recovered, same slice resumed/);
@@ -2141,6 +2145,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Selected slice: final documentation cleanup and handoff/);
   assert.match(readme, /Blocker state: none; stopping because the selected objective is complete/);
   assert.match(readme, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+  assert.match(readme, /Example done end report/);
+  assert.match(readme, /Selected slice: completed the final objective cleanup/);
+  assert.match(readme, /Blocker state: none; done because the objective is complete and no loop follow-up remains/);
+  assert.match(readme, /Possible next steps: review the delivered commit; archive development-loop state if desired; start a new objective only if new work appears/);
+  assert.match(readme, /DEV_LOOP_DECISION: done/);
   assert.match(readme, /Example interrupted resume end report/);
   assert.match(readme, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
   assert.match(readme, /Blocker state: none; provider interruption recovered, same slice resumed/);
