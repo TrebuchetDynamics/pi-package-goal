@@ -75,6 +75,8 @@ type LoopLogAnalysis = {
   invalidRecords: number;
   loopsStarted: number;
   blockedLoops: number;
+  topBlockReason?: string;
+  topBlockReasonCount: number;
   emptyProviderResponses: number;
   contextOverflowResponses: number;
   compactionEvents: number;
@@ -853,6 +855,7 @@ function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
 function analyzeLoopLogText(content: string): LoopLogAnalysis {
   const analysis = emptyLoopLogAnalysis();
   const oversizedTopicCounts = new Map<string, number>();
+  const blockReasonCounts = new Map<string, number>();
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -863,7 +866,16 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     analysis.records++;
     const event = recordEvent(record) || "";
     if (event === "loop_started") analysis.loopsStarted++;
-    if (event === "loop_blocked") analysis.blockedLoops++;
+    if (event === "loop_blocked") {
+      analysis.blockedLoops++;
+      const reason = stringOrUndefined(record.reason) || "<missing reason>";
+      const count = (blockReasonCounts.get(reason) || 0) + 1;
+      blockReasonCounts.set(reason, count);
+      if (count > analysis.topBlockReasonCount) {
+        analysis.topBlockReason = reason;
+        analysis.topBlockReasonCount = count;
+      }
+    }
     if (event === "empty_agent_response_waiting_for_compaction") analysis.emptyProviderResponses++;
     if (event === "context_overflow_waiting_for_compaction" || String(record.reason || "").includes("context_overflow")) analysis.contextOverflowResponses++;
     if (event.startsWith("compaction_")) analysis.compactionEvents++;
@@ -888,6 +900,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     invalidRecords: 0,
     loopsStarted: 0,
     blockedLoops: 0,
+    topBlockReasonCount: 0,
     emptyProviderResponses: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
@@ -923,6 +936,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
     `Blocked loops: ${analysis.blockedLoops}`,
+    analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,

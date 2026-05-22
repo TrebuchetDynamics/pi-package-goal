@@ -817,6 +817,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Records: 5/);
       assert.match(messages.at(-1).content, /Loops started: 1/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
+      assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 1/);
       assert.match(messages.at(-1).content, /Oversized topic records: 5/);
