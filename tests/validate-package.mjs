@@ -921,7 +921,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       const oversizedTopic = `${"browser dump ".repeat(80)}TAIL_SHOULD_BE_DIAGNOSTIC_ONLY`;
       fs.writeFileSync(analysisLog, [
         JSON.stringify({ at: new Date(0).toISOString(), event: "loop_started", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "started" }),
-        JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "empty_agent_response_waiting_for_compaction" }),
+        JSON.stringify({ at: new Date(1).toISOString(), event: "empty_agent_response_waiting_for_compaction", runId: "run-blocked", adapterName: "generic-git", topic: oversizedTopic, iteration: 1, maxIterations: 2, phase: "running", reason: "missing_assistant_text" }),
         JSON.stringify({ at: new Date(1).toISOString(), event: "empty_provider_response_retry_sent", runId: "run-blocked", adapterName: "generic-git", iteration: 1, maxIterations: 2, phase: "running", reason: "retry 1/1" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "iteration_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued", reason: "compaction_before_next_iteration" }),
         JSON.stringify({ at: new Date(2).toISOString(), event: "compaction_resume_queued", runId: "run-blocked", adapterName: "generic-git", iteration: 2, maxIterations: 2, phase: "queued" }),
@@ -982,6 +982,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
       assert.match(messages.at(-1).content, /Empty provider retry records: 1/);
+      assert.match(messages.at(-1).content, /Top empty provider reason: missing_assistant_text \(1 record\)/);
       assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 3/);
@@ -1086,6 +1087,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
       assert.match(messages.at(-1).content, /Empty provider retry records: 1/);
+      assert.match(messages.at(-1).content, /Top empty provider reason: missing_assistant_text \(1 record\)/);
       assert.match(messages.at(-1).content, /Queued iteration records: 2/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
       assert.match(messages.at(-1).content, /Compaction events: 3/);
@@ -1130,6 +1132,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /Commit-without-push records/);
         assert.match(html, /Empty provider retry records/);
+        assert.match(html, /Top empty provider reason/);
         assert.match(html, /Queued iteration records/);
         assert.match(html, /Compaction resume records/);
         assert.match(html, /Compaction failure records/);

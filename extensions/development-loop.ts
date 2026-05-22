@@ -143,6 +143,8 @@ type LoopLogAnalysis = {
   unresolvedLoopStarts: number;
   emptyProviderResponses: number;
   emptyProviderRetryRecords: number;
+  topEmptyProviderReason?: string;
+  topEmptyProviderReasonCount: number;
   queuedIterationRecords: number;
   contextOverflowResponses: number;
   compactionEvents: number;
@@ -173,6 +175,7 @@ type LoopLogAccumulator = {
   nextSafeActionCounts: Map<string, number>;
   pushStatusCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
+  emptyProviderReasonCounts: Map<string, number>;
   compactionFailureReasonCounts: Map<string, number>;
   markerRecoveryKeys: Set<string>;
   markerRecoverySucceededKeys: Set<string>;
@@ -1049,6 +1052,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     nextSafeActionCounts: new Map<string, number>(),
     pushStatusCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
+    emptyProviderReasonCounts: new Map<string, number>(),
     compactionFailureReasonCounts: new Map<string, number>(),
     markerRecoveryKeys: new Set<string>(),
     markerRecoverySucceededKeys: new Set<string>(),
@@ -1063,7 +1067,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1178,7 +1182,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
         analysis.topCiGateMissingReasonCount = count;
       }
     }
-    if (event === "empty_agent_response_waiting_for_compaction" || event === "empty_provider_response_retry_sent") analysis.emptyProviderResponses++;
+    if (event === "empty_agent_response_waiting_for_compaction" || event === "empty_provider_response_retry_sent") {
+      analysis.emptyProviderResponses++;
+      const reason = recordReason(record, event) || "<missing reason>";
+      const count = incrementCount(emptyProviderReasonCounts, reason);
+      if (count > analysis.topEmptyProviderReasonCount) {
+        analysis.topEmptyProviderReason = reason;
+        analysis.topEmptyProviderReasonCount = count;
+      }
+    }
     if (event === "empty_provider_response_retry_sent") analysis.emptyProviderRetryRecords++;
     if (isQueuedIterationEvent(event)) analysis.queuedIterationRecords++;
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
@@ -1321,6 +1333,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     unresolvedLoopStarts: 0,
     emptyProviderResponses: 0,
     emptyProviderRetryRecords: 0,
+    topEmptyProviderReasonCount: 0,
     queuedIterationRecords: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
@@ -1514,6 +1527,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topPostmortemCause ? ["Top postmortem cause", `${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount})`] : undefined,
     analysis.topNextSafeAction ? ["Top next safe action", `${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
+    analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
     analysis.topCompactionFailureReason ? ["Top compaction failure reason", `${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount})`] : undefined,
     analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
   ].filter((fact): fact is [string, string] => Boolean(fact));
@@ -1611,6 +1625,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Empty provider retry records: ${analysis.emptyProviderRetryRecords}`,
+    analysis.topEmptyProviderReason ? `Top empty provider reason: ${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount} ${analysis.topEmptyProviderReasonCount === 1 ? "record" : "records"})` : undefined,
     `Queued iteration records: ${analysis.queuedIterationRecords}`,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
