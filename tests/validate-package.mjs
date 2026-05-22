@@ -2136,14 +2136,26 @@ async function testPiLogAuditScript() {
       ].join("\n") + "\n");
       fs.writeFileSync(path.join(recoveredRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
 
+      const compactionProgressRepo = path.join(recoveredRoot, "repo-k");
+      fs.mkdirSync(path.join(compactionProgressRepo, ".pi", "development-loop"), { recursive: true });
+      fs.writeFileSync(path.join(compactionProgressRepo, ".pi", "development-loop", "logs.jsonl"), [
+        JSON.stringify({ at: "2026-05-22T02:41:00.000Z", event: "compaction_failed_before_next_iteration", iteration: 2, maxIterations: 3, phase: "queued", reason: "Summarization failed: WebSocket error" }),
+        JSON.stringify({ at: "2026-05-22T02:42:00.000Z", event: "compaction_started", iteration: 3, maxIterations: 3, phase: "queued", reason: "tokens_before=120000" }),
+      ].join("\n") + "\n");
+      fs.writeFileSync(path.join(compactionProgressRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
+
       const recoveredOutput = execFileSync("node", [path.join(root, scriptRel), "--since=2026-05-22T02:30:00.000Z", recoveredRoot], { encoding: "utf8" });
       assert.match(recoveredOutput, /LOG\tdevelopment-loop\t.*repo-i.*latest=iteration_prompt_sent.*status=running\tconfig=present\tadapter=generic-git\tattention=no/);
       assert.match(recoveredOutput, /HISTORY\tdevelopment-loop\t.*repo-i\tfailure=compaction_failed_before_next_iteration\tfailure_at=2026-05-22T02:40:00.000Z\treason=Summarization failed: WebSocket error/);
       assert.doesNotMatch(recoveredOutput, /ISSUE\tdevelopment-loop\t.*repo-i/);
+      assert.match(recoveredOutput, /LOG\tdevelopment-loop\t.*repo-k.*latest=compaction_started.*status=queued\tconfig=present\tadapter=generic-git\tattention=no/);
+      assert.match(recoveredOutput, /HISTORY\tdevelopment-loop\t.*repo-k\tfailure=compaction_failed_before_next_iteration\tfailure_at=2026-05-22T02:41:00.000Z\treason=Summarization failed: WebSocket error/);
+      assert.doesNotMatch(recoveredOutput, /ISSUE\tdevelopment-loop\t.*repo-k/);
 
       const recoveredAttentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", recoveredRoot], { encoding: "utf8" });
       assert.doesNotMatch(recoveredAttentionOnly, /repo-i/);
-      assert.match(recoveredAttentionOnly, /SUMMARY\tlogs=1\tneeds_attention=0\tblocked=0\trunning=1\tqueued=0\tdone=0\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=1\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=1\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=1/);
+      assert.doesNotMatch(recoveredAttentionOnly, /repo-k/);
+      assert.match(recoveredAttentionOnly, /SUMMARY\tlogs=2\tneeds_attention=0\tblocked=0\trunning=1\tqueued=1\tdone=0\tunknown=0\tissues=0\tbad_json=0\tlogs_without_configs=0\tconfig_bad_json=0\tfiltered_out=2\tsince=2026-05-22T02:30:00.000Z\tsince_filtered=0\tpi_dirs=2\tpi_dirs_without_logs=0\tpi_dirs_with_configs_without_logs=0\tconfig_files=2/);
     } finally {
       fs.rmSync(recoveredRoot, { recursive: true, force: true });
     }

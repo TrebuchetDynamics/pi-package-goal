@@ -235,7 +235,7 @@ function isProgressEvent(event) {
   const eventName = String(event.event ?? "").toLowerCase();
   const phase = String(event.phase ?? "").toLowerCase();
   const decision = String(event.decision ?? "").toLowerCase();
-  return ["compaction_continue_queued_iteration", "iteration_prompt_sent", "iteration_result", "loop_finished"].includes(eventName) || phase === "running" || phase === "reported" || decision === "continue" || decision === "done";
+  return ["compaction_continue_queued_iteration", "compaction_started", "iteration_prompt_sent", "iteration_result", "loop_finished"].includes(eventName) || phase === "running" || phase === "reported" || decision === "continue" || decision === "done";
 }
 
 function classifyStatus(latest, badJson) {
