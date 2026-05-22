@@ -3,6 +3,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
 import {
+  compactionReason,
+  contextUsageReason,
+  isPrematureCompactionRecord,
+  shouldCompactBeforeNextIteration,
+} from "./development-loop-compaction.ts";
+import {
   parseLoopLogRecord as parseLogRecord,
   recordDecision,
   recordEvent,
@@ -381,8 +387,6 @@ const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 2;
 const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
-const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
-const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.70;
 const DEFAULT_LANGUAGE = "English";
 const COMMON_LANGUAGE_CHOICES = [
   "English",
@@ -766,16 +770,6 @@ function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContex
       notify(ctx, `Compaction failed after provider context-overflow error: ${error.message}. Waiting for manual compaction or retry.`, "warning");
     },
   });
-}
-
-function shouldCompactBeforeNextIteration(ctx: UiLikeContext): boolean {
-  if (typeof ctx.getContextUsage !== "function") return false;
-  const usage = ctx.getContextUsage();
-  const tokens = typeof usage?.tokens === "number" ? usage.tokens : undefined;
-  if (tokens === undefined) return false;
-  if (tokens >= PROACTIVE_COMPACTION_MIN_TOKENS) return true;
-  const contextWindow = typeof usage?.contextWindow === "number" ? usage.contextWindow : typeof usage?.maxTokens === "number" ? usage.maxTokens : undefined;
-  return contextWindow !== undefined && contextWindow > 0 && tokens / contextWindow >= PROACTIVE_COMPACTION_CONTEXT_RATIO;
 }
 
 function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
@@ -1966,27 +1960,6 @@ function recordCiGreen(record: Record<string, unknown>, event: string): boolean 
   return undefined;
 }
 
-function isPrematureCompactionRecord(record: Record<string, unknown>, event: string): boolean {
-  if (event !== "compaction_before_next_iteration") return false;
-  const { tokens, contextWindow } = recordCompactionContextUsage(record);
-  if (tokens === undefined || tokens >= PROACTIVE_COMPACTION_MIN_TOKENS) return false;
-  if (contextWindow === undefined) return true;
-  return tokens / contextWindow < PROACTIVE_COMPACTION_CONTEXT_RATIO;
-}
-
-function recordCompactionContextUsage(record: Record<string, unknown>): { tokens?: number; contextWindow?: number } {
-  const reason = recordReason(record, "compaction_before_next_iteration") || "";
-  return {
-    tokens: numberOrUndefined(record.tokens) || numberOrUndefined(record.tokenCount) || positiveIntegerFromMatch(reason, /\btokens=(\d+)/i),
-    contextWindow: numberOrUndefined(record.contextWindow) || numberOrUndefined(record.context_window) || numberOrUndefined(record.maxTokens) || positiveIntegerFromMatch(reason, /\bcontext_window=(\d+)/i),
-  };
-}
-
-function positiveIntegerFromMatch(text: string, pattern: RegExp): number | undefined {
-  const match = text.match(pattern);
-  return match ? numberOrUndefined(match[1]) : undefined;
-}
-
 function objectKeys(value: unknown): string[] | undefined {
   if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
   const keys = Object.keys(value).filter(Boolean);
@@ -2766,20 +2739,6 @@ function widgetNextStepsSummary(nextSteps: string[]): string | undefined {
   if (!nextSteps[0]) return undefined;
   const suffix = nextSteps.length > 1 ? ` (+${nextSteps.length - 1} more)` : "";
   return `next ${compactStatusText(`${nextSteps[0]}${suffix}`)}`;
-}
-
-function compactionReason(tokensBefore?: number): string {
-  return typeof tokensBefore === "number" ? `tokens_before=${tokensBefore}` : "tokens_before=unknown";
-}
-
-function contextUsageReason(ctx: UiLikeContext): string {
-  const usage = typeof ctx.getContextUsage === "function" ? ctx.getContextUsage() : undefined;
-  const tokens = typeof usage?.tokens === "number" ? usage.tokens : undefined;
-  const contextWindow = typeof usage?.contextWindow === "number" ? usage.contextWindow : typeof usage?.maxTokens === "number" ? usage.maxTokens : undefined;
-  return compactJoin([
-    tokens !== undefined ? `tokens=${tokens}` : undefined,
-    contextWindow !== undefined ? `context_window=${contextWindow}` : undefined,
-  ]) || "tokens=unknown";
 }
 
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {

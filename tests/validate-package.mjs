@@ -431,6 +431,18 @@ async function testExtensionLoadsAndRegistersCommands() {
   });
   assert.match(topicMod.objectiveIntakeSummary("abcdefghij", 6), /^oversized objective · length 10 · hash [0-9a-f]{12}$/);
 
+  const compactionMod = await jiti.import(path.join(root, "extensions", "development-loop-compaction.ts"));
+  assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false);
+  assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, maxTokens: 300000 }) }), true);
+  assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }) }), true);
+  assert.equal(compactionMod.contextUsageReason({ getContextUsage: () => ({ tokens: 220000, maxTokens: 300000 }) }), "tokens=220000 context_window=300000");
+  assert.equal(compactionMod.contextUsageReason({}), "tokens=unknown");
+  assert.equal(compactionMod.compactionReason(42), "tokens_before=42");
+  assert.equal(compactionMod.compactionReason(), "tokens_before=unknown");
+  assert.deepEqual(compactionMod.recordCompactionContextUsage({ reason: "tokens=120000 context_window=300000" }), { tokens: 120000, contextWindow: 300000 });
+  assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
+  assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
