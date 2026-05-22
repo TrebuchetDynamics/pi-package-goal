@@ -15,11 +15,11 @@ For each log it reports:
 
 - parsed line count and `bad_json` count
 - latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, newest available `run_id=`, log file `mtime=`, last `iteration_result` delivery fields (`last_result_at=`, `last_decision=`, `last_commit=`, `last_push=`), `status=`, matching config state (`config=present|missing`), matching config `adapter=`, and `attention=yes|no`
-- current `ISSUE` reason with `failure_at=` for the last failure event, including missing matching loop config such as `.pi/navivox-loop.json`, plus `next_action=` guidance; historical failures in logs that later finished cleanly are reported as `HISTORY` without action guidance
+- current `ISSUE` reason with `failure_at=` for the last failure event, missing matching loop config such as `.pi/navivox-loop.json`, or malformed matching config JSON, plus `next_action=` guidance; historical failures in logs that later finished cleanly are reported as `HISTORY` without action guidance
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
 
 Use `--attention-only` when you only want logs that need action; it suppresses clean loop records, including completed logs with only historical failure context, and adds `filtered_out=` to the summary.
 
-The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs or config-only `.pi` folders with attention-worthy issues, totals malformed JSON lines, reports `logs_without_configs=`, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
+The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs or config-only `.pi` folders with attention-worthy issues, totals malformed log JSON lines, reports `logs_without_configs=` and `config_bad_json=`, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
 
 The script does not edit files, resolve loops, commit, push, or delete `.pi` state. Use it to decide which loop needs continuation, compaction retry, or marker recovery.

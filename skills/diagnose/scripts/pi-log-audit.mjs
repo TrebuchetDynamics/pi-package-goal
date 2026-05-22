@@ -128,17 +128,17 @@ function findLoopConfigs(piDir) {
     .sort((a, b) => a.localeCompare(b));
 }
 
-function readConfigAdapters(piDir, configNames) {
-  const adapters = new Map();
+function readConfigDetails(piDir, configNames) {
+  const details = new Map();
   for (const configName of configNames) {
     try {
       const config = JSON.parse(fs.readFileSync(path.join(piDir, configName), "utf8"));
-      adapters.set(configName, config.adapter);
+      details.set(configName, { adapter: config.adapter, badJson: false });
     } catch {
-      adapters.set(configName, "bad_json");
+      details.set(configName, { adapter: "bad_json", badJson: true });
     }
   }
-  return adapters;
+  return details;
 }
 
 function formatValue(value) {
@@ -184,6 +184,7 @@ const summary = {
   issues: 0,
   badJson: 0,
   logsWithoutConfigs: 0,
+  configBadJson: 0,
   filteredOut: 0,
   piDirs: 0,
   piDirsWithoutLogs: 0,
@@ -191,13 +192,14 @@ const summary = {
   configFiles: 0,
 };
 
-function incrementSummary(status, attention, badJson, missingConfig) {
+function incrementSummary(status, attention, badJson, missingConfig, configBadJson) {
   summary.logs += 1;
   if (Object.hasOwn(summary, status)) summary[status] += 1;
   else summary.unknown += 1;
   if (attention) summary.issues += 1;
   summary.badJson += badJson;
   if (missingConfig) summary.logsWithoutConfigs += 1;
+  if (configBadJson) summary.configBadJson += 1;
   if (options.attentionOnly && !attention) summary.filteredOut += 1;
 }
 
@@ -211,9 +213,10 @@ function incrementPiDirSummary(logCount, configCount) {
   summary.configFiles += configCount;
 }
 
-function needsAttention(status, lastFailure, badJson, missingConfig) {
+function needsAttention(status, lastFailure, badJson, missingConfig, configBadJson) {
   if (badJson > 0) return true;
   if (missingConfig) return true;
+  if (configBadJson) return true;
   if (["blocked", "needs_attention"].includes(status)) return true;
   return status !== "done" && Boolean(lastFailure);
 }
@@ -239,7 +242,7 @@ function findLastResult(events) {
   return undefined;
 }
 
-function buildLogRecord(loopName, logPath, hasMatchingConfig, configAdapter) {
+function buildLogRecord(loopName, logPath, hasMatchingConfig, configDetails) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
@@ -249,13 +252,15 @@ function buildLogRecord(loopName, logPath, hasMatchingConfig, configAdapter) {
   const lastResult = findLastResult(events);
   const status = classifyStatus(latest, badJson);
   const missingConfig = !hasMatchingConfig;
-  const attention = needsAttention(status, lastFailure, badJson, missingConfig);
+  const configAdapter = configDetails?.adapter;
+  const configBadJson = Boolean(configDetails?.badJson);
+  const attention = needsAttention(status, lastFailure, badJson, missingConfig, configBadJson);
   const stats = fs.statSync(logPath);
   const size = stats.size;
   const mtime = stats.mtime.toISOString();
   const matchingConfigName = `${loopName}.json`;
-  incrementSummary(status, attention, badJson, missingConfig);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter };
+  incrementSummary(status, attention, badJson, missingConfig, configBadJson);
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, runId, lastResult, status, attention, size, mtime, matchingConfigName, missingConfig, configAdapter, configBadJson };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -319,6 +324,17 @@ function printLogRecord(record, repoDir) {
       "next_action=restore matching loop config or archive/remove stale log directory",
     ].join("\t"));
   }
+
+  if (record.configBadJson) {
+    console.log([
+      "ISSUE",
+      record.loopName,
+      repoDir,
+      `config=.pi/${record.matchingConfigName}`,
+      "reason=matching loop config is not valid JSON",
+      "next_action=repair or regenerate the loop config",
+    ].join("\t"));
+  }
 }
 
 const piDirs = findPiDirs(root).sort();
@@ -329,13 +345,13 @@ for (const piDir of piDirs) {
   const logs = findLoopLogs(piDir);
   const configNames = findLoopConfigs(piDir);
   const configNameSet = new Set(configNames);
-  const configAdapters = readConfigAdapters(piDir, configNames);
+  const configDetails = readConfigDetails(piDir, configNames);
   const configOnlyIssue = logs.length === 0 && configNames.length > 0;
   incrementPiDirSummary(logs.length, configNames.length);
 
   const records = logs.map(({ loopName, logPath }) => {
     const matchingConfigName = `${loopName}.json`;
-    return buildLogRecord(loopName, logPath, configNameSet.has(matchingConfigName), configAdapters.get(matchingConfigName));
+    return buildLogRecord(loopName, logPath, configNameSet.has(matchingConfigName), configDetails.get(matchingConfigName));
   });
   const visibleRecords = options.attentionOnly ? records.filter((record) => record.attention) : records;
   if (options.attentionOnly && visibleRecords.length === 0 && !configOnlyIssue) continue;
@@ -364,6 +380,7 @@ const summaryParts = [
   `issues=${summary.issues}`,
   `bad_json=${summary.badJson}`,
   `logs_without_configs=${summary.logsWithoutConfigs}`,
+  `config_bad_json=${summary.configBadJson}`,
 ];
 if (options.attentionOnly) summaryParts.push(`filtered_out=${summary.filteredOut}`);
 summaryParts.push(
