@@ -147,6 +147,7 @@ if [ "$EXECUTE" -ne 1 ]; then
       echo "Would leave Codex state files unchanged because --tmp-only is set:"
     elif [ "$DELETE_STATE" -eq 1 ]; then
       echo "Would delete Codex state files:"
+      echo "Executing --delete-state requires --i-understand-local-state-will-be-lost."
     else
       echo "Would back up Codex state files to a unique timestamped backup directory matching: $BACKUP_TEMPLATE"
     fi

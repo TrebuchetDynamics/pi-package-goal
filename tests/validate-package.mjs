@@ -1740,6 +1740,7 @@ async function testCodexStorageCleanupScript() {
 
     const deleteDryRun = execFileSync("bash", [script, "--delete-state", "--codex-dir", deleteDir], { encoding: "utf8" });
     assert.match(deleteDryRun, /Would delete Codex state files/);
+    assert.match(deleteDryRun, /Executing --delete-state requires --i-understand-local-state-will-be-lost/);
     assert.ok(fs.existsSync(path.join(deleteDir, "state_6.sqlite")), "delete dry run removed sqlite state");
 
     assert.throws(
