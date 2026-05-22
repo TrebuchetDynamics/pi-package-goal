@@ -1676,8 +1676,16 @@ async function testCodexStorageCleanupScript() {
     assert.match(dryRun, /Inode usage containing Codex directory/);
     assert.match(dryRun, /Codex path sizes/);
     assert.match(dryRun, /Top-level HOME path sizes/);
+    assert.match(dryRun, /Would remove transient temp directory/);
     assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
     assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
+
+    const noTmpDir = path.join(fixtureRoot, "no-tmp-case", ".codex");
+    fs.mkdirSync(noTmpDir, { recursive: true });
+    fs.writeFileSync(path.join(noTmpDir, "state_9.sqlite"), "sqlite\n");
+    const noTmpDryRun = execFileSync("bash", [script, "--codex-dir", noTmpDir], { encoding: "utf8" });
+    assert.match(noTmpDryRun, /Dry run/);
+    assert.match(noTmpDryRun, /No transient temp directory found/);
 
     const tmpOnlyDir = path.join(fixtureRoot, "tmp-only-case", ".codex");
     fs.mkdirSync(path.join(tmpOnlyDir, "tmp"), { recursive: true });

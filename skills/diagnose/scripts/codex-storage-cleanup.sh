@@ -141,7 +141,11 @@ shopt -u nullglob
 if [ "$EXECUTE" -ne 1 ]; then
   echo "Dry run: no files changed."
   print_disk_report
-  echo "Would remove transient temp directory: $CODEX_DIR/tmp"
+  if [ -d "$CODEX_DIR/tmp" ]; then
+    echo "Would remove transient temp directory: $CODEX_DIR/tmp"
+  else
+    echo "No transient temp directory found: $CODEX_DIR/tmp"
+  fi
   if [ "${#STATE_FILES[@]}" -gt 0 ]; then
     if [ "$TMP_ONLY" -eq 1 ]; then
       echo "Would leave Codex state files unchanged because --tmp-only is set:"
