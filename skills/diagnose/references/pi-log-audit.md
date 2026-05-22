@@ -4,6 +4,7 @@ Use this read-only helper when you need to check `.pi` folders and loop logs acr
 
 ```bash
 node skills/diagnose/scripts/pi-log-audit.mjs /home/xel/git/sages-openclaw
+node skills/diagnose/scripts/pi-log-audit.mjs --attention-only /home/xel/git/sages-openclaw
 ```
 
 If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /home/xel/git/sages-openclaw`.
@@ -16,6 +17,8 @@ For each log it reports:
 - latest event, iteration, phase, decision, `status=`, and `attention=yes|no`
 - last failure or blocked event reason
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
+
+Use `--attention-only` when you only want logs that need action; it suppresses clean loop records and adds `filtered_out=` to the summary.
 
 The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs with attention-worthy issues, and totals malformed JSON lines.
 

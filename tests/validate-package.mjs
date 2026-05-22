@@ -1799,6 +1799,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /node_modules/);
   assert.match(source, /bad_json/);
   assert.match(source, /Did you mean/);
+  assert.match(source, /--attention-only/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1824,11 +1825,17 @@ async function testPiLogAuditScript() {
       "not json",
     ].join("\n") + "\n");
 
+    const repoD = path.join(fixtureRoot, "repo-d");
+    fs.mkdirSync(path.join(repoD, ".pi", "development-loop"), { recursive: true });
+    fs.writeFileSync(path.join(repoD, ".pi", "development-loop", "logs.jsonl"), [
+      JSON.stringify({ at: "2026-05-22T03:00:00.000Z", event: "loop_finished", iteration: 1, maxIterations: 1, phase: "done", decision: "done" }),
+    ].join("\n") + "\n");
+
     fs.mkdirSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(fixtureRoot, "repo-c", "node_modules", "ignored", ".pi", "development-loop", "logs.jsonl"), "{}\n");
 
     const output = execFileSync("node", [path.join(root, scriptRel), fixtureRoot], { encoding: "utf8" });
-    assert.match(output, /PI_DIR_COUNT 2/);
+    assert.match(output, /PI_DIR_COUNT 3/);
     assert.match(output, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(output, /latest=compaction_failed_before_next_iteration/);
     assert.match(output, /status=needs_attention/);
@@ -1839,8 +1846,17 @@ async function testPiLogAuditScript() {
     assert.match(output, /status=blocked/);
     assert.match(output, /bad_json=1/);
     assert.match(output, /missing E2E_LOOP_DECISION final marker/);
-    assert.match(output, /SUMMARY\tlogs=2\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=0\tunknown=0\tissues=2\tbad_json=1/);
+    assert.match(output, /LOG\tdevelopment-loop\t.*repo-d/);
+    assert.match(output, /status=done/);
+    assert.match(output, /attention=no/);
+    assert.match(output, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=2\tbad_json=1/);
     assert.doesNotMatch(output, /node_modules/);
+
+    const attentionOnly = execFileSync("node", [path.join(root, scriptRel), "--attention-only", fixtureRoot], { encoding: "utf8" });
+    assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a/);
+    assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b/);
+    assert.doesNotMatch(attentionOnly, /repo-d/);
+    assert.match(attentionOnly, /SUMMARY\tlogs=3\tneeds_attention=1\tblocked=1\trunning=0\tqueued=0\tdone=1\tunknown=0\tissues=2\tbad_json=1\tfiltered_out=1/);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
@@ -1890,6 +1906,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /status=/);
   assert.match(logAuditReference, /SUMMARY/);
   assert.match(logAuditReference, /Did you mean/);
+  assert.match(logAuditReference, /--attention-only/);
 }
 
 async function testNoticesAndDocs() {

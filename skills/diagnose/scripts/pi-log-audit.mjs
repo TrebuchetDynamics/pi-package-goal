@@ -2,15 +2,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const rootArg = process.argv[2] ?? process.cwd();
+const options = parseArgs(process.argv.slice(2));
 
-if (["-h", "--help"].includes(rootArg)) {
-  console.log("Usage: pi-log-audit.mjs [ROOT]");
+if (options.help) {
+  console.log("Usage: pi-log-audit.mjs [--attention-only] [ROOT]");
   console.log("Read-only summary of .pi/*/logs.jsonl files under ROOT.");
   process.exit(0);
 }
 
-const root = path.resolve(rootArg);
+const root = path.resolve(options.rootArg ?? process.cwd());
 if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
   console.error(`Root directory not found: ${root}`);
   const suggestion = findClosestExistingSibling(root);
@@ -19,6 +19,26 @@ if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
 }
 
 const ignoredDirs = new Set([".git", "node_modules"]);
+
+function parseArgs(args) {
+  const parsed = { attentionOnly: false, help: false, rootArg: undefined };
+  for (const arg of args) {
+    if (["-h", "--help"].includes(arg)) {
+      parsed.help = true;
+    } else if (arg === "--attention-only") {
+      parsed.attentionOnly = true;
+    } else if (arg.startsWith("-")) {
+      console.error(`Unknown option: ${arg}`);
+      process.exit(2);
+    } else if (!parsed.rootArg) {
+      parsed.rootArg = arg;
+    } else {
+      console.error(`Unexpected extra root path: ${arg}`);
+      process.exit(2);
+    }
+  }
+  return parsed;
+}
 
 function findClosestExistingSibling(target) {
   const parent = path.dirname(target);
@@ -142,6 +162,7 @@ const summary = {
   unknown: 0,
   issues: 0,
   badJson: 0,
+  filteredOut: 0,
 };
 
 function incrementSummary(status, attention, badJson) {
@@ -150,6 +171,48 @@ function incrementSummary(status, attention, badJson) {
   else summary.unknown += 1;
   if (attention) summary.issues += 1;
   summary.badJson += badJson;
+  if (options.attentionOnly && !attention) summary.filteredOut += 1;
+}
+
+function buildLogRecord(loopName, logPath) {
+  const { events, badJson, lineCount } = parseJsonl(logPath);
+  const latest = events.at(-1) ?? {};
+  const failures = events.filter(isFailureEvent);
+  const lastFailure = failures.at(-1);
+  const status = classifyStatus(latest, badJson);
+  const attention = status === "needs_attention" || Boolean(lastFailure) || badJson > 0;
+  const size = fs.statSync(logPath).size;
+  incrementSummary(status, attention, badJson);
+  return { loopName, events, badJson, lineCount, latest, lastFailure, status, attention, size };
+}
+
+function printLogRecord(record, repoDir) {
+  console.log([
+    "LOG",
+    record.loopName,
+    repoDir,
+    `lines=${record.lineCount}`,
+    `parsed=${record.events.length}`,
+    `bad_json=${record.badJson}`,
+    `bytes=${record.size}`,
+    `at=${formatValue(record.latest.at)}`,
+    `latest=${formatValue(record.latest.event)}`,
+    `iteration=${formatValue(record.latest.iteration)}/${formatValue(record.latest.maxIterations)}`,
+    `phase=${formatValue(record.latest.phase)}`,
+    `decision=${formatValue(record.latest.decision)}`,
+    `status=${record.status}`,
+    `attention=${record.attention ? "yes" : "no"}`,
+  ].join("\t"));
+
+  if (record.lastFailure) {
+    console.log([
+      "ISSUE",
+      record.loopName,
+      repoDir,
+      `failure=${formatValue(record.lastFailure.event)}`,
+      `reason=${formatValue(record.lastFailure.reason)}`,
+    ].join("\t"));
+  }
 }
 
 const piDirs = findPiDirs(root).sort();
@@ -158,49 +221,20 @@ console.log(`PI_DIR_COUNT ${piDirs.length}`);
 for (const piDir of piDirs) {
   const repoDir = path.dirname(piDir);
   const logs = findLoopLogs(piDir);
+  const records = logs.map(({ loopName, logPath }) => buildLogRecord(loopName, logPath));
+  const visibleRecords = options.attentionOnly ? records.filter((record) => record.attention) : records;
+  if (options.attentionOnly && visibleRecords.length === 0) continue;
+
   const configNames = ["development-loop.json", "e2e-loop.json"].filter((name) => fs.existsSync(path.join(piDir, name)));
-  console.log(`PI_DIR\t${repoDir}\tlogs=${logs.map((item) => item.loopName).join(",") || "-"}\tconfigs=${configNames.join(",") || "-"}`);
+  const loopNames = (options.attentionOnly ? visibleRecords : records).map((record) => record.loopName);
+  console.log(`PI_DIR\t${repoDir}\tlogs=${loopNames.join(",") || "-"}\tconfigs=${configNames.join(",") || "-"}`);
 
-  for (const { loopName, logPath } of logs) {
-    const { events, badJson, lineCount } = parseJsonl(logPath);
-    const latest = events.at(-1) ?? {};
-    const failures = events.filter(isFailureEvent);
-    const lastFailure = failures.at(-1);
-    const status = classifyStatus(latest, badJson);
-    const attention = status === "needs_attention" || Boolean(lastFailure) || badJson > 0;
-    const size = fs.statSync(logPath).size;
-    incrementSummary(status, attention, badJson);
-
-    console.log([
-      "LOG",
-      loopName,
-      repoDir,
-      `lines=${lineCount}`,
-      `parsed=${events.length}`,
-      `bad_json=${badJson}`,
-      `bytes=${size}`,
-      `at=${formatValue(latest.at)}`,
-      `latest=${formatValue(latest.event)}`,
-      `iteration=${formatValue(latest.iteration)}/${formatValue(latest.maxIterations)}`,
-      `phase=${formatValue(latest.phase)}`,
-      `decision=${formatValue(latest.decision)}`,
-      `status=${status}`,
-      `attention=${attention ? "yes" : "no"}`,
-    ].join("\t"));
-
-    if (lastFailure) {
-      console.log([
-        "ISSUE",
-        loopName,
-        repoDir,
-        `failure=${formatValue(lastFailure.event)}`,
-        `reason=${formatValue(lastFailure.reason)}`,
-      ].join("\t"));
-    }
+  for (const record of visibleRecords) {
+    printLogRecord(record, repoDir);
   }
 }
 
-console.log([
+const summaryParts = [
   "SUMMARY",
   `logs=${summary.logs}`,
   `needs_attention=${summary.needs_attention}`,
@@ -211,4 +245,6 @@ console.log([
   `unknown=${summary.unknown}`,
   `issues=${summary.issues}`,
   `bad_json=${summary.badJson}`,
-].join("\t"));
+];
+if (options.attentionOnly) summaryParts.push(`filtered_out=${summary.filteredOut}`);
+console.log(summaryParts.join("\t"));
