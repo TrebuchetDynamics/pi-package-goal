@@ -149,6 +149,8 @@ type LoopLogAnalysis = {
   providerErrorRecords: number;
   topProviderErrorCode?: string;
   topProviderErrorCodeCount: number;
+  topProviderErrorCategory?: string;
+  topProviderErrorCategoryCount: number;
   contextOverflowResponses: number;
   compactionEvents: number;
   compactionResumeRecords: number;
@@ -180,6 +182,7 @@ type LoopLogAccumulator = {
   ciGateMissingReasonCounts: Map<string, number>;
   emptyProviderReasonCounts: Map<string, number>;
   providerErrorCodeCounts: Map<string, number>;
+  providerErrorCategoryCounts: Map<string, number>;
   compactionFailureReasonCounts: Map<string, number>;
   markerRecoveryKeys: Set<string>;
   markerRecoverySucceededKeys: Set<string>;
@@ -1058,6 +1061,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     ciGateMissingReasonCounts: new Map<string, number>(),
     emptyProviderReasonCounts: new Map<string, number>(),
     providerErrorCodeCounts: new Map<string, number>(),
+    providerErrorCategoryCounts: new Map<string, number>(),
     compactionFailureReasonCounts: new Map<string, number>(),
     markerRecoveryKeys: new Set<string>(),
     markerRecoverySucceededKeys: new Set<string>(),
@@ -1072,7 +1076,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, providerErrorCodeCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1205,6 +1209,12 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       if (count > analysis.topProviderErrorCodeCount) {
         analysis.topProviderErrorCode = code;
         analysis.topProviderErrorCodeCount = count;
+      }
+      const category = recordProviderErrorCategory(record, event, code);
+      const categoryCount = incrementCount(providerErrorCategoryCounts, category);
+      if (categoryCount > analysis.topProviderErrorCategoryCount) {
+        analysis.topProviderErrorCategory = category;
+        analysis.topProviderErrorCategoryCount = categoryCount;
       }
     }
     if (recordHasContextOverflowProviderError(record, event)) analysis.contextOverflowResponses++;
@@ -1351,6 +1361,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     queuedIterationRecords: 0,
     providerErrorRecords: 0,
     topProviderErrorCodeCount: 0,
+    topProviderErrorCategoryCount: 0,
     contextOverflowResponses: 0,
     compactionEvents: 0,
     compactionResumeRecords: 0,
@@ -1459,6 +1470,32 @@ function providerErrorCodeFromValue(value: unknown): string | undefined {
   return stringOrUndefined(record.code) || stringOrUndefined(record.type) || stringOrUndefined(record.status);
 }
 
+function recordProviderErrorCategory(record: Record<string, unknown>, event: string, code: string): string {
+  const text = [
+    event,
+    code,
+    stringOrUndefined(record.reason),
+    stringOrUndefined(record.message),
+    providerErrorTextFromValue(record.error),
+    providerErrorTextFromValue(record.providerError),
+    providerErrorTextFromValue(record.provider_error),
+  ].filter(Boolean).join(" ");
+  if (isContextOverflowProviderError(text)) return "context-overflow";
+  if (/rate[_ -]?limit|too[_ -]?many[_ -]?requests|\b429\b/i.test(text)) return "rate-limit";
+  if (/auth|unauthorized|forbidden|invalid[_ -]?api[_ -]?key|permission|\b401\b|\b403\b/i.test(text)) return "auth";
+  if (/websocket|socket|network|timeout|timed?\s*out|connection|econn|stream/i.test(text)) return "transport";
+  return "other";
+}
+
+function providerErrorTextFromValue(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
+  return Object.values(value as Record<string, unknown>)
+    .map((child) => typeof child === "string" ? child : undefined)
+    .filter(Boolean)
+    .join(" ") || undefined;
+}
+
 function objectKeys(value: unknown): string[] | undefined {
   if (!value || Array.isArray(value) || typeof value !== "object") return undefined;
   const keys = Object.keys(value).filter(Boolean);
@@ -1478,7 +1515,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.emptyProviderResponses > 0) recommendations.push("Empty provider responses: retry the same iteration and prefer compaction before blocking.");
   if (analysis.emptyProviderRetryRecords > 0) recommendations.push("Empty provider retries: track whether retries resolved, escalated to compaction, or blocked the loop.");
   if (analysis.queuedIterationRecords > 0) recommendations.push("Queued iterations: verify compaction/resume hooks flush queued prompts and do not leave runs waiting silently.");
-  if (analysis.providerErrorRecords > 0) recommendations.push("Provider errors: group provider error codes so context, rate-limit, auth, and transport failures drive different recovery paths.");
+  if (analysis.providerErrorRecords > 0) recommendations.push("Provider errors: group provider error codes and categories so context, rate-limit, auth, and transport failures drive different recovery paths.");
   if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
   if (analysis.duplicatePromptSentGroups > 0) recommendations.push("Duplicate prompt sends: investigate repeated iteration_prompt_sent groups before trusting prompt/result lifecycle counts.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
@@ -1569,6 +1606,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
     analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
     analysis.topProviderErrorCode ? ["Top provider error code", `${analysis.topProviderErrorCode} (${analysis.topProviderErrorCodeCount})`] : undefined,
+    analysis.topProviderErrorCategory ? ["Top provider error category", `${analysis.topProviderErrorCategory} (${analysis.topProviderErrorCategoryCount})`] : undefined,
     analysis.topCompactionFailureReason ? ["Top compaction failure reason", `${analysis.topCompactionFailureReason} (${analysis.topCompactionFailureReasonCount})`] : undefined,
     analysis.topPushStatus ? ["Top push status", `${analysis.topPushStatus} (${analysis.topPushStatusCount})`] : undefined,
   ].filter((fact): fact is [string, string] => Boolean(fact));
@@ -1670,6 +1708,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Queued iteration records: ${analysis.queuedIterationRecords}`,
     `Provider error records: ${analysis.providerErrorRecords}`,
     analysis.topProviderErrorCode ? `Top provider error code: ${analysis.topProviderErrorCode} (${analysis.topProviderErrorCodeCount} ${analysis.topProviderErrorCodeCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topProviderErrorCategory ? `Top provider error category: ${analysis.topProviderErrorCategory} (${analysis.topProviderErrorCategoryCount} ${analysis.topProviderErrorCategoryCount === 1 ? "record" : "records"})` : undefined,
     `Context overflow responses: ${analysis.contextOverflowResponses}`,
     `Compaction events: ${analysis.compactionEvents}`,
     `Compaction resume records: ${analysis.compactionResumeRecords}`,
