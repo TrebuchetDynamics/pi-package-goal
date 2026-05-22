@@ -457,6 +457,32 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(longTopicFields.topicTruncated, true);
   assert.equal(longTopicFields.topicLength, 605);
 
+  const loopStateMod = await jiti.import(path.join(root, "extensions", "development-loop-state.ts"));
+  assert.equal(loopStateMod.CUSTOM_STATE_TYPE, "development-loop-state");
+  const inactiveLoopState = loopStateMod.inactiveState("custom/logs.jsonl", 7);
+  assert.deepEqual(inactiveLoopState, {
+    active: false,
+    adapterName: "none",
+    topic: "",
+    iteration: 0,
+    maxIterations: 7,
+    startedAt: "1970-01-01T00:00:00.000Z",
+    logPath: "custom/logs.jsonl",
+    phase: "idle",
+    commit: false,
+    push: false,
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
+  });
+  const validLoopState = { ...inactiveLoopState, active: true, adapterName: "generic-git", topic: "ship", iteration: 2, maxIterations: 3, phase: "running" };
+  assert.equal(loopStateMod.isLoopState(validLoopState), true);
+  assert.equal(loopStateMod.isLoopState({ ...validLoopState, startedAt: 0 }), false);
+  assert.strictEqual(loopStateMod.restoreState([
+    { type: "custom", customType: "other", data: validLoopState },
+    { type: "custom", customType: "development-loop-state", data: { active: true } },
+    { type: "custom", customType: "development-loop-state", data: validLoopState },
+  ]), validLoopState);
+
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);

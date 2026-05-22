@@ -60,13 +60,13 @@ import {
   statusReport,
   statusWidgetLines,
 } from "./development-loop-status.ts";
+import { CUSTOM_STATE_TYPE, inactiveState, restoreState, type LoopState } from "./development-loop-state.ts";
 import {
   hashText,
   objectiveIntakeSummary,
   promptObjectiveText,
 } from "./development-loop-topic.ts";
 
-type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 
 type LoopAdapter = {
@@ -87,24 +87,6 @@ type ResolvedProjectAdapter = {
   configPath: string;
   configLoaded: boolean;
   configError?: string;
-};
-
-type LoopState = {
-  active: boolean;
-  adapterName: string;
-  runId?: string;
-  topic: string;
-  iteration: number;
-  maxIterations: number;
-  startedAt: string;
-  logPath: string;
-  phase: LoopPhase;
-  lastDecision?: LoopDecision | string;
-  lastReason?: string;
-  commit: boolean;
-  push: boolean;
-  emptyResponseRetries?: number;
-  markerRecoveryRetries?: number;
 };
 
 type LoopLogAnalysisOptions = {
@@ -334,7 +316,6 @@ type UiLikeContext = {
   }) => void;
 };
 
-const CUSTOM_STATE_TYPE = "development-loop-state";
 const DEFAULT_CONFIG_RELATIVE = path.join(".pi", "development-loop.json");
 const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-loop", "logs.jsonl");
 const DEFAULT_ITERATIONS = 3;
@@ -429,11 +410,11 @@ const BUILT_IN_ADAPTERS: LoopAdapter[] = [
   },
 ];
 
-let state: LoopState = inactiveState();
+let state: LoopState = inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
 
 export default function developmentLoopExtension(pi: ExtensionAPI) {
   async function onSessionStart(_event: unknown, ctx: ExtensionContext) {
-    state = restoreState(ctx.sessionManager.getEntries()) ?? inactiveState();
+    state = restoreState(ctx.sessionManager.getEntries()) ?? inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
     refreshUi(ctx);
     if (state.active && state.phase === "running" && state.lastReason === "empty_agent_response_waiting_for_compaction") {
       const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
@@ -2452,46 +2433,6 @@ function messageText(message: { content?: unknown }): string {
     }).join("\n");
   }
   return "";
-}
-
-function restoreState(entries: Array<{ type?: string; customType?: string; data?: unknown }>): LoopState | undefined {
-  for (let i = entries.length - 1; i >= 0; i--) {
-    const entry = entries[i];
-    if (entry.type === "custom" && entry.customType === CUSTOM_STATE_TYPE && isLoopState(entry.data)) {
-      return entry.data;
-    }
-  }
-  return undefined;
-}
-
-function isLoopState(value: unknown): value is LoopState {
-  if (!value || typeof value !== "object") return false;
-  const item = value as Partial<LoopState>;
-  return typeof item.active === "boolean" &&
-    typeof item.adapterName === "string" &&
-    typeof item.topic === "string" &&
-    typeof item.iteration === "number" &&
-    typeof item.maxIterations === "number" &&
-    typeof item.startedAt === "string" &&
-    typeof item.logPath === "string" &&
-    typeof item.phase === "string";
-}
-
-function inactiveState(): LoopState {
-  return {
-    active: false,
-    adapterName: "none",
-    topic: "",
-    iteration: 0,
-    maxIterations: DEFAULT_ITERATIONS,
-    startedAt: new Date(0).toISOString(),
-    logPath: DEFAULT_LOG_RELATIVE,
-    phase: "idle",
-    commit: false,
-    push: false,
-    emptyResponseRetries: 0,
-    markerRecoveryRetries: 0,
-  };
 }
 
 function contextCwd(ctx: UiLikeContext): string {
