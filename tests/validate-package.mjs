@@ -1077,6 +1077,9 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Report summary records: 2/);
       assert.match(messages.at(-1).content, /Report blocker-state records: 1/);
       assert.match(messages.at(-1).content, /Report next-step items: 2/);
+      assert.match(messages.at(-1).content, /Report missing-next-steps records: 1/);
+      assert.match(messages.at(-1).content, /Top report missing-next-steps decision: continue \(1 record\)/);
+      assert.match(messages.at(-1).content, /Missing report next steps: include nextSteps for continue and blocked reports so queued follow-up work has a concrete next action/);
       assert.match(messages.at(-1).content, /Report quality warning records: 1/);
       assert.match(messages.at(-1).content, /Top report quality warning: vague report summary "all good" \(1 record\)/);
       assert.match(messages.at(-1).content, /Report quality warnings: replace vague or incomplete summaries with scope, changes, validation, delivery, blocker state, and next-step evidence/);
@@ -1287,6 +1290,9 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Report summary records/);
         assert.match(html, /Report blocker-state records/);
         assert.match(html, /Report next-step items/);
+        assert.match(html, /Report missing-next-steps records/);
+        assert.match(html, /Top report missing-next-steps decision/);
+        assert.match(html, /Missing report next steps/);
         assert.match(html, /Report quality warning records/);
         assert.match(html, /Top report quality warning/);
         assert.match(html, /Report quality warnings/);
@@ -2138,7 +2144,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
-  assert.match(readme, /report summary, blocker-state, next-step, and report quality warning counts/);
+  assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
   assert.match(readme, /continue should name the next smallest verifiable slice/);
