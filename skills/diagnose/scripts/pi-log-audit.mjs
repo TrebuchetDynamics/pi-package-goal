@@ -208,6 +208,23 @@ function recordBlockerState(record) {
     || stringField(record, "blockers");
 }
 
+function recordBlockerKind(record) {
+  const text = [
+    recordBlockerState(record),
+    stringField(record, "reason"),
+    stringField(record, "error"),
+    stringField(record, "message"),
+  ].filter(Boolean).join(" ").toLowerCase();
+  if (!text) return undefined;
+  if (/\bgit\s+push\b/.test(text) && /(fetch-first|non[-\s]?fast[-\s]?forward|rejected|failed to push some refs|remote contains work)/.test(text)) return "git_push_fetch_first";
+  return undefined;
+}
+
+function blockerKindNextAction(blockerKind) {
+  if (blockerKind === "git_push_fetch_first") return "approve fetch/rebase/merge workflow, rerun validation, then push";
+  return undefined;
+}
+
 function recordNextAction(record) {
   const nextSteps = record?.nextSteps;
   if (Array.isArray(nextSteps)) {
@@ -416,8 +433,10 @@ function printLogRecord(record, repoDir) {
       `reason=${formatValue(record.lastFailure.reason)}`,
     ];
     const blockerState = recordBlockerState(record.lastFailure);
+    const blockerKind = recordBlockerKind(record.lastFailure);
     if (blockerState) failureFields.push(`blocker=${formatValue(blockerState)}`);
-    if (record.attention) failureFields.push(`next_action=${formatValue(recordNextAction(record.lastFailure) || "inspect failure reason then resume or clear the loop")}`);
+    if (blockerKind) failureFields.push(`blocker_kind=${formatValue(blockerKind)}`);
+    if (record.attention) failureFields.push(`next_action=${formatValue(recordNextAction(record.lastFailure) || blockerKindNextAction(blockerKind) || "inspect failure reason then resume or clear the loop")}`);
     console.log(failureFields.join("\t"));
   }
 

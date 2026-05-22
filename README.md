@@ -242,7 +242,7 @@ If the provider reports `context_length_exceeded` or “input exceeds the contex
 
 If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and `DEV_LOOP_DECISION`, the loop records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the loop to avoid infinite retries.
 
-For workspace-wide `.pi` loop triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only recent logs/configs that need action without stale loop or completed-loop config hygiene noise; blocked reports surface logged `blockerState` and first `nextSteps` entry as `blocker=` and `next_action=` when available.
+For workspace-wide `.pi` loop triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only recent logs/configs that need action without stale loop or completed-loop config hygiene noise; blocked reports surface logged `blockerState`, known `blocker_kind=` classifiers such as `git_push_fetch_first`, and first `nextSteps` entry as `blocker=` / `next_action=` when available, with a blocker-kind fallback action for common push-divergence blocks.
 
 ### Troubleshooting local Codex storage failures
 
