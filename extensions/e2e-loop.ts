@@ -335,14 +335,20 @@ function tokenizeArgs(raw: string): string[] {
 }
 
 function parseE2EDecision(text: string): E2EDecision | undefined {
-  const match = text.match(/E2E_LOOP_DECISION:\s*(continue|stop|blocked|done)/i);
-  return match?.[1]?.toLowerCase() as E2EDecision | undefined;
+  return parseFinalE2EMarkerBlock(text)?.decision;
 }
 
 function parseE2EValidated(text: string): boolean | undefined {
-  const match = text.match(/E2E_LOOP_VALIDATED:\s*(yes|no)/i);
+  return parseFinalE2EMarkerBlock(text)?.validated;
+}
+
+function parseFinalE2EMarkerBlock(text: string): { validated: boolean; decision: E2EDecision } | undefined {
+  const match = text.match(/(?:^|\r?\n)\s*E2E_LOOP_VALIDATED:\s*(yes|no)\s*\r?\n\s*E2E_LOOP_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
   if (!match) return undefined;
-  return match[1].toLowerCase() === "yes";
+  return {
+    validated: match[1].toLowerCase() === "yes",
+    decision: match[2].toLowerCase() as E2EDecision,
+  };
 }
 
 function requiresValidation(decision: E2EDecision): boolean {

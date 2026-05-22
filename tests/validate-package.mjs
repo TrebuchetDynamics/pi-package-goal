@@ -1728,6 +1728,14 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
   const mod = await jiti.import(path.join(root, "extensions", "e2e-loop.ts"));
   assert.equal(typeof mod.default, "function");
   assert.equal(typeof mod.__test__.buildE2EPrompt, "function");
+  assert.equal(mod.__test__.parseE2EDecision("Validated.\nE2E_LOOP_VALIDATED: yes\nE2E_LOOP_DECISION: continue"), "continue");
+  assert.equal(mod.__test__.parseE2EValidated("Validated.\nE2E_LOOP_VALIDATED: yes\nE2E_LOOP_DECISION: continue"), true);
+  assert.equal(mod.__test__.parseE2EDecision("Blocked.\nE2E_LOOP_VALIDATED: no\nE2E_LOOP_DECISION: blocked"), "blocked");
+  assert.equal(mod.__test__.parseE2EValidated("Blocked.\nE2E_LOOP_VALIDATED: no\nE2E_LOOP_DECISION: blocked"), false);
+  assert.equal(mod.__test__.parseE2EDecision("Instructions only:\nE2E_LOOP_VALIDATED: yes|no\nE2E_LOOP_DECISION: continue|blocked|stop"), undefined);
+  assert.equal(mod.__test__.parseE2EValidated("Instructions only:\nE2E_LOOP_VALIDATED: yes|no\nE2E_LOOP_DECISION: continue|blocked|stop"), undefined);
+  assert.equal(mod.__test__.parseE2EDecision("Validated.\nE2E_LOOP_VALIDATED: yes\nE2E_LOOP_DECISION: continue\npostscript"), undefined);
+  assert.equal(mod.__test__.parseE2EValidated("Validated.\nE2E_LOOP_VALIDATED: yes\nE2E_LOOP_DECISION: continue\npostscript"), undefined);
 
   const commands = new Map();
   const handlers = new Map();
