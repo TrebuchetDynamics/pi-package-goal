@@ -981,6 +981,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         JSON.stringify({ timestamp: new Date(13).toISOString(), event: "done", iteration: 1, reason: "assistant reported LOOP_DECISION: done with CI_GREEN: yes" }),
         JSON.stringify({ timestamp: new Date(14).toISOString(), event: "loop_start", topic: "custom blocked", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(15).toISOString(), event: "blocked", iteration: 1, reason: "assistant_decision_missing", ciGreen: false }),
+        JSON.stringify({ timestamp: new Date(16).toISOString(), event: "self_improvement_queued", iteration: 1, reason: "assistant_decision_missing", nextAction: "tighten final marker prompt" }),
       ].join("\n") + "\n", "utf8");
       const customAnalysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${customLog}`, {
@@ -992,7 +993,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, customAnalysisMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Records: 6/);
+      assert.match(messages.at(-1).content, /Records: 7/);
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
@@ -1002,6 +1003,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top push status: origin\/main \(1 record\)/);
       assert.match(messages.at(-1).content, /CI-green records: 2/);
       assert.match(messages.at(-1).content, /CI-red records: 1/);
+      assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
 
       const aggregateAnalysisMessagesBefore = messages.length;
@@ -1015,7 +1017,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 18/);
+      assert.match(messages.at(-1).content, /Records: 19/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
@@ -1028,6 +1030,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Commit evidence records: 2/);
       assert.match(messages.at(-1).content, /Push evidence records: 2/);
       assert.match(messages.at(-1).content, /CI-red records: 1/);
+      assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
       assert.match(messages.at(-1).content, /Empty provider responses: 1/);
       assert.match(messages.at(-1).content, /Context overflow responses: 1/);
@@ -1056,6 +1059,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Delivery evidence records/);
         assert.match(html, /CI-red records/);
+        assert.match(html, /Self-improvement queued records/);
         assert.match(html, /Blocked loops/);
       } finally {
         fs.rmSync(htmlPath, { force: true });

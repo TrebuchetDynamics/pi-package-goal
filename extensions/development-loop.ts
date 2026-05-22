@@ -109,6 +109,7 @@ type LoopLogAnalysis = {
   topBlockReason?: string;
   topBlockReasonCount: number;
   postmortems: number;
+  selfImprovementQueuedRecords: number;
   topPostmortemCause?: string;
   topPostmortemCauseCount: number;
   topNextSafeAction?: string;
@@ -1096,6 +1097,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
         }
       }
     }
+    if (event === "self_improvement_queued") analysis.selfImprovementQueuedRecords++;
     const hasChangedFiles = recordChangedFiles(record).length > 0;
     const hasValidationEvidence = recordValidationEvidence(record).length > 0;
     const hasCommitEvidence = Boolean(recordCommitHash(record));
@@ -1160,6 +1162,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     blockedLoops: 0,
     topBlockReasonCount: 0,
     postmortems: 0,
+    selfImprovementQueuedRecords: 0,
     topPostmortemCauseCount: 0,
     topNextSafeActionCount: 0,
     finalMarkerRecoveryRequests: 0,
@@ -1268,6 +1271,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
+  if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review queued fixes after blocked custom-loop runs and promote repeatable policy into this package.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare recovery successes and blocks to see whether marker-only retries are resolving missing final reports.");
   if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
@@ -1294,6 +1298,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Finished loops", String(analysis.finishedLoops)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
+    ["Self-improvement queued records", String(analysis.selfImprovementQueuedRecords)],
     ["Final-marker recovery requests", String(analysis.finalMarkerRecoveryRequests)],
     ["Final-marker recovery successes", String(analysis.finalMarkerRecoverySuccesses)],
     ["Final-marker recovery blocks", String(analysis.finalMarkerRecoveryBlocks)],
@@ -1383,6 +1388,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     `Postmortems: ${analysis.postmortems}`,
+    `Self-improvement queued records: ${analysis.selfImprovementQueuedRecords}`,
     analysis.topPostmortemCause ? `Top postmortem cause: ${analysis.topPostmortemCause} (${analysis.topPostmortemCauseCount} ${analysis.topPostmortemCauseCount === 1 ? "record" : "records"})` : undefined,
     analysis.topNextSafeAction ? `Top next safe action: ${analysis.topNextSafeAction} (${analysis.topNextSafeActionCount} ${analysis.topNextSafeActionCount === 1 ? "record" : "records"})` : undefined,
     `Final-marker recovery requests: ${analysis.finalMarkerRecoveryRequests}`,
