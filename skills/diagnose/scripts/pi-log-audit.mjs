@@ -196,6 +196,27 @@ function formatValue(value) {
   return String(value).replace(/\s+/g, " ").slice(0, 180);
 }
 
+function stringField(record, fieldName) {
+  const value = record?.[fieldName];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function recordBlockerState(record) {
+  return stringField(record, "blockerState")
+    || stringField(record, "blockerReason")
+    || stringField(record, "blockedReason")
+    || stringField(record, "blockers");
+}
+
+function recordNextAction(record) {
+  const nextSteps = record?.nextSteps;
+  if (Array.isArray(nextSteps)) {
+    const firstStep = nextSteps.find((step) => typeof step === "string" && step.trim());
+    if (firstStep) return firstStep.trim();
+  }
+  return stringField(record, "nextAction") || stringField(record, "nextStep");
+}
+
 function isBlockedEvent(event) {
   const eventName = String(event.event ?? "").toLowerCase();
   const phase = String(event.phase ?? "").toLowerCase();
@@ -394,7 +415,9 @@ function printLogRecord(record, repoDir) {
       `failure_at=${formatValue(record.lastFailure.at)}`,
       `reason=${formatValue(record.lastFailure.reason)}`,
     ];
-    if (record.attention) failureFields.push("next_action=inspect failure reason then resume or clear the loop");
+    const blockerState = recordBlockerState(record.lastFailure);
+    if (blockerState) failureFields.push(`blocker=${formatValue(blockerState)}`);
+    if (record.attention) failureFields.push(`next_action=${formatValue(recordNextAction(record.lastFailure) || "inspect failure reason then resume or clear the loop")}`);
     console.log(failureFields.join("\t"));
   }
 

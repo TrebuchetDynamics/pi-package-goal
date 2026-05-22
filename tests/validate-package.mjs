@@ -1982,6 +1982,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /run_id=/);
   assert.match(source, /adapter=/);
   assert.match(source, /next_action=/);
+  assert.match(source, /blocker=/);
   assert.match(source, /config_bad_json/);
   assert.match(source, /log_path=/);
   assert.match(source, /config_path=/);
@@ -2101,6 +2102,29 @@ async function testPiLogAuditScript() {
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-g.*adapter=bad_json\tattention=yes/);
     assert.match(attentionOnly, /ISSUE\tdevelopment-loop\t.*repo-g\tconfig=\.pi\/development-loop\.json\treason=matching loop config is not valid JSON\tnext_action=repair or regenerate the loop config/);
     assert.match(attentionOnly, /SUMMARY\tlogs=5\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=2\tunknown=0\tissues=5\tbad_json=1\tlogs_without_configs=1\tconfig_bad_json=1\tfiltered_out=1\tpi_dirs=6\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=6/);
+
+    const blockedReportRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-blocked-report-"));
+    try {
+      const blockedReportRepo = path.join(blockedReportRoot, "repo-j");
+      fs.mkdirSync(path.join(blockedReportRepo, ".pi", "development-loop"), { recursive: true });
+      fs.writeFileSync(path.join(blockedReportRepo, ".pi", "development-loop", "logs.jsonl"), JSON.stringify({
+        at: "2026-05-22T03:10:00.000Z",
+        event: "loop_finished",
+        iteration: 1,
+        maxIterations: 12,
+        phase: "blocked",
+        decision: "blocked",
+        reason: "blocked",
+        blockerState: "git push origin main rejected with fetch-first",
+        nextSteps: ["Approve fetch/rebase/merge workflow, rerun validation, then push commits 650edde and e969435."],
+      }) + "\n");
+      fs.writeFileSync(path.join(blockedReportRepo, ".pi", "development-loop.json"), JSON.stringify({ adapter: "generic-git" }) + "\n");
+
+      const blockedReportOutput = execFileSync("node", [path.join(root, scriptRel), "--attention-only", "--since=2026-05-22T02:30:00.000Z", blockedReportRoot], { encoding: "utf8" });
+      assert.match(blockedReportOutput, /ISSUE\tdevelopment-loop\t.*repo-j\tfailure=loop_finished\tfailure_at=2026-05-22T03:10:00.000Z\treason=blocked\tblocker=git push origin main rejected with fetch-first\tnext_action=Approve fetch\/rebase\/merge workflow, rerun validation, then push commits 650edde and e969435\./);
+    } finally {
+      fs.rmSync(blockedReportRoot, { recursive: true, force: true });
+    }
 
     const recoveredRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-recovered-"));
     try {
