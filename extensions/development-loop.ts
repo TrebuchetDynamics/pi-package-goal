@@ -313,6 +313,7 @@ type ParsedCommand = {
   dryRun?: boolean;
   yes?: boolean;
   html?: boolean;
+  json?: boolean;
   since?: string;
   logPath?: string;
   validationCommands: string[];
@@ -1058,6 +1059,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop analyze-logs [path] — summarize one log file or a directory of loop logs",
     "- /development-loop analyze-logs --since=2h [path] — summarize only recent timestamped records",
     "- /development-loop analyze-logs --html [path] — also write a self-contained HTML health report",
+    "- /development-loop analyze-logs --json [path] — emit machine-readable JSON for automation",
     "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
     "Configurable init options:",
@@ -1103,7 +1105,9 @@ function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: Parsed
   const since = parsed.since ? parseSinceFilter(parsed.since) : undefined;
   const analysis = parsed.since && !since ? invalidSinceLoopLogAnalysis(parsed.since) : analyzeLoopLogPath(targetPath, { since });
   const htmlPath = parsed.html ? writeLoopLogHtmlReport(analysis, cwd, targetPath) : undefined;
-  const text = [formatLoopLogAnalysis(analysis, cwd, targetPath), htmlPath ? `HTML health report: ${htmlPath}` : undefined].filter(Boolean).join("\n");
+  const text = parsed.json
+    ? formatLoopLogAnalysisJson(analysis, cwd, targetPath, htmlPath)
+    : [formatLoopLogAnalysis(analysis, cwd, targetPath), htmlPath ? `HTML health report: ${htmlPath}` : undefined].filter(Boolean).join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-loop-log-analysis", content: text, display: true });
@@ -2236,6 +2240,14 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char] || char));
 }
 
+function formatLoopLogAnalysisJson(analysis: LoopLogAnalysis, cwd: string, logPath: string, htmlPath?: string): string {
+  return JSON.stringify({
+    source: relativeToCwd(cwd, logPath),
+    ...(htmlPath ? { htmlPath } : {}),
+    ...analysis,
+  }, null, 2);
+}
+
 function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
   const source = relativeToCwd(cwd, logPath);
   const sourceLabel = analysis.logFiles > 1 ? `${source} (${analysis.logFiles} log files)` : source;
@@ -3259,6 +3271,10 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.html = true;
       continue;
     }
+    if (token === "--json" || token === "--machine-readable") {
+      parsed.json = true;
+      continue;
+    }
     if (token === "--since" || token === "--after" || token === "--last") {
       parsed.since = tokens[++i];
       continue;
@@ -3271,6 +3287,10 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.html = false;
       continue;
     }
+    if (token === "--no-json" || token === "--no-machine-readable") {
+      parsed.json = false;
+      continue;
+    }
     if (token === "--no-dry-run") {
       parsed.dryRun = false;
       continue;
@@ -3281,6 +3301,10 @@ function parseArgs(raw: string | undefined): ParsedCommand {
     }
     if (token.startsWith("--html=") || token.startsWith("--report-html=")) {
       parsed.html = parseBoolean(token.split("=").slice(1).join("="));
+      continue;
+    }
+    if (token.startsWith("--json=") || token.startsWith("--machine-readable=")) {
+      parsed.json = parseBoolean(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--yes" || token === "-y" || token === "--defaults" || token === "--non-interactive" || token === "--no-prompt" || token === "--no-prompts") {

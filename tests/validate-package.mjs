@@ -1162,6 +1162,23 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(messages.at(-1).content, /Blocker kind records: 1/);
         assert.match(messages.at(-1).content, /Top blocker kind: git_push_fetch_first \(1 record\)/);
         assert.match(messages.at(-1).content, /Fetch-first push blockers: approve fetch\/rebase\/merge workflow, rerun validation, then push/);
+
+        const blockerKindJsonMessagesBefore = messages.length;
+        await command.handler(`analyze-logs --json ${blockerKindLog}`, {
+          ...ctx,
+          cwd: blockerKindRoot,
+          sessionManager: {
+            getCwd: () => blockerKindRoot,
+            getEntries: () => [],
+          },
+        });
+        assert.equal(messages.length, blockerKindJsonMessagesBefore + 1);
+        const blockerKindJson = JSON.parse(messages.at(-1).content);
+        assert.equal(blockerKindJson.source, ".pi/fetch-first-loop/logs.jsonl");
+        assert.equal(blockerKindJson.blockedLoops, 1);
+        assert.equal(blockerKindJson.blockerKindRecords, 1);
+        assert.equal(blockerKindJson.topBlockerKind, "git_push_fetch_first");
+        assert.ok(blockerKindJson.recommendations.includes("Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push."));
       } finally {
         fs.rmSync(blockerKindRoot, { recursive: true, force: true });
       }
