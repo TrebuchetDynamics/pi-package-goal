@@ -2362,6 +2362,9 @@ function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cw
       ? "Commit each validated coherent slice and push to the current branch only when the worktree is safe."
       : "Commit each validated coherent slice when the worktree is safe; do not push."
     : "Do not commit or push unless the user explicitly asks later.";
+  const pushSafetyPolicy = s.push
+    ? "Before pushing, inspect `git status --short --branch` for ahead/behind/diverged state. If the branch is behind or diverged, do not force-push or repair history without explicit approval; report DEV_LOOP_DECISION: blocked with blockerState mentioning git_push_fetch_first and nextSteps for fetch/rebase/merge, validation, then push."
+    : undefined;
 
   return `Use the project instructions and matching skills now. Development loop iteration ${s.iteration}/${s.maxIterations}.
 
@@ -2391,7 +2394,7 @@ ${validationCommands.map((command) => `- ${command}`).join("\n")}
 
 Commit/push policy:
 - ${commitPolicy}
-- Preserve unrelated dirty work. Stage only files that belong to this iteration.
+${pushSafetyPolicy ? `- ${pushSafetyPolicy}\n` : ""}- Preserve unrelated dirty work. Stage only files that belong to this iteration.
 
 Stop conditions:
 ${stopConditions.map((condition) => `- ${condition}`).join("\n")}

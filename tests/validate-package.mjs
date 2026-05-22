@@ -425,6 +425,22 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.doesNotMatch(prompt, /[─━═]{3,}/);
     assert.doesNotMatch(prompt, /Topic\/objective: Development loop adapter → \n/);
 
+    const pushPrompt = mod.__test__.buildIterationPrompt({
+      active: true,
+      adapterName: "generic-git",
+      topic: "delivery hardening",
+      iteration: 1,
+      maxIterations: 1,
+      startedAt: new Date(0).toISOString(),
+      logPath: path.join(promptRoot, ".pi", "development-loop", "logs.jsonl"),
+      phase: "running",
+      commit: true,
+      push: true,
+    }, resolved, promptRoot);
+    assert.match(pushPrompt, /Before pushing, inspect `git status --short --branch` for ahead\/behind\/diverged state/);
+    assert.match(pushPrompt, /do not force-push or repair history without explicit approval/);
+    assert.match(pushPrompt, /blockerState mentioning git_push_fetch_first/);
+
     const longTailMarker = "TAIL_SHOULD_NOT_REACH_ITERATION_PROMPT";
     const longPrompt = mod.__test__.buildIterationPrompt({
       active: true,
