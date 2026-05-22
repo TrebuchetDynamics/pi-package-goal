@@ -1156,13 +1156,17 @@ function isContextOverflowProviderError(text: string): boolean {
   return /context[\s_-]*length[\s_-]*exceeded|input exceeds the context window|context overflow detected/i.test(text);
 }
 
+function parseFinalMarkerBlock(text: string): RegExpMatchArray | null {
+  return text.match(/(?:^|\r?\n)\s*DEV_LOOP_VALIDATED:\s*(yes|no)\s*\r?\n\s*DEV_LOOP_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
+}
+
 function parseLoopDecision(text: string): LoopDecision | undefined {
-  const match = text.match(/DEV_LOOP_DECISION:\s*(continue|stop|blocked|done)/i);
-  return match?.[1]?.toLowerCase() as LoopDecision | undefined;
+  const match = parseFinalMarkerBlock(text);
+  return match?.[2]?.toLowerCase() as LoopDecision | undefined;
 }
 
 function parseValidated(text: string): boolean | undefined {
-  const match = text.match(/DEV_LOOP_VALIDATED:\s*(yes|no)/i);
+  const match = parseFinalMarkerBlock(text);
   if (!match) return undefined;
   return match[1].toLowerCase() === "yes";
 }

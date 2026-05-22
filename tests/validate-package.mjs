@@ -386,6 +386,12 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
   assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
 
+  assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
+  assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
+  assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
+  assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_LOOP_VALIDATED: yes|no\nDEV_LOOP_DECISION: continue|stop|blocked|done"), undefined);
+  assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue\npostscript"), undefined);
+
   const promptRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-prompt-topic-"));
   fs.mkdirSync(path.join(promptRoot, ".git"));
   try {
