@@ -12,6 +12,7 @@ Confirm whether the failure is disk pressure, not the project under test:
 
 ```bash
 df -h "$HOME"
+df -ih "$HOME"
 du -sh ~/.codex/* 2>/dev/null | sort -h
 ```
 

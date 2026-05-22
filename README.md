@@ -131,10 +131,11 @@ If Codex fails before Pi starts with `No space left on device`, `database or dis
 
 Likely causes include a full home filesystem, inode exhaustion can also cause `No space left on device`, Codex being unable to create PATH wrapper files under `~/.codex/tmp`, and SQLite cannot extend the state database or write its WAL/SHM sidecars while disk space is exhausted.
 
-Check free space and the largest Codex paths:
+Check free space, inode usage, and the largest Codex paths:
 
 ```bash
 df -h "$HOME"
+df -ih "$HOME"
 du -sh ~/.codex/* 2>/dev/null | sort -h
 ```
 
