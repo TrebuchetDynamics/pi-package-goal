@@ -1056,6 +1056,12 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Top self-improvement action: tighten final marker prompt \(1 record\)/);
       assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
 
+      const unresolvedLog = path.join(analysisRoot, ".pi", "megabot-loop", "logs.jsonl");
+      fs.mkdirSync(path.dirname(unresolvedLog), { recursive: true });
+      fs.writeFileSync(unresolvedLog, [
+        JSON.stringify({ timestamp: new Date(18).toISOString(), event: "loop_start", topic: "custom unresolved", iteration: 1, maxIterations: 3 }),
+      ].join("\n") + "\n", "utf8");
+
       const aggregateAnalysisMessagesBefore = messages.length;
       await command.handler(`analyze-logs ${path.join(analysisRoot, ".pi")}`, {
         ...ctx,
@@ -1066,9 +1072,9 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 30/);
-      assert.match(messages.at(-1).content, /Loops started: 5/);
+      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(3 log files\)/);
+      assert.match(messages.at(-1).content, /Records: 31/);
+      assert.match(messages.at(-1).content, /Loops started: 6/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
       assert.match(messages.at(-1).content, /Finished-without-delivery records: 2/);
@@ -1098,7 +1104,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
       assert.match(messages.at(-1).content, /Top self-improvement reason: ci_gate_missing \(1 record\)/);
       assert.match(messages.at(-1).content, /Top self-improvement action: tighten final marker prompt \(1 record\)/);
-      assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 1/);
+      assert.match(messages.at(-1).content, /Top unresolved log source: \.pi\/megabot-loop\/logs\.jsonl \(1 record\)/);
       assert.match(messages.at(-1).content, /Empty provider responses: 2/);
       assert.match(messages.at(-1).content, /Empty provider retry records: 1/);
       assert.match(messages.at(-1).content, /Top empty provider reason: missing_assistant_text \(1 record\)/);
@@ -1128,7 +1135,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, htmlMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
+      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(3 log files\)/);
       const htmlMatch = messages.at(-1).content.match(/HTML health report: (.+\.html)/);
       assert.ok(htmlMatch, "analyze-logs --html should report the generated HTML health report path");
       const htmlPath = htmlMatch[1].trim();
@@ -1147,6 +1154,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Finished-without-delivery records/);
         assert.match(html, /Assistant decision records/);
         assert.match(html, /Top blocked log source/);
+        assert.match(html, /Top unresolved log source/);
         assert.match(html, /Final-marker recovery requests/);
         assert.match(html, /Top final-marker recovery reason/);
         assert.match(html, /Top final-marker recovery block reason/);

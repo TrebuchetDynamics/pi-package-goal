@@ -151,6 +151,8 @@ type LoopLogAnalysis = {
   topCiGateMissingReason?: string;
   topCiGateMissingReasonCount: number;
   unresolvedLoopStarts: number;
+  topUnresolvedSource?: string;
+  topUnresolvedSourceCount: number;
   emptyProviderResponses: number;
   emptyProviderRetryRecords: number;
   topEmptyProviderReason?: string;
@@ -207,6 +209,11 @@ type LoopLogAccumulator = {
   markerRecoveryBlockedKeys: Set<string>;
   startedRunIds: Set<string>;
   terminalRunIds: Set<string>;
+  sourceStartedRunIds: Map<string, Set<string>>;
+  sourceTerminalRunIds: Map<string, Set<string>>;
+  legacyStartsBySource: Map<string, number>;
+  legacyFinishedBySource: Map<string, number>;
+  legacyBlockedBySource: Map<string, number>;
   legacyLoopStarts: number;
   legacyFinishedLoops: number;
   legacyBlockedLoops: number;
@@ -1092,6 +1099,11 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     markerRecoveryBlockedKeys: new Set<string>(),
     startedRunIds: new Set<string>(),
     terminalRunIds: new Set<string>(),
+    sourceStartedRunIds: new Map<string, Set<string>>(),
+    sourceTerminalRunIds: new Map<string, Set<string>>(),
+    legacyStartsBySource: new Map<string, number>(),
+    legacyFinishedBySource: new Map<string, number>(),
+    legacyBlockedBySource: new Map<string, number>(),
     legacyLoopStarts: 0,
     legacyFinishedLoops: 0,
     legacyBlockedLoops: 0,
@@ -1100,7 +1112,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementReasonCounts, selfImprovementActionCounts, pushStatusCounts, ciGateMissingReasonCounts, emptyProviderReasonCounts, queuedIterationReasonCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1144,15 +1156,25 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     }
     if (event === "loop_started") {
       analysis.loopsStarted++;
-      if (runId) startedRunIds.add(runId);
-      else accumulator.legacyLoopStarts++;
+      if (runId) {
+        startedRunIds.add(runId);
+        if (sourceKey) ensureSet(sourceStartedRunIds, sourceKey).add(runId);
+      } else {
+        accumulator.legacyLoopStarts++;
+        if (sourceKey) incrementCount(legacyStartsBySource, sourceKey);
+      }
     }
     if (event === "loop_finished") {
       analysis.finishedLoops++;
       if (recordValidationEvidence(record).length === 0) analysis.finishedWithoutValidationRecords++;
       if (!recordHasDeliveryEvidence(record)) analysis.finishedWithoutDeliveryRecords++;
-      if (runId) terminalRunIds.add(runId);
-      else accumulator.legacyFinishedLoops++;
+      if (runId) {
+        terminalRunIds.add(runId);
+        if (sourceKey) ensureSet(sourceTerminalRunIds, sourceKey).add(runId);
+      } else {
+        accumulator.legacyFinishedLoops++;
+        if (sourceKey) incrementCount(legacyFinishedBySource, sourceKey);
+      }
       const decision = recordDecision(record, event) || "<missing decision>";
       const count = incrementCount(finishDecisionCounts, decision);
       if (count > analysis.topFinishDecisionCount) {
@@ -1162,8 +1184,13 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
     }
     if (event === "loop_blocked") {
       analysis.blockedLoops++;
-      if (runId) terminalRunIds.add(runId);
-      else accumulator.legacyBlockedLoops++;
+      if (runId) {
+        terminalRunIds.add(runId);
+        if (sourceKey) ensureSet(sourceTerminalRunIds, sourceKey).add(runId);
+      } else {
+        accumulator.legacyBlockedLoops++;
+        if (sourceKey) incrementCount(legacyBlockedBySource, sourceKey);
+      }
       const rawReason = recordReason(record, event);
       const reason = rawReason || "<missing reason>";
       if (recoveryKey && markerRecoveryKeys.has(recoveryKey)) {
@@ -1380,6 +1407,14 @@ function finalizeLoopLogAnalysis(accumulator: LoopLogAccumulator): LoopLogAnalys
   const unresolvedRunIds = [...accumulator.startedRunIds].filter((runId) => !accumulator.terminalRunIds.has(runId)).length;
   const unresolvedLegacyStarts = Math.max(0, accumulator.legacyLoopStarts - accumulator.legacyFinishedLoops - accumulator.legacyBlockedLoops);
   analysis.unresolvedLoopStarts = unresolvedRunIds + unresolvedLegacyStarts;
+  for (const [source, started] of accumulator.sourceStartedRunIds.entries()) {
+    const terminals = accumulator.sourceTerminalRunIds.get(source) || new Set<string>();
+    updateTopUnresolvedSource(analysis, source, [...started].filter((runId) => !terminals.has(runId)).length);
+  }
+  for (const source of accumulator.legacyStartsBySource.keys()) {
+    const unresolved = Math.max(0, (accumulator.legacyStartsBySource.get(source) || 0) - (accumulator.legacyFinishedBySource.get(source) || 0) - (accumulator.legacyBlockedBySource.get(source) || 0));
+    updateTopUnresolvedSource(analysis, source, unresolved);
+  }
   analysis.finalMarkerRecoverySuccesses = [...accumulator.markerRecoverySucceededKeys].filter((key) => !accumulator.markerRecoveryBlockedKeys.has(key)).length;
   analysis.finalMarkerRecoveryBlocks = accumulator.markerRecoveryBlockedKeys.size + accumulator.legacyMarkerRecoveryBlocks;
   analysis.recommendations = loopLogRecommendations(analysis);
@@ -1437,6 +1472,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     ciGateMissingRecords: 0,
     topCiGateMissingReasonCount: 0,
     unresolvedLoopStarts: 0,
+    topUnresolvedSourceCount: 0,
     emptyProviderResponses: 0,
     emptyProviderRetryRecords: 0,
     topEmptyProviderReasonCount: 0,
@@ -1591,6 +1627,21 @@ function incrementCount(counts: Map<string, number>, key: string): number {
   return count;
 }
 
+function ensureSet(map: Map<string, Set<string>>, key: string): Set<string> {
+  const existing = map.get(key);
+  if (existing) return existing;
+  const created = new Set<string>();
+  map.set(key, created);
+  return created;
+}
+
+function updateTopUnresolvedSource(analysis: LoopLogAnalysis, source: string, count: number) {
+  if (count > analysis.topUnresolvedSourceCount) {
+    analysis.topUnresolvedSource = source;
+    analysis.topUnresolvedSourceCount = count;
+  }
+}
+
 function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   const recommendations: string[] = [];
   if (analysis.maxTopicLength > PROMPT_OBJECTIVE_MAX) recommendations.push("Oversized topics: cap prompt and log objective text before repeating it in every event.");
@@ -1602,7 +1653,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
   if (analysis.duplicatePromptSentGroups > 0) recommendations.push("Duplicate prompt sends: investigate repeated iteration_prompt_sent groups before trusting prompt/result lifecycle counts.");
   if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
-  if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect whether loops are still active or missing terminal loop_finished/loop_blocked records.");
+  if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect the top unresolved log source to see whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionFailureRecords > 0) recommendations.push("Compaction failures: inspect failure reasons and verify the loop either resumes safely or remains queued for manual recovery.");
   if (analysis.userSteeringRecords > 0) recommendations.push("User steering: review steering records to distinguish intentional scope changes from accidental plain-text turns.");
   if (analysis.providerNoiseTopicRecords > 0) recommendations.push("Provider-noise topics: verify provider error text is sanitized out of repeated objectives while topic hashes preserve diagnostics.");
@@ -1693,6 +1744,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
     analysis.topCiGateMissingReason ? ["Top CI-gate missing reason", `${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount})`] : undefined,
+    analysis.topUnresolvedSource ? ["Top unresolved log source", `${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount})`] : undefined,
     analysis.topEmptyProviderReason ? ["Top empty provider reason", `${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount})`] : undefined,
     analysis.topQueuedIterationReason ? ["Top queued iteration reason", `${analysis.topQueuedIterationReason} (${analysis.topQueuedIterationReasonCount})`] : undefined,
     analysis.topProviderErrorCode ? ["Top provider error code", `${analysis.topProviderErrorCode} (${analysis.topProviderErrorCodeCount})`] : undefined,
@@ -1797,6 +1849,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `CI-gate missing records: ${analysis.ciGateMissingRecords}`,
     analysis.topCiGateMissingReason ? `Top CI-gate missing reason: ${analysis.topCiGateMissingReason} (${analysis.topCiGateMissingReasonCount} ${analysis.topCiGateMissingReasonCount === 1 ? "record" : "records"})` : undefined,
     `Unresolved loop starts: ${analysis.unresolvedLoopStarts}`,
+    analysis.topUnresolvedSource ? `Top unresolved log source: ${relativeToCwd(cwd, analysis.topUnresolvedSource)} (${analysis.topUnresolvedSourceCount} ${analysis.topUnresolvedSourceCount === 1 ? "record" : "records"})` : undefined,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
     `Empty provider retry records: ${analysis.emptyProviderRetryRecords}`,
     analysis.topEmptyProviderReason ? `Top empty provider reason: ${analysis.topEmptyProviderReason} (${analysis.topEmptyProviderReasonCount} ${analysis.topEmptyProviderReasonCount === 1 ? "record" : "records"})` : undefined,
