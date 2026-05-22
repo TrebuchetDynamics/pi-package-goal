@@ -421,6 +421,25 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(reportRecordMod.recordCiGreen({ ci_gate: "missing_CI_GREEN_yes" }, "iteration_result"), false);
   assert.equal(reportRecordMod.recordCiGreen({}, "ci_gate_missing"), false);
 
+  const statusMod = await jiti.import(path.join(root, "extensions", "development-loop-status.ts"));
+  const statusTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-status-"));
+  const statusLogPath = path.join(statusTemp, ".pi", "development-loop", "logs.jsonl");
+  fs.mkdirSync(path.dirname(statusLogPath), { recursive: true });
+  fs.writeFileSync(statusLogPath, [
+    "not-json",
+    JSON.stringify({ at: "2026-05-22T20:00:00.000Z", event: "iteration_result", iteration: 1, decision: "continue", summary: "first slice", nextSteps: ["ship second slice"] }),
+    JSON.stringify({ at: "2026-05-22T20:05:00.000Z", event: "loop_finished", iteration: 2, decision: "done", blockerState: "none" }),
+  ].join("\n"), "utf8");
+  const statusState = { active: true, adapterName: "generic-git", topic: "Ship status helper", iteration: 2, maxIterations: 3, phase: "running", logPath: statusLogPath, commit: true, push: true };
+  assert.equal(statusMod.statusLine(statusState), "● run · loop 2/3 · generic-git · git:push · Ship status helper");
+  const extractedStatus = statusMod.statusReport(statusState, statusTemp);
+  assert.match(extractedStatus, /Last event: loop_finished; at 2026-05-22T20:05:00.000Z; iteration 2; decision done; blocker none/);
+  assert.match(extractedStatus, /Recent report context:\n- i2 · done · blocker none\n- i1 · continue · summary first slice · next 1 ship second slice/);
+  assert.match(extractedStatus, /log: \.pi\/development-loop\/logs\.jsonl/);
+  assert.equal(statusMod.readLastLoopRecord(statusLogPath).event, "loop_finished");
+  assert.deepEqual(statusMod.readRecentReportRecords(statusLogPath).map((record) => record.iteration), [2, 1]);
+  assert.deepEqual(statusMod.statusWidgetLines(statusState, statusTemp), ["last loop_finished · 20:05:00 · i2 · blocker none · log .pi/development-loop/logs.jsonl"]);
+
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-loop-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
