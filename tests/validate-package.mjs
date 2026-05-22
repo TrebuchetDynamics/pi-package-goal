@@ -471,6 +471,54 @@ async function testExtensionLoadsAndRegistersCommands() {
     label: "last 2h",
   });
 
+  const configMod = await jiti.import(path.join(root, "extensions", "development-loop-config.ts"));
+  assert.deepEqual(configMod.normalizeConfig({
+    adapter: { value: "generic-git" },
+    defaultTopic: " ship it ",
+    language: " English ",
+    skills: [" tdd ", "", 42],
+    preflightCommands: "pwd",
+    validationCommands: [" npm test "],
+    commit: true,
+    push: false,
+    logPath: " .pi/dev/logs.jsonl ",
+    maxIterations: "3.8",
+    stopConditions: [" blocked "],
+  }), {
+    adapter: "generic-git",
+    defaultTopic: "ship it",
+    language: "English",
+    skills: ["tdd"],
+    preflightCommands: undefined,
+    validationCommands: ["npm test"],
+    commit: true,
+    push: false,
+    logPath: ".pi/dev/logs.jsonl",
+    maxIterations: 3,
+    stopConditions: ["blocked"],
+  });
+  assert.deepEqual(configMod.resolveCommitPush(false, true), { commit: true, push: true });
+  assert.deepEqual(configMod.resolveCommitPush(undefined, undefined, true, false), { commit: true, push: false });
+  const configTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-config-"));
+  assert.deepEqual(configMod.loadProjectConfig(path.join(configTemp, "missing.json")), {});
+  const configPath = path.join(configTemp, "development-loop.json");
+  fs.writeFileSync(configPath, JSON.stringify({ adapter: "generic-git", maxIterations: 2 }), "utf8");
+  assert.deepEqual(configMod.loadProjectConfig(configPath), { config: {
+    adapter: "generic-git",
+    defaultTopic: undefined,
+    language: undefined,
+    skills: undefined,
+    preflightCommands: undefined,
+    validationCommands: undefined,
+    commit: undefined,
+    push: undefined,
+    logPath: undefined,
+    maxIterations: 2,
+    stopConditions: undefined,
+  } });
+  fs.writeFileSync(configPath, JSON.stringify("not-object"), "utf8");
+  assert.deepEqual(configMod.loadProjectConfig(configPath), { error: "config is not a JSON object" });
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");

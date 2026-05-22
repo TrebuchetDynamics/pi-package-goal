@@ -2,6 +2,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
+import { loadProjectConfig, resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
 import {
   parseArgs,
   parseSinceFilter,
@@ -45,20 +46,6 @@ import {
 type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 type ObjectiveKind = "short" | "oversized" | "provider-noise";
-
-type ProjectConfig = {
-  adapter?: string;
-  defaultTopic?: string;
-  language?: string;
-  skills?: string[];
-  preflightCommands?: string[];
-  validationCommands?: string[];
-  commit?: boolean;
-  push?: boolean;
-  logPath?: string;
-  maxIterations?: number;
-  stopConditions?: string[];
-};
 
 type LoopAdapter = {
   name: string;
@@ -2528,41 +2515,8 @@ function mergeAdapterConfig(adapter: LoopAdapter, config: ProjectConfig): Projec
   };
 }
 
-function loadProjectConfig(configPath: string): { config?: ProjectConfig; error?: string } {
-  try {
-    if (!fs.existsSync(configPath)) return {};
-    const parsed = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    if (!parsed || typeof parsed !== "object") return { error: "config is not a JSON object" };
-    return { config: normalizeConfig(parsed as Record<string, unknown>) };
-  } catch (error) {
-    return { error: error instanceof Error ? error.message : String(error) };
-  }
-}
-
-function normalizeConfig(raw: Record<string, unknown>): ProjectConfig {
-  return {
-    adapter: selectValue(raw.adapter),
-    defaultTopic: stringOrUndefined(raw.defaultTopic),
-    language: stringOrUndefined(raw.language),
-    skills: stringArrayOrUndefined(raw.skills),
-    preflightCommands: stringArrayOrUndefined(raw.preflightCommands),
-    validationCommands: stringArrayOrUndefined(raw.validationCommands),
-    commit: booleanOrUndefined(raw.commit),
-    push: booleanOrUndefined(raw.push),
-    logPath: stringOrUndefined(raw.logPath),
-    maxIterations: numberOrUndefined(raw.maxIterations),
-    stopConditions: stringArrayOrUndefined(raw.stopConditions),
-  };
-}
-
 function getAdapterByName(name: string): LoopAdapter | undefined {
   return BUILT_IN_ADAPTERS.find((adapter) => adapter.name === name);
-}
-
-function resolveCommitPush(commitFlag: boolean | undefined, pushFlag: boolean | undefined, fallbackCommit = false, fallbackPush = false): { commit: boolean; push: boolean } {
-  const push = pushFlag ?? fallbackPush;
-  const commit = (commitFlag ?? fallbackCommit) || push;
-  return { commit, push };
 }
 
 function statusReport(s: LoopState, cwd = process.cwd()): string {
