@@ -443,6 +443,34 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
 
+  const commandMod = await jiti.import(path.join(root, "extensions", "development-loop-command.ts"));
+  assert.deepEqual(commandMod.tokenizeArgs("restart --validation 'npm test' topic words"), ["restart", "--validation", "npm test", "topic", "words"]);
+  assert.deepEqual(commandMod.parseArgs("init generic-git --yes --no-push"), {
+    command: "init",
+    adapter: "generic-git",
+    yes: true,
+    push: false,
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseArgs("restart --iterations=4 --commit=false --validation 'npm test' --topic ship it"), {
+    command: "restart",
+    iterations: 4,
+    commit: false,
+    topic: "ship it",
+    validationCommands: ["npm test"],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseSinceFilter("2h", Date.parse("2026-05-22T21:00:00.000Z")), {
+    cutoffMs: Date.parse("2026-05-22T19:00:00.000Z"),
+    cutoffIso: "2026-05-22T19:00:00.000Z",
+    label: "last 2h",
+  });
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
