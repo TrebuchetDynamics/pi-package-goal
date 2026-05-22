@@ -15,6 +15,15 @@ If `$HOME` is full, free space outside Codex too. The sqlite repair flow needs e
 
 ## Safest deletion first
 
+For a guided dry run from this bundled skill, use [`scripts/codex-storage-cleanup.sh`](../scripts/codex-storage-cleanup.sh):
+
+```bash
+bash skills/diagnose/scripts/codex-storage-cleanup.sh
+bash skills/diagnose/scripts/codex-storage-cleanup.sh --execute
+```
+
+The script removes only transient temp files and moves state databases into `~/.codex/backup/`; it does not delete `~/.codex`.
+
 Delete transient Codex temp files before deleting durable state:
 
 ```bash

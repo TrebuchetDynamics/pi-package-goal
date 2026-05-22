@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
@@ -1630,6 +1631,53 @@ async function testThirdPartyNoticePaths() {
   assert.deepEqual(collectThirdPartyNoticePathIssues(root), []);
 }
 
+async function testCodexStorageCleanupScript() {
+  const scriptRel = "skills/diagnose/scripts/codex-storage-cleanup.sh";
+  assert.ok(exists(scriptRel), "missing safe Codex cleanup script");
+  assert.notEqual(fs.statSync(path.join(root, scriptRel)).mode & 0o111, 0, "Codex cleanup script must be executable");
+
+  const source = read(scriptRel);
+  assert.match(source, /--execute/);
+  assert.match(source, /--codex-dir/);
+  assert.doesNotMatch(source, /rm -rf "?\$\{?CODEX_DIR\}?"?\s*$/m);
+  assert.doesNotMatch(source, /rm -rf "?\$\{?codex_dir\}?"?\s*$/m);
+
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-codex-cleanup-"));
+  try {
+    const codexDir = path.join(fixtureRoot, ".codex");
+    fs.mkdirSync(path.join(codexDir, "tmp"), { recursive: true });
+    fs.writeFileSync(path.join(codexDir, "config.toml"), "model = \"codex\"\n");
+    fs.writeFileSync(path.join(codexDir, "tmp", "arg0"), "temporary wrapper state\n");
+    fs.writeFileSync(path.join(codexDir, "state_5.sqlite"), "sqlite\n");
+    fs.writeFileSync(path.join(codexDir, "state_5.sqlite-shm"), "shm\n");
+    fs.writeFileSync(path.join(codexDir, "state_5.sqlite-wal"), "wal\n");
+
+    const script = path.join(root, scriptRel);
+    const dryRun = execFileSync("bash", [script, "--codex-dir", codexDir], { encoding: "utf8" });
+    assert.match(dryRun, /Dry run/);
+    assert.ok(fs.existsSync(path.join(codexDir, "tmp", "arg0")), "dry run removed temp files");
+    assert.ok(fs.existsSync(path.join(codexDir, "state_5.sqlite")), "dry run moved sqlite state");
+
+    const executed = execFileSync("bash", [script, "--execute", "--codex-dir", codexDir], { encoding: "utf8" });
+    assert.match(executed, /Removed transient temp directory/);
+    assert.match(executed, /Backed up Codex state files/);
+    assert.equal(fs.existsSync(path.join(codexDir, "tmp")), false);
+    assert.equal(fs.existsSync(path.join(codexDir, "state_5.sqlite")), false);
+    assert.equal(fs.readFileSync(path.join(codexDir, "config.toml"), "utf8"), "model = \"codex\"\n");
+
+    const backupRoot = path.join(codexDir, "backup");
+    const backupDirs = fs.readdirSync(backupRoot);
+    assert.equal(backupDirs.length, 1);
+    assert.deepEqual(fs.readdirSync(path.join(backupRoot, backupDirs[0])).sort(), [
+      "state_5.sqlite",
+      "state_5.sqlite-shm",
+      "state_5.sqlite-wal",
+    ]);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+}
+
 async function testDiagnoseCodexStorageReference() {
   const skill = read("skills/diagnose/SKILL.md");
   assert.match(skill, /\[Codex local storage failures\]\(references\/codex-storage\.md\)/);
@@ -1639,6 +1687,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(reference, /No space left on device/);
   assert.match(reference, /database or disk is full/);
   assert.match(reference, /df -h "\$HOME"/);
+  assert.match(reference, /scripts\/codex-storage-cleanup\.sh/);
   assert.match(reference, /rm -rf ~\/\.codex\/tmp/);
   assert.match(reference, /mv ~\/\.codex\/state_\*\.sqlite\* ~\/\.codex\/backup\//);
   assert.match(reference, /rm -f ~\/\.codex\/state_\*\.sqlite/);
@@ -1732,6 +1781,7 @@ await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
 await testMarkdownLinks();
 await testThirdPartyNoticePaths();
+await testCodexStorageCleanupScript();
 await testDiagnoseCodexStorageReference();
 await testNoticesAndDocs();
 console.log("pi-package-development-loop validation ok");
