@@ -158,10 +158,13 @@ type LoopLogAnalysis = {
   reportSummaryRecords: number;
   reportBlockerStateRecords: number;
   reportNextStepItems: number;
+  reportQualityWarningRecords: number;
   topReportSummary?: string;
   topReportBlockerState?: string;
+  topReportQualityWarning?: string;
   topReportSummaryCount: number;
   topReportBlockerStateCount: number;
+  topReportQualityWarningCount: number;
   topReportNextStep?: string;
   topReportNextStepCount: number;
   pushEvidenceRecords: number;
@@ -244,6 +247,7 @@ type LoopLogAccumulator = {
   reportSummaryCounts: Map<string, number>;
   reportBlockerStateCounts: Map<string, number>;
   reportNextStepCounts: Map<string, number>;
+  reportQualityWarningCounts: Map<string, number>;
   ciRedSourceCounts: Map<string, number>;
   ciGateMissingSourceCounts: Map<string, number>;
   ciGateMissingReasonCounts: Map<string, number>;
@@ -1150,6 +1154,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
     reportSummaryCounts: new Map<string, number>(),
     reportBlockerStateCounts: new Map<string, number>(),
     reportNextStepCounts: new Map<string, number>(),
+    reportQualityWarningCounts: new Map<string, number>(),
     ciRedSourceCounts: new Map<string, number>(),
     ciGateMissingSourceCounts: new Map<string, number>(),
     ciGateMissingReasonCounts: new Map<string, number>(),
@@ -1180,7 +1185,7 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, reportQualityWarningCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -1389,6 +1394,15 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator,
       if (count > analysis.topReportNextStepCount) {
         analysis.topReportNextStep = nextStep;
         analysis.topReportNextStepCount = count;
+      }
+    }
+    const reportQualityWarning = recordReportQualityWarning(event, reportSummary);
+    if (reportQualityWarning) {
+      analysis.reportQualityWarningRecords++;
+      const count = incrementCount(reportQualityWarningCounts, reportQualityWarning);
+      if (count > analysis.topReportQualityWarningCount) {
+        analysis.topReportQualityWarning = reportQualityWarning;
+        analysis.topReportQualityWarningCount = count;
       }
     }
     if (hasCommitEvidence && !pushStatus) {
@@ -1665,8 +1679,10 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     reportSummaryRecords: 0,
     reportBlockerStateRecords: 0,
     reportNextStepItems: 0,
+    reportQualityWarningRecords: 0,
     topReportSummaryCount: 0,
     topReportBlockerStateCount: 0,
+    topReportQualityWarningCount: 0,
     topReportNextStepCount: 0,
     pushEvidenceRecords: 0,
     commitWithoutPushRecords: 0,
@@ -1769,6 +1785,17 @@ function recordCommitHash(record: Record<string, unknown>): string | undefined {
 
 function recordReportSummary(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.summary) || stringOrUndefined(record.whatChanged);
+}
+
+function recordReportQualityWarning(event: string, reportSummary: string | undefined): string | undefined {
+  if (event !== "iteration_result" && event !== "loop_finished") return undefined;
+  if (reportSummary && isVagueReportSummary(reportSummary)) return `vague report summary "${reportSummary}"`;
+  return undefined;
+}
+
+function isVagueReportSummary(summary: string): boolean {
+  const normalized = summary.trim().toLowerCase().replace(/[.!]+$/g, "").replace(/\s+/g, " ");
+  return /^(all good|fixed stuff|done|finished|complete|completed|works|it works|fixed|updates?|changes?|misc|cleanup|wip)$/.test(normalized);
 }
 
 function recordBlockerState(record: Record<string, unknown>): string | undefined {
@@ -1906,6 +1933,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.finishedWithoutValidationRecords > 0) recommendations.push("Finished loops without validation evidence: include validationCommands in terminal done records or link the final report to recorded validation evidence.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > analysis.reportBlockerStateRecords) recommendations.push("Blocked reports without blocker state: include blockerState so log analysis can show the exact missing prerequisite or unsafe condition.");
+  if (analysis.reportQualityWarningRecords > 0) recommendations.push("Report quality warnings: replace vague or incomplete summaries with scope, changes, validation, delivery, blocker state, and next-step evidence.");
   if (analysis.topBlockedSource) recommendations.push("Blocked log source: inspect the top blocked log source before treating aggregate blocker counts as evenly distributed.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
@@ -1948,6 +1976,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Report summary records", String(analysis.reportSummaryRecords)],
     ["Report blocker-state records", String(analysis.reportBlockerStateRecords)],
     ["Report next-step items", String(analysis.reportNextStepItems)],
+    ["Report quality warning records", String(analysis.reportQualityWarningRecords)],
     ["Push evidence records", String(analysis.pushEvidenceRecords)],
     ["Commit-without-push records", String(analysis.commitWithoutPushRecords)],
     ["CI-green records", String(analysis.ciGreenRecords)],
@@ -1987,6 +2016,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     analysis.topReportSummary ? ["Top report summary", `${analysis.topReportSummary} (${analysis.topReportSummaryCount})`] : undefined,
     analysis.topReportBlockerState ? ["Top report blocker state", `${analysis.topReportBlockerState} (${analysis.topReportBlockerStateCount})`] : undefined,
     analysis.topReportNextStep ? ["Top report next step", `${analysis.topReportNextStep} (${analysis.topReportNextStepCount})`] : undefined,
+    analysis.topReportQualityWarning ? ["Top report quality warning", `${analysis.topReportQualityWarning} (${analysis.topReportQualityWarningCount})`] : undefined,
     analysis.topSelfImprovementSource ? ["Top self-improvement log source", `${relativeToCwd(cwd, analysis.topSelfImprovementSource)} (${analysis.topSelfImprovementSourceCount})`] : undefined,
     analysis.topSelfImprovementReason ? ["Top self-improvement reason", `${analysis.topSelfImprovementReason} (${analysis.topSelfImprovementReasonCount})`] : undefined,
     analysis.topSelfImprovementAction ? ["Top self-improvement action", `${analysis.topSelfImprovementAction} (${analysis.topSelfImprovementActionCount})`] : undefined,
@@ -2102,9 +2132,11 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Report summary records: ${analysis.reportSummaryRecords}`,
     `Report blocker-state records: ${analysis.reportBlockerStateRecords}`,
     `Report next-step items: ${analysis.reportNextStepItems}`,
+    `Report quality warning records: ${analysis.reportQualityWarningRecords}`,
     analysis.topReportSummary ? `Top report summary: ${analysis.topReportSummary} (${analysis.topReportSummaryCount} ${analysis.topReportSummaryCount === 1 ? "record" : "records"})` : undefined,
     analysis.topReportBlockerState ? `Top report blocker state: ${analysis.topReportBlockerState} (${analysis.topReportBlockerStateCount} ${analysis.topReportBlockerStateCount === 1 ? "record" : "records"})` : undefined,
     analysis.topReportNextStep ? `Top report next step: ${analysis.topReportNextStep} (${analysis.topReportNextStepCount} ${analysis.topReportNextStepCount === 1 ? "record" : "records"})` : undefined,
+    analysis.topReportQualityWarning ? `Top report quality warning: ${analysis.topReportQualityWarning} (${analysis.topReportQualityWarningCount} ${analysis.topReportQualityWarningCount === 1 ? "record" : "records"})` : undefined,
     `Commit-without-push records: ${analysis.commitWithoutPushRecords}`,
     analysis.topCommitWithoutPushSource ? `Top commit-without-push log source: ${relativeToCwd(cwd, analysis.topCommitWithoutPushSource)} (${analysis.topCommitWithoutPushSourceCount} ${analysis.topCommitWithoutPushSourceCount === 1 ? "record" : "records"})` : undefined,
     analysis.topPushStatus ? `Top push status: ${analysis.topPushStatus} (${analysis.topPushStatusCount} ${analysis.topPushStatusCount === 1 ? "record" : "records"})` : undefined,
