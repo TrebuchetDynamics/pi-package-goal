@@ -958,6 +958,8 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Iteration prompt sent records: 0/);
       assert.match(messages.at(-1).content, /Prompt\/result imbalance: 2 more results than prompts/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent groups: 0/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent extra records: 0/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 1/);
       assert.match(messages.at(-1).content, /Top block reason: missing_final_markers \(1 record\)/);
@@ -990,6 +992,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       fs.writeFileSync(customLog, [
         JSON.stringify({ timestamp: new Date(10).toISOString(), event: "loop_start", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(10).toISOString(), event: "iteration_prompt_sent", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
+        JSON.stringify({ timestamp: new Date(10).toISOString(), event: "iteration_prompt_sent", topic: "custom delivery", iteration: 1, maxIterations: 3 }),
         JSON.stringify({ timestamp: new Date(11).toISOString(), event: "assistant_decision", iteration: 1, decision: "continue", ciGreen: true, finalLine: "LOOP_DECISION: continue" }),
         JSON.stringify({ timestamp: new Date(12).toISOString(), event: "iteration_result", iteration: 1, decision: "continue", files: ["lib/profile.dart"], validation: ["flutter test"], commit: "def5678", pushed: "origin/main", ci_green: "yes" }),
         JSON.stringify({ timestamp: new Date(12).toISOString(), type: "iteration_result", iteration: "1/3", loop_decision: "continue", validation: ["npm test"], commit: "typed123", push: "origin/main", ci_gate: "local_full_gate_passed" }),
@@ -1009,14 +1012,16 @@ async function testExtensionLoadsAndRegistersCommands() {
         },
       });
       assert.equal(messages.length, customAnalysisMessagesBefore + 1);
-      assert.match(messages.at(-1).content, /Records: 10/);
+      assert.match(messages.at(-1).content, /Records: 11/);
       assert.match(messages.at(-1).content, /Loops started: 2/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 1/);
       assert.match(messages.at(-1).content, /Finished-without-delivery records: 1/);
       assert.match(messages.at(-1).content, /Iteration result records: 2/);
-      assert.match(messages.at(-1).content, /Iteration prompt sent records: 1/);
-      assert.match(messages.at(-1).content, /Prompt\/result imbalance: 1 more result than prompts/);
+      assert.match(messages.at(-1).content, /Iteration prompt sent records: 2/);
+      assert.match(messages.at(-1).content, /Prompt\/result imbalance: 0/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent groups: 1/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent extra records: 1/);
       assert.match(messages.at(-1).content, /Assistant decision records: 1/);
       assert.match(messages.at(-1).content, /Top assistant decision: continue \(1 record\)/);
       assert.match(messages.at(-1).content, /Top finish decision: done \(1 record\)/);
@@ -1042,15 +1047,17 @@ async function testExtensionLoadsAndRegistersCommands() {
       });
       assert.equal(messages.length, aggregateAnalysisMessagesBefore + 1);
       assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(2 log files\)/);
-      assert.match(messages.at(-1).content, /Records: 26/);
+      assert.match(messages.at(-1).content, /Records: 27/);
       assert.match(messages.at(-1).content, /Loops started: 5/);
       assert.match(messages.at(-1).content, /Finished loops: 2/);
       assert.match(messages.at(-1).content, /Finished-without-validation records: 2/);
       assert.match(messages.at(-1).content, /Finished-without-delivery records: 2/);
       assert.match(messages.at(-1).content, /Iteration result records: 4/);
       assert.match(messages.at(-1).content, /Iteration-result-without-validation records: 1/);
-      assert.match(messages.at(-1).content, /Iteration prompt sent records: 1/);
-      assert.match(messages.at(-1).content, /Prompt\/result imbalance: 3 more results than prompts/);
+      assert.match(messages.at(-1).content, /Iteration prompt sent records: 2/);
+      assert.match(messages.at(-1).content, /Prompt\/result imbalance: 2 more results than prompts/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent groups: 1/);
+      assert.match(messages.at(-1).content, /Duplicate prompt-sent extra records: 1/);
       assert.match(messages.at(-1).content, /Assistant decision records: 1/);
       assert.match(messages.at(-1).content, /Top assistant decision: continue \(1 record\)/);
       assert.match(messages.at(-1).content, /Blocked loops: 2/);
@@ -1097,6 +1104,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         assert.match(html, /Iteration-result-without-validation records/);
         assert.match(html, /Iteration prompt sent records/);
         assert.match(html, /Prompt\/result imbalance/);
+        assert.match(html, /Duplicate prompt-sent groups/);
+        assert.match(html, /Duplicate prompt-sent extra records/);
         assert.match(html, /Finished-without-validation records/);
         assert.match(html, /Finished-without-delivery records/);
         assert.match(html, /Assistant decision records/);
