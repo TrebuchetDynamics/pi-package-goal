@@ -389,6 +389,10 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
+  assert.equal(typeof mod.__test__.parseSinceFilter, "function");
+  const parsedTwoHourSince = mod.__test__.parseSinceFilter("2h", Date.parse("2026-05-22T21:00:00.000Z"));
+  assert.equal(parsedTwoHourSince?.cutoffIso, "2026-05-22T19:00:00.000Z");
+  assert.equal(parsedTwoHourSince?.label, "last 2h");
   assert.equal(typeof mod.__test__.shouldCompactBeforeNextIteration, "function");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false, "moderate 40% context usage should continue directly instead of spending a turn on compaction");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, contextWindow: 300000 }) }), true, "high 73% context usage should compact before the next iteration");
@@ -1265,6 +1269,29 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Provider-noise topic records: 1/);
       assert.match(messages.at(-1).content, /Sanitized topic records: 1/);
       assert.match(messages.at(-1).content, /Oversized topic records: 11/);
+
+      const sinceAnalysisMessagesBefore = messages.length;
+      await command.handler(`analyze-logs --since=1970-01-01T00:00:00.012Z ${path.join(analysisRoot, ".pi")}`, {
+        ...ctx,
+        cwd: analysisRoot,
+        sessionManager: {
+          getCwd: () => analysisRoot,
+          getEntries: () => [],
+        },
+      });
+      assert.equal(messages.length, sinceAnalysisMessagesBefore + 1);
+      assert.match(messages.at(-1).content, /Development loop log analysis: \.pi \(3 log files\)/);
+      assert.match(messages.at(-1).content, /Since: 1970-01-01T00:00:00.012Z/);
+      assert.match(messages.at(-1).content, /Since-filtered records: 23/);
+      assert.match(messages.at(-1).content, /Records: 8/);
+      assert.match(messages.at(-1).content, /Loops started: 2/);
+      assert.match(messages.at(-1).content, /Finished loops: 1/);
+      assert.match(messages.at(-1).content, /Iteration result records: 2/);
+      assert.match(messages.at(-1).content, /Iteration prompt sent records: 0/);
+      assert.match(messages.at(-1).content, /Self-improvement queued records: 1/);
+      assert.match(messages.at(-1).content, /CI-red records: 2/);
+      assert.match(messages.at(-1).content, /Unresolved loop starts: 0/);
+      assert.match(messages.at(-1).content, /Top unresolved log source: \.pi\/megabot-loop\/logs\.jsonl \(1 record\)/);
 
       const htmlMessagesBefore = messages.length;
       await command.handler(`analyze-logs --html ${path.join(analysisRoot, ".pi")}`, {

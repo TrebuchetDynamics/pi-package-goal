@@ -103,10 +103,23 @@ type LoopLogRecord = {
   logPath: string;
 };
 
+type SinceFilter = {
+  cutoffMs: number;
+  cutoffIso: string;
+  label: string;
+};
+
+type LoopLogAnalysisOptions = {
+  since?: SinceFilter;
+};
+
 type LoopLogAnalysis = {
   logFiles: number;
   records: number;
   invalidRecords: number;
+  sinceFilterLabel?: string;
+  sinceCutoffIso?: string;
+  sinceFilteredRecords: number;
   loopsStarted: number;
   finishedLoops: number;
   finishedWithoutValidationRecords: number;
@@ -228,6 +241,7 @@ type LoopLogAnalysis = {
 
 type LoopLogAccumulator = {
   analysis: LoopLogAnalysis;
+  since?: SinceFilter;
   oversizedTopicCounts: Map<string, number>;
   blockReasonCounts: Map<string, number>;
   blockedSourceCounts: Map<string, number>;
@@ -291,6 +305,7 @@ type ParsedCommand = {
   dryRun?: boolean;
   yes?: boolean;
   html?: boolean;
+  since?: string;
   logPath?: string;
   validationCommands: string[];
   preflightCommands: string[];
@@ -1033,6 +1048,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
     "- /development-loop analyze-logs [path] — summarize one log file or a directory of loop logs",
+    "- /development-loop analyze-logs --since=2h [path] — summarize only recent timestamped records",
     "- /development-loop analyze-logs --html [path] — also write a self-contained HTML health report",
     "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
     "",
@@ -1076,7 +1092,8 @@ function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
 function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand) {
   const cwd = contextCwd(ctx);
   const targetPath = absoluteLogPath(cwd, parsed.topic || state.logPath || DEFAULT_LOG_RELATIVE);
-  const analysis = analyzeLoopLogPath(targetPath);
+  const since = parsed.since ? parseSinceFilter(parsed.since) : undefined;
+  const analysis = parsed.since && !since ? invalidSinceLoopLogAnalysis(parsed.since) : analyzeLoopLogPath(targetPath, { since });
   const htmlPath = parsed.html ? writeLoopLogHtmlReport(analysis, cwd, targetPath) : undefined;
   const text = [formatLoopLogAnalysis(analysis, cwd, targetPath), htmlPath ? `HTML health report: ${htmlPath}` : undefined].filter(Boolean).join("\n");
   notify(ctx, text);
@@ -1085,19 +1102,19 @@ function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: Parsed
   }
 }
 
-function analyzeLoopLogPath(targetPath: string): LoopLogAnalysis {
+function analyzeLoopLogPath(targetPath: string, options: LoopLogAnalysisOptions = {}): LoopLogAnalysis {
   try {
     const stats = fs.statSync(targetPath);
-    if (stats.isDirectory()) return analyzeLoopLogDirectory(targetPath);
-    return analyzeLoopLogFile(targetPath);
+    if (stats.isDirectory()) return analyzeLoopLogDirectory(targetPath, options);
+    return analyzeLoopLogFile(targetPath, options);
   } catch (error) {
     return unreadableLoopLogAnalysis(error);
   }
 }
 
-function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
+function analyzeLoopLogFile(logPath: string, options: LoopLogAnalysisOptions = {}): LoopLogAnalysis {
   try {
-    const accumulator = createLoopLogAccumulator();
+    const accumulator = createLoopLogAccumulator(options);
     accumulator.analysis.logFiles = 1;
     accumulateLoopLogText(fs.readFileSync(logPath, "utf8"), accumulator, logPath);
     return finalizeLoopLogAnalysis(accumulator);
@@ -1106,7 +1123,7 @@ function analyzeLoopLogFile(logPath: string): LoopLogAnalysis {
   }
 }
 
-function analyzeLoopLogDirectory(dirPath: string): LoopLogAnalysis {
+function analyzeLoopLogDirectory(dirPath: string, options: LoopLogAnalysisOptions = {}): LoopLogAnalysis {
   try {
     const logFiles = discoverLoopLogFiles(dirPath);
     if (logFiles.length === 0) {
@@ -1116,7 +1133,7 @@ function analyzeLoopLogDirectory(dirPath: string): LoopLogAnalysis {
         recommendations: ["Log unavailable: pass a loop log file or a directory containing .pi/**/logs.jsonl files."],
       };
     }
-    const accumulator = createLoopLogAccumulator();
+    const accumulator = createLoopLogAccumulator(options);
     for (const logFile of logFiles) {
       accumulator.analysis.logFiles++;
       accumulateLoopLogText(fs.readFileSync(logFile, "utf8"), accumulator, logFile);
@@ -1127,15 +1144,21 @@ function analyzeLoopLogDirectory(dirPath: string): LoopLogAnalysis {
   }
 }
 
-function analyzeLoopLogText(content: string): LoopLogAnalysis {
-  const accumulator = createLoopLogAccumulator();
+function analyzeLoopLogText(content: string, options: LoopLogAnalysisOptions = {}): LoopLogAnalysis {
+  const accumulator = createLoopLogAccumulator(options);
   accumulateLoopLogText(content, accumulator);
   return finalizeLoopLogAnalysis(accumulator);
 }
 
-function createLoopLogAccumulator(): LoopLogAccumulator {
+function createLoopLogAccumulator(options: LoopLogAnalysisOptions = {}): LoopLogAccumulator {
+  const analysis = emptyLoopLogAnalysis();
+  if (options.since) {
+    analysis.sinceFilterLabel = options.since.label;
+    analysis.sinceCutoffIso = options.since.cutoffIso;
+  }
   return {
-    analysis: emptyLoopLogAnalysis(),
+    analysis,
+    since: options.since,
     oversizedTopicCounts: new Map<string, number>(),
     blockReasonCounts: new Map<string, number>(),
     blockedSourceCounts: new Map<string, number>(),
@@ -1190,13 +1213,20 @@ function createLoopLogAccumulator(): LoopLogAccumulator {
 }
 
 function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator, sourceKey?: string) {
-  const { analysis, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, reportMissingNextStepsDecisionCounts, reportQualityWarningCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
+  const { analysis, since, oversizedTopicCounts, blockReasonCounts, blockedSourceCounts, finishDecisionCounts, assistantDecisionCounts, promptSentCounts, sourcePromptSentCounts, sourceIterationResultCounts, postmortemCauseCounts, nextSafeActionCounts, finalMarkerRecoverySourceCounts, finalMarkerRecoveryReasonCounts, finalMarkerRecoveryBlockSourceCounts, finalMarkerRecoveryBlockReasonCounts, selfImprovementSourceCounts, selfImprovementReasonCounts, selfImprovementActionCounts, commitWithoutPushSourceCounts, pushStatusCounts, reportSummaryCounts, reportBlockerStateCounts, reportNextStepCounts, reportMissingNextStepsDecisionCounts, reportQualityWarningCounts, ciRedSourceCounts, ciGateMissingSourceCounts, ciGateMissingReasonCounts, emptyProviderSourceCounts, emptyProviderReasonCounts, queuedIterationSourceCounts, queuedIterationReasonCounts, providerErrorSourceCounts, providerErrorCodeCounts, providerErrorCategoryCounts, compactionSourceCounts, compactionFailureReasonCounts, markerRecoveryKeys, markerRecoverySucceededKeys, markerRecoveryBlockedKeys, startedRunIds, terminalRunIds, sourceStartedRunIds, sourceTerminalRunIds, legacyStartsBySource, legacyFinishedBySource, legacyBlockedBySource } = accumulator;
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
     if (!record) {
       analysis.invalidRecords++;
       continue;
+    }
+    if (since) {
+      const timestampMs = recordTimestampMs(record);
+      if (timestampMs === undefined || timestampMs < since.cutoffMs) {
+        analysis.sinceFilteredRecords++;
+        continue;
+      }
     }
     analysis.records++;
     const event = recordEvent(record) || "";
@@ -1651,11 +1681,20 @@ function unreadableLoopLogAnalysis(error: unknown): LoopLogAnalysis {
   };
 }
 
+function invalidSinceLoopLogAnalysis(value: string): LoopLogAnalysis {
+  return {
+    ...emptyLoopLogAnalysis(),
+    readError: `Invalid --since value "${value}". Use a duration like 2h, 30m, or an ISO timestamp.`,
+    recommendations: ["Since filter unavailable: rerun analyze-logs with a duration such as --since=2h or an ISO timestamp."],
+  };
+}
+
 function emptyLoopLogAnalysis(): LoopLogAnalysis {
   return {
     logFiles: 0,
     records: 0,
     invalidRecords: 0,
+    sinceFilteredRecords: 0,
     loopsStarted: 0,
     finishedLoops: 0,
     finishedWithoutValidationRecords: 0,
@@ -1976,6 +2015,7 @@ function writeLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
 function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
   const source = analysis.logFiles > 1 ? `${relativeToCwd(cwd, logPath)} (${analysis.logFiles} log files)` : relativeToCwd(cwd, logPath);
   const metrics: Array<[string, string]> = [
+    ...(analysis.sinceCutoffIso ? [["Since", analysis.sinceCutoffIso], ["Since-filtered records", String(analysis.sinceFilteredRecords)]] as Array<[string, string]> : []),
     ["Records", `${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`],
     ["Loops started", String(analysis.loopsStarted)],
     ["Finished loops", String(analysis.finishedLoops)],
@@ -2118,6 +2158,9 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
   return [
     `Development loop log analysis: ${sourceLabel}`,
     analysis.readError ? `Error: ${analysis.readError}` : undefined,
+    analysis.sinceCutoffIso ? `Since: ${analysis.sinceCutoffIso}` : undefined,
+    analysis.sinceFilterLabel && analysis.sinceFilterLabel !== analysis.sinceCutoffIso ? `Since window: ${analysis.sinceFilterLabel}` : undefined,
+    analysis.sinceCutoffIso ? `Since-filtered records: ${analysis.sinceFilteredRecords}` : undefined,
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
     `Finished loops: ${analysis.finishedLoops}`,
@@ -2774,6 +2817,13 @@ function recordTimestamp(record?: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record?.at) || stringOrUndefined(record?.timestamp);
 }
 
+function recordTimestampMs(record?: Record<string, unknown>): number | undefined {
+  const value = recordTimestamp(record);
+  if (!value) return undefined;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : undefined;
+}
+
 function recordRunId(record?: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record?.runId) || stringOrUndefined(record?.run_id);
 }
@@ -3121,6 +3171,14 @@ function parseArgs(raw: string | undefined): ParsedCommand {
       parsed.html = true;
       continue;
     }
+    if (token === "--since" || token === "--after" || token === "--last") {
+      parsed.since = tokens[++i];
+      continue;
+    }
+    if (token.startsWith("--since=") || token.startsWith("--after=") || token.startsWith("--last=")) {
+      parsed.since = token.split("=").slice(1).join("=");
+      continue;
+    }
     if (token === "--no-html" || token === "--no-report-html") {
       parsed.html = false;
       continue;
@@ -3211,6 +3269,35 @@ function parseArgs(raw: string | undefined): ParsedCommand {
     parsed.topic = positional.join(" ").trim();
   }
   return parsed;
+}
+
+function parseSinceFilter(value: string, nowMs = Date.now()): SinceFilter | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const durationMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*(ms|millisecond|milliseconds|s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks)$/i);
+  if (durationMatch) {
+    const amount = Number(durationMatch[1]);
+    const unit = durationMatch[2].toLowerCase();
+    const unitMs = unit.startsWith("ms") || unit.startsWith("millisecond")
+      ? 1
+      : unit === "s" || unit.startsWith("sec")
+        ? 1_000
+        : unit === "m" || unit.startsWith("min")
+          ? 60_000
+          : unit === "h" || unit.startsWith("hr") || unit.startsWith("hour")
+            ? 60 * 60_000
+            : unit === "d" || unit.startsWith("day")
+              ? 24 * 60 * 60_000
+              : 7 * 24 * 60 * 60_000;
+    if (!Number.isFinite(amount) || amount < 0) return undefined;
+    const cutoffMs = nowMs - amount * unitMs;
+    return { cutoffMs, cutoffIso: new Date(cutoffMs).toISOString(), label: `last ${trimmed.replace(/\s+/g, "")}` };
+  }
+
+  const timestamp = Date.parse(trimmed);
+  if (!Number.isFinite(timestamp)) return undefined;
+  return { cutoffMs: timestamp, cutoffIso: new Date(timestamp).toISOString(), label: new Date(timestamp).toISOString() };
 }
 
 function tokenizeArgs(raw: string): string[] {
@@ -3461,6 +3548,7 @@ export const __test__ = {
   buildIterationPrompt,
   parseArgs,
   parseLoopDecision,
+  parseSinceFilter,
   parseValidated,
   resolveProjectAdapter,
   shouldCompactBeforeNextIteration,
