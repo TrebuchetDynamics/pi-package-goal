@@ -103,6 +103,7 @@ type LoopLogAnalysis = {
   invalidRecords: number;
   loopsStarted: number;
   finishedLoops: number;
+  finishedWithoutValidationRecords: number;
   iterationResultRecords: number;
   topFinishDecision?: string;
   topFinishDecisionCount: number;
@@ -1065,6 +1066,7 @@ function accumulateLoopLogText(content: string, accumulator: LoopLogAccumulator)
     }
     if (event === "loop_finished") {
       analysis.finishedLoops++;
+      if (recordValidationEvidence(record).length === 0) analysis.finishedWithoutValidationRecords++;
       if (runId) terminalRunIds.add(runId);
       else accumulator.legacyFinishedLoops++;
       const decision = recordDecision(record, event) || "<missing decision>";
@@ -1176,6 +1178,7 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     invalidRecords: 0,
     loopsStarted: 0,
     finishedLoops: 0,
+    finishedWithoutValidationRecords: 0,
     iterationResultRecords: 0,
     topFinishDecisionCount: 0,
     blockedLoops: 0,
@@ -1299,6 +1302,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: require local validation evidence before continue or done decisions.");
+  if (analysis.finishedWithoutValidationRecords > 0) recommendations.push("Finished loops without validation evidence: include validationCommands in terminal done records or link the final report to recorded validation evidence.");
   if (analysis.finishedLoops > 0 && analysis.validationEvidenceRecords === 0) recommendations.push("Missing validation evidence: record validationCommands or validation arrays on terminal delivery records.");
   if (analysis.blockedLoops > 0) recommendations.push("Blocked loops: inspect missing final markers and validation evidence.");
   if (analysis.invalidRecords > 0) recommendations.push("Invalid records: keep log writes JSONL-compatible for diagnostics.");
@@ -1320,6 +1324,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
     ["Records", `${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`],
     ["Loops started", String(analysis.loopsStarted)],
     ["Finished loops", String(analysis.finishedLoops)],
+    ["Finished-without-validation records", String(analysis.finishedWithoutValidationRecords)],
     ["Iteration result records", String(analysis.iterationResultRecords)],
     ["Blocked loops", String(analysis.blockedLoops)],
     ["Postmortems", String(analysis.postmortems)],
@@ -1412,6 +1417,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
     `Finished loops: ${analysis.finishedLoops}`,
+    `Finished-without-validation records: ${analysis.finishedWithoutValidationRecords}`,
     `Iteration result records: ${analysis.iterationResultRecords}`,
     analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
