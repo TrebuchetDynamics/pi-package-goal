@@ -1798,9 +1798,17 @@ async function testPiLogAuditScript() {
   assert.match(source, /e2e-loop/);
   assert.match(source, /node_modules/);
   assert.match(source, /bad_json/);
+  assert.match(source, /Did you mean/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
+    const typoParent = path.join(fixtureRoot, "typo-parent");
+    fs.mkdirSync(path.join(typoParent, "sages-openclaw"), { recursive: true });
+    assert.throws(
+      () => execFileSync("node", [path.join(root, scriptRel), path.join(typoParent, "sages-opencalw")], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+      /Root directory not found: .*sages-opencalw[\s\S]*Did you mean: .*sages-openclaw/,
+    );
+
     const repoA = path.join(fixtureRoot, "repo-a");
     fs.mkdirSync(path.join(repoA, ".pi", "development-loop"), { recursive: true });
     fs.writeFileSync(path.join(repoA, ".pi", "development-loop", "logs.jsonl"), [
@@ -1881,6 +1889,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /missing E2E_LOOP_DECISION final marker/);
   assert.match(logAuditReference, /status=/);
   assert.match(logAuditReference, /SUMMARY/);
+  assert.match(logAuditReference, /Did you mean/);
 }
 
 async function testNoticesAndDocs() {

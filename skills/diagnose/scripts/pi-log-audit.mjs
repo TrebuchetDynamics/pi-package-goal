@@ -13,10 +13,43 @@ if (["-h", "--help"].includes(rootArg)) {
 const root = path.resolve(rootArg);
 if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
   console.error(`Root directory not found: ${root}`);
+  const suggestion = findClosestExistingSibling(root);
+  if (suggestion) console.error(`Did you mean: ${suggestion}`);
   process.exit(2);
 }
 
 const ignoredDirs = new Set([".git", "node_modules"]);
+
+function findClosestExistingSibling(target) {
+  const parent = path.dirname(target);
+  const wanted = path.basename(target);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) return undefined;
+
+  const candidates = safeReaddir(parent)
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({ name: entry.name, distance: editDistance(wanted, entry.name) }))
+    .sort((a, b) => a.distance - b.distance || a.name.localeCompare(b.name));
+  const best = candidates[0];
+  if (!best || best.distance > Math.max(3, Math.ceil(wanted.length / 3))) return undefined;
+  return path.join(parent, best.name);
+}
+
+function editDistance(left, right) {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const substitutionCost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+      current[rightIndex] = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + substitutionCost,
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+  return previous[right.length];
+}
 
 function findPiDirs(dir, out = []) {
   for (const entry of safeReaddir(dir)) {
