@@ -1813,6 +1813,7 @@ async function testPiLogAuditScript() {
   assert.match(source, /last_push/);
   assert.match(source, /run_id=/);
   assert.match(source, /adapter=/);
+  assert.match(source, /next_action=/);
 
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-log-audit-"));
   try {
@@ -1878,6 +1879,7 @@ async function testPiLogAuditScript() {
     assert.match(output, /attention=yes/);
     assert.match(output, /failure=compaction_failed_before_next_iteration\tfailure_at=2026-05-22T01:02:00.000Z/);
     assert.match(output, /Summarization failed: WebSocket error/);
+    assert.match(output, /next_action=inspect failure reason then resume or clear the loop/);
     assert.match(output, /LOG\te2e-loop\t.*repo-b/);
     assert.match(output, /status=blocked/);
     assert.match(output, /bad_json=1/);
@@ -1888,9 +1890,9 @@ async function testPiLogAuditScript() {
     assert.match(output, /HISTORY\tdevelopment-loop\t.*repo-d\tfailure=loop_blocked\tfailure_at=2026-05-22T02:50:00.000Z\treason=temporary missing marker/);
     assert.doesNotMatch(output, /ISSUE\tdevelopment-loop\t.*repo-d/);
     assert.match(output, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
-    assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
+    assert.match(output, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs\tnext_action=start a loop for these configs or remove stale config files/);
     assert.match(output, /LOG\tcustom-loop\t.*repo-f.*at=-\tlast_at=-\tmtime=2026-05-22T04:00:00.000Z.*status=queued.*config=missing\tadapter=-\tattention=yes/);
-    assert.match(output, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config/);
+    assert.match(output, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config\tnext_action=restore matching loop config or archive\/remove stale log directory/);
     assert.match(output, /SUMMARY\tlogs=4\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=1\tunknown=0\tissues=4\tbad_json=1\tlogs_without_configs=1\tpi_dirs=5\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=5/);
     assert.doesNotMatch(output, /node_modules/);
 
@@ -1898,10 +1900,10 @@ async function testPiLogAuditScript() {
     assert.match(attentionOnly, /LOG\tdevelopment-loop\t.*repo-a/);
     assert.match(attentionOnly, /LOG\te2e-loop\t.*repo-b/);
     assert.match(attentionOnly, /LOG\tcustom-loop\t.*repo-f.*mtime=2026-05-22T04:00:00.000Z.*config=missing\tadapter=-\tattention=yes/);
-    assert.match(attentionOnly, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config/);
+    assert.match(attentionOnly, /ISSUE\tcustom-loop\t.*repo-f\tmissing_config=\.pi\/custom-loop\.json\treason=log directory has no matching loop config\tnext_action=restore matching loop config or archive\/remove stale log directory/);
     assert.doesNotMatch(attentionOnly, /repo-d/);
     assert.match(attentionOnly, /PI_DIR\t.*repo-e\tlogs=-\tconfigs=development-loop\.json,navivox-loop\.json/);
-    assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs/);
+    assert.match(attentionOnly, /ISSUE\t\.pi-config\t.*repo-e\tconfigs=development-loop\.json,navivox-loop\.json\treason=config files present but no loop logs\tnext_action=start a loop for these configs or remove stale config files/);
     assert.match(attentionOnly, /SUMMARY\tlogs=4\tneeds_attention=1\tblocked=1\trunning=0\tqueued=1\tdone=1\tunknown=0\tissues=4\tbad_json=1\tlogs_without_configs=1\tfiltered_out=1\tpi_dirs=5\tpi_dirs_without_logs=1\tpi_dirs_with_configs_without_logs=1\tconfig_files=5/);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
@@ -1965,6 +1967,7 @@ async function testDiagnoseCodexStorageReference() {
   assert.match(logAuditReference, /last_push/);
   assert.match(logAuditReference, /run_id=/);
   assert.match(logAuditReference, /adapter=/);
+  assert.match(logAuditReference, /next_action=/);
 }
 
 async function testNoticesAndDocs() {

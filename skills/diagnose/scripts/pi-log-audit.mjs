@@ -265,6 +265,7 @@ function printPiConfigIssue(configNames, repoDir) {
     repoDir,
     `configs=${configNames.join(",")}`,
     "reason=config files present but no loop logs",
+    "next_action=start a loop for these configs or remove stale config files",
   ].join("\t"));
 }
 
@@ -296,14 +297,16 @@ function printLogRecord(record, repoDir) {
   ].join("\t"));
 
   if (record.lastFailure) {
-    console.log([
+    const failureFields = [
       record.attention ? "ISSUE" : "HISTORY",
       record.loopName,
       repoDir,
       `failure=${formatValue(record.lastFailure.event)}`,
       `failure_at=${formatValue(record.lastFailure.at)}`,
       `reason=${formatValue(record.lastFailure.reason)}`,
-    ].join("\t"));
+    ];
+    if (record.attention) failureFields.push("next_action=inspect failure reason then resume or clear the loop");
+    console.log(failureFields.join("\t"));
   }
 
   if (record.missingConfig) {
@@ -313,6 +316,7 @@ function printLogRecord(record, repoDir) {
       repoDir,
       `missing_config=.pi/${record.matchingConfigName}`,
       "reason=log directory has no matching loop config",
+      "next_action=restore matching loop config or archive/remove stale log directory",
     ].join("\t"));
   }
 }
