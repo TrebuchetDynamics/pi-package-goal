@@ -74,6 +74,9 @@ type LoopLogAnalysis = {
   records: number;
   invalidRecords: number;
   loopsStarted: number;
+  finishedLoops: number;
+  topFinishDecision?: string;
+  topFinishDecisionCount: number;
   blockedLoops: number;
   topBlockReason?: string;
   topBlockReasonCount: number;
@@ -856,6 +859,7 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
   const analysis = emptyLoopLogAnalysis();
   const oversizedTopicCounts = new Map<string, number>();
   const blockReasonCounts = new Map<string, number>();
+  const finishDecisionCounts = new Map<string, number>();
   const lines = content.split(/\r?\n/).filter(Boolean);
   for (const line of lines) {
     const record = parseLogRecord(line);
@@ -866,6 +870,16 @@ function analyzeLoopLogText(content: string): LoopLogAnalysis {
     analysis.records++;
     const event = recordEvent(record) || "";
     if (event === "loop_started") analysis.loopsStarted++;
+    if (event === "loop_finished") {
+      analysis.finishedLoops++;
+      const decision = stringOrUndefined(record.decision) || "<missing decision>";
+      const count = (finishDecisionCounts.get(decision) || 0) + 1;
+      finishDecisionCounts.set(decision, count);
+      if (count > analysis.topFinishDecisionCount) {
+        analysis.topFinishDecision = decision;
+        analysis.topFinishDecisionCount = count;
+      }
+    }
     if (event === "loop_blocked") {
       analysis.blockedLoops++;
       const reason = stringOrUndefined(record.reason) || "<missing reason>";
@@ -899,6 +913,8 @@ function emptyLoopLogAnalysis(): LoopLogAnalysis {
     records: 0,
     invalidRecords: 0,
     loopsStarted: 0,
+    finishedLoops: 0,
+    topFinishDecisionCount: 0,
     blockedLoops: 0,
     topBlockReasonCount: 0,
     emptyProviderResponses: 0,
@@ -935,6 +951,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
     analysis.readError ? `Error: ${analysis.readError}` : undefined,
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
+    `Finished loops: ${analysis.finishedLoops}`,
+    analysis.topFinishDecision ? `Top finish decision: ${analysis.topFinishDecision} (${analysis.topFinishDecisionCount} ${analysis.topFinishDecisionCount === 1 ? "record" : "records"})` : undefined,
     `Blocked loops: ${analysis.blockedLoops}`,
     analysis.topBlockReason ? `Top block reason: ${analysis.topBlockReason} (${analysis.topBlockReasonCount} ${analysis.topBlockReasonCount === 1 ? "record" : "records"})` : undefined,
     `Empty provider responses: ${analysis.emptyProviderResponses}`,
