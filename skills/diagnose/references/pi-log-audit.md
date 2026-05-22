@@ -14,12 +14,12 @@ The helper scans for `.pi` directories while skipping `.git` and `node_modules`,
 For each log it reports:
 
 - parsed line count and `bad_json` count
-- latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, `status=`, and `attention=yes|no`
-- current `ISSUE` reason, or `HISTORY` for a historical failure in a log that later finished cleanly
+- latest event, iteration, phase, decision, latest event `at=`, newest available `last_at=`, `status=`, matching config state (`config=present|missing`), and `attention=yes|no`
+- current `ISSUE` reason, including missing matching loop config such as `.pi/navivox-loop.json`, or `HISTORY` for a historical failure in a log that later finished cleanly
 - common interruption text such as `WebSocket error`, `WebSocket closed 1000`, or `missing E2E_LOOP_DECISION final marker`
 
 Use `--attention-only` when you only want logs that need action; it suppresses clean loop records, including completed logs with only historical failure context, and adds `filtered_out=` to the summary.
 
-The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs or config-only `.pi` folders with attention-worthy issues, totals malformed JSON lines, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
+The final `SUMMARY` line totals logs by status (`needs_attention`, `blocked`, `running`, `queued`, `done`, and `unknown`), counts logs or config-only `.pi` folders with attention-worthy issues, totals malformed JSON lines, reports `logs_without_configs=`, and reports `.pi` folder coverage with `pi_dirs=`, `pi_dirs_without_logs=`, `pi_dirs_with_configs_without_logs=`, and `config_files=`.
 
 The script does not edit files, resolve loops, commit, push, or delete `.pi` state. Use it to decide which loop needs continuation, compaction retry, or marker recovery.

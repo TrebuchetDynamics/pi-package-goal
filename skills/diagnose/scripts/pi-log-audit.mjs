@@ -170,6 +170,7 @@ const summary = {
   unknown: 0,
   issues: 0,
   badJson: 0,
+  logsWithoutConfigs: 0,
   filteredOut: 0,
   piDirs: 0,
   piDirsWithoutLogs: 0,
@@ -177,12 +178,13 @@ const summary = {
   configFiles: 0,
 };
 
-function incrementSummary(status, attention, badJson) {
+function incrementSummary(status, attention, badJson, missingConfig) {
   summary.logs += 1;
   if (Object.hasOwn(summary, status)) summary[status] += 1;
   else summary.unknown += 1;
   if (attention) summary.issues += 1;
   summary.badJson += badJson;
+  if (missingConfig) summary.logsWithoutConfigs += 1;
   if (options.attentionOnly && !attention) summary.filteredOut += 1;
 }
 
@@ -196,8 +198,9 @@ function incrementPiDirSummary(logCount, configCount) {
   summary.configFiles += configCount;
 }
 
-function needsAttention(status, lastFailure, badJson) {
+function needsAttention(status, lastFailure, badJson, missingConfig) {
   if (badJson > 0) return true;
+  if (missingConfig) return true;
   if (["blocked", "needs_attention"].includes(status)) return true;
   return status !== "done" && Boolean(lastFailure);
 }
@@ -209,17 +212,19 @@ function findLastAt(events) {
   return undefined;
 }
 
-function buildLogRecord(loopName, logPath) {
+function buildLogRecord(loopName, logPath, hasMatchingConfig) {
   const { events, badJson, lineCount } = parseJsonl(logPath);
   const latest = events.at(-1) ?? {};
   const failures = events.filter(isFailureEvent);
   const lastFailure = failures.at(-1);
   const lastAt = findLastAt(events);
   const status = classifyStatus(latest, badJson);
-  const attention = needsAttention(status, lastFailure, badJson);
+  const missingConfig = !hasMatchingConfig;
+  const attention = needsAttention(status, lastFailure, badJson, missingConfig);
   const size = fs.statSync(logPath).size;
-  incrementSummary(status, attention, badJson);
-  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size };
+  const matchingConfigName = `${loopName}.json`;
+  incrementSummary(status, attention, badJson, missingConfig);
+  return { loopName, events, badJson, lineCount, latest, lastFailure, lastAt, status, attention, size, matchingConfigName, missingConfig };
 }
 
 function printPiConfigIssue(configNames, repoDir) {
@@ -248,6 +253,7 @@ function printLogRecord(record, repoDir) {
     `phase=${formatValue(record.latest.phase)}`,
     `decision=${formatValue(record.latest.decision)}`,
     `status=${record.status}`,
+    `config=${record.missingConfig ? "missing" : "present"}`,
     `attention=${record.attention ? "yes" : "no"}`,
   ].join("\t"));
 
@@ -260,6 +266,16 @@ function printLogRecord(record, repoDir) {
       `reason=${formatValue(record.lastFailure.reason)}`,
     ].join("\t"));
   }
+
+  if (record.missingConfig) {
+    console.log([
+      "ISSUE",
+      record.loopName,
+      repoDir,
+      `missing_config=.pi/${record.matchingConfigName}`,
+      "reason=log directory has no matching loop config",
+    ].join("\t"));
+  }
 }
 
 const piDirs = findPiDirs(root).sort();
@@ -269,10 +285,11 @@ for (const piDir of piDirs) {
   const repoDir = path.dirname(piDir);
   const logs = findLoopLogs(piDir);
   const configNames = findLoopConfigs(piDir);
+  const configNameSet = new Set(configNames);
   const configOnlyIssue = logs.length === 0 && configNames.length > 0;
   incrementPiDirSummary(logs.length, configNames.length);
 
-  const records = logs.map(({ loopName, logPath }) => buildLogRecord(loopName, logPath));
+  const records = logs.map(({ loopName, logPath }) => buildLogRecord(loopName, logPath, configNameSet.has(`${loopName}.json`)));
   const visibleRecords = options.attentionOnly ? records.filter((record) => record.attention) : records;
   if (options.attentionOnly && visibleRecords.length === 0 && !configOnlyIssue) continue;
 
@@ -299,6 +316,7 @@ const summaryParts = [
   `unknown=${summary.unknown}`,
   `issues=${summary.issues}`,
   `bad_json=${summary.badJson}`,
+  `logs_without_configs=${summary.logsWithoutConfigs}`,
 ];
 if (options.attentionOnly) summaryParts.push(`filtered_out=${summary.filteredOut}`);
 summaryParts.push(
