@@ -22,6 +22,7 @@ type LoopStatusState = {
   iteration: number;
   maxIterations: number;
   startedAt?: string;
+  tokenBudget?: number;
   logPath?: string;
   phase: string;
   lastDecision?: string;

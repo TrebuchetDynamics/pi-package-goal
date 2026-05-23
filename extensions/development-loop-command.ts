@@ -1,3 +1,5 @@
+import { parseTokenBudget } from "./development-loop-budget.ts";
+
 export type DevelopmentLoopCommand = "start" | "restart" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
 
 export type SinceFilter = {
@@ -11,6 +13,7 @@ export type ParsedCommand = {
   adapter?: string;
   topic?: string;
   iterations?: number;
+  tokenBudget?: number;
   commit?: boolean;
   push?: boolean;
   force?: boolean;
@@ -59,6 +62,14 @@ export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFA
     }
     if (token.startsWith("--iterations=") || token.startsWith("--max-iterations=") || token.startsWith("-n=")) {
       parsed.iterations = numberOrUndefined(token.split("=").slice(1).join("="));
+      continue;
+    }
+    if (token === "--tokens" || token === "--token-budget" || token === "--budget") {
+      parsed.tokenBudget = parseTokenBudget(tokens[++i]);
+      continue;
+    }
+    if (token.startsWith("--tokens=") || token.startsWith("--token-budget=") || token.startsWith("--budget=")) {
+      parsed.tokenBudget = parseTokenBudget(token.split("=").slice(1).join("="));
       continue;
     }
     if (token === "--commit") {

@@ -540,7 +540,12 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(budgetMod.formatElapsedDuration(0), "0s");
   assert.equal(budgetMod.formatElapsedDuration(90_000), "1m");
   assert.equal(budgetMod.formatElapsedDuration(65 * 60_000), "1h 5m");
-  assert.equal(budgetMod.loopBudgetSummary({ startedAt: "2026-05-22T20:00:00.000Z", iteration: 2, maxIterations: 5 }, Date.parse("2026-05-22T20:01:30.000Z")), "elapsed 1m; iterations 2/5; remaining 3");
+  assert.equal(budgetMod.parseTokenBudget("98.5K"), 98500);
+  assert.equal(budgetMod.parseTokenBudget("2m"), 2000000);
+  assert.equal(budgetMod.parseTokenBudget("0"), undefined);
+  assert.equal(budgetMod.formatTokenBudget(98500), "98.5K");
+  assert.equal(budgetMod.formatTokenBudget(undefined), "none");
+  assert.equal(budgetMod.loopBudgetSummary({ startedAt: "2026-05-22T20:00:00.000Z", iteration: 2, maxIterations: 5, tokenBudget: 98500 }, Date.parse("2026-05-22T20:01:30.000Z")), "elapsed 1m; iterations 2/5; remaining 3; token budget 98.5K");
   assert.deepEqual(compactionMod.recordCompactionContextUsage({ reason: "tokens=120000 context_window=300000" }), { tokens: 120000, contextWindow: 300000 });
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
@@ -563,6 +568,15 @@ async function testExtensionLoadsAndRegistersCommands() {
     commit: false,
     topic: "ship it",
     validationCommands: ["npm test"],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseArgs("start --tokens 98.5K benchmark coverage"), {
+    command: "start",
+    topic: "benchmark coverage",
+    tokenBudget: 98500,
+    validationCommands: [],
     preflightCommands: [],
     skills: [],
     stopConditions: [],
@@ -723,13 +737,14 @@ async function testExtensionLoadsAndRegistersCommands() {
     phase: "running",
     commit: true,
     push: true,
+    tokenBudget: 98500,
   };
   const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
   assert.match(extractedPrompt, /Use the project instructions and matching skills now\. Development loop iteration 2\/3/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
-  assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1/);
-  assert.match(extractedPrompt, /soft budget; elapsed time is advisory/);
+  assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
+  assert.match(extractedPrompt, /soft budget; elapsed time and token budget are advisory/);
   assert.match(extractedPrompt, /Task discovery cues for broad objectives:/);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development loop after compaction[\s\S]*Development loop iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development loop iteration after empty provider response[\s\S]*Development loop iteration 2\/3/);
@@ -970,10 +985,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       isIdle: () => true,
     };
 
-    await command.handler("start --iterations=2 README polish", ctx);
+    await command.handler("start --iterations=2 --tokens 98.5K README polish", ctx);
     assert.equal(sent.length, 1);
     assert.match(sent[0].content, /Development loop iteration 1\/2/);
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
+    assert.match(sent[0].content, /Run budget: elapsed .*; iterations 1\/2; remaining 1; token budget 98\.5K/);
     assert.match(sent[0].content, /DEV_LOOP_DECISION/);
     assert.match(sent[0].content, /DEV_LOOP_REPORT/);
     assert.match(sent[0].content, /"summary":"brief result"/);
@@ -1047,6 +1063,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     const firstRunLogRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     assert.equal(firstRunLogRecords[0].runId, firstRunId);
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
+    assert.equal(entries.at(-1).data.tokenBudget, 98500);
     assert.match(statusUpdates.at(-1).value, /loop 1\/2 · generic-git · git:manual · README polish/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
     assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
@@ -2857,6 +2874,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pause automatic continuation without clearing loop state/);
   assert.match(readme, /resume continues the current iteration/);
   assert.match(readme, /Run budget metadata shows elapsed time and remaining iterations/);
+  assert.match(readme, /`--tokens 250K`/);
+  assert.match(readme, /soft token budget/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);

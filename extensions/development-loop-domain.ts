@@ -27,6 +27,7 @@ export type DevelopmentLoopRun = {
   maxIterations: number;
   startedAt: string;
   logPath: string;
+  tokenBudget?: number;
   phase: LoopPhase;
   lastDecision?: LoopDecision | string;
   lastReason?: string;
@@ -50,6 +51,7 @@ export type LoopEvent = {
   iteration: number;
   maxIterations: number;
   phase: LoopPhase;
+  tokenBudget?: number;
   decision?: string;
   reason?: string;
   summary?: string;
