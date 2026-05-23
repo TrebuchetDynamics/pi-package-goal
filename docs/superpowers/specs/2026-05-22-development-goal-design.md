@@ -8,6 +8,8 @@ Replace `/development-loop` with `/development-goal`: a goal-driven Pi extension
 
 - Hard rename command surface to `/development-goal` only.
 - Remove `/development-loop` and `/dev-loop` command aliases.
+- Rename the package, GitHub repository, and local checkout folder to `pi-package-development-goal`.
+- Update package metadata URLs from `TrebuchetDynamics/pi-package-development-loop` to `TrebuchetDynamics/pi-package-development-goal`.
 - Hard rename persisted paths and UI keys:
   - config: `.pi/development-goal.json`
   - logs: `.pi/development-goal/logs.jsonl`
@@ -59,12 +61,13 @@ The goal continues until one of these terminal decisions:
 
 ## Migration stance
 
-This is a hard rename. Existing `/development-loop` command names, old final markers, and old paths are removed from docs and tests rather than kept as aliases.
+This is a hard rename. Existing `/development-loop` command names, old final markers, old paths, old package metadata, and the old local checkout folder are removed or renamed rather than kept as aliases. The GitHub repository rename requires owner/admin access; if automation lacks that permission, implementation must stop with a clear blocker and exact manual rename steps.
 
 ## Test strategy
 
 Use TDD with `tests/validate-package.mjs`:
 
+- package metadata names `pi-package-development-goal` and the `TrebuchetDynamics/pi-package-development-goal` repository;
 - command registration includes `/development-goal` only;
 - parser no longer accepts iteration options as active configuration;
 - start sends intake prompt first;
