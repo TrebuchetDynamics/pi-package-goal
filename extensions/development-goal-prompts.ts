@@ -7,6 +7,7 @@ import {
 import { loopBudgetSummary } from "./development-goal-budget.ts";
 import { relativeToCwd } from "./development-goal-files.ts";
 import { iterationProgress, hasIterationCap, type LoopState } from "./development-goal-state.ts";
+import { resolveScopeExpansionPolicy } from "./development-goal-scope-expansion.ts";
 import { objectiveIntakeSummary, promptObjectiveText } from "./development-goal-topic.ts";
 
 export const PROMPT_OBJECTIVE_MAX = 600;
@@ -42,6 +43,12 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const skills = ensureMandatorySkills(nonEmpty(config.skills) ? config.skills! : adapter.skills);
   const language = config.language || DEFAULT_LANGUAGE;
   const stopConditions = nonEmpty(config.stopConditions) ? config.stopConditions! : adapter.stopConditions;
+  const scopeExpansionPolicy = resolveScopeExpansionPolicy(config);
+  const scopeExpansionGuidance = scopeExpansionPolicy.allowScopeExpansion
+    ? "Explicit scope expansion is allowed; after the known queue is empty, you may run a bounded discovery pass and select one safe new slice."
+    : scopeExpansionPolicy.requireReviewOnEmptyQueue
+      ? "Do not invent more work when the discovered queue is empty; stop with DEV_GOAL_DECISION: stop and final_status review_needed."
+      : "Scope expansion is not explicitly allowed, but review on empty queue is disabled; prefer stopping unless the next slice is already source-backed.";
   const commitPolicy = s.commit
     ? s.push
       ? "Commit each validated coherent slice and push to the current branch only when the worktree is safe."
@@ -73,6 +80,9 @@ ${skills.map((skill) => `- ${skill}`).join("\n") || "- Use the project-matching 
 
 Task discovery cues for broad objectives:
 ${TASK_DISCOVERY_CUES.map((cue) => `- ${cue}`).join("\n")}
+
+Scope expansion policy:
+- ${scopeExpansionGuidance}
 
 Review guidance:
 ${REVIEW_GUIDANCE.map((cue) => `- ${cue}`).join("\n")}

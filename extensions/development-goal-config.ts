@@ -12,6 +12,8 @@ export type ProjectConfig = {
   logPath?: string;
   maxIterations?: number;
   stopConditions?: string[];
+  allowScopeExpansion?: boolean;
+  requireReviewOnEmptyQueue?: boolean;
 };
 
 export function loadProjectConfig(configPath: string): { config?: ProjectConfig; error?: string } {
@@ -38,6 +40,8 @@ export function normalizeConfig(raw: Record<string, unknown>): ProjectConfig {
     logPath: stringOrUndefined(raw.logPath),
     maxIterations: numberOrUndefined(raw.maxIterations),
     stopConditions: stringArrayOrUndefined(raw.stopConditions),
+    ...optionalBooleanField("allowScopeExpansion", raw.allowScopeExpansion),
+    ...optionalBooleanField("requireReviewOnEmptyQueue", raw.requireReviewOnEmptyQueue),
   };
 }
 
@@ -65,6 +69,11 @@ function stringArrayOrUndefined(value: unknown): string[] | undefined {
 
 function booleanOrUndefined(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
+}
+
+function optionalBooleanField(name: "allowScopeExpansion" | "requireReviewOnEmptyQueue", value: unknown): Pick<ProjectConfig, typeof name> | {} {
+  const parsed = booleanOrUndefined(value);
+  return parsed === undefined ? {} : { [name]: parsed };
 }
 
 function numberOrUndefined(value: unknown): number | undefined {
