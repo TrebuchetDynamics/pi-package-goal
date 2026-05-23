@@ -1,4 +1,4 @@
-# pi-package-development-goal
+# pi-package-goal
 
 A Pi package that bundles reusable development-goal and E2E-goal extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
 
@@ -17,13 +17,13 @@ pi --version
 Global install:
 
 ```bash
-pi install git:github.com/TrebuchetDynamics/pi-package-development-goal
+pi install git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
 Project-local install, for a team repo:
 
 ```bash
-pi install -l git:github.com/TrebuchetDynamics/pi-package-development-goal
+pi install -l git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
 After installing or updating, run this inside Pi:
@@ -56,13 +56,13 @@ For real usage and end-to-end test work, start `/e2e-goal` from the app repo:
 Refresh the installed package when the repository changes:
 
 ```bash
-pi update git:github.com/TrebuchetDynamics/pi-package-development-goal
+pi update git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
 Remove it if you no longer want the extension and bundled skills:
 
 ```bash
-pi remove git:github.com/TrebuchetDynamics/pi-package-development-goal
+pi remove git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
 Run `/reload` after either command in an open Pi session.

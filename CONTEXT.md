@@ -1,4 +1,4 @@
-# pi-package-development-goal Context
+# pi-package-goal Context
 
 This context defines the product language for the Pi package that ships reusable goal-running extensions and bundled skills. Use these terms when naming modules, prompts, docs, logs, and tests.
 

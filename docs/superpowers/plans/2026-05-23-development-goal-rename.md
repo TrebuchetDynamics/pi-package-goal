@@ -12,7 +12,7 @@
 
 ## File structure
 
-- Modify `package.json`: rename package to `pi-package-development-goal`, update repository/homepage/bugs URLs to `TrebuchetDynamics/pi-package-development-goal`, and point Pi package at `./extensions/development-goal.ts`.
+- Modify `package.json`: rename package to `pi-package-goal`, update repository/homepage/bugs URLs to `TrebuchetDynamics/pi-package-goal`, and point Pi package at `./extensions/development-goal.ts`.
 - Rename `extensions/development-goal.ts` to `extensions/development-goal.ts`: main extension entry point and command registration.
 - Modify `extensions/development-goal-state.ts`: rename persisted constants to development-goal paths/state type; replace iteration defaults with `turnCount` defaults.
 - Modify `extensions/development-goal-domain.ts`: replace `iteration`/`maxIterations` run fields with `turnCount`; add `intake` phase.
@@ -39,10 +39,10 @@ The helper module filenames that still include `development-goal-` are private i
 Add assertions near existing package and command registration checks:
 
 ```js
-assert.equal(pkg.name, "pi-package-development-goal");
-assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-package-development-goal.git");
-assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-development-goal#readme");
-assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-development-goal/issues");
+assert.equal(pkg.name, "pi-package-goal");
+assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-package-goal.git");
+assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-goal#readme");
+assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-goal/issues");
 assert.ok(pkg.keywords.includes("development-goal"));
 assert.equal(pkg.keywords.includes("development-goal"), false);
 assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts"]);
@@ -122,14 +122,14 @@ git mv extensions/development-goal.ts extensions/development-goal.ts
 Change `package.json` identity and Pi extension list to:
 
 ```json
-"name": "pi-package-development-goal",
+"name": "pi-package-goal",
 "repository": {
   "type": "git",
-  "url": "git+https://github.com/TrebuchetDynamics/pi-package-development-goal.git"
+  "url": "git+https://github.com/TrebuchetDynamics/pi-package-goal.git"
 },
-"homepage": "https://github.com/TrebuchetDynamics/pi-package-development-goal#readme",
+"homepage": "https://github.com/TrebuchetDynamics/pi-package-goal#readme",
 "bugs": {
-  "url": "https://github.com/TrebuchetDynamics/pi-package-development-goal/issues"
+  "url": "https://github.com/TrebuchetDynamics/pi-package-goal/issues"
 },
 "keywords": [
   "pi-package",
@@ -847,7 +847,7 @@ npm test
 Expected:
 
 ```text
-pi-package-development-goal validation ok
+pi-package-goal validation ok
 ```
 
 - [ ] **Step 2: Run whitespace check**
@@ -865,7 +865,7 @@ Expected: no output, exit 0.
 Run:
 
 ```bash
-rg -n "/development-goal|/dev-goal|DEV_GOAL_|\.pi/development-goal|development-goal-state|--iterations|--max-iterations|pi-package-development-goal|TrebuchetDynamics/pi-package-development-goal" README.md package.json extensions/development-goal.ts tests/validate-package.mjs
+rg -n "/development-goal|/dev-goal|DEV_GOAL_|\.pi/development-goal|development-goal-state|--iterations|--max-iterations|pi-package-goal|TrebuchetDynamics/pi-package-goal" README.md package.json extensions/development-goal.ts tests/validate-package.mjs
 ```
 
 Expected: no output except test fixtures that explicitly assert old strings are absent. If output appears in user-facing docs/prompts/status/help/metadata, replace with development-goal wording.
@@ -911,8 +911,8 @@ git push origin main
 ### Task 9: Rename remote repository and local checkout folder
 
 **Files/paths:**
-- External: GitHub repository `TrebuchetDynamics/pi-package-development-goal`
-- Rename local folder: `/home/xel/git/pi-package-development-goal` -> `/home/xel/git/pi-package-development-goal`
+- External: GitHub repository `TrebuchetDynamics/pi-package-goal`
+- Rename local folder: `/home/xel/git/pi-package-development-loop` -> `/home/xel/git/pi-package-goal`
 - Modify after remote rename if needed: git remote URL
 
 - [ ] **Step 1: Confirm clean committed state**
@@ -924,23 +924,23 @@ git status --short --branch --untracked-files=all
 git rev-parse --show-toplevel
 ```
 
-Expected: clean worktree in `/home/xel/git/pi-package-development-goal` before moving the folder.
+Expected: clean worktree in `/home/xel/git/pi-package-development-loop` before moving the folder.
 
 - [ ] **Step 2: Rename GitHub repository when authorized**
 
 If `gh` is authenticated with repository admin rights, run:
 
 ```bash
-gh repo rename pi-package-development-goal --repo TrebuchetDynamics/pi-package-development-goal --yes
+gh repo rename pi-package-goal --repo TrebuchetDynamics/pi-package-development-loop --yes
 ```
 
-Expected: remote repository becomes `TrebuchetDynamics/pi-package-development-goal`.
+Expected: remote repository becomes `TrebuchetDynamics/pi-package-goal`.
 
 If this fails due to missing `gh`, auth, or admin rights, stop and report blocker:
 
 ```text
-blockerState: GitHub repository rename requires owner/admin access for TrebuchetDynamics/pi-package-development-goal.
-nextSteps: Rename repository in GitHub UI to pi-package-development-goal; update origin URL; rerun npm test and git diff --check.
+blockerState: GitHub repository rename requires owner/admin access for TrebuchetDynamics/pi-package-development-loop.
+nextSteps: Rename repository in GitHub UI to pi-package-goal; update origin URL; rerun npm test and git diff --check.
 ```
 
 - [ ] **Step 3: Update local remote URL**
@@ -948,15 +948,15 @@ nextSteps: Rename repository in GitHub UI to pi-package-development-goal; update
 After the GitHub repo is renamed, run:
 
 ```bash
-git remote set-url origin git@github.com:TrebuchetDynamics/pi-package-development-goal.git
+git remote set-url origin git@github.com:TrebuchetDynamics/pi-package-goal.git
 git remote -v
 ```
 
 Expected output includes:
 
 ```text
-origin	git@github.com:TrebuchetDynamics/pi-package-development-goal.git (fetch)
-origin	git@github.com:TrebuchetDynamics/pi-package-development-goal.git (push)
+origin	git@github.com:TrebuchetDynamics/pi-package-goal.git (fetch)
+origin	git@github.com:TrebuchetDynamics/pi-package-goal.git (push)
 ```
 
 - [ ] **Step 4: Rename local checkout folder**
@@ -965,16 +965,16 @@ From outside the checkout, run:
 
 ```bash
 cd /home/xel/git
-mv pi-package-development-goal pi-package-development-goal
-cd /home/xel/git/pi-package-development-goal
+mv pi-package-development-loop pi-package-goal
+cd /home/xel/git/pi-package-goal
 git status --short --branch --untracked-files=all
 ```
 
-Expected: command runs from `/home/xel/git/pi-package-development-goal` and worktree remains clean.
+Expected: command runs from `/home/xel/git/pi-package-goal` and worktree remains clean.
 
 - [ ] **Step 5: Validate after move**
 
-Run from `/home/xel/git/pi-package-development-goal`:
+Run from `/home/xel/git/pi-package-goal`:
 
 ```bash
 npm test
@@ -984,10 +984,10 @@ git diff --check
 Expected:
 
 ```text
-pi-package-development-goal validation ok
+pi-package-goal validation ok
 ```
 
-and `git diff --check` emits no output. The validation message may still contain old package name if the test script uses a static success string; update it to `pi-package-development-goal validation ok` if included in the implementation slice.
+and `git diff --check` emits no output. The validation message may still contain old package name if the test script uses a static success string; update it to `pi-package-goal validation ok` if included in the implementation slice.
 
 ---
 

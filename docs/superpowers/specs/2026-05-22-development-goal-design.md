@@ -8,8 +8,8 @@ Replace `/development-goal` with `/development-goal`: a goal-driven Pi extension
 
 - Hard rename command surface to `/development-goal` only.
 - Remove `/development-goal` and `/dev-goal` command aliases.
-- Rename the package, GitHub repository, and local checkout folder to `pi-package-development-goal`.
-- Update package metadata URLs from `TrebuchetDynamics/pi-package-development-goal` to `TrebuchetDynamics/pi-package-development-goal`.
+- Rename the package, GitHub repository, and local checkout folder to `pi-package-goal`.
+- Update package metadata URLs to `TrebuchetDynamics/pi-package-goal`.
 - Hard rename persisted paths and UI keys:
   - config: `.pi/development-goal.json`
   - logs: `.pi/development-goal/logs.jsonl`
@@ -67,7 +67,7 @@ This is a hard rename. Existing `/development-goal` command names, old final mar
 
 Use TDD with `tests/validate-package.mjs`:
 
-- package metadata names `pi-package-development-goal` and the `TrebuchetDynamics/pi-package-development-goal` repository;
+- package metadata names `pi-package-goal` and the `TrebuchetDynamics/pi-package-goal` repository;
 - command registration includes `/development-goal` only;
 - parser no longer accepts iteration options as active configuration;
 - start sends intake prompt first;

@@ -317,8 +317,11 @@ function parseFrontmatter(content) {
 
 async function testPackageManifest() {
   const pkg = readJson("package.json");
-  assert.equal(pkg.name, "pi-package-development-goal");
+  assert.equal(pkg.name, "pi-package-goal");
   assert.equal(pkg.type, "module");
+  assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-package-goal.git");
+  assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-goal#readme");
+  assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-goal/issues");
   assert.match(pkg.description, /development-goal/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("development-goal"));
@@ -3045,10 +3048,10 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review goal/);
   assert.match(readme, /`lgtm`/);
-  assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-development-goal/);
-  assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-development-goal/);
+  assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
+  assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
-  assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-goal/);
+  assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.match(readme, /\/development-goal start/);
   assert.match(readme, /\/development-goal help/);
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
@@ -3089,4 +3092,4 @@ await testCodexStorageCleanupScript();
 await testPiLogAuditScript();
 await testDiagnoseCodexStorageReference();
 await testNoticesAndDocs();
-console.log("pi-package-development-goal validation ok");
+console.log("pi-package-goal validation ok");

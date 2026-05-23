@@ -1,16 +1,16 @@
 {
-  "name": "pi-package-development-goal",
+  "name": "pi-package-goal",
   "version": "0.1.0",
   "description": "Adapter-aware Pi development-goal and E2E-goal extensions bundled with high-signal engineering and web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrebuchetDynamics/pi-package-development-goal.git"
+    "url": "git+https://github.com/TrebuchetDynamics/pi-package-goal.git"
   },
-  "homepage": "https://github.com/TrebuchetDynamics/pi-package-development-goal#readme",
+  "homepage": "https://github.com/TrebuchetDynamics/pi-package-goal#readme",
   "bugs": {
-    "url": "https://github.com/TrebuchetDynamics/pi-package-development-goal/issues"
+    "url": "https://github.com/TrebuchetDynamics/pi-package-goal/issues"
   },
   "keywords": [
     "pi-package",
