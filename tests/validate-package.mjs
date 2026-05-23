@@ -2921,6 +2921,13 @@ async function testNoticesAndDocs() {
   assert.match(readme, /soft token budget/);
   assert.match(readme, /PI_DEV_LOOP_MAX_AUTO_CONTINUES/);
   assert.match(readme, /auto-continuation guard/);
+  assert.match(readme, /### Claude-goal-inspired controls/);
+  assert.match(readme, /Borrowed behavior patterns from `jthack\/claude-goal`/);
+  assert.match(readme, /completion audit before `DEV_LOOP_DECISION: done`/);
+  assert.match(readme, /pause\/resume commands that preserve loop state/);
+  assert.match(readme, /soft token budget and elapsed run budget metadata/);
+  assert.match(readme, /runaway auto-continuation guard/);
+  assert.match(readme, /No claude-goal code is copied/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);

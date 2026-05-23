@@ -126,6 +126,17 @@ Tips:
 - Completion audit before `DEV_LOOP_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
 - Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
 
+### Claude-goal-inspired controls
+
+Borrowed behavior patterns from `jthack/claude-goal` now exist in `/development-loop` as Pi-native loop controls:
+
+- completion audit before `DEV_LOOP_DECISION: done`, so the loop maps requirements to evidence before final completion;
+- pause/resume commands that preserve loop state while stopping automatic continuation;
+- soft token budget and elapsed run budget metadata in prompts/status, matching claude-goal's advisory budget model;
+- runaway auto-continuation guard via `PI_DEV_LOOP_MAX_AUTO_CONTINUES`, pausing instead of continuing forever.
+
+No claude-goal code is copied; this package adapts prompt/control patterns only.
+
 Example continue end report:
 
 ```text
