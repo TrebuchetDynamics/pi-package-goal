@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import { loopBudgetSummary } from "./development-loop-budget.ts";
 
 type E2EPhase = "idle" | "running" | "blocked" | "done";
 type E2EDecision = "continue" | "stop" | "blocked" | "done";
@@ -264,6 +265,7 @@ function statusReport(s: E2EState, cwd = process.cwd()): string {
     statusLine(s),
     `objective: ${s.objective || DEFAULT_OBJECTIVE}`,
     `state: ${stateExplanation(s)}`,
+    ...(s.active ? [`budget: ${loopBudgetSummary(s)}`] : []),
     summarizeLastE2ERecord(readLastE2ERecord(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
     "Commands: /e2e-loop status | /e2e-loop stop | /e2e-loop restart --iterations=N <objective>",
