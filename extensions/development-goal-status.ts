@@ -1,11 +1,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./development-loop-log-record.ts";
-import { loopBudgetSummary } from "./development-loop-budget.ts";
-import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./development-loop-report-record.ts";
-import { compactTopic, objectiveText } from "./development-loop-topic.ts";
+import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./development-goal-log-record.ts";
+import { loopBudgetSummary } from "./development-goal-budget.ts";
+import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./development-goal-report-record.ts";
+import { compactTopic, objectiveText } from "./development-goal-topic.ts";
+import { compactIterationProgress } from "./development-goal-state.ts";
 
-const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-loop", "logs.jsonl");
+const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-goal", "logs.jsonl");
 const STATUS_TOPIC_MAX = 72;
 const STATUS_REPORT_HISTORY_LIMIT = 3;
 const PROMPT_OBJECTIVE_MAX = 600;
@@ -43,7 +44,7 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /development-goal status | /development-goal pause | /development-goal resume | /development-goal analyze-logs | /development-goal stop | /development-goal restart --iterations=N <topic> | /development-goal init",
+    "Commands: /development-goal status | /development-goal pause | /development-goal resume | /development-goal analyze-logs | /development-goal stop | /development-goal restart <topic> | /development-goal init",
   ].join("\n");
 }
 
@@ -52,7 +53,7 @@ export function statusLine(s: LoopStatusState, theme?: UiThemeLike): string {
   const context = statusContext(s);
   return compactJoin([
     paint(theme, status.color, `${status.icon} ${status.label}`),
-    paint(theme, "dim", s.active ? `i${s.iteration}/${s.maxIterations}` : "loop"),
+    paint(theme, "dim", s.active ? compactIterationProgress(s) : "goal"),
     s.adapterName !== "none" ? paint(theme, "dim", s.adapterName) : undefined,
     s.adapterName !== "none" ? paint(theme, deliveryColor(s), deliverySegment(s)) : undefined,
     context ? paint(theme, "muted", context) : undefined,
@@ -167,7 +168,7 @@ function stateExplanation(s: LoopStatusState, last?: Record<string, unknown>): s
     return s.lastDecision ? `Idle after ${s.lastDecision}.` : "Idle.";
   }
   if (s.phase === "queued") return "Queued follow-up; waiting for Pi to deliver the next iteration prompt.";
-  if (s.phase === "running") return "Running; waiting for final DEV_LOOP markers.";
+  if (s.phase === "running") return "Running; waiting for final DEV_GOAL markers.";
   if (s.phase === "reported") return "Iteration reported; preparing the next action.";
   const event = recordEvent(last);
   return event ? `Active; latest event is ${event}.` : "Active.";

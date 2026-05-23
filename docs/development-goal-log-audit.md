@@ -1,4 +1,4 @@
-# Development Loop Log Audit and Mega Improvement Plan
+# Development Goal Log Audit and Mega Improvement Plan
 
 Date: 2026-05-21
 
@@ -6,12 +6,12 @@ Date: 2026-05-21
 
 Source logs inspected:
 
-- `/home/xel/git/sages-openclaw/workspace-mineru/gormes-agent/.pi/development-loop/logs.jsonl`
-- `/home/xel/git/sages-openclaw/workspace-mineru/gormes-agent/.pi/gormes-loop/logs.jsonl`
-- `/home/xel/git/sages-openclaw/workspace-mineru/navivox-app/.pi/development-loop/logs.jsonl`
-- `/home/xel/git/sages-openclaw/workspace-mineru/navivox-app/.pi/navivox-loop/logs.jsonl`
-- `/home/xel/git/sages-openclaw/workspace-yunobo/polymarket-mega-bot/.pi/development-loop/logs.jsonl`
-- `/home/xel/git/sages-openclaw/workspace-yunobo/polymarket-mega-bot/.pi/megabot-loop/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-mineru/gormes-agent/.pi/development-goal/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-mineru/gormes-agent/.pi/gormes-goal/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-mineru/navivox-app/.pi/development-goal/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-mineru/navivox-app/.pi/navivox-goal/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-yunobo/polymarket-mega-bot/.pi/development-goal/logs.jsonl`
+- `/home/xel/git/sages-openclaw/workspace-yunobo/polymarket-mega-bot/.pi/megabot-goal/logs.jsonl`
 
 Local Pi sources checked:
 
@@ -36,8 +36,8 @@ Decision: build locally, adapt patterns only. None of the checked packages repla
 ## Problems observed
 
 1. **Final marker failures are the most direct hard blocker.**
-   - Gormes generic blocked three runs with `missing DEV_LOOP_DECISION final marker`.
-   - MegaBot generic blocked three runs with `missing DEV_LOOP_DECISION final marker`.
+   - Gormes generic blocked three runs with `missing DEV_GOAL_DECISION final marker`.
+   - MegaBot generic blocked three runs with `missing DEV_GOAL_DECISION final marker`.
    - Navivox custom blocked two runs with `assistant_decision_missing`.
 
 2. **Objective text is too often the whole pasted implementation context.**
@@ -67,8 +67,8 @@ Decision: build locally, adapt patterns only. None of the checked packages repla
    - Custom Gormes logs include commits and validations, which is useful, but the schema is local-only.
    - External repos were dirty while being inspected, which reinforces the need for explicit owned-vs-unrelated dirty-state evidence.
 
-7. **Repo-local custom loops contain good ideas that the package should absorb.**
-   - CI-green gates in custom loops catch invalid `continue` or `done` decisions.
+7. **Repo-local custom goals contain good ideas that the package should absorb.**
+   - CI-green gates in custom goals catch invalid `continue` or `done` decisions.
    - Self-improvement follow-ups are queued after blocked runs.
    - Active-start policies avoid replacing active loop state by accident.
    - These are currently duplicated across repo-local implementations instead of living behind one deep package interface.
@@ -117,7 +117,7 @@ Benefits:
 
 ### 5. Promote CI and delivery gates from prose into package behavior
 
-Absorb the custom-loop CI-green gate and delivery evidence. When commit/push is enabled, the loop should log dirty state before and after, files staged, validation commands, commit hash, and push result. It should never infer safety from assistant prose alone.
+Absorb the custom-goal CI-green gate and delivery evidence. When commit/push is enabled, the goal should log dirty state before and after, files staged, validation commands, commit hash, and push result. It should never infer safety from assistant prose alone.
 
 Benefits:
 
@@ -127,23 +127,23 @@ Benefits:
 
 ### 6. Build multi-log analysis and an HTML health report
 
-Extend `/development-loop analyze-logs` to accept directories or globs, discover `.pi/**/logs.jsonl`, normalize legacy schemas, and output an aggregate table plus severity-ranked recommendations. Keep the text report for terminals and add an optional self-contained HTML report for visual review.
+Extend `/development-goal analyze-logs` to accept directories or globs, discover `.pi/**/logs.jsonl`, normalize legacy schemas, and output an aggregate table plus severity-ranked recommendations. Keep the text report for terminals and add an optional self-contained HTML report for visual review.
 
 Benefits:
 
 - One command can analyze the exact multi-repo usage pattern in this audit.
-- Legacy custom-loop lessons become visible.
+- Legacy custom-goal lessons become visible.
 - Improvements can be tracked by metric, not anecdote.
 
 ## Suggested six-iteration execution sequence
 
 1. Land this source-backed audit and plan.
 2. Add a tested normalized log-ledger parser with fixtures for generic and custom records.
-3. Teach `analyze-logs` to accept directories and aggregate multiple loop logs.
+3. Teach `analyze-logs` to accept directories and aggregate multiple goal logs.
 4. Add one-shot marker recovery for missing final markers.
 5. Add objective intake summarization and repeated-topic deduplication.
 6. Add structured delivery evidence logging and the optional HTML health report.
 
 ## Top recommendation
 
-Start with the loop ledger module. It is the deepest seam: every other improvement depends on a reliable run model, and every later metric becomes easier to test once logs from generic and custom loops share one interface.
+Start with the loop ledger module. It is the deepest seam: every other improvement depends on a reliable run model, and every later metric becomes easier to test once logs from generic and custom goals share one interface.

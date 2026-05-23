@@ -1,10 +1,10 @@
 {
   "adapter": "generic-git",
-  "defaultTopic": "discover and complete the smallest safe project task with validation",
+  "defaultTopic": "discover and complete the largest safe useful project goal package with validation",
   "language": "English",
   "skills": [
-    "caveman",
     "improve-codebase-architecture",
+    "caveman",
     "repo-local skills that match the detected task before package defaults",
     "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
     "zoom-out for source-backed project understanding",
@@ -25,8 +25,7 @@
   ],
   "commit": true,
   "push": true,
-  "logPath": ".pi/development-loop/logs.jsonl",
-  "maxIterations": 6,
+  "logPath": ".pi/development-goal/logs.jsonl",
   "stopConditions": [
     "project instructions are missing or conflict with the requested work",
     "no task can be selected after inspecting TODO.md, progress.json, planning files, and repo-local guidance",

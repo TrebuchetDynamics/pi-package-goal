@@ -1,24 +1,24 @@
 {
-  "name": "pi-package-development-loop",
+  "name": "pi-package-development-goal",
   "version": "0.1.0",
-  "description": "Adapter-aware Pi development-goal and E2E-loop extensions bundled with high-signal engineering and web skills.",
+  "description": "Adapter-aware Pi development-goal and E2E-goal extensions bundled with high-signal engineering and web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrebuchetDynamics/pi-package-development-loop.git"
+    "url": "git+https://github.com/TrebuchetDynamics/pi-package-development-goal.git"
   },
-  "homepage": "https://github.com/TrebuchetDynamics/pi-package-development-loop#readme",
+  "homepage": "https://github.com/TrebuchetDynamics/pi-package-development-goal#readme",
   "bugs": {
-    "url": "https://github.com/TrebuchetDynamics/pi-package-development-loop/issues"
+    "url": "https://github.com/TrebuchetDynamics/pi-package-development-goal/issues"
   },
   "keywords": [
     "pi-package",
     "pi",
     "pi-agent",
     "development-goal",
-    "development-loop",
-    "e2e-loop",
+    "goal-runner",
+    "e2e-goal",
     "agent-skills",
     "coding-agent",
     "tdd",
@@ -35,7 +35,7 @@
   "pi": {
     "extensions": [
       "./extensions/development-goal.ts",
-      "./extensions/e2e-loop.ts"
+      "./extensions/e2e-goal.ts"
     ],
     "skills": [
       "./skills"

@@ -1,6 +1,6 @@
-# pi-package-development-loop
+# pi-package-development-goal
 
-A Pi package that bundles reusable development-goal and E2E-loop extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
+A Pi package that bundles reusable development-goal and E2E-goal extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
 
 ## Quick start
 
@@ -17,13 +17,13 @@ pi --version
 Global install:
 
 ```bash
-pi install git:github.com/TrebuchetDynamics/pi-package-development-loop
+pi install git:github.com/TrebuchetDynamics/pi-package-development-goal
 ```
 
 Project-local install, for a team repo:
 
 ```bash
-pi install -l git:github.com/TrebuchetDynamics/pi-package-development-loop
+pi install -l git:github.com/TrebuchetDynamics/pi-package-development-goal
 ```
 
 After installing or updating, run this inside Pi:
@@ -38,46 +38,38 @@ From the project you want to improve:
 
 ```text
 /development-goal adapters
-/development-goal start --iterations=3 improve the README
+/development-goal start improve the README
 /development-goal status
 ```
 
-For real usage and end-to-end test work, start `/e2e-loop` from the app repo:
+For real usage and end-to-end test work, start `/e2e-goal` from the app repo:
 
 ```text
-/e2e-loop start checkout flow and primary user journeys
-/e2e-loop start --iterations=3 API contracts and TUI smoke coverage
-/e2e-loop status
+/e2e-goal start checkout flow and primary user journeys
+/e2e-goal status
 ```
 
-`/e2e-loop` persists status in the Pi session and writes progress logs to `.pi/e2e-loop/logs.jsonl` by default.
-
-Legacy aliases: `/development-loop` and `/dev-loop`.
-
-```text
-/development-loop status
-/dev-loop status
-```
+`/e2e-goal` persists status in the Pi session and writes progress logs to `.pi/e2e-goal/logs.jsonl` by default.
 
 ## Update or remove
 
 Refresh the installed package when the repository changes:
 
 ```bash
-pi update git:github.com/TrebuchetDynamics/pi-package-development-loop
+pi update git:github.com/TrebuchetDynamics/pi-package-development-goal
 ```
 
 Remove it if you no longer want the extension and bundled skills:
 
 ```bash
-pi remove git:github.com/TrebuchetDynamics/pi-package-development-loop
+pi remove git:github.com/TrebuchetDynamics/pi-package-development-goal
 ```
 
 Run `/reload` after either command in an open Pi session.
 
 ## Development-goal instructions and tips
 
-`/development-goal` sends the agent a scoped iteration prompt, watches for final markers, logs progress, and queues follow-up iterations until the loop stops.
+`/development-goal` sends the agent a scoped iteration prompt, watches for final markers, logs progress, and queues follow-up iterations until the goal is done, blocked, stopped, or paused.
 
 Useful commands:
 
@@ -86,71 +78,71 @@ Useful commands:
 /development-goal help
 /development-goal init
 /development-goal init --force
-/development-goal init --yes --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-goal init --yes --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-goal start --iterations=3 providers
-/development-goal start --iterations=5 --tokens 250K --commit --push fix flaky tests
+/development-goal init --yes --dry-run --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-goal init --yes --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-goal start providers
+/development-goal start --tokens 250K --commit --push fix flaky tests
 /development-goal status
 /development-goal pause
 /development-goal resume
 /development-goal analyze-logs
-/development-goal analyze-logs .pi/development-loop/logs.jsonl
+/development-goal analyze-logs .pi/development-goal/logs.jsonl
 /development-goal analyze-logs .pi
 /development-goal analyze-logs --since=2h .pi
 /development-goal analyze-logs --html .pi
 /development-goal analyze-logs --json --since=2h .pi
 /development-goal stop
-/development-goal restart --iterations=2 tighten docs
+/development-goal restart tighten docs
 ```
 
 Tips:
 
-- Start small: `--iterations=1` or `--iterations=3` is usually enough.
-- `/development-goal init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, iterations, git delivery, validation, skills, stop conditions, and log path.
+- Goals continue automatically until the goal is achieved, blocked, paused, or stopped; `--iterations` is only an optional legacy safety cap.
+- `/development-goal init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, git delivery, validation, skills, stop conditions, and log path.
 - Use `--yes` (`-y` or `--defaults`) for scripted/non-interactive init that accepts generated defaults and any provided flags without prompts.
-- Existing `.pi/development-loop.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
+- Existing `.pi/development-goal.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
 - Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.
-- Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
+- Leave `--commit` and `--push` off unless you want the goal to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
-- `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
-- Use `/development-goal pause` to pause automatic continuation without clearing loop state; resume continues the current iteration from the saved state.
-- Run budget metadata shows elapsed time and remaining iterations in prompts/status; add `--tokens 250K` or `--budget 1M` to record a soft token budget cue, not a hard timeout.
-- The auto-continuation guard pauses runaway loops after 500 prompt sends by default. Set `PI_DEV_LOOP_MAX_AUTO_CONTINUES=50` for a stricter cap, then run `/development-goal resume` to continue from the saved state.
-- If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
-- An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
-- If validation is red or credentials are needed, the loop should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.
-- Progress logs go to `.pi/development-loop/logs.jsonl` by default.
-- New loop runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
+- `DEV_GOAL_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
+- Use `/development-goal pause` to pause automatic continuation without clearing goal state; resume continues the current iteration from the saved state.
+- Run budget metadata shows elapsed time and current iteration in prompts/status; add `--tokens 250K` or `--budget 1M` to record a soft token budget cue, not a hard timeout.
+- The auto-continuation guard pauses runaway goals after 500 prompt sends by default. Set `PI_DEV_GOAL_MAX_AUTO_CONTINUES=50` for a stricter cap, then run `/development-goal resume` to continue from the saved state.
+- If a non-empty assistant response forgets the final marker lines, the goal sends one marker-only recovery prompt before blocking.
+- An active goal saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
+- If validation is red or credentials are needed, the goal should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.
+- Progress logs go to `.pi/development-goal/logs.jsonl` by default.
+- New goal runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
-- Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a `DEV_LOOP_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
-- Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, and Possible next steps. Use decision-specific next steps: continue should name the next smallest verifiable slice, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_LOOP_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into loop logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_LOOP_REPORT and final markers last so automation can parse them.
-- Completion audit before `DEV_LOOP_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
-- Run `/development-goal analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
+- Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a `DEV_GOAL_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
+- Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, and Possible next steps. Use decision-specific next steps: continue should name the next largest safe useful package, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_GOAL_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into goal logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_GOAL_REPORT and final markers last so automation can parse them.
+- Completion audit before `DEV_GOAL_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
+- Run `/development-goal analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including goal starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
 
-### Claude-goal-inspired controls
+### GoalBuddy-inspired controls
 
-Borrowed behavior patterns from `jthack/claude-goal` now exist in `/development-goal` as Pi-native loop controls:
+Borrowed behavior patterns from `tolibear/goalbuddy` now exist in `/development-goal` as Pi-native goal controls:
 
-- completion audit before `DEV_LOOP_DECISION: done`, so the loop maps requirements to evidence before final completion;
-- pause/resume commands that preserve loop state while stopping automatic continuation;
-- soft token budget and elapsed run budget metadata in prompts/status, matching claude-goal's advisory budget model;
-- runaway auto-continuation guard via `PI_DEV_LOOP_MAX_AUTO_CONTINUES`, pausing instead of continuing forever.
+- a goal oracle before `DEV_GOAL_DECISION: done`, so the goal maps requirements to evidence before final completion;
+- a local work surface made of repo instructions, skills, git state, logs, and validation receipts;
+- an invariant prompt path: Intent -> Oracle -> Surface -> Work package -> Proof;
+- runaway auto-continuation guard via `PI_DEV_GOAL_MAX_AUTO_CONTINUES`, pausing instead of continuing forever.
 
-No claude-goal code is copied; this package adapts prompt/control patterns only.
+No GoalBuddy code is copied; this package adapts prompt/control patterns only.
 
 Example continue end report:
 
 ```text
 Scope: /absolute/project/path with adapter generic-git.
-Selected slice: one small verifiable improvement.
+Selected slice: one largest safe useful improvement package.
 Changed files: path/to/file.ts — what changed and why.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: abc1234 pushed to current branch.
 Blocker state: none.
-Possible next steps: next smallest verifiable slice, named concretely.
-DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path/to/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
-DEV_LOOP_VALIDATED: yes
-DEV_LOOP_DECISION: continue
+Possible next steps: next largest safe useful package, named concretely.
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path/to/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
+DEV_GOAL_VALIDATED: yes
+DEV_GOAL_DECISION: continue
 ```
 
 Example blocked end report:
@@ -163,9 +155,9 @@ Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
 Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
 Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart /development-goal with the same objective.
-DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-goal with the same objective"]}
-DEV_LOOP_VALIDATED: no
-DEV_LOOP_DECISION: blocked
+DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-goal with the same objective"]}
+DEV_GOAL_VALIDATED: no
+DEV_GOAL_DECISION: blocked
 ```
 
 Example stop handoff end report:
@@ -178,9 +170,9 @@ Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
 Possible next steps: review the pushed commit; open /development-goal status for recent context; restart with the next objective.
-DEV_LOOP_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-goal status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
-DEV_LOOP_VALIDATED: yes
-DEV_LOOP_DECISION: stop
+DEV_GOAL_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-goal status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
+DEV_GOAL_VALIDATED: yes
+DEV_GOAL_DECISION: stop
 ```
 
 Example done end report:
@@ -188,29 +180,29 @@ Example done end report:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: completed the final objective cleanup.
-Changed files: README.md — captured the final report behavior and no remaining loop work.
+Changed files: README.md — captured the final report behavior and no remaining goal work.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: fedcba9 pushed to current branch.
-Blocker state: none; done because the objective is complete and no loop follow-up remains.
-Possible next steps: review the delivered commit; archive development-loop state if desired; start a new objective only if new work appears.
-DEV_LOOP_REPORT: {"validated":true,"decision":"done","summary":"Completed the final objective cleanup","nextSteps":["Review the delivered commit","Archive development-loop state if desired","Start a new objective only if new work appears"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"fedcba9","pushStatus":"pushed"}
-DEV_LOOP_VALIDATED: yes
-DEV_LOOP_DECISION: done
+Blocker state: none; done because the objective is complete, the goal oracle is satisfied, and no goal follow-up remains.
+Possible next steps: review the delivered commit; archive development-goal state if desired; start a new objective only if new work appears.
+DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Completed the final objective cleanup","nextSteps":["Review the delivered commit","Archive development-goal state if desired","Start a new objective only if new work appears"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"fedcba9","pushStatus":"pushed"}
+DEV_GOAL_VALIDATED: yes
+DEV_GOAL_DECISION: done
 ```
 
 Example interrupted resume end report:
 
 ```text
 Scope: /absolute/project/path with adapter generic-git.
-Selected slice: resumed the same iteration after compaction without advancing the loop.
+Selected slice: resumed the same iteration after compaction without advancing the goal.
 Changed files: none committed; resume prompt preserved current dirty state.
 Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
-Possible next steps: inspect `.pi/development-loop/logs.jsonl`; run `/development-goal status`; continue the same smallest slice.
-DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-loop/logs.jsonl","Run /development-goal status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
-DEV_LOOP_VALIDATED: yes
-DEV_LOOP_DECISION: continue
+Possible next steps: inspect `.pi/development-goal/logs.jsonl`; run `/development-goal status`; continue the same safe package.
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-goal/logs.jsonl","Run /development-goal status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
+DEV_GOAL_VALIDATED: yes
+DEV_GOAL_DECISION: continue
 ```
 
 Example partial validation end report:
@@ -223,21 +215,21 @@ Validation evidence: targeted test command (pass); required validation `npm test
 Commit/push evidence: not attempted because full validation is missing.
 Blocker state: full required validation is missing, so commit and push are unsafe.
 Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass.
-DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Targeted check passed but required validation is missing","blockerState":"Full required validation is missing, so commit and push are unsafe","nextSteps":["Run npm test","Run git diff --check","Commit and push only after both pass"],"changedFiles":["path/to/file.ts"],"validationCommands":["targeted test command"]}
-DEV_LOOP_VALIDATED: no
-DEV_LOOP_DECISION: blocked
+DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Targeted check passed but required validation is missing","blockerState":"Full required validation is missing, so commit and push are unsafe","nextSteps":["Run npm test","Run git diff --check","Commit and push only after both pass"],"changedFiles":["path/to/file.ts"],"validationCommands":["targeted test command"]}
+DEV_GOAL_VALIDATED: no
+DEV_GOAL_DECISION: blocked
 ```
 
 Decision guide for final markers:
 
 | Decision | Use when | Report emphasis |
 | --- | --- | --- |
-| continue: use when validation passed and another smallest slice remains | The slice is validated and safe; more work remains in the same objective. | Name the next smallest verifiable slice. |
+| continue: use when validation passed and the full goal is not proven complete yet | The package is validated and safe; more work remains in the same objective. | Name the next largest safe useful package. |
 | blocked: use when validation is red, required evidence is missing, or delivery is unsafe | Tests failed, credentials are missing, required validation was skipped, or commit/push would include unsafe work. | Name the blocker state and concrete unblock actions. |
 | stop: use for clean handoff or review before more automation | The user should review, hand off, or restart with a different objective. | Name handoff state and safe resume actions. |
-| done: use when the objective is complete and no follow-up loop work remains | Final requested work is validated, delivered when policy allows, and has no remaining loop slice. | Summarize completion evidence and optional post-loop cleanup. |
+| done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains | Final requested work is validated, delivered when policy allows, and has no remaining goal slice. | Summarize completion evidence and optional post-goal cleanup. |
 
-Completion audit before `DEV_LOOP_DECISION: done`:
+Completion audit before `DEV_GOAL_DECISION: done`:
 
 - Restate the objective as concrete deliverables and success criteria.
 - Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected.
@@ -262,17 +254,17 @@ End report anti-patterns to avoid:
 
 ### Troubleshooting provider interruptions
 
-If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-goal status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration up to twice or resumes it after compaction instead of advancing to the next iteration.
+If Pi reports `Error: WebSocket error` and the goal warns that it is waiting after an empty provider response, run `/development-goal status` and inspect `.pi/development-goal/logs.jsonl`. The goal records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration up to twice or resumes it after compaction instead of advancing to the next iteration.
 
-If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the loop records `context_overflow_waiting_for_compaction` and keeps the same iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_LOOP_DECISION` marker.
+If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the goal records `context_overflow_waiting_for_compaction` and keeps the same goal iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_GOAL_DECISION` marker.
 
-If an otherwise useful assistant response ends without `DEV_LOOP_VALIDATED` and `DEV_LOOP_DECISION`, the loop records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the loop to avoid infinite retries.
+If an otherwise useful assistant response ends without `DEV_GOAL_VALIDATED` and `DEV_GOAL_DECISION`, the goal records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. A second non-empty response without markers blocks the goal to avoid infinite retries.
 
-For workspace-wide `.pi` loop triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only recent logs/configs that need action without stale loop or completed-loop config hygiene noise; the summary reports `attention_logs=` separately from status buckets and config-only `issues=` so blocked logs are not confused with generic `needs_attention` status, plus `blocker_kind_records=` and `top_blocker_kind=kind:count` for common actionable blockers. Blocked reports surface logged `blockerState`, known `blocker_kind=` classifiers such as `git_push_fetch_first` and `validation_failed_twice`, and first `nextSteps` entry as `blocker=` / `next_action=` when available, with blocker-kind fallback actions for common push-divergence and repeated-validation blockers. When a loop uses push delivery, the iteration prompt tells agents to inspect `git status --short --branch` before pushing and to block with `git_push_fetch_first` evidence instead of force-pushing or repairing history without explicit approval.
+For workspace-wide `.pi` goal triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only recent logs/configs that need action without stale goal or completed-goal config hygiene noise; the summary reports `attention_logs=` separately from status buckets and config-only `issues=` so blocked logs are not confused with generic `needs_attention` status, plus `blocker_kind_records=` and `top_blocker_kind=kind:count` for common actionable blockers. Blocked reports surface logged `blockerState`, known `blocker_kind=` classifiers such as `git_push_fetch_first` and `validation_failed_twice`, and first `nextSteps` entry as `blocker=` / `next_action=` when available, with blocker-kind fallback actions for common push-divergence and repeated-validation blockers. When a goal uses push delivery, the iteration prompt tells agents to inspect `git status --short --branch` before pushing and to block with `git_push_fetch_first` evidence instead of force-pushing or repairing history without explicit approval.
 
 ### Troubleshooting local Codex storage failures
 
-If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-loop log failure.
+If Codex fails before Pi starts with `No space left on device`, `database or disk is full`, or a damaged `~/.codex/state_*.sqlite` message, fix local disk pressure first. This is local Codex state, not a development-goal log failure.
 
 Likely causes include a full home filesystem, inode exhaustion can also cause `No space left on device`, Codex being unable to create PATH wrapper files under `~/.codex/tmp`, and SQLite cannot extend the state database or write its WAL/SHM sidecars while disk space is exhausted.
 
@@ -324,26 +316,26 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
 
 ### Status bar integration
 
-`/development-goal` publishes a compact powerline-friendly status through the `development-goal` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension clears the legacy `development-loop` status/widget keys on refresh so old UI state does not linger after reload. It colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
+`/development-goal` publishes a compact powerline-friendly status through the `development-goal` status key, for example `● run · i2/∞ · generic-git · git:manual · release checks`. It colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest goal record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up packages and handoff actions remain visible after later log events.
 
-`/e2e-loop` uses the same compact status style through the `e2e-loop` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available. Its below-editor widget shows compact last-event context such as `last iteration_prompt_sent · i1 · log .pi/e2e-loop/logs.jsonl`, and `/e2e-loop status` includes the same last-event context plus elapsed/iteration budget context in text form.
+`/e2e-goal` uses the same compact status style through the `e2e-goal` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available. Its below-editor widget shows compact last-event context such as `last iteration_prompt_sent · i1 · log .pi/e2e-goal/logs.jsonl`, and `/e2e-goal status` includes the same last-event context plus elapsed/iteration budget context in text form.
 
-If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote loop statuses into dedicated segments:
+If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote goal statuses into dedicated segments:
 
 ```json
 {
   "powerline": {
     "customItems": [
       {
-        "id": "dev-loop",
+        "id": "dev-goal",
         "statusKey": "development-goal",
         "position": "secondary",
-        "prefix": "loop",
+        "prefix": "goal",
         "color": "accent"
       },
       {
-        "id": "e2e-loop",
-        "statusKey": "e2e-loop",
+        "id": "e2e-goal",
+        "statusKey": "e2e-goal",
         "position": "secondary",
         "prefix": "e2e",
         "color": "warning"
@@ -353,27 +345,27 @@ If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-fo
 }
 ```
 
-### Steer an active loop
+### Steer an active goal
 
-When a development loop is active, plain text becomes a steering request for the current or next safe slice. For example, type `focus release checks next` to update the objective without stopping the loop.
+When a development goal is active, plain text becomes a steering request for the current or next safe package. For example, type `focus release checks next` to update the objective without stopping the goal.
 
 Slash commands still run as commands, and prompts sent by the extension are not rewritten.
 
 Each iteration must end with:
 
 ```text
-DEV_LOOP_VALIDATED: yes|no
-DEV_LOOP_DECISION: continue|stop|blocked|done
+DEV_GOAL_VALIDATED: yes|no
+DEV_GOAL_DECISION: continue|stop|blocked|done
 ```
 
 ### Project-local configuration for any repo
 
-Create `.pi/development-loop.json` when a repo needs its own default objective, preferred language, skills, validation commands, iteration count, git delivery policy, stop conditions, or log path. The development loop uses the single built-in `generic-git` adapter.
+Create `.pi/development-goal.json` when a repo needs its own default objective, preferred language, skills, validation commands, optional iteration safety cap, git delivery policy, stop conditions, or log path. The development goal uses the single built-in `generic-git` adapter.
 
 `/development-goal init` accepts the same basic knobs used by `start` plus config-only fields:
 
 - `--topic <text>` or trailing topic text
-- `--iterations <n>` / `--max-iterations <n>` / `-n <n>`
+- `--iterations <n>` / `--max-iterations <n>` / `-n <n>` — optional legacy safety cap; omit for continuous goal mode
 - `--commit`, `--no-commit`, `--push`, `--no-push`
 - `--validation <command>` or `--test <command>`; repeat for multiple checks
 - `--preflight <command>`; repeat for multiple preflight checks
@@ -384,7 +376,7 @@ Create `.pi/development-loop.json` when a repo needs its own default objective, 
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
-Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The loop always includes `caveman` and `improve-codebase-architecture` in its skill list, even when custom skills are configured.
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `caveman` and `improve-codebase-architecture` in its skill list, even when custom skills are configured.
 
 Example config:
 
@@ -393,14 +385,13 @@ Example config:
   "adapter": "generic-git",
   "defaultTopic": "improve documentation with tests",
   "language": "English",
-  "skills": ["caveman", "improve-codebase-architecture", "tdd", "verification-before-completion"],
+  "skills": ["improve-codebase-architecture", "caveman", "tdd", "verification-before-completion"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
   "stopConditions": ["validation fails twice with the same blocker"],
-  "maxIterations": 3,
   "commit": false,
   "push": false,
-  "logPath": ".pi/development-loop/logs.jsonl"
+  "logPath": ".pi/development-goal/logs.jsonl"
 }
 ```
 
@@ -408,11 +399,9 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 
 ## Included extensions
 
-- `/development-goal` — visible `generic-git` project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
-- `/development-loop` — legacy alias for `/development-goal`.
-- `/dev-loop` — short legacy alias for `/development-goal`.
-- `/e2e-loop` — real-usage E2E test loop that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists loop state and logs progress to `.pi/e2e-loop/logs.jsonl` by default.
-- `/e2e` — short alias for the E2E loop extension.
+- `/development-goal` — visible `generic-git` project goal for iterative work in any codebase, with built-in defaults and project-local configuration.
+- `/e2e-goal` — real-usage E2E test goal that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists goal state and logs progress to `.pi/e2e-goal/logs.jsonl` by default.
+- `/e2e` — short alias for the E2E goal extension.
 
 ## Included skills
 
@@ -428,7 +417,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `lgtm` — treats approvals like “lgtm” or “go ahead” as permission to continue the most recent recommendation.
 - `caveman` — ultra-compressed status communication.
 - `write-a-skill` — skill authoring guidance.
-- `greploop` — Greptile review loop for PR/MR/CL cleanup when review automation, required CLI auth, and git delivery are intentionally enabled.
+- `greploop` — Greptile review goal for PR/MR/CL cleanup when review automation, required CLI auth, and git delivery are intentionally enabled.
 
 ### Web and browser
 
@@ -450,9 +439,9 @@ The validation script checks:
 - Pi package manifest shape, referenced bundle paths, and Pi glob/exclusion entries.
 - Pi core imports are peerDependencies with "*".
 - Extension load via Pi-bundled `jiti`.
-- `/development-goal`, `/development-loop`, `/dev-loop`, `/e2e-loop`, and `/e2e` command registration.
+- `/development-goal`, `/e2e-goal`, and `/e2e` command registration.
 - E2E smoke coverage for starting and completing one development-goal extension run.
-- E2E-loop smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-loop/logs.jsonl` progress logging.
+- E2E-goal smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-goal/logs.jsonl` progress logging.
 - Skill frontmatter and exact expected bundle contents.
 - Markdown relative links outside code-fence templates.
 - README quick-start structure.

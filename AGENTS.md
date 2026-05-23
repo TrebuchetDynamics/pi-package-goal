@@ -1,6 +1,6 @@
-# AGENTS.md — pi-package-development-loop
+# AGENTS.md — pi-package-development-goal
 
-This repository packages a global Pi development-loop extension plus selected third-party skills.
+This repository packages a global Pi development-goal extension plus selected third-party skills.
 
 ## Rules
 

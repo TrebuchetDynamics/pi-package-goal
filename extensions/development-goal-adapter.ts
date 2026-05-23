@@ -1,7 +1,7 @@
 import * as path from "node:path";
-import { loadProjectConfig, type ProjectConfig } from "./development-loop-config.ts";
-import { dirExists } from "./development-loop-files.ts";
-import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./development-loop-state.ts";
+import { loadProjectConfig, type ProjectConfig } from "./development-goal-config.ts";
+import { dirExists } from "./development-goal-files.ts";
+import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./development-goal-state.ts";
 
 export type LoopAdapter = {
   name: string;
@@ -23,9 +23,9 @@ export type ResolvedProjectAdapter = {
   configError?: string;
 };
 
-export const DEFAULT_CONFIG_RELATIVE = path.join(".pi", "development-loop.json");
+export const DEFAULT_CONFIG_RELATIVE = path.join(".pi", "development-goal.json");
 export const DEFAULT_LANGUAGE = "English";
-export const MANDATORY_SKILLS = ["caveman", "improve-codebase-architecture"];
+export const MANDATORY_SKILLS = ["improve-codebase-architecture", "caveman"];
 
 export const COMMON_PREFLIGHT = [
   "pwd",
@@ -38,11 +38,11 @@ export const BUILT_IN_ADAPTERS: LoopAdapter[] = [
   {
     name: "generic-git",
     label: "Generic Git",
-    description: "Conservative generic git-project development loop",
-    defaultTopic: "discover and complete the smallest safe project task with validation",
+    description: "Conservative generic git-project development goal",
+    defaultTopic: "discover and complete the largest safe useful project goal package with validation",
     skills: [
-      "caveman",
       "improve-codebase-architecture",
+      "caveman",
       "repo-local skills that match the detected task before package defaults",
       "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
       "zoom-out for source-backed project understanding",

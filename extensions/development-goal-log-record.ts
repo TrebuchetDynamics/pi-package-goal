@@ -59,7 +59,7 @@ export function recordReason(record: Record<string, unknown>, event: string): st
 
 function finalLineLoopDecision(record: Record<string, unknown>): string | undefined {
   const finalLine = stringOrUndefined(record.finalLine);
-  const match = finalLine?.match(/\b(?:DEV_)?LOOP_DECISION:\s*(continue|stop|blocked|done)\b/i);
+  const match = finalLine?.match(/\b(?:DEV_)?(?:GOAL|LOOP)_DECISION:\s*(continue|stop|blocked|done)\b/i);
   return match?.[1]?.toLowerCase();
 }
 

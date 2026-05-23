@@ -12,7 +12,7 @@ export function contextCwd(ctx: CwdLikeContext): string {
   return ctx.sessionManager?.getCwd?.() || ctx.cwd || process.cwd();
 }
 
-export function absoluteLogPath(cwd: string, configured: string | undefined, defaultRelative = path.join(".pi", "development-loop", "logs.jsonl")): string {
+export function absoluteLogPath(cwd: string, configured: string | undefined, defaultRelative = path.join(".pi", "development-goal", "logs.jsonl")): string {
   const target = configured || defaultRelative;
   return path.isAbsolute(target) ? target : path.join(cwd, target);
 }

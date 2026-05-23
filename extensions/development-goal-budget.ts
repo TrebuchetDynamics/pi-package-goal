@@ -1,3 +1,5 @@
+import { hasIterationCap } from "./development-goal-state.ts";
+
 export type LoopBudgetState = {
   startedAt?: string;
   iteration: number;
@@ -6,14 +8,15 @@ export type LoopBudgetState = {
 };
 
 export function loopBudgetSummary(s: LoopBudgetState, nowMs = Date.now()): string {
-  const remaining = Math.max(0, Math.floor(s.maxIterations) - Math.floor(s.iteration));
+  const capped = hasIterationCap(s);
+  const remaining = capped ? Math.max(0, Math.floor(s.maxIterations) - Math.floor(s.iteration)) : undefined;
   const tokenBudget = formatTokenBudget(s.tokenBudget);
   return [
     `elapsed ${elapsedSince(s.startedAt, nowMs)}`,
-    `iterations ${s.iteration}/${s.maxIterations}`,
-    `remaining ${remaining}`,
+    capped ? `iterations ${s.iteration}/${s.maxIterations}` : `iterations ${s.iteration} (until done)`,
+    remaining !== undefined ? `remaining ${remaining}` : undefined,
     ...(tokenBudget !== "none" ? [`token budget ${tokenBudget}`] : []),
-  ].join("; ");
+  ].filter((part): part is string => Boolean(part)).join("; ");
 }
 
 export function parseTokenBudget(value: unknown): number | undefined {

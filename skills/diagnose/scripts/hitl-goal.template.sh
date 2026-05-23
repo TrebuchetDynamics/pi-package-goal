@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Human-in-the-loop reproduction loop.
+# Human-guided reproduction goal.
 # Copy this file, edit the steps below, and run it.
 # The agent runs the script; the user follows prompts in their terminal.
 #
 # Usage:
-#   bash hitl-loop.template.sh
+#   bash hitl-goal.template.sh
 #
 # Two helpers:
 #   step "<instruction>"          → show instruction, wait for Enter

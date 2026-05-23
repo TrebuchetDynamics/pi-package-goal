@@ -1,8 +1,9 @@
-import type { DevelopmentLoopRun } from "./development-loop-domain.ts";
+import type { DevelopmentLoopRun } from "./development-goal-domain.ts";
 
-export const CUSTOM_STATE_TYPE = "development-loop-state";
-export const DEFAULT_LOG_RELATIVE = ".pi/development-loop/logs.jsonl";
-export const DEFAULT_ITERATIONS = 3;
+export const CUSTOM_STATE_TYPE = "development-goal-state";
+export const DEFAULT_LOG_RELATIVE = ".pi/development-goal/logs.jsonl";
+export const UNBOUNDED_MAX_ITERATIONS = Number.MAX_SAFE_INTEGER;
+export const DEFAULT_ITERATIONS = UNBOUNDED_MAX_ITERATIONS;
 
 export type LoopState = DevelopmentLoopRun;
 export type LoopStateEntry = {
@@ -32,6 +33,22 @@ export function isLoopState(value: unknown): value is LoopState {
     typeof item.startedAt === "string" &&
     typeof item.logPath === "string" &&
     typeof item.phase === "string";
+}
+
+export function hasIterationCap(value: { maxIterations?: number } | number | undefined): boolean {
+  const maxIterations = typeof value === "number" ? value : value?.maxIterations;
+  return typeof maxIterations === "number" &&
+    Number.isFinite(maxIterations) &&
+    maxIterations > 0 &&
+    maxIterations < UNBOUNDED_MAX_ITERATIONS;
+}
+
+export function iterationProgress(value: { iteration: number; maxIterations?: number }): string {
+  return hasIterationCap(value) ? `${value.iteration}/${value.maxIterations}` : `${value.iteration} (until done)`;
+}
+
+export function compactIterationProgress(value: { iteration: number; maxIterations?: number }): string {
+  return hasIterationCap(value) ? `i${value.iteration}/${value.maxIterations}` : `i${value.iteration}/∞`;
 }
 
 export function inactiveState(defaultLogPath = DEFAULT_LOG_RELATIVE, defaultIterations = DEFAULT_ITERATIONS): LoopState {

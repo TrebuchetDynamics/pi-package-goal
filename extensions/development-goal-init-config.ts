@@ -5,11 +5,11 @@ import {
   ensureMandatorySkills,
   getAdapterByName,
   type LoopAdapter,
-} from "./development-loop-adapter.ts";
-import type { ParsedCommand } from "./development-loop-command.ts";
-import { resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
-import { relativeToCwd, splitLines } from "./development-loop-files.ts";
-import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./development-loop-state.ts";
+} from "./development-goal-adapter.ts";
+import type { ParsedCommand } from "./development-goal-command.ts";
+import { resolveCommitPush, type ProjectConfig } from "./development-goal-config.ts";
+import { relativeToCwd, splitLines } from "./development-goal-files.ts";
+import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE, hasIterationCap } from "./development-goal-state.ts";
 
 export const HARD_MAX_ITERATIONS = 25;
 
@@ -40,7 +40,7 @@ export function initDefaults(parsed: InitParsedCommand, _cwd?: string, adapterNa
   const skills = ensureMandatorySkills(parsed.skills?.length ? parsed.skills : adapter.skills);
   const stopConditions = parsed.stopConditions?.length ? parsed.stopConditions : adapter.stopConditions;
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, false, false);
-  const maxIterations = clampIterations(parsed.iterations ?? DEFAULT_ITERATIONS);
+  const maxIterations = parsed.iterations ? clampIterations(parsed.iterations) : undefined;
   const logPath = parsed.logPath || DEFAULT_LOG_RELATIVE;
 
   return {
@@ -56,7 +56,7 @@ export function initDefaults(parsed: InitParsedCommand, _cwd?: string, adapterNa
       commit,
       push,
       logPath,
-      maxIterations,
+      ...(maxIterations ? { maxIterations } : {}),
       stopConditions,
     },
   };
@@ -82,7 +82,7 @@ export function initConfigSummary(config: ProjectConfig, cwd: string, configRela
     `Adapter: ${config.adapter}`,
     `Objective: ${config.defaultTopic}`,
     `Preferred language: ${config.language || DEFAULT_LANGUAGE}`,
-    `Iterations: ${config.maxIterations}`,
+    `Iterations: ${iterationCapSummary(config.maxIterations)}`,
     `Git delivery: ${config.push ? "push" : config.commit ? "commit" : "manual"}`,
     `Validation: ${(config.validationCommands ?? []).join("; ") || "none"}`,
     `Log path: ${config.logPath || DEFAULT_LOG_RELATIVE}`,
@@ -91,4 +91,8 @@ export function initConfigSummary(config: ProjectConfig, cwd: string, configRela
 
 export function clampIterations(value: number): number {
   return Math.max(1, Math.min(Math.floor(value), HARD_MAX_ITERATIONS));
+}
+
+export function iterationCapSummary(maxIterations: number | undefined): string {
+  return hasIterationCap(maxIterations ?? DEFAULT_ITERATIONS) ? String(maxIterations) : "until goal achieved";
 }

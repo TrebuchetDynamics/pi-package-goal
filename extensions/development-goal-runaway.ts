@@ -1,5 +1,5 @@
 export const DEFAULT_MAX_AUTO_CONTINUES = 500;
-export const AUTO_CONTINUE_LIMIT_ENV = "PI_DEV_LOOP_MAX_AUTO_CONTINUES";
+export const AUTO_CONTINUE_LIMIT_ENV = "PI_DEV_GOAL_MAX_AUTO_CONTINUES";
 
 export function autoContinueLimitFromEnv(env: Record<string, string | undefined> = process.env): number {
   const parsed = Number(env[AUTO_CONTINUE_LIMIT_ENV]);

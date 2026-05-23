@@ -12,7 +12,7 @@ When exploring the codebase, use the project's domain glossary to get a clear me
 ## Quick references
 
 - [Codex local storage failures](references/codex-storage.md) — safe local cleanup path for `No space left on device`, `database or disk is full`, and damaged `~/.codex/state_*.sqlite` startup errors.
-- [Pi loop log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-loop`, `e2e-loop`, and custom loop logs across repo trees.
+- [Pi goal log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-goal`, `e2e-goal`, and custom goal logs across repo trees.
 
 ## Phase 1 — Build a feedback loop
 
@@ -31,7 +31,7 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 7. **Property / fuzz loop.** If the bug is "sometimes wrong output", run 1000 random inputs and look for the failure mode.
 8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate "boot at state X, check, repeat" so you can `git bisect run` it.
 9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.
-10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.
+10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-goal.template.sh` so the goal is still structured. Captured output feeds back to you.
 
 Build the right feedback loop, and the bug is 90% fixed.
 

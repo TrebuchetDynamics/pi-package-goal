@@ -2,14 +2,14 @@
 
 ## Goal
 
-Replace `/development-loop` with `/development-goal`: a goal-driven Pi extension that works until the goal is reached, not until an iteration cap is exhausted.
+Replace `/development-goal` with `/development-goal`: a goal-driven Pi extension that works until the goal is reached, not until an iteration cap is exhausted.
 
 ## Accepted decisions
 
 - Hard rename command surface to `/development-goal` only.
-- Remove `/development-loop` and `/dev-loop` command aliases.
+- Remove `/development-goal` and `/dev-goal` command aliases.
 - Rename the package, GitHub repository, and local checkout folder to `pi-package-development-goal`.
-- Update package metadata URLs from `TrebuchetDynamics/pi-package-development-loop` to `TrebuchetDynamics/pi-package-development-goal`.
+- Update package metadata URLs from `TrebuchetDynamics/pi-package-development-goal` to `TrebuchetDynamics/pi-package-development-goal`.
 - Hard rename persisted paths and UI keys:
   - config: `.pi/development-goal.json`
   - logs: `.pi/development-goal/logs.jsonl`
@@ -61,7 +61,7 @@ The goal continues until one of these terminal decisions:
 
 ## Migration stance
 
-This is a hard rename. Existing `/development-loop` command names, old final markers, old paths, old package metadata, and the old local checkout folder are removed or renamed rather than kept as aliases. The GitHub repository rename requires owner/admin access; if automation lacks that permission, implementation must stop with a clear blocker and exact manual rename steps.
+This is a hard rename. Existing `/development-goal` command names, old final markers, old paths, old package metadata, and the old local checkout folder are removed or renamed rather than kept as aliases. The GitHub repository rename requires owner/admin access; if automation lacks that permission, implementation must stop with a clear blocker and exact manual rename steps.
 
 ## Test strategy
 
@@ -74,4 +74,4 @@ Use TDD with `tests/validate-package.mjs`:
 - intake prompt includes grill/brainstorm instructions and real-gap constraint;
 - `DEV_GOAL_*` markers parse and drive continuation;
 - status, logs, config path, and state key use development-goal names;
-- no docs references to `/development-loop`, `/dev-loop`, or `DEV_LOOP_*` remain except migration/history notes if intentionally kept.
+- no docs references to `/development-goal`, `/dev-goal`, or `DEV_GOAL_*` remain except migration/history notes if intentionally kept.

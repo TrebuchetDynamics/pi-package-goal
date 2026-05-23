@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the public `/development-loop` workflow, package, repo, and local checkout identity with `development-goal`, remove iteration caps, and add an intake phase that grills/brainstorms only real decision gaps before implementation.
+**Goal:** Replace the public `/development-goal` workflow, package, repo, and local checkout identity with `development-goal`, remove iteration caps, and add an intake phase that grills/brainstorms only real decision gaps before implementation.
 
 **Architecture:** Keep the existing extension internals and adapter seams, but hard-rename every public command, persisted path, state key, UI key, prompt marker, package metadata URL, and README surface to development-goal. Replace user-facing iteration state with an internal `turnCount`; `continue` schedules another turn until `done`, `blocked`, or `stop`. Add a first-turn intake prompt that inspects repo context, asks only decision-blocking questions, and advances to implementation with `DEV_GOAL_DECISION: continue` when no real gaps remain. Treat the GitHub repository and local checkout folder rename as delivery steps that require a clean working tree and repository-owner permission for the remote rename.
 
@@ -13,18 +13,18 @@
 ## File structure
 
 - Modify `package.json`: rename package to `pi-package-development-goal`, update repository/homepage/bugs URLs to `TrebuchetDynamics/pi-package-development-goal`, and point Pi package at `./extensions/development-goal.ts`.
-- Rename `extensions/development-loop.ts` to `extensions/development-goal.ts`: main extension entry point and command registration.
-- Modify `extensions/development-loop-state.ts`: rename persisted constants to development-goal paths/state type; replace iteration defaults with `turnCount` defaults.
-- Modify `extensions/development-loop-domain.ts`: replace `iteration`/`maxIterations` run fields with `turnCount`; add `intake` phase.
-- Modify `extensions/development-loop-command.ts`: remove iteration options from active parsing; optionally capture unsupported iteration flags so the handler can reject them cleanly.
-- Modify `extensions/development-loop-prompts.ts`: emit intake and goal prompts with `DEV_GOAL_*` markers and no iteration cap text.
-- Modify `extensions/development-loop-status.ts`: use goal wording, turn count, `development-goal` log paths, and no iteration denominator.
-- Modify `extensions/development-loop-logger.ts`: log `turnCount` instead of `iteration`/`maxIterations` for development-goal records.
+- Rename `extensions/development-goal.ts` to `extensions/development-goal.ts`: main extension entry point and command registration.
+- Modify `extensions/development-goal-state.ts`: rename persisted constants to development-goal paths/state type; replace iteration defaults with `turnCount` defaults.
+- Modify `extensions/development-goal-domain.ts`: replace `iteration`/`maxIterations` run fields with `turnCount`; add `intake` phase.
+- Modify `extensions/development-goal-command.ts`: remove iteration options from active parsing; optionally capture unsupported iteration flags so the handler can reject them cleanly.
+- Modify `extensions/development-goal-prompts.ts`: emit intake and goal prompts with `DEV_GOAL_*` markers and no iteration cap text.
+- Modify `extensions/development-goal-status.ts`: use goal wording, turn count, `development-goal` log paths, and no iteration denominator.
+- Modify `extensions/development-goal-logger.ts`: log `turnCount` instead of `iteration`/`maxIterations` for development-goal records.
 - Modify parser/report helper modules only where marker names or log fields require it.
 - Modify `README.md`: document `/development-goal`, intake phase, no iteration cap, new paths, and `DEV_GOAL_*` markers.
 - Modify `tests/validate-package.mjs`: drive every behavior change test-first.
 
-The helper module filenames that still include `development-loop-` are private implementation details. Rename only the public extension entry file in this pass to keep the implementation diff reviewable.
+The helper module filenames that still include `development-goal-` are private implementation details. Rename only the public extension entry file in this pass to keep the implementation diff reviewable.
 
 ---
 
@@ -44,18 +44,18 @@ assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-pa
 assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-development-goal#readme");
 assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-development-goal/issues");
 assert.ok(pkg.keywords.includes("development-goal"));
-assert.equal(pkg.keywords.includes("development-loop"), false);
-assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-loop.ts"]);
+assert.equal(pkg.keywords.includes("development-goal"), false);
+assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts"]);
 assert.ok(exists("extensions/development-goal.ts"), "development-goal extension missing");
-assert.equal(exists("extensions/development-loop.ts"), false, "old development-loop extension entry should be removed");
+assert.equal(exists("extensions/development-goal.ts"), false, "old development-goal extension entry should be removed");
 ```
 
 In the extension registration section, replace command assertions with:
 
 ```js
 assert.ok(commands.has("development-goal"));
-assert.equal(commands.has("development-loop"), false);
-assert.equal(commands.has("dev-loop"), false);
+assert.equal(commands.has("development-goal"), false);
+assert.equal(commands.has("dev-goal"), false);
 const command = commands.get("development-goal");
 ```
 
@@ -70,9 +70,9 @@ assert.match(readme, /\.pi\/development-goal\.json/);
 assert.match(readme, /DEV_GOAL_DECISION/);
 assert.match(readme, /DEV_GOAL_VALIDATED/);
 assert.match(readme, /DEV_GOAL_REPORT/);
-assert.doesNotMatch(readme, /\/development-loop/);
-assert.doesNotMatch(readme, /\/dev-loop/);
-assert.doesNotMatch(readme, /DEV_LOOP_/);
+assert.doesNotMatch(readme, /\/development-goal/);
+assert.doesNotMatch(readme, /\/dev-goal/);
+assert.doesNotMatch(readme, /DEV_GOAL_/);
 ```
 
 - [ ] **Step 3: Run tests and verify RED**
@@ -104,7 +104,7 @@ Do not commit failing tests alone unless handing off. Continue to Task 2.
 ### Task 2: Rename the public extension entry point and command
 
 **Files:**
-- Rename: `extensions/development-loop.ts` -> `extensions/development-goal.ts`
+- Rename: `extensions/development-goal.ts` -> `extensions/development-goal.ts`
 - Modify: `package.json`
 - Modify: `extensions/development-goal.ts`
 - Test: `tests/validate-package.mjs`
@@ -114,7 +114,7 @@ Do not commit failing tests alone unless handing off. Continue to Task 2.
 Run:
 
 ```bash
-git mv extensions/development-loop.ts extensions/development-goal.ts
+git mv extensions/development-goal.ts extensions/development-goal.ts
 ```
 
 - [ ] **Step 2: Update package metadata**
@@ -136,7 +136,7 @@ Change `package.json` identity and Pi extension list to:
   "pi",
   "pi-agent",
   "development-goal",
-  "e2e-loop",
+  "e2e-goal",
   "agent-skills",
   "coding-agent",
   "tdd",
@@ -145,7 +145,7 @@ Change `package.json` identity and Pi extension list to:
 "pi": {
   "extensions": [
     "./extensions/development-goal.ts",
-    "./extensions/e2e-loop.ts"
+    "./extensions/e2e-goal.ts"
   ],
   "skills": [
     "./skills"
@@ -172,8 +172,8 @@ pi.registerCommand("development-goal", command);
 Remove both old registrations:
 
 ```ts
-pi.registerCommand("development-loop", command);
-pi.registerCommand("dev-loop", { ...command, description: "Alias for /development-loop" });
+pi.registerCommand("development-goal", command);
+pi.registerCommand("dev-goal", { ...command, description: "Alias for /development-goal" });
 ```
 
 - [ ] **Step 4: Run tests and verify partial GREEN for command registration**
@@ -195,9 +195,9 @@ Do not commit yet because current tests remain red.
 ### Task 3: Rename persisted state/path constants and switch state shape to turns
 
 **Files:**
-- Modify: `extensions/development-loop-domain.ts`
-- Modify: `extensions/development-loop-state.ts`
-- Modify: `extensions/development-loop-logger.ts`
+- Modify: `extensions/development-goal-domain.ts`
+- Modify: `extensions/development-goal-state.ts`
+- Modify: `extensions/development-goal-logger.ts`
 - Modify: `extensions/development-goal.ts`
 - Test: `tests/validate-package.mjs`
 
@@ -233,7 +233,7 @@ assert.equal(loopStateMod.isLoopState(validGoalState), true);
 
 - [ ] **Step 2: Update domain types**
 
-In `extensions/development-loop-domain.ts`, replace loop run fields with goal fields:
+In `extensions/development-goal-domain.ts`, replace loop run fields with goal fields:
 
 ```ts
 export type LoopPhase = "idle" | "intake" | "queued" | "running" | "reported" | "paused" | "blocked" | "done";
@@ -269,7 +269,7 @@ Remove required `iteration` and `maxIterations` fields from development-goal rec
 
 - [ ] **Step 3: Update state constants**
 
-In `extensions/development-loop-state.ts`, replace constants/default shape:
+In `extensions/development-goal-state.ts`, replace constants/default shape:
 
 ```ts
 export const CUSTOM_STATE_TYPE = "development-goal-state";
@@ -307,7 +307,7 @@ return typeof item.active === "boolean" &&
 
 - [ ] **Step 4: Update log record building**
 
-In `extensions/development-loop-logger.ts`, update log state and record fields:
+In `extensions/development-goal-logger.ts`, update log state and record fields:
 
 ```ts
 export type DevelopmentLoopLogState = {
@@ -368,11 +368,11 @@ Expected: tests still fail at prompt/runtime/docs marker behavior, but state tes
 ### Task 4: Remove iteration options from command parsing and config init
 
 **Files:**
-- Modify: `extensions/development-loop-command.ts`
-- Modify: `extensions/development-loop-init-config.ts`
+- Modify: `extensions/development-goal-command.ts`
+- Modify: `extensions/development-goal-init-config.ts`
 - Modify: `extensions/development-goal.ts`
-- Modify: `extensions/development-loop-config.ts`
-- Modify: `extensions/development-loop-adapter.ts` if adapter defaults expose `maxIterations`
+- Modify: `extensions/development-goal-config.ts`
+- Modify: `extensions/development-goal-adapter.ts` if adapter defaults expose `maxIterations`
 - Test: `tests/validate-package.mjs`
 
 - [ ] **Step 1: Write failing parser assertions**
@@ -402,7 +402,7 @@ assert.deepEqual(commandMod.parseArgs("start --iterations=4 ship it"), {
 
 - [ ] **Step 2: Update ParsedCommand**
 
-In `extensions/development-loop-command.ts`, remove `iterations?: number;` and add:
+In `extensions/development-goal-command.ts`, remove `iterations?: number;` and add:
 
 ```ts
 unsupportedOptions?: string[];
@@ -443,7 +443,7 @@ if (parsed.unsupportedOptions?.length) {
 
 - [ ] **Step 4: Remove init iteration prompting/defaults**
 
-In `extensions/development-loop-init-config.ts`, remove `maxIterations` from the generated config. If the file currently exports `HARD_MAX_ITERATIONS`, remove it or stop using it. Init summary should not mention iterations.
+In `extensions/development-goal-init-config.ts`, remove `maxIterations` from the generated config. If the file currently exports `HARD_MAX_ITERATIONS`, remove it or stop using it. Init summary should not mention iterations.
 
 Expected init default shape in tests should drop `maxIterations`:
 
@@ -456,7 +456,7 @@ assert.equal(initDefaults.config.logPath, "custom/logs.jsonl");
 
 - [ ] **Step 5: Update config normalization**
 
-In `extensions/development-loop-config.ts`, keep reading legacy `maxIterations` harmlessly only if it is already present, but do not expose it in normalized development-goal config. Test expectation should remove `maxIterations`.
+In `extensions/development-goal-config.ts`, keep reading legacy `maxIterations` harmlessly only if it is already present, but do not expose it in normalized development-goal config. Test expectation should remove `maxIterations`.
 
 - [ ] **Step 6: Run tests**
 
@@ -473,8 +473,8 @@ Expected: parser/init iteration tests pass; prompt/runtime still fail until foll
 ### Task 5: Add intake prompt and rename markers to `DEV_GOAL_*`
 
 **Files:**
-- Modify: `extensions/development-loop-prompts.ts`
-- Modify: `extensions/development-loop-report-parser.ts`
+- Modify: `extensions/development-goal-prompts.ts`
+- Modify: `extensions/development-goal-report-parser.ts`
 - Modify: `extensions/development-goal.ts`
 - Test: `tests/validate-package.mjs`
 
@@ -488,8 +488,8 @@ assert.match(intakePrompt, /Development goal intake/);
 assert.match(intakePrompt, /Ask only decision-blocking questions/);
 assert.match(intakePrompt, /If a question can be answered by inspecting the repository, inspect instead of asking/);
 assert.match(intakePrompt, /DEV_GOAL_DECISION: continue\|stop\|blocked\|done/);
-assert.doesNotMatch(intakePrompt, /Development loop iteration/);
-assert.doesNotMatch(intakePrompt, /DEV_LOOP_/);
+assert.doesNotMatch(intakePrompt, /Development goal iteration/);
+assert.doesNotMatch(intakePrompt, /DEV_GOAL_/);
 ```
 
 Update marker parse tests:
@@ -497,12 +497,12 @@ Update marker parse tests:
 ```js
 assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), "continue");
 assert.equal(mod.__test__.parseValidated("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), true);
-assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), undefined);
+assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), undefined);
 ```
 
 - [ ] **Step 2: Add intake prompt builder**
 
-In `extensions/development-loop-prompts.ts`, add:
+In `extensions/development-goal-prompts.ts`, add:
 
 ```ts
 export function buildGoalIntakePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -567,7 +567,7 @@ return `Use the project instructions and matching skills now. Development goal t
 
 - [ ] **Step 4: Update report parser marker regexes**
 
-In `extensions/development-loop-report-parser.ts`, update marker extraction to only recognize:
+In `extensions/development-goal-report-parser.ts`, update marker extraction to only recognize:
 
 ```ts
 /DEV_GOAL_DECISION:\s*(continue|stop|blocked|done)\s*$/
@@ -593,7 +593,7 @@ Expected: prompt/parser tests pass; runtime transition tests may still fail unti
 
 **Files:**
 - Modify: `extensions/development-goal.ts`
-- Modify: `extensions/development-loop-compaction.ts` only if messages include iteration wording
+- Modify: `extensions/development-goal-compaction.ts` only if messages include iteration wording
 - Test: `tests/validate-package.mjs`
 
 - [ ] **Step 1: Write failing runtime tests**
@@ -624,7 +624,7 @@ assert.equal(entries.at(-1).data.phase, "running");
 assert.equal(entries.at(-1).data.turnCount, 2);
 ```
 
-Update all later final-marker fixture strings from `DEV_LOOP_*` to `DEV_GOAL_*`.
+Update all later final-marker fixture strings from `DEV_GOAL_*` to `DEV_GOAL_*`.
 
 - [ ] **Step 2: Start in intake phase**
 
@@ -727,10 +727,10 @@ Expected: runtime tests pass for start/intake/continue/pause/resume/done. Docs a
 ### Task 7: Update status, help, config, docs, and log-analysis wording
 
 **Files:**
-- Modify: `extensions/development-loop-status.ts`
+- Modify: `extensions/development-goal-status.ts`
 - Modify: `extensions/development-goal.ts`
-- Modify: `extensions/development-loop-adapter.ts`
-- Modify: `extensions/development-loop-config.ts`
+- Modify: `extensions/development-goal-adapter.ts`
+- Modify: `extensions/development-goal-config.ts`
 - Modify: `README.md`
 - Test: `tests/validate-package.mjs`
 
@@ -744,7 +744,7 @@ assert.equal(statusMod.statusLine(statusState), "● run · turn 2 · generic-gi
 const extractedStatus = statusMod.statusReport(statusState, statusTemp);
 assert.match(extractedStatus, /budget: elapsed .*; turn 2/);
 assert.match(extractedStatus, /Commands: \/development-goal status/);
-assert.doesNotMatch(extractedStatus, /development-loop|iteration/);
+assert.doesNotMatch(extractedStatus, /development-goal|iteration/);
 ```
 
 Update help command assertions:
@@ -752,12 +752,12 @@ Update help command assertions:
 ```js
 await command.handler("help", ctx);
 assert.match(messages.at(-1).content, /\/development-goal start/);
-assert.doesNotMatch(messages.at(-1).content, /\/development-loop|--iterations|DEV_LOOP_/);
+assert.doesNotMatch(messages.at(-1).content, /\/development-goal|--iterations|DEV_GOAL_/);
 ```
 
 - [ ] **Step 2: Update status module**
 
-In `extensions/development-loop-status.ts`, change state type fields from iteration/max to turn count:
+In `extensions/development-goal-status.ts`, change state type fields from iteration/max to turn count:
 
 ```ts
 turnCount: number;
@@ -799,7 +799,7 @@ const text = [
   "Active-goal behavior:",
   "- Every start begins with an intake prompt that asks only real decision-blocking questions.",
   "- DEV_GOAL_DECISION: continue starts the next goal turn automatically when Pi is idle.",
-  "- PI_DEV_LOOP_MAX_AUTO_CONTINUES caps automatic prompt sends before the goal pauses for manual resume. Default: 500.",
+  "- PI_DEV_GOAL_MAX_AUTO_CONTINUES caps automatic prompt sends before the goal pauses for manual resume. Default: 500.",
 ].join("\n");
 ```
 
@@ -847,7 +847,7 @@ npm test
 Expected:
 
 ```text
-pi-package-development-loop validation ok
+pi-package-development-goal validation ok
 ```
 
 - [ ] **Step 2: Run whitespace check**
@@ -865,7 +865,7 @@ Expected: no output, exit 0.
 Run:
 
 ```bash
-rg -n "/development-loop|/dev-loop|DEV_LOOP_|\.pi/development-loop|development-loop-state|--iterations|--max-iterations|pi-package-development-loop|TrebuchetDynamics/pi-package-development-loop" README.md package.json extensions/development-goal.ts tests/validate-package.mjs
+rg -n "/development-goal|/dev-goal|DEV_GOAL_|\.pi/development-goal|development-goal-state|--iterations|--max-iterations|pi-package-development-goal|TrebuchetDynamics/pi-package-development-goal" README.md package.json extensions/development-goal.ts tests/validate-package.mjs
 ```
 
 Expected: no output except test fixtures that explicitly assert old strings are absent. If output appears in user-facing docs/prompts/status/help/metadata, replace with development-goal wording.
@@ -885,9 +885,9 @@ Expected: only files from this implementation are modified; no unrelated dirty w
 Run:
 
 ```bash
-git add package.json README.md tests/validate-package.mjs extensions/development-goal.ts extensions/development-loop-domain.ts extensions/development-loop-state.ts extensions/development-loop-command.ts extensions/development-loop-prompts.ts extensions/development-loop-status.ts extensions/development-loop-logger.ts extensions/development-loop-report-parser.ts extensions/development-loop-config.ts extensions/development-loop-init-config.ts extensions/development-loop-adapter.ts
-git add -u extensions/development-loop.ts
-git commit -m "feat: rename development loop to development goal"
+git add package.json README.md tests/validate-package.mjs extensions/development-goal.ts extensions/development-goal-domain.ts extensions/development-goal-state.ts extensions/development-goal-command.ts extensions/development-goal-prompts.ts extensions/development-goal-status.ts extensions/development-goal-logger.ts extensions/development-goal-report-parser.ts extensions/development-goal-config.ts extensions/development-goal-init-config.ts extensions/development-goal-adapter.ts
+git add -u extensions/development-goal.ts
+git commit -m "feat: rename development goal to development goal"
 ```
 
 - [ ] **Step 6: Optional push gate**
@@ -911,8 +911,8 @@ git push origin main
 ### Task 9: Rename remote repository and local checkout folder
 
 **Files/paths:**
-- External: GitHub repository `TrebuchetDynamics/pi-package-development-loop`
-- Rename local folder: `/home/xel/git/pi-package-development-loop` -> `/home/xel/git/pi-package-development-goal`
+- External: GitHub repository `TrebuchetDynamics/pi-package-development-goal`
+- Rename local folder: `/home/xel/git/pi-package-development-goal` -> `/home/xel/git/pi-package-development-goal`
 - Modify after remote rename if needed: git remote URL
 
 - [ ] **Step 1: Confirm clean committed state**
@@ -924,14 +924,14 @@ git status --short --branch --untracked-files=all
 git rev-parse --show-toplevel
 ```
 
-Expected: clean worktree in `/home/xel/git/pi-package-development-loop` before moving the folder.
+Expected: clean worktree in `/home/xel/git/pi-package-development-goal` before moving the folder.
 
 - [ ] **Step 2: Rename GitHub repository when authorized**
 
 If `gh` is authenticated with repository admin rights, run:
 
 ```bash
-gh repo rename pi-package-development-goal --repo TrebuchetDynamics/pi-package-development-loop --yes
+gh repo rename pi-package-development-goal --repo TrebuchetDynamics/pi-package-development-goal --yes
 ```
 
 Expected: remote repository becomes `TrebuchetDynamics/pi-package-development-goal`.
@@ -939,7 +939,7 @@ Expected: remote repository becomes `TrebuchetDynamics/pi-package-development-go
 If this fails due to missing `gh`, auth, or admin rights, stop and report blocker:
 
 ```text
-blockerState: GitHub repository rename requires owner/admin access for TrebuchetDynamics/pi-package-development-loop.
+blockerState: GitHub repository rename requires owner/admin access for TrebuchetDynamics/pi-package-development-goal.
 nextSteps: Rename repository in GitHub UI to pi-package-development-goal; update origin URL; rerun npm test and git diff --check.
 ```
 
@@ -965,7 +965,7 @@ From outside the checkout, run:
 
 ```bash
 cd /home/xel/git
-mv pi-package-development-loop pi-package-development-goal
+mv pi-package-development-goal pi-package-development-goal
 cd /home/xel/git/pi-package-development-goal
 git status --short --branch --untracked-files=all
 ```
@@ -984,7 +984,7 @@ git diff --check
 Expected:
 
 ```text
-pi-package-development-loop validation ok
+pi-package-development-goal validation ok
 ```
 
 and `git diff --check` emits no output. The validation message may still contain old package name if the test script uses a static success string; update it to `pi-package-development-goal validation ok` if included in the implementation slice.
@@ -996,4 +996,4 @@ and `git diff --check` emits no output. The validation message may still contain
 - Spec coverage: package/repo/folder hard rename, command hard rename, path hard rename, state/status hard rename, no iteration cap, internal turn count, `DEV_GOAL_*` markers, intake phase, validation/completion audit all mapped to tasks.
 - Placeholder scan: no placeholder markers or open-ended implementation instructions remain.
 - Type consistency: use `turnCount` in state, logs, status, prompts, and runtime scheduling.
-- Scope: one implementation plan; E2E loop is untouched except package metadata path references.
+- Scope: one implementation plan; E2E goal is untouched except package metadata path references.

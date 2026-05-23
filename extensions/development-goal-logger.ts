@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ObjectiveKind } from "./development-loop-domain.ts";
-import { objectiveInfo } from "./development-loop-topic.ts";
+import type { ObjectiveKind } from "./development-goal-domain.ts";
+import { objectiveInfo } from "./development-goal-topic.ts";
 
 const DEFAULT_LOG_TOPIC_MAX = 600;
 

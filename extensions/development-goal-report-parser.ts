@@ -1,4 +1,4 @@
-import type { DeliveryEvidence, LoopDecision, LoopReport } from "./development-loop-domain.ts";
+import type { DeliveryEvidence, LoopDecision, LoopReport } from "./development-goal-domain.ts";
 
 type FinalMarkerBlock = {
   index: number;
@@ -106,7 +106,7 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
 }
 
 function parseFinalMarkerBlock(text: string): FinalMarkerBlock | undefined {
-  const match = text.match(/(?:^|\r?\n)\s*DEV_LOOP_VALIDATED:\s*(yes|no)\s*\r?\n\s*DEV_LOOP_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
+  const match = text.match(/(?:^|\r?\n)\s*DEV_GOAL_VALIDATED:\s*(yes|no)\s*\r?\n\s*DEV_GOAL_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
   if (!match || match.index === undefined) return undefined;
   return {
     index: match.index,
@@ -117,7 +117,7 @@ function parseFinalMarkerBlock(text: string): FinalMarkerBlock | undefined {
 
 function parseTypedReport(text: string, markerIndex?: number): LoopReport | undefined {
   const reportText = markerIndex === undefined ? text : text.slice(0, markerIndex);
-  const match = reportText.match(/(?:^|\r?\n)\s*DEV_LOOP_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
+  const match = reportText.match(/(?:^|\r?\n)\s*DEV_GOAL_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
   if (!match) return undefined;
   const rawReport = parseJsonRecord(match[1]);
   if (!rawReport) return undefined;

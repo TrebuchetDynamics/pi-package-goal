@@ -8,50 +8,50 @@ import {
   ensureMandatorySkills,
   resolveProjectAdapter,
   type ResolvedProjectAdapter,
-} from "./development-loop-adapter.ts";
-import { resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
+} from "./development-goal-adapter.ts";
+import { resolveCommitPush, type ProjectConfig } from "./development-goal-config.ts";
 import {
   absoluteLogPath,
   contextCwd,
   relativeToCwd,
   safeRead,
   writeJsonFileAtomic,
-} from "./development-loop-files.ts";
-import { likelyBlockerCause, nextSafeBlockerAction } from "./development-loop-blocker.ts";
+} from "./development-goal-files.ts";
+import { likelyBlockerCause, nextSafeBlockerAction } from "./development-goal-blocker.ts";
 import {
   parseArgs,
   parseSinceFilter,
   tokenizeArgs,
   type ParsedCommand,
   type SinceFilter,
-} from "./development-loop-command.ts";
+} from "./development-goal-command.ts";
 import {
   clampIterations,
   initConfigSummary,
   initDefaults,
   shouldPromptForInit,
   splitLinesOrDefault,
-} from "./development-loop-init-config.ts";
+} from "./development-goal-init-config.ts";
 import {
   buildCompactionResumePrompt,
-  buildDevelopmentLoopCompactionInstructions,
+  buildDevelopmentGoalCompactionInstructions,
   buildEmptyResponseRetryPrompt,
   buildIterationPrompt,
   buildMissingMarkerRecoveryPrompt,
   buildSteeringPrompt,
   PROMPT_OBJECTIVE_MAX,
-} from "./development-loop-prompts.ts";
+} from "./development-goal-prompts.ts";
 import {
   compactionReason,
   contextUsageReason,
   isPrematureCompactionRecord,
   shouldCompactBeforeNextIteration,
-} from "./development-loop-compaction.ts";
+} from "./development-goal-compaction.ts";
 import {
   appendLoopLogRecord,
   buildLoopLogRecord,
   type LoopLogRecord,
-} from "./development-loop-logger.ts";
+} from "./development-goal-logger.ts";
 import {
   parseLoopLogRecord as parseLogRecord,
   recordDecision,
@@ -59,7 +59,7 @@ import {
   recordReason,
   recordRunId,
   recordTimestampMs,
-} from "./development-loop-log-record.ts";
+} from "./development-goal-log-record.ts";
 import {
   hasContextOverflowProviderError,
   isContextOverflowProviderError,
@@ -67,7 +67,7 @@ import {
   recordHasProviderError,
   recordProviderErrorCategory,
   recordProviderErrorCode,
-} from "./development-loop-provider-error.ts";
+} from "./development-goal-provider-error.ts";
 import {
   blockerKindRecommendation,
   recordBlockerKind,
@@ -82,33 +82,34 @@ import {
   recordReportQualityWarning,
   recordReportSummary,
   recordValidationEvidence,
-} from "./development-loop-report-record.ts";
-import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
-import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-loop-runaway.ts";
-import { createRunId, lastAssistantText } from "./development-loop-runtime.ts";
-import { mergeSteeringTopic } from "./development-loop-steering.ts";
+} from "./development-goal-report-record.ts";
+import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
+import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
+import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
+import { mergeSteeringTopic } from "./development-goal-steering.ts";
 import {
-  numberOrUndefined,
   selectValue,
   singleLineText,
   stringOrUndefined,
-} from "./development-loop-values.ts";
+} from "./development-goal-values.ts";
 import {
   readLastLoopRecord,
   readRecentReportRecords,
   statusLine,
   statusReport,
   statusWidgetLines,
-} from "./development-loop-status.ts";
+} from "./development-goal-status.ts";
 import {
   CUSTOM_STATE_TYPE,
   DEFAULT_ITERATIONS,
   DEFAULT_LOG_RELATIVE,
+  hasIterationCap,
   inactiveState,
+  iterationProgress,
   restoreState,
   type LoopState,
-} from "./development-loop-state.ts";
-import { hashText } from "./development-loop-topic.ts";
+} from "./development-goal-state.ts";
+import { hashText } from "./development-goal-topic.ts";
 
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 
@@ -400,7 +401,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
-        notify(ctx, "Development loop is waiting for compaction after a provider context-overflow error.", "warning");
+        notify(ctx, "Development goal is waiting for compaction after a provider context-overflow error.", "warning");
         if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
         return;
       }
@@ -414,12 +415,12 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         appendLoopLog("empty_agent_response_waiting_for_compaction", { reason: "missing_assistant_text" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
-        notify(ctx, "Development loop is waiting for compaction or retry after an empty provider response.", "warning");
+        notify(ctx, "Development goal is waiting for compaction or retry after an empty provider response.", "warning");
         scheduleEmptyResponseRetry(pi, ctx, state.iteration, emptyResponseRetries);
         return;
       }
       if ((state.markerRecoveryRetries ?? 0) >= MISSING_MARKER_RECOVERY_MAX_RETRIES) {
-        blockLoop(pi, ctx, "missing DEV_LOOP_DECISION final marker after recovery request");
+        blockLoop(pi, ctx, "missing DEV_GOAL_DECISION final marker after recovery request");
         return;
       }
       requestMissingMarkerRecovery(pi, ctx);
@@ -431,7 +432,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (requiresValidation(decision) && validated !== true) {
-      blockLoop(pi, ctx, "missing DEV_LOOP_VALIDATED: yes for continue/done decision", decision);
+      blockLoop(pi, ctx, "missing DEV_GOAL_VALIDATED: yes for continue/done decision", decision);
       return;
     }
 
@@ -445,7 +446,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       appendLoopLog("loop_finished", { decision, reason: decision, ...deliveryEvidence });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
-      notify(ctx, `Development loop ${decision}.`);
+      notify(ctx, `Development goal ${decision}.`);
       return;
     }
 
@@ -454,12 +455,12 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
 
-    if (state.iteration >= state.maxIterations) {
+    if (hasIterationCap(state) && state.iteration >= state.maxIterations) {
       state = { ...state, active: false, phase: "done", lastDecision: "done", lastReason: "max_iterations_reached" };
       appendLoopLog("loop_finished", { decision: "done", reason: "max_iterations_reached", ...deliveryEvidence });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
-      notify(ctx, `Development loop stopped after ${state.iteration}/${state.maxIterations} iteration(s).`);
+      notify(ctx, `Development goal stopped after ${state.iteration}/${state.maxIterations} iteration(s).`);
       return;
     }
 
@@ -473,7 +474,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     appendLoopLog("compaction_started", { reason: compactionReason(event.preparation?.tokensBefore) });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
-    notify(ctx, "Development loop state saved before compaction.");
+    notify(ctx, "Development goal state saved before compaction.");
   }
 
   async function onSessionCompact(_event: unknown, ctx: ExtensionContext) {
@@ -504,7 +505,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     appendLoopLog("user_steering", { reason: steeringText });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
-    notify(ctx, "Development loop steering accepted for the active task.");
+    notify(ctx, "Development goal steering accepted for the active task.");
 
     return {
       action: "transform",
@@ -520,7 +521,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   pi.on("input", onInput);
 
   const command = {
-    description: "Run an adapter-aware project development loop",
+    description: "Run an adapter-aware project development goal",
     getArgumentCompletions: (prefix: string) => ["start", "restart", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"]
       .filter((value) => value.startsWith(prefix))
       .map((value) => ({ value, label: value })),
@@ -528,8 +529,6 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   };
 
   pi.registerCommand("development-goal", command);
-  pi.registerCommand("development-loop", { ...command, description: "Legacy alias for /development-goal" });
-  pi.registerCommand("dev-loop", { ...command, description: "Legacy short alias for /development-goal" });
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {
@@ -549,7 +548,7 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       appendLoopLog("loop_stopped", { reason: "stopped_by_user" });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
-      notify(ctx, "Development loop stopped.");
+      notify(ctx, "Development goal stopped.");
       return;
     case "adapters":
       publishAdapters(pi, ctx);
@@ -575,23 +574,23 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
 
 function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   if (!state.active) {
-    notify(ctx, "No active development loop to pause.");
+    notify(ctx, "No active development goal to pause.");
     return;
   }
   if (state.phase === "paused") {
-    notify(ctx, "Development loop already paused.");
+    notify(ctx, "Development goal already paused.");
     return;
   }
   state = { ...state, phase: "paused", lastReason: "paused_by_user" };
   appendLoopLog("loop_paused", { reason: "paused_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, "Development loop paused. Use /development-goal resume to continue.");
+  notify(ctx, "Development goal paused. Use /development-goal resume to continue.");
 }
 
 function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   if (!state.active || state.phase !== "paused") {
-    notify(ctx, "No paused development loop to resume.");
+    notify(ctx, "No paused development goal to resume.");
     return;
   }
   const cwd = contextCwd(ctx);
@@ -600,19 +599,19 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Resuming development loop iteration ${state.iteration}/${state.maxIterations}.`);
+  notify(ctx, `Resuming development goal iteration ${iterationProgress(state)}.`);
   sendIterationPrompt(pi, ctx, resolved);
 }
 
 async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed: ParsedCommand, replaceActive: boolean) {
   if (state.active && !replaceActive) {
-    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued loop iterations start automatically. Use /development-goal restart to replace it or /development-goal stop to stop it.`);
+    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued goal iterations start automatically. Use /development-goal restart to replace it or /development-goal stop to stop it.`);
     refreshUi(ctx);
     return;
   }
 
   if (state.active && replaceActive && ctx.hasUI) {
-    const ok = await ctx.ui.confirm("Restart development loop", "Replace the current active loop state?");
+    const ok = await ctx.ui.confirm("Restart development goal", "Replace the current active goal state?");
     if (!ok) return;
   }
 
@@ -620,7 +619,8 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
   const resolved = resolveProjectAdapter(cwd, parsed.adapter);
   const adapter = resolved.adapter;
   const topic = parsed.topic || resolved.config.defaultTopic || adapter.defaultTopic;
-  const maxIterations = clampIterations(parsed.iterations ?? resolved.config.maxIterations ?? DEFAULT_ITERATIONS);
+  const configuredIterationCap = parsed.iterations ?? (hasIterationCap(resolved.config) ? resolved.config.maxIterations : undefined);
+  const maxIterations = configuredIterationCap ? clampIterations(configuredIterationCap) : DEFAULT_ITERATIONS;
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, resolved.config.commit, resolved.config.push);
   const logPath = absoluteLogPath(cwd, resolved.config.logPath);
   const startedAt = new Date().toISOString();
@@ -647,7 +647,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
   appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_adapter" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Starting development loop: ${adapter.name} 1/${maxIterations}; log: ${relativeToCwd(cwd, logPath)}`);
+  notify(ctx, `Starting development goal: ${adapter.name} ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
   sendIterationPrompt(pi, ctx, resolved);
 }
 
@@ -658,7 +658,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
-  notify(ctx, `Queued development loop iteration ${state.iteration}/${state.maxIterations}; it will start automatically when the current turn is idle.`);
+  notify(ctx, `Queued development goal iteration ${iterationProgress(state)}; it will start automatically when the current turn is idle.`);
   scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
 }
 
@@ -677,10 +677,10 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
   appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Compacting before development loop iteration ${state.iteration}/${state.maxIterations}.`);
+  notify(ctx, `Compacting before development goal iteration ${iterationProgress(state)}.`);
   ctx.compact({
-    customInstructions: buildDevelopmentLoopCompactionInstructions(state, resolved, cwd),
-    onComplete: () => notify(ctx, "Development loop compaction completed; continuing automatically."),
+    customInstructions: buildDevelopmentGoalCompactionInstructions(state, resolved, cwd),
+    onComplete: () => notify(ctx, "Development goal compaction completed; continuing automatically."),
     onError: (error) => {
       state = { ...state, lastReason: "compaction_failed_before_next_iteration" };
       appendLoopLog("compaction_failed_before_next_iteration", { reason: error.message });
@@ -698,8 +698,8 @@ function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContex
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
   ctx.compact({
-    customInstructions: `The provider reported a context-overflow error before DEV_LOOP markers were emitted. Compact the conversation, preserve the current development-loop state, and continue the same iteration after compaction.\n\n${buildDevelopmentLoopCompactionInstructions(state, resolved, cwd)}`,
-    onComplete: () => notify(ctx, "Development loop context-overflow compaction completed; continuing automatically."),
+    customInstructions: `The provider reported a context-overflow error before DEV_GOAL markers were emitted. Compact the conversation, preserve the current development-goal state, and continue the same iteration after compaction.\n\n${buildDevelopmentGoalCompactionInstructions(state, resolved, cwd)}`,
+    onComplete: () => notify(ctx, "Development goal context-overflow compaction completed; continuing automatically."),
     onError: (error) => {
       state = { ...state, lastReason: "context_overflow_compaction_failed" };
       appendLoopLog("context_overflow_compaction_failed", { reason: error.message });
@@ -722,14 +722,14 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
   appendLoopLog("compaction_resume_sent");
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Resumed development loop iteration ${state.iteration}/${state.maxIterations} after compaction.`);
+  notify(ctx, `Resumed development goal iteration ${iterationProgress(state)} after compaction.`);
 }
 
 function continueQueuedIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
   appendLoopLog("compaction_continue_queued_iteration");
-  notify(ctx, `Continuing development loop iteration ${state.iteration}/${state.maxIterations} after compaction.`);
+  notify(ctx, `Continuing development goal iteration ${iterationProgress(state)} after compaction.`);
   sendIterationPrompt(pi, ctx, resolved);
 }
 
@@ -763,10 +763,10 @@ function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
     emptyResponseRetries: 0,
     markerRecoveryRetries: retryNumber,
   };
-  appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_LOOP_DECISION final marker" });
+  appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_GOAL_DECISION final marker" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, "Development loop is requesting a final-marker-only recovery response.", "warning");
+  notify(ctx, "Development goal is requesting a final-marker-only recovery response.", "warning");
   sendLoopPrompt(pi, ctx, buildMissingMarkerRecoveryPrompt(state), true);
 }
 
@@ -795,7 +795,7 @@ function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: Res
     appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
-    notify(ctx, `Development loop auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-goal resume or raise PI_DEV_LOOP_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
+    notify(ctx, `Development goal auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-goal resume or raise PI_DEV_GOAL_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
     return;
   }
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
@@ -828,7 +828,7 @@ function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, deci
   });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Development loop blocked: ${reason}`, "warning");
+  notify(ctx, `Development goal blocked: ${reason}`, "warning");
 }
 
 async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
@@ -877,11 +877,6 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
   if (language === undefined) return cancelInit(ctx);
   config.language = language || config.language || DEFAULT_LANGUAGE;
 
-  const iterationsText = await ui.input!("Max iterations (1-25)", String(config.maxIterations ?? DEFAULT_ITERATIONS));
-  if (iterationsText === undefined) return cancelInit(ctx);
-  const iterations = numberOrUndefined(iterationsText);
-  config.maxIterations = iterations ? clampIterations(iterations) : config.maxIterations;
-
   const delivery = selectValue(await ui.select!("Git delivery policy", ["manual", "commit", "push"]));
   if (delivery === undefined) return cancelInit(ctx);
   config.push = delivery === "push";
@@ -907,7 +902,7 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
   if (logPathText === undefined) return cancelInit(ctx);
   config.logPath = logPathText.trim() || config.logPath || DEFAULT_LOG_RELATIVE;
 
-  const ok = await ui.confirm!("Write development-loop config", initConfigSummary(config, cwd));
+  const ok = await ui.confirm!("Write development-goal config", initConfigSummary(config, cwd));
   if (!ok) return cancelInit(ctx);
   return config;
 }
@@ -922,31 +917,30 @@ function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = statusReport(state, cwd);
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "development-loop-status", content: text, display: true });
+    pi.sendMessage({ customType: "development-goal-status", content: text, display: true });
   }
 }
 
 function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = [
     "Development-goal commands:",
-    "- /development-goal start [options] <topic> — start a loop",
-    "- /development-goal restart [options] <topic> — replace the active loop",
-    "- /development-goal pause — pause automatic continuation without clearing loop state",
-    "- /development-goal resume — resume a paused loop at the current iteration",
-    "- /development-goal stop — stop the active loop",
+    "- /development-goal start [options] <topic> — start a goal",
+    "- /development-goal restart [options] <topic> — replace the active goal",
+    "- /development-goal pause — pause automatic continuation without clearing goal state",
+    "- /development-goal resume — resume a paused goal at the current iteration",
+    "- /development-goal stop — stop the active goal",
     "- /development-goal status — show current state",
     "- /development-goal adapters — show detected adapter/config",
-    "- /development-goal analyze-logs [path] — summarize one log file or a directory of loop logs",
+    "- /development-goal analyze-logs [path] — summarize one log file or a directory of goal logs",
     "- /development-goal analyze-logs --since=2h [path] — summarize only recent timestamped records",
     "- /development-goal analyze-logs --html [path] — also write a self-contained HTML health report",
     "- /development-goal analyze-logs --json [path] — emit machine-readable JSON for automation",
     "- Start/restart option: --tokens <n|nK|nM> / --budget <n|nK|nM> records a soft token budget in prompts and status",
-    "- /development-goal init [options] <default topic> — configure .pi/development-loop.json interactively",
-    "- Legacy aliases: /development-loop and /dev-loop",
+    "- /development-goal init [options] <default topic> — configure .pi/development-goal.json interactively",
     "",
     "Configurable init options:",
     "- /development-goal init --dry-run ... — preview without writing files",
-    "- --iterations <n> | --max-iterations <n> | -n <n>",
+    "- --iterations <n> | --max-iterations <n> | -n <n> — optional legacy safety cap; omit for continuous goal mode",
     "- --commit | --no-commit | --push | --no-push (--push implies --commit)",
     "- --validation <command> | --test <command> (repeatable)",
     "- --preflight <command> (repeatable)",
@@ -956,15 +950,15 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- --force — atomically replace an existing config",
     "- --yes | -y | --defaults — accept generated values without prompts",
     "",
-    "Active-loop behavior:",
-    "- DEV_LOOP_DECISION: continue starts the next iteration automatically when Pi is idle.",
-    "- PI_DEV_LOOP_MAX_AUTO_CONTINUES caps automatic prompt sends before the loop pauses for manual resume. Default: 500.",
+    "Active-goal behavior:",
+    "- DEV_GOAL_DECISION: continue starts the next iteration automatically when Pi is idle until DEV_GOAL_DECISION: done, blocked, stop, or pause.",
+    "- PI_DEV_GOAL_MAX_AUTO_CONTINUES caps automatic prompt sends before the goal pauses for manual resume. Default: 500.",
     "- A non-empty response missing final markers gets one final-marker-only recovery prompt before blocking.",
-    "- Plain text typed during an active loop becomes steering for the current or next safe slice.",
+    "- Plain text typed during an active goal becomes steering for the current or next safe package.",
   ].join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "development-loop-help", content: text, display: true });
+    pi.sendMessage({ customType: "development-goal-help", content: text, display: true });
   }
 }
 
@@ -978,7 +972,7 @@ function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
   ].join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "development-loop-adapters", content: text, display: true });
+    pi.sendMessage({ customType: "development-goal-adapters", content: text, display: true });
   }
 }
 
@@ -993,7 +987,7 @@ function publishLogAnalysis(pi: ExtensionAPI, ctx: UiLikeContext, parsed: Parsed
     : [formatLoopLogAnalysis(analysis, cwd, targetPath), htmlPath ? `HTML health report: ${htmlPath}` : undefined].filter(Boolean).join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "development-loop-log-analysis", content: text, display: true });
+    pi.sendMessage({ customType: "development-goal-log-analysis", content: text, display: true });
   }
 }
 
@@ -1723,7 +1717,7 @@ function markerRecoveryKey(record: Record<string, unknown>, runId: string | unde
 }
 
 function isMissingFinalMarkerReason(reason: string | undefined): boolean {
-  return Boolean(reason && /missing(?:_|\s|-)*(?:final(?:_|\s|-)*)?(?:marker|DEV_LOOP_DECISION|assistant_decision)/i.test(reason));
+  return Boolean(reason && /missing(?:_|\s|-)*(?:final(?:_|\s|-)*)?(?:marker|DEV_GOAL_DECISION|assistant_decision)/i.test(reason));
 }
 
 function isBlockedLoopRecord(event: string, record: Record<string, unknown>): boolean {
@@ -1768,7 +1762,7 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.providerErrorRecords > 0) recommendations.push("Provider errors: inspect the top provider error source and group codes/categories so context, rate-limit, auth, and transport failures drive different recovery paths.");
   if (hasPromptResultImbalance(analysis)) recommendations.push("Prompt/result lifecycle: inspect the top imbalance source and reconcile iteration_prompt_sent and iteration_result counts so duplicate sends or duplicate final parsing are visible.");
   if (analysis.duplicatePromptSentGroups > 0) recommendations.push("Duplicate prompt sends: investigate repeated iteration_prompt_sent groups before trusting prompt/result lifecycle counts.");
-  if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve loop state and resume after compaction.");
+  if (analysis.contextOverflowResponses > 0) recommendations.push("Context overflow: preserve goal state and resume after compaction.");
   if (analysis.unresolvedLoopStarts > 0) recommendations.push("Unresolved loop starts: inspect the top unresolved log source to see whether loops are still active or missing terminal loop_finished/loop_blocked records.");
   if (analysis.compactionFailureRecords > 0) recommendations.push("Compaction failures: inspect failure reasons and verify the loop either resumes safely or remains queued for manual recovery.");
   if (analysis.prematureCompactionRecords > 0) recommendations.push("Premature compaction churn: reload stale Pi sessions or inspect compaction policy when compaction happens below current token and context-ratio thresholds.");
@@ -1777,11 +1771,11 @@ function loopLogRecommendations(analysis: LoopLogAnalysis): string[] {
   if (analysis.providerNoiseTopicRecords > 0) recommendations.push("Provider-noise topics: verify provider error text is sanitized out of repeated objectives while topic hashes preserve diagnostics.");
   if (analysis.compactionEvents > analysis.loopsStarted && analysis.loopsStarted > 0) recommendations.push("Compaction-heavy runs: summarize continuation state and reduce repeated prompt text.");
   if (analysis.postmortems > 0) recommendations.push("Loop postmortems: use likelyCause and nextSafeAction to resume or file follow-up fixes.");
-  if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review the top queued source/reason/action after blocked custom-loop runs and promote repeatable policy into this package.");
-  if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-loop decisions with iteration results so missing decision handshakes do not hide completed work.");
+  if (analysis.selfImprovementQueuedRecords > 0) recommendations.push("Self-improvement follow-ups: review the top queued source/reason/action after blocked custom-goal runs and promote repeatable policy into this package.");
+  if (analysis.assistantDecisionRecords > 0) recommendations.push("Assistant decisions: compare custom-goal decisions with iteration results so missing decision handshakes do not hide completed work.");
   if (analysis.finalMarkerRecoveryRequests > 0) recommendations.push("Final-marker recovery: compare the top recovery source/reason with successes and blocks to see whether marker-only retries are resolving missing final reports.");
-  if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block source/reason and prefer DEV_LOOP_REPORT plus final markers so useful work is not lost to malformed endings.");
-  if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: inspect the top CI-gate missing source and require explicit DEV_LOOP_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
+  if (analysis.finalMarkerRecoveryBlocks > 0) recommendations.push("Final-marker recovery blocks: inspect the top block source/reason and prefer DEV_GOAL_REPORT plus final markers so useful work is not lost to malformed endings.");
+  if (analysis.ciGateMissingRecords > 0) recommendations.push("CI gate missing records: inspect the top CI-gate missing source and require explicit DEV_GOAL_VALIDATED or CI_GREEN evidence before queuing follow-up work.");
   if (analysis.commitWithoutPushRecords > 0) recommendations.push("Commit-without-push records: inspect the top commit-without-push source and record pushStatus when push delivery is expected, or use an explicit skipped push status.");
   if (analysis.ciRedRecords > 0) recommendations.push("CI gate failures: inspect the top CI-red source and require local validation evidence before continue or done decisions.");
   if (analysis.iterationResultWithoutValidationRecords > 0) recommendations.push("Iteration results without validation evidence: require validationCommands on every continue/done iteration result before scheduling follow-up work.");
@@ -1803,7 +1797,7 @@ function writeLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
   const tmpDir = process.env.TMPDIR || process.env.TEMP || "/tmp";
   fs.mkdirSync(tmpDir, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const reportPath = path.join(tmpDir, `development-loop-health-${timestamp}.html`);
+  const reportPath = path.join(tmpDir, `development-goal-health-${timestamp}.html`);
   fs.writeFileSync(reportPath, buildLoopLogHtmlReport(analysis, cwd, logPath), "utf8");
   return reportPath;
 }
@@ -1907,7 +1901,7 @@ function buildLoopLogHtmlReport(analysis: LoopLogAnalysis, cwd: string, logPath:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Development Loop Health Report</title>
+<title>Development Goal Health Report</title>
 <style>
 :root { color-scheme: light dark; --bg: #0f172a; --panel: #111827; --text: #e5e7eb; --muted: #94a3b8; --accent: #38bdf8; --warn: #fb7185; --ok: #34d399; }
 body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
@@ -1931,7 +1925,7 @@ li { margin: .45rem 0; }
 <main>
 <header>
 <p class="badge">Loop health</p>
-<h1>Development Loop Health Report</h1>
+<h1>Development Goal Health Report</h1>
 <p class="source">Source: ${escapeHtml(source)}</p>
 </header>
 <section class="grid">${metricCards}</section>
@@ -1964,7 +1958,7 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
   const source = relativeToCwd(cwd, logPath);
   const sourceLabel = analysis.logFiles > 1 ? `${source} (${analysis.logFiles} log files)` : source;
   return [
-    `Development loop log analysis: ${sourceLabel}`,
+    `Development goal log analysis: ${sourceLabel}`,
     analysis.readError ? `Error: ${analysis.readError}` : undefined,
     analysis.sinceCutoffIso ? `Since: ${analysis.sinceCutoffIso}` : undefined,
     analysis.sinceFilterLabel && analysis.sinceFilterLabel !== analysis.sinceCutoffIso ? `Since window: ${analysis.sinceFilterLabel}` : undefined,
@@ -2065,8 +2059,8 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
-  ctx.ui.setStatus?.("development-loop", undefined);
-  ctx.ui.setWidget?.("development-loop", undefined);
+  ctx.ui.setStatus?.("development-goal", undefined);
+  ctx.ui.setWidget?.("development-goal", undefined);
   ctx.ui.setStatus?.("development-goal", statusLine(state, theme));
   ctx.ui.setWidget?.("development-goal", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }

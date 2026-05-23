@@ -1,5 +1,5 @@
 import * as crypto from "node:crypto";
-import type { ObjectiveKind } from "./development-loop-domain.ts";
+import type { ObjectiveKind } from "./development-goal-domain.ts";
 
 export type ObjectiveInfo = {
   topic: string;

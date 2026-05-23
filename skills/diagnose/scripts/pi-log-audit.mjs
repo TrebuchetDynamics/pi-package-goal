@@ -7,7 +7,7 @@ const options = parseArgs(process.argv.slice(2));
 if (options.help) {
   console.log("Usage: pi-log-audit.mjs [--attention-only] [--since=2h|ISO] [ROOT]");
   console.log("Read-only summary of .pi/*/logs.jsonl files under ROOT.");
-  console.log("Includes development-loop, e2e-loop, and custom *-loop logs/configs.");
+  console.log("Includes development-goal, e2e-goal, and custom *-goal logs/configs.");
   console.log("Use --since=2h or --since=2026-05-22T02:30:00.000Z to summarize only timestamped records at or after the cutoff.");
   process.exit(0);
 }
@@ -173,7 +173,7 @@ function findLoopLogs(piDir) {
 
 function findLoopConfigs(piDir) {
   return safeReaddir(piDir)
-    .filter((entry) => entry.isFile() && entry.name.endsWith("-loop.json"))
+    .filter((entry) => entry.isFile() && entry.name.endsWith("-goal.json"))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 }
@@ -413,8 +413,8 @@ function printPiConfigIssue(configNames, repoDir) {
     ".pi-config",
     repoDir,
     `configs=${configNames.join(",")}`,
-    "reason=config files present but no loop logs",
-    "next_action=start a loop for these configs or remove stale config files",
+    "reason=config files present but no goal logs",
+    "next_action=start a goal for these configs or remove stale config files",
   ].join("\t"));
 }
 
@@ -461,7 +461,7 @@ function printLogRecord(record, repoDir) {
     const blockerKind = recordBlockerKind(record.lastFailure);
     if (blockerState) failureFields.push(`blocker=${formatValue(blockerState)}`);
     if (blockerKind) failureFields.push(`blocker_kind=${formatValue(blockerKind)}`);
-    if (record.attention) failureFields.push(`next_action=${formatValue(recordNextAction(record.lastFailure) || blockerKindNextAction(blockerKind) || "inspect failure reason then resume or clear the loop")}`);
+    if (record.attention) failureFields.push(`next_action=${formatValue(recordNextAction(record.lastFailure) || blockerKindNextAction(blockerKind) || "inspect failure reason then resume or clear the goal")}`);
     console.log(failureFields.join("\t"));
   }
 
@@ -471,8 +471,8 @@ function printLogRecord(record, repoDir) {
       record.loopName,
       repoDir,
       `missing_config=.pi/${record.matchingConfigName}`,
-      "reason=log directory has no matching loop config",
-      "next_action=restore matching loop config or archive/remove stale log directory",
+      "reason=log directory has no matching goal config",
+      "next_action=restore matching goal config or archive/remove stale log directory",
     ].join("\t"));
   }
 
@@ -482,8 +482,8 @@ function printLogRecord(record, repoDir) {
       record.loopName,
       repoDir,
       `config=.pi/${record.matchingConfigName}`,
-      "reason=matching loop config is not valid JSON",
-      "next_action=repair or regenerate the loop config",
+      "reason=matching goal config is not valid JSON",
+      "next_action=repair or regenerate the goal config",
     ].join("\t"));
   }
 }

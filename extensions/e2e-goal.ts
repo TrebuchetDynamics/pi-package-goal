@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-import { loopBudgetSummary } from "./development-loop-budget.ts";
+import { loopBudgetSummary } from "./development-goal-budget.ts";
 
 type E2EPhase = "idle" | "running" | "blocked" | "done";
 type E2EDecision = "continue" | "stop" | "blocked" | "done";
@@ -56,8 +56,8 @@ type UiLikeContext = {
   isIdle?: () => boolean;
 };
 
-const CUSTOM_STATE_TYPE = "e2e-loop-state";
-const DEFAULT_LOG_RELATIVE = path.join(".pi", "e2e-loop", "logs.jsonl");
+const CUSTOM_STATE_TYPE = "e2e-goal-state";
+const DEFAULT_LOG_RELATIVE = path.join(".pi", "e2e-goal", "logs.jsonl");
 const DEFAULT_OBJECTIVE = "test the app fully through real usage paths";
 const DEFAULT_ITERATIONS = 1;
 const HARD_MAX_ITERATIONS = 10;
@@ -79,20 +79,20 @@ export default function e2eLoopExtension(pi: ExtensionAPI) {
     const validated = parseE2EValidated(assistantText);
 
     if (!decision) {
-      state = { ...state, active: false, phase: "blocked", lastDecision: "blocked", lastReason: "missing E2E_LOOP_DECISION final marker" };
+      state = { ...state, active: false, phase: "blocked", lastDecision: "blocked", lastReason: "missing E2E_GOAL_DECISION final marker" };
       appendE2ELog("loop_blocked", { reason: state.lastReason });
       persistState(pi);
       refreshUi(ctx);
-      notify(ctx, "E2E loop blocked: missing E2E_LOOP_DECISION final marker", "warning");
+      notify(ctx, "E2E goal blocked: missing E2E_GOAL_DECISION final marker", "warning");
       return;
     }
 
     if (requiresValidation(decision) && validated !== true) {
-      state = { ...state, active: false, phase: "blocked", lastDecision: decision, lastReason: "missing E2E_LOOP_VALIDATED: yes" };
+      state = { ...state, active: false, phase: "blocked", lastDecision: decision, lastReason: "missing E2E_GOAL_VALIDATED: yes" };
       appendE2ELog("loop_blocked", { decision, reason: state.lastReason });
       persistState(pi);
       refreshUi(ctx);
-      notify(ctx, "E2E loop blocked: missing E2E_LOOP_VALIDATED: yes", "warning");
+      notify(ctx, "E2E goal blocked: missing E2E_GOAL_VALIDATED: yes", "warning");
       return;
     }
 
@@ -107,7 +107,7 @@ export default function e2eLoopExtension(pi: ExtensionAPI) {
       appendE2ELog("loop_finished", { decision, reason: decision });
       persistState(pi);
       refreshUi(ctx);
-      notify(ctx, `E2E loop ${decision}.`);
+      notify(ctx, `E2E goal ${decision}.`);
       return;
     }
 
@@ -119,7 +119,7 @@ export default function e2eLoopExtension(pi: ExtensionAPI) {
       appendE2ELog("loop_finished", { decision: "done", reason: "max_iterations_reached" });
       persistState(pi);
       refreshUi(ctx);
-      notify(ctx, `E2E loop stopped after ${state.iteration}/${state.maxIterations} iteration(s).`);
+      notify(ctx, `E2E goal stopped after ${state.iteration}/${state.maxIterations} iteration(s).`);
       return;
     }
 
@@ -136,8 +136,8 @@ export default function e2eLoopExtension(pi: ExtensionAPI) {
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
 
-  pi.registerCommand("e2e-loop", command);
-  pi.registerCommand("e2e", { ...command, description: "Alias for /e2e-loop" });
+  pi.registerCommand("e2e-goal", command);
+  pi.registerCommand("e2e", { ...command, description: "Alias for /e2e-goal" });
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {
@@ -151,7 +151,7 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       appendE2ELog("loop_stopped", { reason: "stopped_by_user" });
       persistState(pi);
       refreshUi(ctx);
-      notify(ctx, "E2E loop stopped.");
+      notify(ctx, "E2E goal stopped.");
       return;
     case "help":
       publishHelp(pi, ctx);
@@ -162,7 +162,7 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
     case "start":
     default:
       if (state.active) {
-        notify(ctx, `${statusLine(state)}\nUse /e2e-loop restart to replace it or /e2e-loop stop to stop it.`, "warning");
+        notify(ctx, `${statusLine(state)}\nUse /e2e-goal restart to replace it or /e2e-goal stop to stop it.`, "warning");
         refreshUi(ctx);
         return;
       }
@@ -184,7 +184,7 @@ function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand) 
   appendE2ELog("loop_started");
   persistState(pi);
   refreshUi(ctx);
-  notify(ctx, `Starting E2E loop ${state.iteration}/${state.maxIterations}: ${state.objective}; log: ${relativeToCwd(cwd, state.logPath)}`);
+  notify(ctx, `Starting E2E goal ${state.iteration}/${state.maxIterations}: ${state.objective}; log: ${relativeToCwd(cwd, state.logPath)}`);
   sendE2EPrompt(pi, ctx);
 }
 
@@ -202,7 +202,7 @@ function sendE2EPrompt(pi: ExtensionAPI, ctx: UiLikeContext) {
 }
 
 function buildE2EPrompt(s: E2EState, cwd: string): string {
-  return `Use the project instructions and matching skills now. E2E loop run ${s.iteration}/${s.maxIterations}.
+  return `Use the project instructions and matching skills now. E2E goal run ${s.iteration}/${s.maxIterations}.
 
 Project root: ${cwd}
 Objective: ${s.objective}
@@ -223,28 +223,28 @@ Run one complete real-usage E2E testing iteration:
 Prefer test-first changes when editing code. For UI work, screenshot evidence is required before claiming success. For API work, public endpoint contract assertions are required before claiming success. For TUI work, observable terminal behavior and a TUI transcript are required before claiming success.
 
 End with these exact marker lines:
-E2E_LOOP_VALIDATED: yes|no
-E2E_LOOP_DECISION: continue|stop|blocked|done
+E2E_GOAL_VALIDATED: yes|no
+E2E_GOAL_DECISION: continue|stop|blocked|done
 
-Only use E2E_LOOP_VALIDATED: yes after fresh validation evidence exists. Use E2E_LOOP_DECISION: blocked when validation is red, required services are missing, credentials are unavailable, or the scope is unsafe.`;
+Only use E2E_GOAL_VALIDATED: yes after fresh validation evidence exists. Use E2E_GOAL_DECISION: blocked when validation is red, required services are missing, credentials are unavailable, or the scope is unsafe.`;
 }
 
 function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = statusReport(state, contextCwd(ctx));
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "e2e-loop-status", content: text, display: true });
+    pi.sendMessage({ customType: "e2e-goal-status", content: text, display: true });
   }
 }
 
 function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = [
-    "E2E loop commands:",
-    "- /e2e-loop start [--iterations=N] <objective> — start a real-usage E2E test loop",
-    "- /e2e-loop restart [--iterations=N] <objective> — replace the active E2E loop",
-    "- /e2e-loop status — show current E2E loop state",
-    "- /e2e-loop stop — stop the active E2E loop",
-    "- /e2e-loop help — show this help",
+    "E2E goal commands:",
+    "- /e2e-goal start [--iterations=N] <objective> — start a real-usage E2E test goal",
+    "- /e2e-goal restart [--iterations=N] <objective> — replace the active E2E goal",
+    "- /e2e-goal status — show current E2E goal state",
+    "- /e2e-goal stop — stop the active E2E goal",
+    "- /e2e-goal help — show this help",
     "",
     "Testing guidance:",
     "- Inventory features first: keep a coverage matrix of user-visible flows, public endpoints, TUI commands, and critical errors.",
@@ -255,7 +255,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   ].join("\n");
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "e2e-loop-help", content: text, display: true });
+    pi.sendMessage({ customType: "e2e-goal-help", content: text, display: true });
   }
 }
 
@@ -268,7 +268,7 @@ function statusReport(s: E2EState, cwd = process.cwd()): string {
     ...(s.active ? [`budget: ${loopBudgetSummary(s)}`] : []),
     summarizeLastE2ERecord(readLastE2ERecord(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /e2e-loop status | /e2e-loop stop | /e2e-loop restart --iterations=N <objective>",
+    "Commands: /e2e-goal status | /e2e-goal stop | /e2e-goal restart --iterations=N <objective>",
   ].join("\n");
 }
 
@@ -277,7 +277,7 @@ function statusLine(s: E2EState, theme?: UiThemeLike): string {
   const context = statusContext(s);
   return compactJoin([
     paint(theme, status.color, `${status.icon} ${status.label}`),
-    paint(theme, "dim", s.active ? `i${s.iteration}/${s.maxIterations}` : "loop"),
+    paint(theme, "dim", s.active ? `i${s.iteration}/${s.maxIterations}` : "goal"),
     context ? paint(theme, "muted", context) : undefined,
   ]);
 }
@@ -285,8 +285,8 @@ function statusLine(s: E2EState, theme?: UiThemeLike): string {
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
-  ctx.ui.setStatus?.("e2e-loop", statusLine(state, theme));
-  ctx.ui.setWidget?.("e2e-loop", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
+  ctx.ui.setStatus?.("e2e-goal", statusLine(state, theme));
+  ctx.ui.setWidget?.("e2e-goal", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }
 
 function statusWidgetLines(s: E2EState, cwd: string, theme?: UiThemeLike): string[] | undefined {
@@ -423,7 +423,7 @@ function parseE2EValidated(text: string): boolean | undefined {
 }
 
 function parseFinalE2EMarkerBlock(text: string): { validated: boolean; decision: E2EDecision } | undefined {
-  const match = text.match(/(?:^|\r?\n)\s*E2E_LOOP_VALIDATED:\s*(yes|no)\s*\r?\n\s*E2E_LOOP_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
+  const match = text.match(/(?:^|\r?\n)\s*E2E_GOAL_VALIDATED:\s*(yes|no)\s*\r?\n\s*E2E_GOAL_DECISION:\s*(continue|stop|blocked|done)\s*$/i);
   if (!match) return undefined;
   return {
     validated: match[1].toLowerCase() === "yes",
