@@ -320,7 +320,7 @@ async function testPackageManifest() {
   assert.equal(pkg.name, "pi-package-development-loop");
   assert.equal(pkg.type, "module");
   assert.ok(pkg.keywords.includes("pi-package"));
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-loop.ts", "./extensions/e2e-loop.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-loop.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
 }
@@ -379,10 +379,11 @@ async function testPiCoreDependencies() {
 }
 
 async function testExtensionLoadsAndRegistersCommands() {
-  assert.ok(exists("extensions/development-loop.ts"), "development-loop extension missing");
+  assert.ok(exists("extensions/development-goal.ts"), "development-goal extension missing");
+  assert.ok(exists("extensions/development-loop.ts"), "legacy development-loop extension entrypoint missing");
   const { createJiti } = require(jitiEntry);
   const jiti = createJiti(import.meta.url, { interopDefault: true });
-  const mod = await jiti.import(path.join(root, "extensions", "development-loop.ts"));
+  const mod = await jiti.import(path.join(root, "extensions", "development-goal.ts"));
   assert.equal(typeof mod.default, "function");
   assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
   assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);

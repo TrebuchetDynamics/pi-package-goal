@@ -33,7 +33,7 @@
   ],
   "pi": {
     "extensions": [
-      "./extensions/development-loop.ts",
+      "./extensions/development-goal.ts",
       "./extensions/e2e-loop.ts"
     ],
     "skills": [
