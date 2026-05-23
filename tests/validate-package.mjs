@@ -433,6 +433,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   const statusState = { active: true, adapterName: "generic-git", topic: "Ship status helper", iteration: 2, maxIterations: 3, phase: "running", logPath: statusLogPath, commit: true, push: true };
   assert.equal(statusMod.statusLine(statusState), "● run · loop 2/3 · generic-git · git:push · Ship status helper");
   const extractedStatus = statusMod.statusReport(statusState, statusTemp);
+  assert.match(extractedStatus, /budget: elapsed .*; iterations 2\/3; remaining 1/);
   assert.match(extractedStatus, /Last event: loop_finished; at 2026-05-22T20:05:00.000Z; iteration 2; decision done; blocker none/);
   assert.match(extractedStatus, /Recent report context:\n- i2 · done · blocker none\n- i1 · continue · summary first slice · next 1 ship second slice/);
   assert.match(extractedStatus, /log: \.pi\/development-loop\/logs\.jsonl/);
@@ -535,6 +536,11 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(compactionMod.contextUsageReason({}), "tokens=unknown");
   assert.equal(compactionMod.compactionReason(42), "tokens_before=42");
   assert.equal(compactionMod.compactionReason(), "tokens_before=unknown");
+  const budgetMod = await jiti.import(path.join(root, "extensions", "development-loop-budget.ts"));
+  assert.equal(budgetMod.formatElapsedDuration(0), "0s");
+  assert.equal(budgetMod.formatElapsedDuration(90_000), "1m");
+  assert.equal(budgetMod.formatElapsedDuration(65 * 60_000), "1h 5m");
+  assert.equal(budgetMod.loopBudgetSummary({ startedAt: "2026-05-22T20:00:00.000Z", iteration: 2, maxIterations: 5 }, Date.parse("2026-05-22T20:01:30.000Z")), "elapsed 1m; iterations 2/5; remaining 3");
   assert.deepEqual(compactionMod.recordCompactionContextUsage({ reason: "tokens=120000 context_window=300000" }), { tokens: 120000, contextWindow: 300000 });
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
@@ -722,6 +728,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(extractedPrompt, /Use the project instructions and matching skills now\. Development loop iteration 2\/3/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
+  assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1/);
+  assert.match(extractedPrompt, /soft budget; elapsed time is advisory/);
   assert.match(extractedPrompt, /Task discovery cues for broad objectives:/);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development loop after compaction[\s\S]*Development loop iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development loop iteration after empty provider response[\s\S]*Development loop iteration 2\/3/);
@@ -2848,6 +2856,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /starts the next iteration automatically/);
   assert.match(readme, /pause automatic continuation without clearing loop state/);
   assert.match(readme, /resume continues the current iteration/);
+  assert.match(readme, /Run budget metadata shows elapsed time and remaining iterations/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);

@@ -113,6 +113,7 @@ Tips:
 - Keep one objective per run; stop and restart when the objective changes.
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
 - Use `/development-loop pause` to pause automatic continuation without clearing loop state; resume continues the current iteration from the saved state.
+- Run budget metadata shows elapsed time and remaining iterations in prompts/status; this is a soft budget cue, not a hard timeout.
 - If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
 - If validation is red or credentials are needed, the loop should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.

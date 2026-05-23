@@ -4,6 +4,7 @@ import {
   nonEmpty,
   type ResolvedProjectAdapter,
 } from "./development-loop-adapter.ts";
+import { loopBudgetSummary } from "./development-loop-budget.ts";
 import { relativeToCwd } from "./development-loop-files.ts";
 import type { LoopState } from "./development-loop-state.ts";
 import { objectiveIntakeSummary, promptObjectiveText } from "./development-loop-topic.ts";
@@ -51,6 +52,7 @@ Objective intake: ${objectiveIntakeSummary(s.topic, PROMPT_OBJECTIVE_MAX)}
 Preferred language: ${language}
 Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
 Loop log path: ${relativeToCwd(cwd, s.logPath)}
+Run budget: ${loopBudgetSummary(s)} (soft budget; elapsed time is advisory, iteration count is the configured cap.)
 
 Suggested skills/adapters for this project:
 ${skills.map((skill) => `- ${skill}`).join("\n") || "- Use the smallest project-matching skill set."}

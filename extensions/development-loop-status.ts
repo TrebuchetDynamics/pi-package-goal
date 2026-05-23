@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./development-loop-log-record.ts";
+import { loopBudgetSummary } from "./development-loop-budget.ts";
 import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./development-loop-report-record.ts";
 import { compactTopic, objectiveText } from "./development-loop-topic.ts";
 
@@ -20,6 +21,7 @@ type LoopStatusState = {
   topic: string;
   iteration: number;
   maxIterations: number;
+  startedAt?: string;
   logPath?: string;
   phase: string;
   lastDecision?: string;
@@ -36,6 +38,7 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
     `adapter: ${s.adapterName}`,
     `topic: ${objectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}`,
     `state: ${stateExplanation(s, last)}`,
+    ...(s.active ? [`budget: ${loopBudgetSummary(s)}`] : []),
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
