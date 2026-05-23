@@ -85,6 +85,7 @@ import {
 } from "./development-loop-report-record.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
 import { createRunId, lastAssistantText } from "./development-loop-runtime.ts";
+import { mergeSteeringTopic } from "./development-loop-steering.ts";
 import {
   numberOrUndefined,
   selectValue,
@@ -337,7 +338,6 @@ type UiLikeContext = {
   }) => void;
 };
 
-const STEERING_TOPIC_MAX = 240;
 const LOG_TOPIC_MAX = 600;
 const AUTO_CONTINUATION_RETRY_MS = 50;
 const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
@@ -2006,13 +2006,6 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
   ].filter((line): line is string => Boolean(line)).join("\n");
 }
 
-
-function mergeSteeringTopic(currentTopic: string, steeringText: string): string {
-  const baseTopic = singleLineText(currentTopic) || "active development loop";
-  const steering = singleLineText(steeringText);
-  const next = `${baseTopic}; latest user steering: ${steering}`;
-  return next.length <= STEERING_TOPIC_MAX ? next : `${next.slice(0, STEERING_TOPIC_MAX - 1)}…`;
-}
 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;

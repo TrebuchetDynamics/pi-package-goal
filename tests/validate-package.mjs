@@ -752,6 +752,14 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(valuesMod.numberOrUndefined(0), undefined);
   assert.equal(valuesMod.numberOrUndefined("nope"), undefined);
 
+  const steeringMod = await jiti.import(path.join(root, "extensions", "development-loop-steering.ts"));
+  assert.equal(steeringMod.STEERING_TOPIC_MAX, 240);
+  assert.equal(steeringMod.mergeSteeringTopic("", "focus release hygiene"), "active development loop; latest user steering: focus release hygiene");
+  assert.equal(steeringMod.mergeSteeringTopic("ship [object Object]\nplan", "use ───── clean route ↑↓ navi"), "ship plan; latest user steering: use clean route");
+  const mergedSteering = steeringMod.mergeSteeringTopic("topic ".repeat(80), "steer ".repeat(80));
+  assert.equal(mergedSteering.length, 240);
+  assert.match(mergedSteering, /…$/);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
