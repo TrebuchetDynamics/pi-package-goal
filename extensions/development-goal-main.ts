@@ -10,6 +10,7 @@ import {
   type ResolvedProjectAdapter,
 } from "./development-goal-adapter.ts";
 import { resolveCommitPush, type ProjectConfig } from "./development-goal-config.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
 import {
   absoluteLogPath,
   contextCwd,
@@ -548,7 +549,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
 
-  pi.registerCommand("development-goal", command);
+  pi.registerCommand(DEVELOPMENT_GOAL_IDENTITY.command.name, command);
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {
@@ -2079,10 +2080,11 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
-  ctx.ui.setStatus?.("development-goal", undefined);
-  ctx.ui.setWidget?.("development-goal", undefined);
-  ctx.ui.setStatus?.("development-goal", statusLine(state, theme));
-  ctx.ui.setWidget?.("development-goal", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
+  const statusKey = DEVELOPMENT_GOAL_IDENTITY.statusKey;
+  ctx.ui.setStatus?.(statusKey, undefined);
+  ctx.ui.setWidget?.(statusKey, undefined);
+  ctx.ui.setStatus?.(statusKey, statusLine(state, theme));
+  ctx.ui.setWidget?.(statusKey, statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }
 
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {

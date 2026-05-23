@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { loadProjectConfig, type ProjectConfig } from "./development-goal-config.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
 import { dirExists } from "./development-goal-files.ts";
 import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./development-goal-state.ts";
 
@@ -23,7 +24,7 @@ export type ResolvedProjectAdapter = {
   configError?: string;
 };
 
-export const DEFAULT_CONFIG_RELATIVE = path.join(".pi", "development-goal.json");
+export const DEFAULT_CONFIG_RELATIVE = DEVELOPMENT_GOAL_IDENTITY.configFile;
 export const DEFAULT_LANGUAGE = "English";
 export const MANDATORY_SKILLS = ["improve-codebase-architecture", "caveman"];
 

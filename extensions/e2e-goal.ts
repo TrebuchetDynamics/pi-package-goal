@@ -2,6 +2,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { loopBudgetSummary } from "./development-goal-budget.ts";
+import { E2E_GOAL_IDENTITY } from "./e2e-goal-identity.ts";
+import { goalLogRelative } from "./goal-core/identity.ts";
 
 type E2EPhase = "idle" | "running" | "blocked" | "done";
 type E2EDecision = "continue" | "stop" | "blocked" | "done";
@@ -56,8 +58,8 @@ type UiLikeContext = {
   isIdle?: () => boolean;
 };
 
-const CUSTOM_STATE_TYPE = "e2e-goal-state";
-const DEFAULT_LOG_RELATIVE = path.join(".pi", "e2e-goal", "logs.jsonl");
+const CUSTOM_STATE_TYPE = E2E_GOAL_IDENTITY.stateType;
+const DEFAULT_LOG_RELATIVE = goalLogRelative(E2E_GOAL_IDENTITY);
 const DEFAULT_OBJECTIVE = "test the app fully through real usage paths";
 const DEFAULT_ITERATIONS = 1;
 const HARD_MAX_ITERATIONS = 10;
@@ -136,8 +138,10 @@ export default function e2eLoopExtension(pi: ExtensionAPI) {
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
 
-  pi.registerCommand("e2e-goal", command);
-  pi.registerCommand("e2e", { ...command, description: "Alias for /e2e-goal" });
+  pi.registerCommand(E2E_GOAL_IDENTITY.command.name, command);
+  for (const alias of E2E_GOAL_IDENTITY.command.aliases ?? []) {
+    pi.registerCommand(alias, { ...command, description: `Alias for /${E2E_GOAL_IDENTITY.command.name}` });
+  }
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {
@@ -285,8 +289,9 @@ function statusLine(s: E2EState, theme?: UiThemeLike): string {
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
-  ctx.ui.setStatus?.("e2e-goal", statusLine(state, theme));
-  ctx.ui.setWidget?.("e2e-goal", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
+  const statusKey = E2E_GOAL_IDENTITY.statusKey;
+  ctx.ui.setStatus?.(statusKey, statusLine(state, theme));
+  ctx.ui.setWidget?.(statusKey, statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }
 
 function statusWidgetLines(s: E2EState, cwd: string, theme?: UiThemeLike): string[] | undefined {

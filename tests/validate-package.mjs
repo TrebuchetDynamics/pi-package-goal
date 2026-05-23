@@ -393,6 +393,53 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
   assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
 
+  const identityMod = await jiti.import(path.join(root, "extensions", "goal-core", "identity.ts"));
+  assert.deepEqual(identityMod.deriveGoalMarkers("development-goal"), {
+    report: "DEV_GOAL_REPORT",
+    validated: "DEV_GOAL_VALIDATED",
+    decision: "DEV_GOAL_DECISION",
+  });
+  assert.deepEqual(identityMod.deriveGoalMarkers("e2e-goal"), {
+    report: "E2E_GOAL_REPORT",
+    validated: "E2E_GOAL_VALIDATED",
+    decision: "E2E_GOAL_DECISION",
+  });
+  const debugGoalIdentity = identityMod.defineGoalIdentity({
+    slug: "debug-goal",
+    label: "Debug Goal",
+    command: { name: "debug-goal" },
+    stateType: "debug-goal-state",
+    statusKey: "debug-goal",
+    configFile: ".pi/debug-goal.json",
+    logDir: ".pi/debug-goal",
+    migrationPolicy: { mode: "hard-break" },
+  });
+  assert.equal(identityMod.goalConfigPath(debugGoalIdentity, "/repo"), path.join("/repo", ".pi", "debug-goal.json"));
+  assert.equal(identityMod.goalLogPath(debugGoalIdentity, "/repo"), path.join("/repo", ".pi", "debug-goal", "logs.jsonl"));
+  assert.throws(
+    () => identityMod.validateGoalIdentity({ ...debugGoalIdentity, slug: "" }, { mode: "test" }),
+    /GoalIdentity\.slug/,
+  );
+  const identityWarnings = [];
+  assert.equal(identityMod.validateGoalIdentity({ ...debugGoalIdentity, statusKey: "" }, { mode: "production", warn: (message) => identityWarnings.push(message) }), undefined);
+  assert.match(identityWarnings[0], /GoalIdentity\.statusKey/);
+
+  const developmentGoalIdentityMod = await jiti.import(path.join(root, "extensions", "development-goal-identity.ts"));
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.slug, "development-goal");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.command.name, "development-goal");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.stateType, "development-goal-state");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.statusKey, "development-goal");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.configFile, ".pi/development-goal.json");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.logDir, ".pi/development-goal");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.markers.decision, "DEV_GOAL_DECISION");
+  assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.migrationPolicy.mode, "hard-break");
+
+  const e2eGoalIdentityMod = await jiti.import(path.join(root, "extensions", "e2e-goal-identity.ts"));
+  assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.slug, "e2e-goal");
+  assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.command.name, "e2e-goal");
+  assert.deepEqual(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.command.aliases, ["e2e"]);
+  assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.markers.validated, "E2E_GOAL_VALIDATED");
+
   const logRecordMod = await jiti.import(path.join(root, "extensions", "development-goal-log-record.ts"));
   assert.equal(typeof logRecordMod.parseLoopLogRecord, "function");
   assert.deepEqual(logRecordMod.parseLoopLogRecord('{"event":"loop_start","timestamp":"2026-05-22T21:00:00.000Z","run_id":"legacy-run"}'), {

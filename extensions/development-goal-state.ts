@@ -1,7 +1,9 @@
+import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
 import type { DevelopmentLoopRun } from "./development-goal-domain.ts";
+import { goalLogRelative } from "./goal-core/identity.ts";
 
-export const CUSTOM_STATE_TYPE = "development-goal-state";
-export const DEFAULT_LOG_RELATIVE = ".pi/development-goal/logs.jsonl";
+export const CUSTOM_STATE_TYPE = DEVELOPMENT_GOAL_IDENTITY.stateType;
+export const DEFAULT_LOG_RELATIVE = goalLogRelative(DEVELOPMENT_GOAL_IDENTITY);
 export const UNBOUNDED_MAX_ITERATIONS = Number.MAX_SAFE_INTEGER;
 export const DEFAULT_ITERATIONS = UNBOUNDED_MAX_ITERATIONS;
 

@@ -4,9 +4,11 @@ import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./development-
 import { loopBudgetSummary } from "./development-goal-budget.ts";
 import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./development-goal-report-record.ts";
 import { compactTopic, objectiveText } from "./development-goal-topic.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
 import { compactIterationProgress } from "./development-goal-state.ts";
+import { goalLogRelative } from "./goal-core/identity.ts";
 
-const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-goal", "logs.jsonl");
+const DEFAULT_LOG_RELATIVE = goalLogRelative(DEVELOPMENT_GOAL_IDENTITY);
 const STATUS_TOPIC_MAX = 72;
 const STATUS_REPORT_HISTORY_LIMIT = 3;
 const PROMPT_OBJECTIVE_MAX = 600;

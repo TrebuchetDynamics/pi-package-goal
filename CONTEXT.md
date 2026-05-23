@@ -12,9 +12,25 @@ _Avoid_: Development loop, dev loop, iteration loop
 One active execution of a Development Goal in a project workspace. A Goal Run has one objective, one run id, one persisted state record, and many turns until a terminal decision.
 _Avoid_: Loop run, iteration batch
 
+**Goal Family**:
+The set of Pi workflows whose commands follow the `*-goal` pattern and share lifecycle concepts while specializing their purpose. Development Goal, E2E Goal, Architecture Goal, View Goal, Debug Goal, and Research Goal are members of the Goal Family.
+_Avoid_: Unrelated loop extensions, one-off command clones
+
+**Goal Identity**:
+The shared naming contract for one Goal Family member: command names, persisted paths, status keys, log locations, final marker names, user-facing wording, migration policy, and legacy alias decisions. Goal Identity should expose constants plus derived helpers for paths and keys, so callers do not rebuild those facts themselves. Final markers are rendered per Goal Identity while shared parser behaviour stays behind the same module interface. The Goal Identity seam lives under `extensions/goal-core/identity.ts` to make room for shared Goal Family modules, while each Goal Family member keeps its values in a per-goal identity module such as `development-goal-identity.ts` or `e2e-goal-identity.ts`. Keep the Goal Identity interface small: `slug`, `label`, `command`, `stateType`, `statusKey`, `configFile`, `logDir`, `markers`, and `migrationPolicy`. Marker names are derived from the slug by default, with explicit overrides only for exceptions. Goal Identity does not own prompt prose; prompt modules render copy using Goal Identity values.
+_Avoid_: Scattered rename constants, branding strings, command aliases, one-off marker parsers, package-level metadata, prompt copy inside identity
+
+**Package Identity**:
+The shared naming contract for the Pi package itself: npm package name, repository URL, homepage, issue URL, package description, package keywords, and bundled extension list. Package Identity is separate from Goal Identity because one package can ship many Goal Family members.
+_Avoid_: Per-goal package metadata, duplicating repository URLs inside goal identities
+
+**Goal Identity Schema**:
+The runtime validation rule for a Goal Identity. Goal Identity Schema complements TypeScript types by detecting malformed identity objects when Goal Family members are registered or tested. Tests should throw on invalid Goal Identity values; production extension registration should warn and skip the invalid Goal Family member.
+_Avoid_: Type-only identity checks, unchecked plain objects
+
 **Development Goal Identity**:
-The shared naming contract for a Development Goal: command names, package names, persisted paths, status keys, log locations, final marker names, user-facing wording, migration policy, and legacy alias decisions. Development Goal Identity should expose constants plus derived helpers for paths and keys, so callers do not rebuild those facts themselves.
-_Avoid_: Scattered rename constants, branding strings, command aliases
+The Goal Identity for Development Goal.
+_Avoid_: Development loop identity, dev-loop branding
 
 **Migration Policy**:
 The explicit rule for how a Development Goal handles old public names, old persisted paths, old status keys, and old final markers after an identity change. The current Development Goal Migration Policy is a hard break: old names, paths, markers, and aliases are removed rather than redirected.
@@ -28,8 +44,8 @@ _Avoid_: E2E loop, smoke loop
 
 Dev: "The Development Goal command changed, but status still writes the old key."
 
-Domain expert: "That is a Development Goal Identity leak. The command name and status key belong to the same identity contract."
+Domain expert: "That is a Goal Identity leak. The command name and status key belong to the same identity contract."
 
 Dev: "Should the E2E Goal use the same identity contract?"
 
-Domain expert: "It should use the same lifecycle concepts where they match, but its E2E Goal identity stays separate: its command, state path, logs, and final markers name E2E usage testing."
+Domain expert: "It should use the same Goal Identity module shape, but its own identity values: command, state path, logs, and final markers name E2E usage testing."
