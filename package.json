@@ -1,7 +1,7 @@
 {
   "name": "pi-package-development-loop",
   "version": "0.1.0",
-  "description": "Adapter-aware Pi development and E2E loop extensions bundled with high-signal engineering and web skills.",
+  "description": "Adapter-aware Pi development-goal and E2E-loop extensions bundled with high-signal engineering and web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
@@ -16,6 +16,7 @@
     "pi-package",
     "pi",
     "pi-agent",
+    "development-goal",
     "development-loop",
     "e2e-loop",
     "agent-skills",

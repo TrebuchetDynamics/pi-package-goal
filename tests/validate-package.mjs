@@ -319,7 +319,9 @@ async function testPackageManifest() {
   const pkg = readJson("package.json");
   assert.equal(pkg.name, "pi-package-development-loop");
   assert.equal(pkg.type, "module");
+  assert.match(pkg.description, /development-goal/);
   assert.ok(pkg.keywords.includes("pi-package"));
+  assert.ok(pkg.keywords.includes("development-goal"));
   assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-loop.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
