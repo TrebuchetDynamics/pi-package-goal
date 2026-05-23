@@ -15,6 +15,7 @@ const expectedSkills = [
   "tdd",
   "diagnose",
   "improve-codebase-architecture",
+  "grill-me",
   "grill-with-docs",
   "prototype",
   "zoom-out",
@@ -721,7 +722,7 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal-adapter.ts"));
   assert.deepEqual(adapterMod.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
-  assert.deepEqual(adapterMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["improve-codebase-architecture", "caveman", "tdd"]);
+  assert.deepEqual(adapterMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
   const genericAdapter = adapterMod.getAdapterByName("generic-git");
   assert.equal(genericAdapter.description, "Conservative generic git-project development goal");
   assert.equal(adapterMod.getAdapterByName("missing"), undefined);
@@ -735,7 +736,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     adapter: "generic-git",
     defaultTopic: "custom topic",
     language: "English",
-    skills: ["improve-codebase-architecture", "caveman", "writing-plans"],
+    skills: ["improve-codebase-architecture", "grill-me", "caveman", "writing-plans"],
     preflightCommands: genericAdapter.preflightCommands,
     validationCommands: ["npm test"],
     commit: false,
@@ -776,7 +777,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(initDefaults.config.commit, true);
   assert.equal(initDefaults.config.push, true);
   assert.equal(initDefaults.config.logPath, "custom/logs.jsonl");
-  assert.deepEqual(initDefaults.config.skills, ["improve-codebase-architecture", "caveman", "tdd"]);
+  assert.deepEqual(initDefaults.config.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
   assert.deepEqual(initConfigMod.splitLinesOrDefault(" one\n\n two \r\n", ["fallback"]), ["one", "two"]);
   assert.deepEqual(initConfigMod.splitLinesOrDefault("\n ", ["fallback"]), ["fallback"]);
   assert.equal(initConfigMod.shouldPromptForInit({ yes: true }, { hasUI: true, ui: { select() {}, input() {}, editor() {}, confirm() {} } }), false);
@@ -810,7 +811,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     tokenBudget: 98500,
   };
   const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
-  assert.match(extractedPrompt, /Start with improve-codebase-architecture, then use the project instructions and matching skills now\. Development goal iteration 2\/3/);
+  assert.match(extractedPrompt, /Start with improve-codebase-architecture, then use grill-me to fill plan gaps, then use the project instructions and matching skills now\. Development goal iteration 2\/3/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
   assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
@@ -1119,6 +1120,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /progress\.json/);
     assert.match(sent[0].content, /repo-local skills/);
     assert.match(sent[0].content, /caveman/);
+    assert.match(sent[0].content, /grill-me/);
+    assert.match(sent[0].content, /easy questions.*answered by the agent itself/i);
     assert.match(sent[0].content, /improve-codebase-architecture/);
     assert.match(sent[0].content, /Preferred language: English/);
     assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
@@ -1408,6 +1411,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     const malformedRecordsAfterRetry = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const repairRequestRecord = malformedRecordsAfterRetry.find((record) => record.event === "malformed_final_report_repair_requested" && record.runId === malformedRunId);
     assert.deepEqual(repairRequestRecord.reportQualityIssueCodes, ["missing_blocked_work", "missing_pivoted_work_completed", "relative_human_changed_file", "vague_typed_changed_file"]);
+    assert.equal(repairRequestRecord.reportQualityWarnings, undefined);
 
     await handlers.get("agent_end")({ messages: [{ role: "assistant", content: malformedContinueReport }] }, ctx);
     assert.equal(entries.at(-1).data.active, false, "a second invalid report should block instead of retrying indefinitely");
@@ -1419,6 +1423,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(malformedBlockedRecord.blockerKind, "malformed_final_report");
     assert.match(malformedBlockedRecord.blockerState, /missing_blocked_work/);
     assert.match(malformedBlockedRecord.blockerState, /vague_typed_changed_file/);
+    assert.equal(malformedBlockedRecord.reportQualityWarnings, undefined);
 
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
@@ -2174,7 +2179,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(written.maxIterations, undefined);
     assert.equal(written.language, "English");
     assert.equal(written.skills[0], "improve-codebase-architecture");
-    assert.equal(written.skills[1], "caveman");
+    assert.equal(written.skills[1], "grill-me");
+    assert.equal(written.skills[2], "caveman");
     assert.ok(written.skills.some((skill) => /repo-local skills/.test(skill)));
     assert.ok(written.skills.some((skill) => /greploop/.test(skill)));
     assert.ok(written.stopConditions.some((condition) => /TODO\.md/.test(condition)));
@@ -2253,7 +2259,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "caveman", "tdd", "verification-before-completion"]);
+    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "verification-before-completion"]);
     assert.deepEqual(configured.stopConditions, ["credentials missing"]);
     assert.equal(configured.logPath, ".dev-goal/logs.jsonl");
   } finally {
@@ -2286,7 +2292,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "caveman", "grill-me", "tdd"]);
+    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
     assert.deepEqual(configured.stopConditions, ["review blockers are unresolved"]);
     assert.equal(configured.logPath, ".dev-goal/logs.jsonl");
 
@@ -3028,6 +3034,8 @@ async function testNoticesAndDocs() {
   assert.doesNotMatch(readme, /wizard in the Pi TUI for adapter,/);
   assert.match(readme, /Preferred language/);
   assert.match(readme, /caveman/);
+  assert.match(readme, /grill-me/);
+  assert.match(readme, /easy questions.*answered by the agent itself/i);
   assert.match(readme, /improve-codebase-architecture/);
   assert.match(readme, /## Update or remove/);
   assert.match(readme, /### Status bar integration/);

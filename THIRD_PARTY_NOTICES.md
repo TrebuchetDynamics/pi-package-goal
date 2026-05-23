@@ -22,6 +22,7 @@ Trebuchet Dynamics under the MIT License.
   - `skills/tdd/`
   - `skills/diagnose/`
   - `skills/improve-codebase-architecture/`
+  - `skills/grill-me/`
   - `skills/grill-with-docs/`
   - `skills/prototype/`
   - `skills/zoom-out/`

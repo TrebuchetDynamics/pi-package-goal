@@ -87,8 +87,9 @@ import {
   recordReportSummary,
   recordValidationEvidence,
 } from "./development-goal-report-record.ts";
-import { parseFinalReport, parseLoopDeliveryEvidence, parseLoopReport, type ReportQualityIssue } from "./development-goal-report-parser.ts";
+import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
 import { terminalAuditEvent } from "./development-goal-terminal-audit.ts";
+import { evaluateFinalReportGate } from "./development-goal-final-report-gate.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
 import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
 import { mergeSteeringTopic } from "./development-goal-steering.ts";
@@ -403,14 +404,11 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
     const messages = event.messages ?? [];
     const assistantText = lastAssistantText(messages);
-    const finalReportResult = parseFinalReport(assistantText);
-    const finalReport = finalReportResult.ok ? finalReportResult.report : undefined;
+    const finalReportGate = evaluateFinalReportGate(assistantText, { usedReportRepairRetry: state.usedReportRepairRetry });
+    const finalReport = "report" in finalReportGate ? finalReportGate.report : undefined;
     const decision = finalReport?.decision;
     const validated = finalReport?.validated;
-    const typedDeliveryEvidence = finalReport?.deliveryEvidence;
-    const deliveryEvidence = typedDeliveryEvidence && Object.keys(typedDeliveryEvidence).length > 0
-      ? typedDeliveryEvidence
-      : parseLoopDeliveryEvidence(assistantText);
+    const deliveryEvidence = finalReportGate.deliveryEvidence;
 
     if (!decision) {
       if (hasContextOverflowProviderError(messages)) {
@@ -449,18 +447,13 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       state = { ...state, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
     }
 
-    if (finalReport && !finalReport.quality.valid) {
-      if (!state.usedReportRepairRetry) {
-        requestReportRepair(pi, ctx, finalReport.quality.issues);
-        return;
-      }
-      const issueSummary = reportQualityIssueSummary(finalReport.quality.issues);
-      blockLoop(pi, ctx, "malformed_final_report", "blocked", {
-        blockerKind: "malformed_final_report",
-        blockerState: issueSummary,
-        reportQualityIssueCodes: finalReport.quality.issues.map((issue) => issue.code),
-        reportQualityWarnings: finalReport.quality.issues.map((issue) => issue.message),
-      });
+    if (finalReportGate.action === "repair") {
+      requestReportRepair(pi, ctx, finalReportGate.report.quality.issues, finalReportGate.logEvent);
+      return;
+    }
+
+    if (finalReportGate.action === "block") {
+      blockLoop(pi, ctx, "malformed_final_report", "blocked", finalReportGate.logEvent);
       return;
     }
 
@@ -807,7 +800,12 @@ function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolv
   }, delay);
 }
 
-function requestReportRepair(pi: ExtensionAPI, ctx: UiLikeContext, issues: ReportQualityIssue[]) {
+function requestReportRepair(
+  pi: ExtensionAPI,
+  ctx: UiLikeContext,
+  issues: Array<{ code: string; message: string; value?: string }>,
+  logEvent: { event: string; reason: string; blockerKind: string; reportQualityIssueCodes: string[] },
+) {
   state = {
     ...state,
     phase: "running",
@@ -816,13 +814,8 @@ function requestReportRepair(pi: ExtensionAPI, ctx: UiLikeContext, issues: Repor
     markerRecoveryRetries: 0,
     usedReportRepairRetry: true,
   };
-  appendLoopLog("malformed_final_report_repair_requested", {
-    reason: "malformed_final_report",
-    blockerKind: "malformed_final_report",
-    blockerState: reportQualityIssueSummary(issues),
-    reportQualityIssueCodes: issues.map((issue) => issue.code),
-    reportQualityWarnings: issues.map((issue) => issue.message),
-  });
+  const { event, ...logExtra } = logEvent;
+  appendLoopLog(event, logExtra);
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
   notify(ctx, "Development goal is requesting a repair-only final report after report quality validation failed.", "warning");
@@ -2179,10 +2172,6 @@ function refreshUi(ctx: UiLikeContext) {
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   const logPath = state.logPath || path.join(process.cwd(), DEFAULT_LOG_RELATIVE);
   appendLoopLogRecord(logPath, buildLoopLogRecord({ ...state, logPath }, event, extra, new Date().toISOString(), LOG_TOPIC_MAX));
-}
-
-function reportQualityIssueSummary(issues: ReportQualityIssue[]): string {
-  return issues.map((issue) => issue.code).join("; ") || "malformed_final_report";
 }
 
 function recordSelfImprovementAction(record: Record<string, unknown>): string | undefined {

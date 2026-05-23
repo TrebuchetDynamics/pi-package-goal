@@ -147,7 +147,7 @@ DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 ```
 
-Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries. Malformed reports get one repair-only retry with exact issue codes, then block as `malformed_final_report` if still invalid.
+Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries. A Final Report Gate logs compact state transitions with aggregate issue codes, gives malformed reports one repair-only retry with exact issue codes, then blocks as `malformed_final_report` if still invalid.
 
 Decision guide for final markers:
 
@@ -307,7 +307,7 @@ Create `.pi/development-goal.json` when a repo needs its own default objective, 
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
-Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `caveman` and `improve-codebase-architecture` in its skill list, even when custom skills are configured.
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `grill-me` to fill requirement gaps while easy questions and source-answerable questions are answered by the agent itself from repo evidence.
 
 Example config:
 
@@ -316,7 +316,7 @@ Example config:
   "adapter": "generic-git",
   "defaultTopic": "improve documentation with tests",
   "language": "English",
-  "skills": ["improve-codebase-architecture", "caveman", "tdd", "verification-before-completion"],
+  "skills": ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "verification-before-completion"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
   "stopConditions": ["validation fails twice with the same blocker"],
@@ -341,6 +341,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `tdd` — red-green-refactor delivery.
 - `diagnose` — disciplined bug and performance diagnosis.
 - `improve-codebase-architecture` — architecture deepening review.
+- `grill-me` — relentless plan-gap interrogation; Development Goal startup uses it while answering easy/source-backed questions itself.
 - `grill-with-docs` — plan interrogation tied to domain docs and ADRs.
 - `prototype` — throwaway prototypes for design uncertainty.
 - `zoom-out` — source-backed broader codebase understanding.

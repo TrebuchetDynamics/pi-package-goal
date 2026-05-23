@@ -26,7 +26,7 @@ export type ResolvedProjectAdapter = {
 
 export const DEFAULT_CONFIG_RELATIVE = DEVELOPMENT_GOAL_IDENTITY.configFile;
 export const DEFAULT_LANGUAGE = "English";
-export const MANDATORY_SKILLS = ["improve-codebase-architecture", "caveman"];
+export const MANDATORY_SKILLS = ["improve-codebase-architecture", "grill-me", "caveman"];
 
 export const COMMON_PREFLIGHT = [
   "pwd",
@@ -43,6 +43,7 @@ export const BUILT_IN_ADAPTERS: LoopAdapter[] = [
     defaultTopic: "discover and complete the largest safe useful project goal package with validation",
     skills: [
       "improve-codebase-architecture",
+      "grill-me for plan-gap interrogation; easy questions and source-answerable questions must be answered by the agent itself before asking the user",
       "caveman",
       "repo-local skills that match the detected task before package defaults",
       "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
