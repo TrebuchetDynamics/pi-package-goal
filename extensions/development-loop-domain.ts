@@ -1,4 +1,4 @@
-export type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "blocked" | "done";
+export type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" | "paused" | "blocked" | "done";
 export type LoopDecision = "continue" | "stop" | "blocked" | "done";
 export type ObjectiveKind = "short" | "oversized" | "provider-noise";
 

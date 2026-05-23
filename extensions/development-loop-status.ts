@@ -39,7 +39,7 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /development-loop status | /development-loop analyze-logs | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
+    "Commands: /development-loop status | /development-loop pause | /development-loop resume | /development-loop analyze-logs | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
   ].join("\n");
 }
 
@@ -109,6 +109,7 @@ function loopStatusMeta(s: LoopStatusState): { icon: string; label: string; colo
   if (s.phase === "blocked") return { icon: "■", label: "block", color: "error" };
   if (s.phase === "done") return { icon: "✓", label: "done", color: "success" };
   if (!s.active) return { icon: "○", label: "idle", color: "dim" };
+  if (s.phase === "paused") return { icon: "Ⅱ", label: "pause", color: "warning" };
   if (s.phase === "queued") return { icon: "◆", label: "queue", color: "warning" };
   if (s.phase === "reported") return { icon: "◇", label: "report", color: "accent" };
   if (s.phase === "started") return { icon: "●", label: "start", color: "accent" };

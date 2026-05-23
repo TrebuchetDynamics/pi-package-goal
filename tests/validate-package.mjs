@@ -561,6 +561,20 @@ async function testExtensionLoadsAndRegistersCommands() {
     skills: [],
     stopConditions: [],
   });
+  assert.deepEqual(commandMod.parseArgs("pause"), {
+    command: "pause",
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseArgs("resume"), {
+    command: "resume",
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
   assert.deepEqual(commandMod.parseSinceFilter("2h", Date.parse("2026-05-22T21:00:00.000Z")), {
     cutoffMs: Date.parse("2026-05-22T19:00:00.000Z"),
     cutoffIso: "2026-05-22T19:00:00.000Z",
@@ -1029,6 +1043,24 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
     assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
     assert.doesNotMatch(widgetUpdates.at(-1).value[0], /loop 1\/2/);
+
+    await command.handler("pause", ctx);
+    assert.equal(entries.at(-1).data.active, true, "paused loop should preserve active goal state for resume");
+    assert.equal(entries.at(-1).data.phase, "paused");
+    assert.match(statusUpdates.at(-1).value, /<warning>Ⅱ pause<\/warning>/);
+    const pausedInputResult = await handlers.get("input")({
+      type: "input",
+      text: "do not steer while paused",
+      source: "interactive",
+    }, ctx);
+    assert.equal(pausedInputResult.action, "continue", "paused loop should not turn plain text into steering");
+
+    const sentBeforeResume = sent.length;
+    await command.handler("resume", ctx);
+    assert.equal(sent.length, sentBeforeResume + 1, "resuming should queue/send the paused iteration prompt");
+    assert.match(sent.at(-1).content, /Development loop iteration 1\/2/);
+    assert.equal(entries.at(-1).data.active, true);
+    assert.equal(entries.at(-1).data.phase, "running");
 
     const sentBeforeEmptyRetry = sent.length;
     await handlers.get("agent_end")({ messages: [] }, ctx);
@@ -2814,6 +2846,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /preview the generated config without writing/);
   assert.match(readme, /`--yes`/);
   assert.match(readme, /starts the next iteration automatically/);
+  assert.match(readme, /pause automatic continuation without clearing loop state/);
+  assert.match(readme, /resume continues the current iteration/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);

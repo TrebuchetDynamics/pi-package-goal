@@ -90,6 +90,8 @@ Useful commands:
 /development-loop start --iterations=3 providers
 /development-loop start --iterations=5 --commit --push fix flaky tests
 /development-loop status
+/development-loop pause
+/development-loop resume
 /development-loop analyze-logs
 /development-loop analyze-logs .pi/development-loop/logs.jsonl
 /development-loop analyze-logs .pi
@@ -110,6 +112,7 @@ Tips:
 - Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
+- Use `/development-loop pause` to pause automatic continuation without clearing loop state; resume continues the current iteration from the saved state.
 - If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
 - If validation is red or credentials are needed, the loop should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.

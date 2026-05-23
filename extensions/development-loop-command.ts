@@ -1,4 +1,4 @@
-export type DevelopmentLoopCommand = "start" | "restart" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
+export type DevelopmentLoopCommand = "start" | "restart" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
 
 export type SinceFilter = {
   cutoffMs: number;
@@ -26,7 +26,7 @@ export type ParsedCommand = {
   stopConditions: string[];
 };
 
-const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
+const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
 const DEFAULT_ADAPTER_NAMES = ["generic-git"];
 
 export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFAULT_ADAPTER_NAMES): ParsedCommand {

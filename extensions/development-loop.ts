@@ -487,7 +487,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   }
 
   async function onInput(event: InputEvent, ctx: ExtensionContext): Promise<InputEventResult> {
-    if (!state.active) return { action: "continue" };
+    if (!state.active || state.phase === "paused") return { action: "continue" };
     if (event.source === "extension") return { action: "continue" };
 
     const steeringText = singleLineText(event.text);
@@ -520,7 +520,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   const command = {
     description: "Run an adapter-aware project development loop",
-    getArgumentCompletions: (prefix: string) => ["start", "restart", "status", "stop", "init", "adapters", "analyze-logs", "help"]
+    getArgumentCompletions: (prefix: string) => ["start", "restart", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"]
       .filter((value) => value.startsWith(prefix))
       .map((value) => ({ value, label: value })),
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
@@ -535,6 +535,12 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
   switch (parsed.command) {
     case "status":
       publishStatus(pi, ctx);
+      return;
+    case "pause":
+      pauseLoop(pi, ctx);
+      return;
+    case "resume":
+      resumeLoop(pi, ctx);
       return;
     case "stop":
       state = { ...state, active: false, phase: "idle", lastDecision: "stopped_by_user" };
@@ -563,6 +569,37 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       await startLoop(pi, ctx, parsed, false);
       return;
   }
+}
+
+function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
+  if (!state.active) {
+    notify(ctx, "No active development loop to pause.");
+    return;
+  }
+  if (state.phase === "paused") {
+    notify(ctx, "Development loop already paused.");
+    return;
+  }
+  state = { ...state, phase: "paused", lastReason: "paused_by_user" };
+  appendLoopLog("loop_paused", { reason: "paused_by_user" });
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, "Development loop paused. Use /development-loop resume to continue.");
+}
+
+function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
+  if (!state.active || state.phase !== "paused") {
+    notify(ctx, "No paused development loop to resume.");
+    return;
+  }
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+  appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, `Resuming development loop iteration ${state.iteration}/${state.maxIterations}.`);
+  sendIterationPrompt(pi, ctx, resolved);
 }
 
 async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed: ParsedCommand, replaceActive: boolean) {
@@ -881,6 +918,8 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "Development loop commands:",
     "- /development-loop start [options] <topic> — start a loop",
     "- /development-loop restart [options] <topic> — replace the active loop",
+    "- /development-loop pause — pause automatic continuation without clearing loop state",
+    "- /development-loop resume — resume a paused loop at the current iteration",
     "- /development-loop stop — stop the active loop",
     "- /development-loop status — show current state",
     "- /development-loop adapters — show detected adapter/config",
