@@ -2318,6 +2318,7 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
     await command.handler("status", ctx);
     assert.match(messages.at(-1).content, /checkout flow/);
     assert.match(messages.at(-1).content, /running/);
+    assert.match(messages.at(-1).content, /Last event: iteration_prompt_sent; iteration 2/);
     assert.match(messages.at(-1).content, /\.pi\/e2e-loop\/logs\.jsonl/);
   } finally {
     fs.rmSync(e2eRoot, { recursive: true, force: true });

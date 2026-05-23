@@ -259,11 +259,13 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
 }
 
 function statusReport(s: E2EState, cwd = process.cwd()): string {
+  const logPath = s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE);
   return [
     statusLine(s),
     `objective: ${s.objective || DEFAULT_OBJECTIVE}`,
     `state: ${stateExplanation(s)}`,
-    `log: ${relativeToCwd(cwd, s.logPath)}`,
+    summarizeLastE2ERecord(readLastE2ERecord(logPath)),
+    `log: ${relativeToCwd(cwd, logPath)}`,
     "Commands: /e2e-loop status | /e2e-loop stop | /e2e-loop restart --iterations=N <objective>",
   ].join("\n");
 }
@@ -322,6 +324,15 @@ function recordEvent(record?: Record<string, unknown>): string | undefined {
 
 function recordIteration(record?: Record<string, unknown>): string | undefined {
   return typeof record?.iteration === "number" ? `i${record.iteration}` : undefined;
+}
+
+function summarizeLastE2ERecord(record?: Record<string, unknown>): string {
+  if (!record) return "Last event: none recorded yet";
+  const parts = [`Last event: ${recordEvent(record) ?? "unknown"}`];
+  if (typeof record.iteration === "number") parts.push(`iteration ${record.iteration}`);
+  if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
+  if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
+  return parts.join("; ");
 }
 
 function e2eStatusMeta(s: E2EState): { icon: string; label: string; color: string } {
