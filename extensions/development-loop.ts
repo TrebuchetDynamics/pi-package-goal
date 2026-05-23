@@ -527,8 +527,9 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
 
-  pi.registerCommand("development-loop", command);
-  pi.registerCommand("dev-loop", { ...command, description: "Alias for /development-loop" });
+  pi.registerCommand("development-goal", command);
+  pi.registerCommand("development-loop", { ...command, description: "Legacy alias for /development-goal" });
+  pi.registerCommand("dev-loop", { ...command, description: "Legacy short alias for /development-goal" });
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {

@@ -960,6 +960,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     sendMessage(message) { messages.push(message); },
   };
   mod.default(pi);
+  assert.ok(commands.has("development-goal"));
   assert.ok(commands.has("development-loop"));
   assert.ok(commands.has("dev-loop"));
   assert.ok(handlers.has("session_start"));
@@ -968,7 +969,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(handlers.has("session_before_compact"));
   assert.ok(handlers.has("session_compact"));
 
-  const command = commands.get("development-loop");
+  const command = commands.get("development-goal");
   const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-e2e-"));
   fs.mkdirSync(path.join(e2eRoot, ".git"));
   try {
