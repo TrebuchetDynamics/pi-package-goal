@@ -151,6 +151,12 @@ Decision guide for final markers:
 - stop: use for clean handoff or review before more automation.
 - done: use when the objective is complete and no follow-up loop work remains.
 
+Completion audit before DEV_LOOP_DECISION: done:
+- Restate the objective as concrete deliverables and success criteria.
+- Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected.
+- Identify missing, incomplete, weakly verified, or uncovered requirements.
+- If anything is missing, weakly verified, or uncertain, do not use done; choose continue or blocked with concrete nextSteps instead.
+
 End report quality checklist:
 - Scope and slice: exact project path, adapter, and selected slice.
 - Changes: exact files plus what changed and why.

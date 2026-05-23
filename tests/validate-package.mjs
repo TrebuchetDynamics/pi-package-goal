@@ -988,6 +988,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
     assert.match(sent[0].content, /stop: use for clean handoff or review before more automation/);
     assert.match(sent[0].content, /done: use when the objective is complete and no follow-up loop work remains/);
+    assert.match(sent[0].content, /Completion audit before DEV_LOOP_DECISION: done/);
+    assert.match(sent[0].content, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
+    assert.match(sent[0].content, /If anything is missing, weakly verified, or uncertain, do not use done/);
     assert.match(sent[0].content, /End report quality checklist/);
     assert.match(sent[0].content, /Scope and slice: exact project path, adapter, and selected slice/);
     assert.match(sent[0].content, /Changes: exact files plus what changed and why/);
@@ -2850,6 +2853,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
   assert.match(readme, /stop: use for clean handoff or review before more automation/);
   assert.match(readme, /done: use when the objective is complete and no follow-up loop work remains/);
+  assert.match(readme, /Completion audit before `DEV_LOOP_DECISION: done`/);
+  assert.match(readme, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
+  assert.match(readme, /If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`/);
   assert.match(readme, /End report quality checklist/);
   assert.match(readme, /Scope and slice: exact project path, adapter, and selected slice/);
   assert.match(readme, /Changes: exact files plus what changed and why/);
