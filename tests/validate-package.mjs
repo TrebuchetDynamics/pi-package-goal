@@ -726,6 +726,19 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(blockerMod.nextSafeBlockerAction("context overflow"), /compact the session/);
   assert.match(blockerMod.nextSafeBlockerAction("manual operator stop"), /restart with the smallest safe validated slice/);
 
+  const runtimeMod = await jiti.import(path.join(root, "extensions", "development-loop-runtime.ts"));
+  assert.equal(runtimeMod.messageText({ content: "plain text" }), "plain text");
+  assert.equal(runtimeMod.messageText({ content: ["alpha", { text: "beta" }, { type: "image" }] }), "alpha\nbeta\n");
+  assert.equal(runtimeMod.messageText({ content: 42 }), "");
+  assert.equal(runtimeMod.lastAssistantText([
+    { role: "assistant", content: "first" },
+    { role: "user", content: "question" },
+    { role: "assistant", content: [{ text: "latest" }] },
+  ]), "latest");
+  assert.equal(runtimeMod.lastAssistantText([{ role: "user", content: "only user" }]), "");
+  const encodedRunTime = Date.parse("2026-05-22T21:00:00.000Z").toString(36);
+  assert.match(runtimeMod.createRunId("2026-05-22T21:00:00.000Z"), new RegExp(`^dl-${encodedRunTime}-[0-9a-f]{6}$`));
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");

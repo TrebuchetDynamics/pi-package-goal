@@ -1,4 +1,3 @@
-import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
@@ -85,6 +84,7 @@ import {
   recordValidationEvidence,
 } from "./development-loop-report-record.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
+import { createRunId, lastAssistantText } from "./development-loop-runtime.ts";
 import {
   readLastLoopRecord,
   readRecentReportRecords,
@@ -2039,26 +2039,6 @@ function requiresValidation(decision: LoopDecision): boolean {
   return decision === "continue" || decision === "done";
 }
 
-function lastAssistantText(messages: Array<{ role?: string; content?: unknown }>): string {
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i]?.role === "assistant") return messageText(messages[i]);
-  }
-  return "";
-}
-
-function messageText(message: { content?: unknown }): string {
-  const content = message.content;
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content.map((part) => {
-      if (typeof part === "string") return part;
-      if (part && typeof part === "object" && "text" in part) return String((part as { text?: unknown }).text ?? "");
-      return "";
-    }).join("\n");
-  }
-  return "";
-}
-
 function stringOrUndefined(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
@@ -2076,12 +2056,6 @@ function selectValue(value: unknown): string | undefined {
 function numberOrUndefined(value: unknown): number | undefined {
   const number = typeof value === "number" ? value : Number(value);
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : undefined;
-}
-
-function createRunId(startedAt: string): string {
-  const timestamp = Date.parse(startedAt);
-  const encodedTime = Number.isFinite(timestamp) ? timestamp.toString(36) : Date.now().toString(36);
-  return `dl-${encodedTime}-${crypto.randomBytes(3).toString("hex")}`;
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {
