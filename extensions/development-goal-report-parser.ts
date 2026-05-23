@@ -1,10 +1,69 @@
-import type { DeliveryEvidence, LoopDecision, LoopReport } from "./development-goal-domain.ts";
+import type { DeliveryEvidence, LoopReport } from "./development-goal-domain.ts";
+
+export type GoalDecision = "continue" | "stop" | "blocked" | "done";
+
+export type FinalStatus =
+  | "done"
+  | "blocked"
+  | "review_needed"
+  | "unsafe_to_continue";
+
+export type FinalReport = {
+  decision: GoalDecision;
+  finalStatus?: FinalStatus;
+  validated: boolean;
+  deliveryEvidence: DeliveryEvidence;
+};
+
+export type FinalReportParseError = {
+  code: "assistant_echo" | "missing_final_marker";
+  message: string;
+};
+
+export type FinalReportParseResult =
+  | { ok: true; report: FinalReport }
+  | { ok: false; error: FinalReportParseError };
 
 type FinalMarkerBlock = {
   index: number;
   validated: boolean;
-  decision: LoopDecision;
+  decision: GoalDecision;
 };
+
+export function parseFinalReport(text: string): FinalReportParseResult {
+  const markerBlock = parseFinalMarkerBlock(text);
+  if (!markerBlock) {
+    return {
+      ok: false,
+      error: {
+        code: "missing_final_marker",
+        message: "missing DEV_GOAL_VALIDATED/DEV_GOAL_DECISION final marker block",
+      },
+    };
+  }
+
+  if (isAssistantEcho(text, markerBlock.index)) {
+    return {
+      ok: false,
+      error: {
+        code: "assistant_echo",
+        message: "final marker block appears to be an instruction echo, not a completed final report",
+      },
+    };
+  }
+
+  const typedReport = parseTypedReport(text, markerBlock.index);
+  const finalStatus = typedReport?.finalStatus || defaultFinalStatus(markerBlock.decision);
+  return {
+    ok: true,
+    report: {
+      decision: markerBlock.decision,
+      finalStatus,
+      validated: markerBlock.validated,
+      deliveryEvidence: typedReport?.deliveryEvidence || {},
+    },
+  };
+}
 
 export function parseLoopReport(text: string): LoopReport | undefined {
   const markerBlock = parseFinalMarkerBlock(text);
@@ -115,7 +174,7 @@ function parseFinalMarkerBlock(text: string): FinalMarkerBlock | undefined {
   };
 }
 
-function parseTypedReport(text: string, markerIndex?: number): LoopReport | undefined {
+function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { finalStatus?: FinalStatus }) | undefined {
   const reportText = markerIndex === undefined ? text : text.slice(0, markerIndex);
   const match = reportText.match(/(?:^|\r?\n)\s*DEV_GOAL_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
   if (!match) return undefined;
@@ -124,6 +183,7 @@ function parseTypedReport(text: string, markerIndex?: number): LoopReport | unde
 
   const decision = loopDecisionOrUndefined(rawReport.decision);
   const validated = booleanOrUndefined(rawReport.validated);
+  const finalStatus = finalStatusOrUndefined(rawReport.finalStatus) || finalStatusOrUndefined(rawReport.final_status);
   const changedFiles = stringArrayOrUndefined(rawReport.changedFiles) || stringArrayOrUndefined(rawReport.files);
   const validationCommands = stringArrayOrUndefined(rawReport.validationCommands) || stringArrayOrUndefined(rawReport.validation);
   const commitHash = stringOrUndefined(rawReport.commitHash) || stringOrUndefined(rawReport.commit);
@@ -136,6 +196,7 @@ function parseTypedReport(text: string, markerIndex?: number): LoopReport | unde
   return {
     ...(decision ? { decision } : {}),
     ...(validated !== undefined ? { validated } : {}),
+    ...(finalStatus ? { finalStatus } : {}),
     deliveryEvidence: {
       ...(summary ? { summary } : {}),
       ...(blockerState ? { blockerState } : {}),
@@ -157,9 +218,30 @@ function parseJsonRecord(value: string): Record<string, unknown> | undefined {
   }
 }
 
-function loopDecisionOrUndefined(value: unknown): LoopDecision | undefined {
+function loopDecisionOrUndefined(value: unknown): GoalDecision | undefined {
   const decision = stringOrUndefined(value)?.toLowerCase();
   return decision === "continue" || decision === "stop" || decision === "blocked" || decision === "done" ? decision : undefined;
+}
+
+function finalStatusOrUndefined(value: unknown): FinalStatus | undefined {
+  const status = stringOrUndefined(value)?.toLowerCase();
+  return status === "done" || status === "blocked" || status === "review_needed" || status === "unsafe_to_continue" ? status : undefined;
+}
+
+function defaultFinalStatus(decision: GoalDecision): FinalStatus | undefined {
+  if (decision === "done") return "done";
+  if (decision === "blocked") return "blocked";
+  if (decision === "stop") return "review_needed";
+  return undefined;
+}
+
+function isAssistantEcho(text: string, markerIndex: number): boolean {
+  const beforeMarkers = text.slice(0, markerIndex).trim();
+  if (!beforeMarkers) return false;
+  if (/DEV_GOAL_REPORT:\s*\{/i.test(beforeMarkers)) return false;
+  if (/^(?:Scope|Selected slice|Changed files|Validation evidence|Commit\/push evidence|Blocker state|Possible next steps):/im.test(beforeMarkers)) return false;
+  const lastContext = beforeMarkers.split(/\r?\n/).slice(-4).join("\n").toLowerCase();
+  return /\b(?:end with|return only|use exactly|final markers?|marker lines?|instructions? only|prompt tells)\b/.test(lastContext);
 }
 
 function stringOrUndefined(value: unknown): string | undefined {
