@@ -62,6 +62,7 @@ export type LoopEvent = {
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
+  finalStatus?: string;
   likelyCause?: string;
   nextSafeAction?: string;
   logPath: string;

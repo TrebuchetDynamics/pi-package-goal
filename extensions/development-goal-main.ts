@@ -83,7 +83,8 @@ import {
   recordReportSummary,
   recordValidationEvidence,
 } from "./development-goal-report-record.ts";
-import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
+import { parseFinalReport, parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
+import { terminalAuditEvent } from "./development-goal-terminal-audit.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
 import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
 import { mergeSteeringTopic } from "./development-goal-steering.ts";
@@ -390,9 +391,14 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
     const messages = event.messages ?? [];
     const assistantText = lastAssistantText(messages);
-    const decision = parseLoopDecision(assistantText);
-    const validated = parseValidated(assistantText);
-    const deliveryEvidence = parseLoopDeliveryEvidence(assistantText);
+    const finalReportResult = parseFinalReport(assistantText);
+    const finalReport = finalReportResult.ok ? finalReportResult.report : undefined;
+    const decision = finalReport?.decision;
+    const validated = finalReport?.validated;
+    const typedDeliveryEvidence = finalReport?.deliveryEvidence;
+    const deliveryEvidence = typedDeliveryEvidence && Object.keys(typedDeliveryEvidence).length > 0
+      ? typedDeliveryEvidence
+      : parseLoopDeliveryEvidence(assistantText);
 
     if (!decision) {
       if (hasContextOverflowProviderError(messages)) {
@@ -437,13 +443,27 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (decision === "blocked" || decision === "stop" || decision === "done") {
+      const audit = finalReport ? terminalAuditEvent({ report: finalReport }) : undefined;
+      const finalStatus = audit?.finalStatus;
       state = {
         ...state,
         active: false,
         phase: decision === "done" ? "done" : decision === "blocked" ? "blocked" : "idle",
         lastDecision: decision,
+        ...(finalStatus ? { lastReason: finalStatus } : {}),
       };
-      appendLoopLog("loop_finished", { decision, reason: decision, ...deliveryEvidence });
+      const logExtra = { decision, reason: audit?.reason || decision, ...deliveryEvidence, ...(finalStatus ? { finalStatus } : {}) };
+      appendLoopLog(audit?.event || "loop_finished", logExtra);
+      if (audit?.event === "loop_blocked") {
+        appendLoopLog("loop_postmortem", {
+          decision,
+          reason: audit.reason,
+          blockerState: deliveryEvidence.blockerState,
+          nextSteps: deliveryEvidence.nextSteps,
+          likelyCause: likelyBlockerCause(audit.reason),
+          nextSafeAction: nextSafeBlockerAction(audit.reason),
+        });
+      }
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
       notify(ctx, `Development goal ${decision}.`);

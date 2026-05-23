@@ -1314,7 +1314,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.active, false);
     assert.equal(entries.at(-1).data.phase, "blocked");
     const typedBlockedRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
-    const typedBlockedFinished = typedBlockedRecords.find((record) => record.event === "loop_finished" && record.runId === typedBlockedRunId);
+    const typedBlockedFinished = typedBlockedRecords.find((record) => record.event === "loop_blocked" && record.runId === typedBlockedRunId);
     assert.equal(typedBlockedFinished.blockerState, "Missing GORMES_PROFILE_TOKEN credential for integration validation");
     const typedBlockedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
     assert.match(typedBlockedStatus, /blocker Missing GORMES_PROFILE_TOKEN credential for integration validation/);
