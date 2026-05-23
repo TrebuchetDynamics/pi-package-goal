@@ -48,7 +48,7 @@
     "typebox": "*"
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs"
+    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
   }
 }
