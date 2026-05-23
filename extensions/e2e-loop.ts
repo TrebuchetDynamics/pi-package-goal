@@ -46,6 +46,7 @@ type UiLikeContext = {
     theme?: UiThemeLike;
     notify?: (message: string, level?: string) => void;
     setStatus?: (key: string, value: string | undefined) => void;
+    setWidget?: (key: string, value: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }) => void;
   };
   sessionManager?: {
     getCwd?: () => string;
@@ -191,6 +192,7 @@ function sendE2EPrompt(pi: ExtensionAPI, ctx: UiLikeContext) {
   const asFollowUp = typeof ctx.isIdle === "function" && !ctx.isIdle();
   appendE2ELog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent");
   persistState(pi);
+  refreshUi(ctx);
   if (asFollowUp) {
     pi.sendUserMessage(prompt, { deliverAs: "followUp" });
     return;
@@ -278,7 +280,48 @@ function statusLine(s: E2EState, theme?: UiThemeLike): string {
 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
-  ctx.ui.setStatus?.("e2e-loop", statusLine(state, ctx.ui.theme));
+  const theme = ctx.ui.theme;
+  ctx.ui.setStatus?.("e2e-loop", statusLine(state, theme));
+  ctx.ui.setWidget?.("e2e-loop", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
+}
+
+function statusWidgetLines(s: E2EState, cwd: string, theme?: UiThemeLike): string[] | undefined {
+  if (!s.active && s.phase === "idle" && !s.lastDecision) return undefined;
+  const last = readLastE2ERecord(s.logPath || path.join(cwd, DEFAULT_LOG_RELATIVE));
+  const detail = compactJoin([
+    recordEvent(last) ? `last ${recordEvent(last)}` : "last none",
+    recordIteration(last),
+    `log ${relativeToCwd(cwd, s.logPath || DEFAULT_LOG_RELATIVE)}`,
+  ]);
+  return [paint(theme, "dim", detail)];
+}
+
+function readLastE2ERecord(logPath: string): Record<string, unknown> | undefined {
+  try {
+    const absolute = path.isAbsolute(logPath) ? logPath : path.join(process.cwd(), logPath);
+    const content = fs.readFileSync(absolute, "utf8").trim();
+    if (!content) return undefined;
+    const lines = content.split(/\r?\n/).filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
+      try {
+        const parsed = JSON.parse(lines[i]);
+        if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+      } catch {
+        // Ignore corrupt trailing log lines.
+      }
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+function recordEvent(record?: Record<string, unknown>): string | undefined {
+  return typeof record?.event === "string" ? record.event : undefined;
+}
+
+function recordIteration(record?: Record<string, unknown>): string | undefined {
+  return typeof record?.iteration === "number" ? `i${record.iteration}` : undefined;
 }
 
 function e2eStatusMeta(s: E2EState): { icon: string; label: string; color: string } {

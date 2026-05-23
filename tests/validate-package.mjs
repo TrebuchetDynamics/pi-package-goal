@@ -2238,6 +2238,7 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
   const messages = [];
   const sent = [];
   const statusUpdates = [];
+  const widgetUpdates = [];
   const entries = [];
   const pi = {
     on(name, handler) { handlers.set(name, handler); },
@@ -2263,6 +2264,7 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
         },
         notify() {},
         setStatus(key, value) { statusUpdates.push({ key, value }); },
+        setWidget(key, value, options) { widgetUpdates.push({ key, value, options }); },
       },
       sessionManager: {
         getCwd: () => e2eRoot,
@@ -2286,6 +2288,11 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /E2E_LOOP_DECISION/);
     assert.equal(sent[0].options, undefined, "idle e2e-loop start should send immediately");
     assert.equal(statusUpdates.at(-1).value, "<accent>● run</accent> · <dim>i1/2</dim> · <muted>checkout flow</muted>");
+    assert.deepEqual(widgetUpdates.at(-1), {
+      key: "e2e-loop",
+      value: ["<dim>last iteration_prompt_sent · i1 · log .pi/e2e-loop/logs.jsonl</dim>"],
+      options: { placement: "belowEditor" },
+    });
     assert.equal(entries.at(-1).customType, "e2e-loop-state");
     assert.equal(entries.at(-1).data.objective, "checkout flow");
     assert.equal(entries.at(-1).data.maxIterations, 2);
