@@ -2,11 +2,21 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
-import { loadProjectConfig, resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
+import {
+  BUILT_IN_ADAPTERS,
+  DEFAULT_CONFIG_RELATIVE,
+  DEFAULT_LANGUAGE,
+  ensureMandatorySkills,
+  getAdapterByName,
+  nonEmpty,
+  resolveProjectAdapter,
+  type LoopAdapter,
+  type ResolvedProjectAdapter,
+} from "./development-loop-adapter.ts";
+import { resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
 import {
   absoluteLogPath,
   contextCwd,
-  dirExists,
   relativeToCwd,
   safeRead,
   splitLines,
@@ -69,7 +79,14 @@ import {
   statusReport,
   statusWidgetLines,
 } from "./development-loop-status.ts";
-import { CUSTOM_STATE_TYPE, inactiveState, restoreState, type LoopState } from "./development-loop-state.ts";
+import {
+  CUSTOM_STATE_TYPE,
+  DEFAULT_ITERATIONS,
+  DEFAULT_LOG_RELATIVE,
+  inactiveState,
+  restoreState,
+  type LoopState,
+} from "./development-loop-state.ts";
 import {
   hashText,
   objectiveIntakeSummary,
@@ -77,26 +94,6 @@ import {
 } from "./development-loop-topic.ts";
 
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
-
-type LoopAdapter = {
-  name: string;
-  label: string;
-  description: string;
-  defaultTopic: string;
-  skills: string[];
-  preflightCommands: string[];
-  validationCommands: string[];
-  stopConditions: string[];
-  matches(cwd: string): boolean;
-};
-
-type ResolvedProjectAdapter = {
-  adapter: LoopAdapter;
-  config: ProjectConfig;
-  configPath: string;
-  configLoaded: boolean;
-  configError?: string;
-};
 
 type LoopLogAnalysisOptions = {
   since?: SinceFilter;
@@ -325,9 +322,6 @@ type UiLikeContext = {
   }) => void;
 };
 
-const DEFAULT_CONFIG_RELATIVE = path.join(".pi", "development-loop.json");
-const DEFAULT_LOG_RELATIVE = path.join(".pi", "development-loop", "logs.jsonl");
-const DEFAULT_ITERATIONS = 3;
 const HARD_MAX_ITERATIONS = 25;
 const STEERING_TOPIC_MAX = 240;
 const PROMPT_OBJECTIVE_MAX = 600;
@@ -337,7 +331,6 @@ const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 2;
 const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
-const DEFAULT_LANGUAGE = "English";
 const COMMON_LANGUAGE_CHOICES = [
   "English",
   "Spanish",
@@ -360,15 +353,6 @@ const COMMON_LANGUAGE_CHOICES = [
   "Ukrainian",
   "Swahili",
 ];
-const MANDATORY_SKILLS = ["caveman", "improve-codebase-architecture"];
-
-const COMMON_PREFLIGHT = [
-  "pwd",
-  "git rev-parse --show-toplevel 2>/dev/null || true",
-  "git rev-parse --abbrev-ref HEAD 2>/dev/null || true",
-  "git status --short --branch --untracked-files=all 2>/dev/null || true",
-];
-
 const TASK_DISCOVERY_CUES = [
   "repo-local skills whose names match the work, including *-git, *-release, *-e2e, *-playwright, and *-maestro-flutter when present",
   "TODO.md, TODOS.md, TODO.txt, PLAN.md, PLANS.md, ROADMAP.md, and similar planning files",
@@ -381,42 +365,6 @@ const REVIEW_LOOP_GUIDANCE = [
   "Use greploop for PR/MR/CL review cleanup only when the user requested a Greptile review loop, a PR/MR/CL is available, and required gh/glab/p4 authentication is present.",
   "Do not trigger Greptile, post review comments, resolve review threads, push, or re-shelve unless the commit/push policy permits it or the user explicitly asked for that external review action.",
   "If Greptile, required CLIs, credentials, or PR/MR/CL context are unavailable for a requested greploop, report DEV_LOOP_DECISION: blocked with the missing prerequisite.",
-];
-
-const BUILT_IN_ADAPTERS: LoopAdapter[] = [
-  {
-    name: "generic-git",
-    label: "Generic Git",
-    description: "Conservative generic git-project development loop",
-    defaultTopic: "discover and complete the smallest safe project task with validation",
-    skills: [
-      "caveman",
-      "improve-codebase-architecture",
-      "repo-local skills that match the detected task before package defaults",
-      "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",
-      "zoom-out for source-backed project understanding",
-      "writing-plans for multi-step plans when available",
-      "writing-shape for docs, articles, READMEs, and narrative docs",
-      "writing-skills for creating or updating skills",
-      "test-driven-development for code changes",
-      "verification-before-completion before reporting done",
-    ],
-    preflightCommands: COMMON_PREFLIGHT,
-    validationCommands: [
-      "git diff --check",
-    ],
-    stopConditions: [
-      "project instructions are missing or conflict with the requested work",
-      "no task can be selected after inspecting TODO.md, progress.json, planning files, and repo-local guidance",
-      "no relevant test/build command can be identified",
-      "Greptile, gh/glab/p4, credentials, or PR/MR/CL context are required for greploop and unavailable",
-      "validation fails twice with the same blocker",
-      "commit or push would include unrelated dirty work",
-    ],
-    matches(cwd: string): boolean {
-      return dirExists(path.join(cwd, ".git"));
-    },
-  },
 ];
 
 let state: LoopState = inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
@@ -2359,40 +2307,6 @@ function mergeSteeringTopic(currentTopic: string, steeringText: string): string 
   return next.length <= STEERING_TOPIC_MAX ? next : `${next.slice(0, STEERING_TOPIC_MAX - 1)}…`;
 }
 
-function resolveProjectAdapter(cwd: string, _requestedAdapter?: string): ResolvedProjectAdapter {
-  const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
-  const loaded = loadProjectConfig(configPath);
-  const config = loaded.config ?? {};
-  const adapter = getAdapterByName("generic-git")!;
-  return {
-    adapter,
-    config: mergeAdapterConfig(adapter, config),
-    configPath,
-    configLoaded: Boolean(loaded.config),
-    configError: loaded.error,
-  };
-}
-
-function mergeAdapterConfig(adapter: LoopAdapter, config: ProjectConfig): ProjectConfig {
-  return {
-    adapter: adapter.name,
-    defaultTopic: config.defaultTopic ?? adapter.defaultTopic,
-    language: config.language ?? DEFAULT_LANGUAGE,
-    skills: ensureMandatorySkills(nonEmpty(config.skills) ? config.skills : adapter.skills),
-    preflightCommands: nonEmpty(config.preflightCommands) ? config.preflightCommands : adapter.preflightCommands,
-    validationCommands: nonEmpty(config.validationCommands) ? config.validationCommands : adapter.validationCommands,
-    commit: config.commit ?? false,
-    push: config.push ?? false,
-    logPath: config.logPath ?? DEFAULT_LOG_RELATIVE,
-    maxIterations: config.maxIterations ?? DEFAULT_ITERATIONS,
-    stopConditions: nonEmpty(config.stopConditions) ? config.stopConditions : adapter.stopConditions,
-  };
-}
-
-function getAdapterByName(name: string): LoopAdapter | undefined {
-  return BUILT_IN_ADAPTERS.find((adapter) => adapter.name === name);
-}
-
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
@@ -2442,22 +2356,6 @@ function messageText(message: { content?: unknown }): string {
     }).join("\n");
   }
   return "";
-}
-
-function nonEmpty(value: string[] | undefined): value is string[] {
-  return Array.isArray(value) && value.length > 0;
-}
-
-function ensureMandatorySkills(skills: string[]): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const skill of [...MANDATORY_SKILLS, ...skills]) {
-    const trimmed = skill.trim();
-    if (!trimmed || seen.has(trimmed)) continue;
-    seen.add(trimmed);
-    result.push(trimmed);
-  }
-  return result;
 }
 
 function stringOrUndefined(value: unknown): string | undefined {

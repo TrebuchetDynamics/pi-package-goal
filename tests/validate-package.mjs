@@ -615,6 +615,43 @@ async function testExtensionLoadsAndRegistersCommands() {
   fs.writeFileSync(configPath, JSON.stringify("not-object"), "utf8");
   assert.deepEqual(configMod.loadProjectConfig(configPath), { error: "config is not a JSON object" });
 
+  const adapterMod = await jiti.import(path.join(root, "extensions", "development-loop-adapter.ts"));
+  assert.deepEqual(adapterMod.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
+  assert.deepEqual(adapterMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["caveman", "improve-codebase-architecture", "tdd"]);
+  const genericAdapter = adapterMod.getAdapterByName("generic-git");
+  assert.equal(genericAdapter.description, "Conservative generic git-project development loop");
+  assert.equal(adapterMod.getAdapterByName("missing"), undefined);
+  assert.deepEqual(adapterMod.mergeAdapterConfig(genericAdapter, {
+    defaultTopic: "custom topic",
+    skills: ["writing-plans"],
+    validationCommands: ["npm test"],
+    maxIterations: 4,
+    push: true,
+  }), {
+    adapter: "generic-git",
+    defaultTopic: "custom topic",
+    language: "English",
+    skills: ["caveman", "improve-codebase-architecture", "writing-plans"],
+    preflightCommands: genericAdapter.preflightCommands,
+    validationCommands: ["npm test"],
+    commit: false,
+    push: true,
+    logPath: path.join(".pi", "development-loop", "logs.jsonl"),
+    maxIterations: 4,
+    stopConditions: genericAdapter.stopConditions,
+  });
+  const adapterTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-loop-adapter-"));
+  fs.mkdirSync(path.join(adapterTemp, ".pi"), { recursive: true });
+  fs.writeFileSync(path.join(adapterTemp, ".pi", "development-loop.json"), JSON.stringify({ defaultTopic: "from config", skills: ["writing-shape"], commit: true }), "utf8");
+  const resolvedAdapter = adapterMod.resolveProjectAdapter(adapterTemp, "generic-git");
+  assert.equal(resolvedAdapter.configLoaded, true);
+  assert.equal(resolvedAdapter.configPath, path.join(adapterTemp, ".pi", "development-loop.json"));
+  assert.equal(resolvedAdapter.adapter.name, "generic-git");
+  assert.equal(resolvedAdapter.config.defaultTopic, "from config");
+  assert.equal(resolvedAdapter.config.commit, true);
+  assert.ok(resolvedAdapter.config.skills.includes("writing-shape"));
+  assert.ok(resolvedAdapter.config.skills.includes("improve-codebase-architecture"));
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
