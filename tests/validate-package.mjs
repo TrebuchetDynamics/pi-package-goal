@@ -652,6 +652,41 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(resolvedAdapter.config.skills.includes("writing-shape"));
   assert.ok(resolvedAdapter.config.skills.includes("improve-codebase-architecture"));
 
+  const initConfigMod = await jiti.import(path.join(root, "extensions", "development-loop-init-config.ts"));
+  const initDefaults = initConfigMod.initDefaults({
+    command: "init",
+    topic: "ship init defaults",
+    iterations: 99,
+    commit: false,
+    push: true,
+    logPath: "custom/logs.jsonl",
+    validationCommands: ["npm test"],
+    preflightCommands: ["pwd"],
+    skills: ["tdd"],
+    stopConditions: ["stop when blocked"],
+  });
+  assert.equal(initConfigMod.HARD_MAX_ITERATIONS, 25);
+  assert.equal(initDefaults.adapterName, "generic-git");
+  assert.equal(initDefaults.config.defaultTopic, "ship init defaults");
+  assert.equal(initDefaults.config.maxIterations, 25);
+  assert.equal(initDefaults.config.commit, true);
+  assert.equal(initDefaults.config.push, true);
+  assert.equal(initDefaults.config.logPath, "custom/logs.jsonl");
+  assert.deepEqual(initDefaults.config.skills, ["caveman", "improve-codebase-architecture", "tdd"]);
+  assert.deepEqual(initConfigMod.splitLinesOrDefault(" one\n\n two \r\n", ["fallback"]), ["one", "two"]);
+  assert.deepEqual(initConfigMod.splitLinesOrDefault("\n ", ["fallback"]), ["fallback"]);
+  assert.equal(initConfigMod.shouldPromptForInit({ yes: true }, { hasUI: true, ui: { select() {}, input() {}, editor() {}, confirm() {} } }), false);
+  assert.equal(initConfigMod.shouldPromptForInit({ yes: false }, { hasUI: true, ui: { select() {}, input() {}, editor() {}, confirm() {} } }), true);
+  assert.equal(initConfigMod.shouldPromptForInit({ yes: false }, { hasUI: true, ui: { select() {}, input() {}, editor() {} } }), false);
+  assert.equal(initConfigMod.clampIterations(0), 1);
+  assert.equal(initConfigMod.clampIterations(30), 25);
+  assert.deepEqual(initConfigMod.initDefaults({ command: "init", validationCommands: [], preflightCommands: [], skills: [], stopConditions: [] }).config.validationCommands, genericAdapter.validationCommands);
+  const initSummary = initConfigMod.initConfigSummary(initDefaults.config, adapterTemp);
+  assert.match(initSummary, /Target: \.pi\/development-loop\.json/);
+  assert.match(initSummary, /Adapter: generic-git/);
+  assert.match(initSummary, /Git delivery: push/);
+  assert.match(initSummary, /Validation: npm test/);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");

@@ -7,10 +7,8 @@ import {
   DEFAULT_CONFIG_RELATIVE,
   DEFAULT_LANGUAGE,
   ensureMandatorySkills,
-  getAdapterByName,
   nonEmpty,
   resolveProjectAdapter,
-  type LoopAdapter,
   type ResolvedProjectAdapter,
 } from "./development-loop-adapter.ts";
 import { resolveCommitPush, type ProjectConfig } from "./development-loop-config.ts";
@@ -19,7 +17,6 @@ import {
   contextCwd,
   relativeToCwd,
   safeRead,
-  splitLines,
   writeJsonFileAtomic,
 } from "./development-loop-files.ts";
 import {
@@ -29,6 +26,13 @@ import {
   type ParsedCommand,
   type SinceFilter,
 } from "./development-loop-command.ts";
+import {
+  clampIterations,
+  initConfigSummary,
+  initDefaults,
+  shouldPromptForInit,
+  splitLinesOrDefault,
+} from "./development-loop-init-config.ts";
 import {
   compactionReason,
   contextUsageReason,
@@ -322,7 +326,6 @@ type UiLikeContext = {
   }) => void;
 };
 
-const HARD_MAX_ITERATIONS = 25;
 const STEERING_TOPIC_MAX = 240;
 const PROMPT_OBJECTIVE_MAX = 600;
 const LOG_TOPIC_MAX = 600;
@@ -829,46 +832,6 @@ function nextSafeBlockerAction(reason: string): string {
   return "inspect the blocker, preserve unrelated dirty work, and restart with the smallest safe validated slice";
 }
 
-function initDefaults(parsed: ParsedCommand, _cwd: string, _adapterName = "generic-git"): { adapterName: string; adapter: LoopAdapter; config: ProjectConfig } {
-  const adapter = getAdapterByName("generic-git")!;
-  const adapterName = adapter.name;
-  const defaultTopic = parsed.topic || adapter.defaultTopic;
-  const validationCommands = parsed.validationCommands.length > 0 ? parsed.validationCommands : adapter.validationCommands;
-  const preflightCommands = parsed.preflightCommands.length > 0 ? parsed.preflightCommands : adapter.preflightCommands;
-  const skills = ensureMandatorySkills(parsed.skills.length > 0 ? parsed.skills : adapter.skills);
-  const stopConditions = parsed.stopConditions.length > 0 ? parsed.stopConditions : adapter.stopConditions;
-  const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, false, false);
-  const maxIterations = clampIterations(parsed.iterations ?? DEFAULT_ITERATIONS);
-  const logPath = parsed.logPath || DEFAULT_LOG_RELATIVE;
-
-  return {
-    adapterName,
-    adapter,
-    config: {
-      adapter: adapterName,
-      defaultTopic,
-      language: DEFAULT_LANGUAGE,
-      skills,
-      preflightCommands,
-      validationCommands,
-      commit,
-      push,
-      logPath,
-      maxIterations,
-      stopConditions,
-    },
-  };
-}
-
-function shouldPromptForInit(parsed: ParsedCommand, ctx: UiLikeContext): boolean {
-  return parsed.yes !== true &&
-    ctx.hasUI === true &&
-    typeof ctx.ui?.select === "function" &&
-    typeof ctx.ui.input === "function" &&
-    typeof ctx.ui.editor === "function" &&
-    typeof ctx.ui.confirm === "function";
-}
-
 async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string, initialAdapterName: string): Promise<ProjectConfig | undefined> {
   const ui = ctx.ui;
   const defaults = initDefaults(parsed, cwd, initialAdapterName);
@@ -916,24 +879,6 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
   const ok = await ui.confirm!("Write development-loop config", initConfigSummary(config, cwd));
   if (!ok) return cancelInit(ctx);
   return config;
-}
-
-function splitLinesOrDefault(value: string, fallback: string[]): string[] {
-  const lines = splitLines(value);
-  return lines.length > 0 ? lines : fallback;
-}
-
-function initConfigSummary(config: ProjectConfig, cwd: string): string {
-  return [
-    `Target: ${relativeToCwd(cwd, path.join(cwd, DEFAULT_CONFIG_RELATIVE))}`,
-    `Adapter: ${config.adapter}`,
-    `Objective: ${config.defaultTopic}`,
-    `Preferred language: ${config.language || DEFAULT_LANGUAGE}`,
-    `Iterations: ${config.maxIterations}`,
-    `Git delivery: ${config.push ? "push" : config.commit ? "commit" : "manual"}`,
-    `Validation: ${(config.validationCommands ?? []).join("; ") || "none"}`,
-    `Log path: ${config.logPath || DEFAULT_LOG_RELATIVE}`,
-  ].join("\n");
 }
 
 function cancelInit(ctx: UiLikeContext): undefined {
@@ -2375,10 +2320,6 @@ function selectValue(value: unknown): string | undefined {
 function numberOrUndefined(value: unknown): number | undefined {
   const number = typeof value === "number" ? value : Number(value);
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : undefined;
-}
-
-function clampIterations(value: number): number {
-  return Math.max(1, Math.min(Math.floor(value), HARD_MAX_ITERATIONS));
 }
 
 function createRunId(startedAt: string): string {
