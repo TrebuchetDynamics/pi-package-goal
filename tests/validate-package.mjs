@@ -1013,11 +1013,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Example blocked end report/);
     assert.match(sent[0].content, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
     assert.match(sent[0].content, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
-    assert.match(sent[0].content, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-loop with the same objective/);
+    assert.match(sent[0].content, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-goal with the same objective/);
     assert.match(sent[0].content, /Example stop handoff end report/);
     assert.match(sent[0].content, /Selected slice: final documentation cleanup and handoff/);
     assert.match(sent[0].content, /Blocker state: none; stopping because the selected objective is complete/);
-    assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+    assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-goal status for recent context; restart with the next objective/);
     assert.match(sent[0].content, /Example done end report/);
     assert.match(sent[0].content, /Selected slice: completed the final objective cleanup/);
     assert.match(sent[0].content, /Blocker state: none; done because the objective is complete and no loop follow-up remains/);
@@ -1025,7 +1025,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Example interrupted resume end report/);
     assert.match(sent[0].content, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
     assert.match(sent[0].content, /Blocker state: none; provider interruption recovered, same slice resumed/);
-    assert.match(sent[0].content, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
+    assert.match(sent[0].content, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-goal status`; continue the same smallest slice/);
     assert.match(sent[0].content, /Example partial validation end report/);
     assert.match(sent[0].content, /Selected slice: implemented one path but only ran a targeted check/);
     assert.match(sent[0].content, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
@@ -1292,7 +1292,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Blocked report.",
-          'DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate profile apply flow","blockerState":"Missing GORMES_PROFILE_TOKEN credential for integration validation","nextSteps":["Provide GORMES_PROFILE_TOKEN","Restart /development-loop with the same profile apply objective"]}',
+          'DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate profile apply flow","blockerState":"Missing GORMES_PROFILE_TOKEN credential for integration validation","nextSteps":["Provide GORMES_PROFILE_TOKEN","Restart /development-goal with the same profile apply objective"]}',
           "DEV_LOOP_VALIDATED: no",
           "DEV_LOOP_DECISION: blocked",
         ].join("\n"),
@@ -1973,7 +1973,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     }
 
     await command.handler("help", ctx);
-    assert.match(messages.at(-1).content, /\/development-loop init --dry-run/);
+    assert.match(messages.at(-1).content, /Development-goal commands:/);
+    assert.match(messages.at(-1).content, /Legacy aliases: \/development-loop and \/dev-loop/);
+    assert.match(messages.at(-1).content, /\/development-goal init --dry-run/);
     assert.match(messages.at(-1).content, /--iterations <n>/);
     assert.match(messages.at(-1).content, /--push implies --commit/);
     assert.match(messages.at(-1).content, /--skill <name-or-note>/);
@@ -2027,7 +2029,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     const initPrompts = [];
     const recordUnexpectedPrompt = (name) => (...args) => {
       initPrompts.push({ name, args });
-      throw new Error(`/development-loop init --yes should not prompt with ${name}`);
+      throw new Error(`/development-goal init --yes should not prompt with ${name}`);
     };
     const initCtx = {
       cwd: initRoot,
@@ -2208,7 +2210,7 @@ async function testExtensionLoadsAndRegistersCommands() {
 
     await command.handler("init --yes --dry-run --iterations=4 --push --skill=grill-me preview config", dryRunCtx);
     assert.equal(fs.existsSync(path.join(dryRunInitRoot, ".pi", "development-loop.json")), false, "dry-run init must not write config");
-    assert.match(dryRunNotifications.at(-1), /Development-loop init preview/);
+    assert.match(dryRunNotifications.at(-1), /Development-goal init preview/);
     assert.match(dryRunNotifications.at(-1), /"defaultTopic": "preview config"/);
     assert.match(dryRunNotifications.at(-1), /"maxIterations": 4/);
     assert.match(dryRunNotifications.at(-1), /"commit": true/);
@@ -2891,12 +2893,14 @@ async function testDiagnoseCodexStorageReference() {
 
 async function testNoticesAndDocs() {
   const readme = read("README.md");
+  assert.match(readme, /development-goal and E2E-loop extensions/);
   assert.match(readme, /## Quick start/);
   assert.match(readme, /### Step 1: Install the Pi agent/);
   assert.match(readme, /### Step 2: Install this package/);
-  assert.match(readme, /### Step 3: Start `\/development-loop`/);
-  assert.match(readme, /## Development-loop instructions and tips/);
+  assert.match(readme, /### Step 3: Start `\/development-goal`/);
+  assert.match(readme, /## Development-goal instructions and tips/);
   assert.match(readme, /## Included extensions/);
+  assert.match(readme, /Legacy aliases: `\/development-loop` and `\/dev-loop`/);
   assert.match(readme, /\/e2e-loop/);
   assert.match(readme, /Playwright/);
   assert.match(readme, /Maestro/);
@@ -2919,7 +2923,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /status report includes recent report context/);
   assert.match(readme, /### Steer an active loop/);
   assert.match(readme, /plain text becomes a steering request/);
-  assert.match(readme, /`\/development-loop init` opens an interactive setup wizard/);
+  assert.match(readme, /`\/development-goal init` opens an interactive setup wizard/);
   assert.match(readme, /TODO\.md, progress\.json, plans/);
   assert.match(readme, /`--force` only when you intentionally want an atomic replacement/);
   assert.match(readme, /`--iterations <n>`/);
@@ -2958,11 +2962,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Example blocked end report/);
   assert.match(readme, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
   assert.match(readme, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
-  assert.match(readme, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-loop with the same objective/);
+  assert.match(readme, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-goal with the same objective/);
   assert.match(readme, /Example stop handoff end report/);
   assert.match(readme, /Selected slice: final documentation cleanup and handoff/);
   assert.match(readme, /Blocker state: none; stopping because the selected objective is complete/);
-  assert.match(readme, /Possible next steps: review the pushed commit; open \/development-loop status for recent context; restart with the next objective/);
+  assert.match(readme, /Possible next steps: review the pushed commit; open \/development-goal status for recent context; restart with the next objective/);
   assert.match(readme, /Example done end report/);
   assert.match(readme, /Selected slice: completed the final objective cleanup/);
   assert.match(readme, /Blocker state: none; done because the objective is complete and no loop follow-up remains/);
@@ -2971,7 +2975,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Example interrupted resume end report/);
   assert.match(readme, /Selected slice: resumed the same iteration after compaction without advancing the loop/);
   assert.match(readme, /Blocker state: none; provider interruption recovered, same slice resumed/);
-  assert.match(readme, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-loop status`; continue the same smallest slice/);
+  assert.match(readme, /Possible next steps: inspect `.pi\/development-loop\/logs.jsonl`; run `\/development-goal status`; continue the same smallest slice/);
   assert.match(readme, /Example partial validation end report/);
   assert.match(readme, /Selected slice: implemented one path but only ran a targeted check/);
   assert.match(readme, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
@@ -3025,7 +3029,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /backup_dir="\$\(mktemp -d "\$HOME\/\.codex\/backup\/codex-state-\$\(date \+%Y%m%d-%H%M%S\)\.XXXXXX"\)"/);
   assert.match(readme, /mv ~\/\.codex\/state_\*\.sqlite\* "\$backup_dir"\//);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
-  assert.match(readme, /\/development-loop status/);
+  assert.match(readme, /\/development-goal status/);
   assert.match(readme, /`grill-me`/);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review loop/);
@@ -3034,10 +3038,12 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-development-loop/);
-  assert.match(readme, /\/development-loop start/);
-  assert.match(readme, /\/development-loop help/);
+  assert.match(readme, /\/development-goal start/);
+  assert.match(readme, /\/development-goal help/);
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
+  assert.match(readme, /E2E smoke coverage for starting and completing one development-goal extension run/);
+  assert.match(readme, /`\/development-goal`, `\/development-loop`, `\/dev-loop`, `\/e2e-loop`, and `\/e2e` command registration/);
   assert.match(readme, /Skill frontmatter and exact expected bundle contents/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
   assert.match(readme, /Third-party notices, local notice paths, and license copies/);

@@ -109,7 +109,7 @@ Changed files: none committed; validation stopped before safe delivery.
 Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
 Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
-Possible next steps: provide TEST_SERVICE_TOKEN; rerun \`npm test\`; restart /development-loop with the same objective.
+Possible next steps: provide TEST_SERVICE_TOKEN; rerun \`npm test\`; restart /development-goal with the same objective.
 
 Example stop handoff end report:
 Scope: /absolute/project/path with adapter generic-git.
@@ -118,7 +118,7 @@ Changed files: README.md — documented the completed workflow and resume notes.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
-Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
+Possible next steps: review the pushed commit; open /development-goal status for recent context; restart with the next objective.
 
 Example done end report:
 Scope: /absolute/project/path with adapter generic-git.
@@ -136,7 +136,7 @@ Changed files: none committed; resume prompt preserved current dirty state.
 Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
-Possible next steps: inspect \`.pi/development-loop/logs.jsonl\`; run \`/development-loop status\`; continue the same smallest slice.
+Possible next steps: inspect \`.pi/development-loop/logs.jsonl\`; run \`/development-goal status\`; continue the same smallest slice.
 
 Example partial validation end report:
 Scope: /absolute/project/path with adapter generic-git.

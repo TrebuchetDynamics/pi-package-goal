@@ -1,6 +1,6 @@
 # pi-package-development-loop
 
-A Pi package that bundles reusable development-loop and E2E-loop extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
+A Pi package that bundles reusable development-goal and E2E-loop extensions with a curated set of high-signal engineering, Pi ecosystem, and modern web skills.
 
 ## Quick start
 
@@ -32,14 +32,14 @@ After installing or updating, run this inside Pi:
 /reload
 ```
 
-### Step 3: Start `/development-loop`
+### Step 3: Start `/development-goal`
 
 From the project you want to improve:
 
 ```text
-/development-loop adapters
-/development-loop start --iterations=3 improve the README
-/development-loop status
+/development-goal adapters
+/development-goal start --iterations=3 improve the README
+/development-goal status
 ```
 
 For real usage and end-to-end test work, start `/e2e-loop` from the app repo:
@@ -52,9 +52,10 @@ For real usage and end-to-end test work, start `/e2e-loop` from the app repo:
 
 `/e2e-loop` persists status in the Pi session and writes progress logs to `.pi/e2e-loop/logs.jsonl` by default.
 
-Short alias:
+Legacy aliases: `/development-loop` and `/dev-loop`.
 
 ```text
+/development-loop status
 /dev-loop status
 ```
 
@@ -74,47 +75,47 @@ pi remove git:github.com/TrebuchetDynamics/pi-package-development-loop
 
 Run `/reload` after either command in an open Pi session.
 
-## Development-loop instructions and tips
+## Development-goal instructions and tips
 
-`/development-loop` sends the agent a scoped iteration prompt, watches for final markers, logs progress, and queues follow-up iterations until the loop stops.
+`/development-goal` sends the agent a scoped iteration prompt, watches for final markers, logs progress, and queues follow-up iterations until the loop stops.
 
 Useful commands:
 
 ```text
-/development-loop adapters
-/development-loop help
-/development-loop init
-/development-loop init --force
-/development-loop init --yes --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-loop init --yes --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-loop start --iterations=3 providers
-/development-loop start --iterations=5 --tokens 250K --commit --push fix flaky tests
-/development-loop status
-/development-loop pause
-/development-loop resume
-/development-loop analyze-logs
-/development-loop analyze-logs .pi/development-loop/logs.jsonl
-/development-loop analyze-logs .pi
-/development-loop analyze-logs --since=2h .pi
-/development-loop analyze-logs --html .pi
-/development-loop analyze-logs --json --since=2h .pi
-/development-loop stop
-/development-loop restart --iterations=2 tighten docs
+/development-goal adapters
+/development-goal help
+/development-goal init
+/development-goal init --force
+/development-goal init --yes --dry-run --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-goal init --yes --iterations=5 --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
+/development-goal start --iterations=3 providers
+/development-goal start --iterations=5 --tokens 250K --commit --push fix flaky tests
+/development-goal status
+/development-goal pause
+/development-goal resume
+/development-goal analyze-logs
+/development-goal analyze-logs .pi/development-loop/logs.jsonl
+/development-goal analyze-logs .pi
+/development-goal analyze-logs --since=2h .pi
+/development-goal analyze-logs --html .pi
+/development-goal analyze-logs --json --since=2h .pi
+/development-goal stop
+/development-goal restart --iterations=2 tighten docs
 ```
 
 Tips:
 
 - Start small: `--iterations=1` or `--iterations=3` is usually enough.
-- `/development-loop init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, iterations, git delivery, validation, skills, stop conditions, and log path.
+- `/development-goal init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, iterations, git delivery, validation, skills, stop conditions, and log path.
 - Use `--yes` (`-y` or `--defaults`) for scripted/non-interactive init that accepts generated defaults and any provided flags without prompts.
 - Existing `.pi/development-loop.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
 - Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.
 - Leave `--commit` and `--push` off unless you want the loop to handle git delivery; `--push` implies commit.
 - Keep one objective per run; stop and restart when the objective changes.
 - `DEV_LOOP_DECISION: continue` starts the next iteration automatically; you should not need to press Enter for queued follow-up text.
-- Use `/development-loop pause` to pause automatic continuation without clearing loop state; resume continues the current iteration from the saved state.
+- Use `/development-goal pause` to pause automatic continuation without clearing loop state; resume continues the current iteration from the saved state.
 - Run budget metadata shows elapsed time and remaining iterations in prompts/status; add `--tokens 250K` or `--budget 1M` to record a soft token budget cue, not a hard timeout.
-- The auto-continuation guard pauses runaway loops after 500 prompt sends by default. Set `PI_DEV_LOOP_MAX_AUTO_CONTINUES=50` for a stricter cap, then run `/development-loop resume` to continue from the saved state.
+- The auto-continuation guard pauses runaway loops after 500 prompt sends by default. Set `PI_DEV_LOOP_MAX_AUTO_CONTINUES=50` for a stricter cap, then run `/development-goal resume` to continue from the saved state.
 - If a non-empty assistant response forgets the final marker lines, the loop sends one marker-only recovery prompt before blocking.
 - An active loop saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
 - If validation is red or credentials are needed, the loop should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.
@@ -124,11 +125,11 @@ Tips:
 - Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a `DEV_LOOP_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
 - Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, and Possible next steps. Use decision-specific next steps: continue should name the next smallest verifiable slice, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_LOOP_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into loop logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_LOOP_REPORT and final markers last so automation can parse them.
 - Completion audit before `DEV_LOOP_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
-- Run `/development-loop analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
+- Run `/development-goal analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including loop starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
 
 ### Claude-goal-inspired controls
 
-Borrowed behavior patterns from `jthack/claude-goal` now exist in `/development-loop` as Pi-native loop controls:
+Borrowed behavior patterns from `jthack/claude-goal` now exist in `/development-goal` as Pi-native loop controls:
 
 - completion audit before `DEV_LOOP_DECISION: done`, so the loop maps requirements to evidence before final completion;
 - pause/resume commands that preserve loop state while stopping automatic continuation;
@@ -161,8 +162,8 @@ Changed files: none committed; validation stopped before safe delivery.
 Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
 Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
-Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart /development-loop with the same objective.
-DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-loop with the same objective"]}
+Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart /development-goal with the same objective.
+DEV_LOOP_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-goal with the same objective"]}
 DEV_LOOP_VALIDATED: no
 DEV_LOOP_DECISION: blocked
 ```
@@ -176,8 +177,8 @@ Changed files: README.md — documented the completed workflow and resume notes.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
-Possible next steps: review the pushed commit; open /development-loop status for recent context; restart with the next objective.
-DEV_LOOP_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-loop status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
+Possible next steps: review the pushed commit; open /development-goal status for recent context; restart with the next objective.
+DEV_LOOP_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-goal status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
 DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: stop
 ```
@@ -206,8 +207,8 @@ Changed files: none committed; resume prompt preserved current dirty state.
 Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
-Possible next steps: inspect `.pi/development-loop/logs.jsonl`; run `/development-loop status`; continue the same smallest slice.
-DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-loop/logs.jsonl","Run /development-loop status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
+Possible next steps: inspect `.pi/development-loop/logs.jsonl`; run `/development-goal status`; continue the same smallest slice.
+DEV_LOOP_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-loop/logs.jsonl","Run /development-goal status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
 DEV_LOOP_VALIDATED: yes
 DEV_LOOP_DECISION: continue
 ```
@@ -261,7 +262,7 @@ End report anti-patterns to avoid:
 
 ### Troubleshooting provider interruptions
 
-If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-loop status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration up to twice or resumes it after compaction instead of advancing to the next iteration.
+If Pi reports `Error: WebSocket error` and the loop warns that it is waiting after an empty provider response, run `/development-goal status` and inspect `.pi/development-loop/logs.jsonl`. The loop records `empty_agent_response_waiting_for_compaction` when the provider returns no assistant text, then retries the same iteration up to twice or resumes it after compaction instead of advancing to the next iteration.
 
 If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the loop records `context_overflow_waiting_for_compaction` and keeps the same iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_LOOP_DECISION` marker.
 
@@ -323,7 +324,7 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
 
 ### Status bar integration
 
-`/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
+`/development-goal` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
 
 `/e2e-loop` uses the same compact status style through the `e2e-loop` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available. Its below-editor widget shows compact last-event context such as `last iteration_prompt_sent · i1 · log .pi/e2e-loop/logs.jsonl`, and `/e2e-loop status` includes the same last-event context plus elapsed/iteration budget context in text form.
 
@@ -369,7 +370,7 @@ DEV_LOOP_DECISION: continue|stop|blocked|done
 
 Create `.pi/development-loop.json` when a repo needs its own default objective, preferred language, skills, validation commands, iteration count, git delivery policy, stop conditions, or log path. The development loop uses the single built-in `generic-git` adapter.
 
-`/development-loop init` accepts the same basic knobs used by `start` plus config-only fields:
+`/development-goal init` accepts the same basic knobs used by `start` plus config-only fields:
 
 - `--topic <text>` or trailing topic text
 - `--iterations <n>` / `--max-iterations <n>` / `-n <n>`
@@ -403,12 +404,13 @@ Example config:
 }
 ```
 
-Run `/development-loop adapters` to confirm the `generic-git` adapter and config Pi will use.
+Run `/development-goal adapters` to confirm the `generic-git` adapter and config Pi will use.
 
 ## Included extensions
 
-- `/development-loop` — visible `generic-git` project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
-- `/dev-loop` — short alias for the development-loop extension.
+- `/development-goal` — visible `generic-git` project loop for iterative work in any codebase, with built-in defaults and project-local configuration.
+- `/development-loop` — legacy alias for `/development-goal`.
+- `/dev-loop` — short legacy alias for `/development-goal`.
 - `/e2e-loop` — real-usage E2E test loop that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists loop state and logs progress to `.pi/e2e-loop/logs.jsonl` by default.
 - `/e2e` — short alias for the E2E loop extension.
 
@@ -448,8 +450,8 @@ The validation script checks:
 - Pi package manifest shape, referenced bundle paths, and Pi glob/exclusion entries.
 - Pi core imports are peerDependencies with "*".
 - Extension load via Pi-bundled `jiti`.
-- `/development-loop`, `/dev-loop`, `/e2e-loop`, and `/e2e` command registration.
-- E2E smoke coverage for starting and completing one development-loop extension run.
+- `/development-goal`, `/development-loop`, `/dev-loop`, `/e2e-loop`, and `/e2e` command registration.
+- E2E smoke coverage for starting and completing one development-goal extension run.
 - E2E-loop smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-loop/logs.jsonl` progress logging.
 - Skill frontmatter and exact expected bundle contents.
 - Markdown relative links outside code-fence templates.

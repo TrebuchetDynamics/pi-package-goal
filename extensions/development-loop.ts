@@ -586,7 +586,7 @@ function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   appendLoopLog("loop_paused", { reason: "paused_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, "Development loop paused. Use /development-loop resume to continue.");
+  notify(ctx, "Development loop paused. Use /development-goal resume to continue.");
 }
 
 function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
@@ -606,7 +606,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
 
 async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed: ParsedCommand, replaceActive: boolean) {
   if (state.active && !replaceActive) {
-    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued loop iterations start automatically. Use /development-loop restart to replace it or /development-loop stop to stop it.`);
+    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued loop iterations start automatically. Use /development-goal restart to replace it or /development-goal stop to stop it.`);
     refreshUi(ctx);
     return;
   }
@@ -795,7 +795,7 @@ function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: Res
     appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
-    notify(ctx, `Development loop auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-loop resume or raise PI_DEV_LOOP_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
+    notify(ctx, `Development loop auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-goal resume or raise PI_DEV_LOOP_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
     return;
   }
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
@@ -836,7 +836,7 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
   const configPath = path.join(cwd, DEFAULT_CONFIG_RELATIVE);
 
   if (!parsed.dryRun && fs.existsSync(configPath) && !parsed.force) {
-    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
+    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-goal init --force to replace it.`);
     return;
   }
 
@@ -844,13 +844,13 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
   if (!config) return;
 
   if (parsed.dryRun) {
-    notify(ctx, `Development-loop init preview (no files written):\n${JSON.stringify(config, null, 2)}`);
+    notify(ctx, `Development-goal init preview (no files written):\n${JSON.stringify(config, null, 2)}`);
     return;
   }
 
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   if (fs.existsSync(configPath) && !parsed.force) {
-    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-loop init --force to replace it.`);
+    notify(ctx, `${relativeToCwd(cwd, configPath)} already exists; leaving it unchanged. Use /development-goal init --force to replace it.`);
     return;
   }
   writeJsonFileAtomic(configPath, config);
@@ -913,7 +913,7 @@ async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandC
 }
 
 function cancelInit(ctx: UiLikeContext): undefined {
-  notify(ctx, "Development-loop init cancelled.");
+  notify(ctx, "Development-goal init cancelled.");
   return undefined;
 }
 
@@ -928,23 +928,24 @@ function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
 
 function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = [
-    "Development loop commands:",
-    "- /development-loop start [options] <topic> — start a loop",
-    "- /development-loop restart [options] <topic> — replace the active loop",
-    "- /development-loop pause — pause automatic continuation without clearing loop state",
-    "- /development-loop resume — resume a paused loop at the current iteration",
-    "- /development-loop stop — stop the active loop",
-    "- /development-loop status — show current state",
-    "- /development-loop adapters — show detected adapter/config",
-    "- /development-loop analyze-logs [path] — summarize one log file or a directory of loop logs",
-    "- /development-loop analyze-logs --since=2h [path] — summarize only recent timestamped records",
-    "- /development-loop analyze-logs --html [path] — also write a self-contained HTML health report",
-    "- /development-loop analyze-logs --json [path] — emit machine-readable JSON for automation",
+    "Development-goal commands:",
+    "- /development-goal start [options] <topic> — start a loop",
+    "- /development-goal restart [options] <topic> — replace the active loop",
+    "- /development-goal pause — pause automatic continuation without clearing loop state",
+    "- /development-goal resume — resume a paused loop at the current iteration",
+    "- /development-goal stop — stop the active loop",
+    "- /development-goal status — show current state",
+    "- /development-goal adapters — show detected adapter/config",
+    "- /development-goal analyze-logs [path] — summarize one log file or a directory of loop logs",
+    "- /development-goal analyze-logs --since=2h [path] — summarize only recent timestamped records",
+    "- /development-goal analyze-logs --html [path] — also write a self-contained HTML health report",
+    "- /development-goal analyze-logs --json [path] — emit machine-readable JSON for automation",
     "- Start/restart option: --tokens <n|nK|nM> / --budget <n|nK|nM> records a soft token budget in prompts and status",
-    "- /development-loop init [options] <default topic> — configure .pi/development-loop.json interactively",
+    "- /development-goal init [options] <default topic> — configure .pi/development-loop.json interactively",
+    "- Legacy aliases: /development-loop and /dev-loop",
     "",
     "Configurable init options:",
-    "- /development-loop init --dry-run ... — preview without writing files",
+    "- /development-goal init --dry-run ... — preview without writing files",
     "- --iterations <n> | --max-iterations <n> | -n <n>",
     "- --commit | --no-commit | --push | --no-push (--push implies --commit)",
     "- --validation <command> | --test <command> (repeatable)",

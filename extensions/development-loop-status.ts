@@ -43,7 +43,7 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /development-loop status | /development-loop pause | /development-loop resume | /development-loop analyze-logs | /development-loop stop | /development-loop restart --iterations=N <topic> | /development-loop init",
+    "Commands: /development-goal status | /development-goal pause | /development-goal resume | /development-goal analyze-logs | /development-goal stop | /development-goal restart --iterations=N <topic> | /development-goal init",
   ].join("\n");
 }
 
