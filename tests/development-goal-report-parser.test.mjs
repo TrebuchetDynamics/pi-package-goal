@@ -12,6 +12,7 @@ const parserMod = await jiti.import(path.join(root, "extensions", "development-g
 assert.equal(typeof parserMod.parseFinalReport, "function");
 assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");
 assert.equal(typeof parserMod.validateReportQuality, "function");
+assert.equal(typeof parserMod.validateReportQualityIssues, "function");
 
 function parseOk(text) {
   const result = parserMod.parseFinalReport(text);
@@ -35,6 +36,13 @@ assert.deepEqual(parseOk([
   finalStatus: "done",
   validated: true,
   deliveryEvidence: {},
+  quality: {
+    valid: false,
+    issues: [
+      { code: "missing_blocked_work", message: "missing Blocked Work section" },
+      { code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" },
+    ],
+  },
 });
 
 assert.deepEqual(parseOk([
@@ -47,6 +55,13 @@ assert.deepEqual(parseOk([
   finalStatus: "blocked",
   validated: false,
   deliveryEvidence: {},
+  quality: {
+    valid: false,
+    issues: [
+      { code: "missing_blocked_work", message: "missing Blocked Work section" },
+      { code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" },
+    ],
+  },
 });
 
 assert.deepEqual(parseOk([
@@ -64,6 +79,13 @@ assert.deepEqual(parseOk([
     reportQualityWarnings: [
       "missing Blocked Work section",
       "missing Pivoted Work Completed section",
+    ],
+  },
+  quality: {
+    valid: false,
+    issues: [
+      { code: "missing_blocked_work", message: "missing Blocked Work section" },
+      { code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" },
     ],
   },
 });
@@ -103,18 +125,27 @@ assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   validationCommands: ["npm test", "git diff --check"],
 });
 
-assert.deepEqual(parserMod.validateReportQuality([
+const malformedReportText = [
   "Scope: /repo with adapter generic-git.",
   "Changed files:",
   "- `README.md` — documented the behavior.",
   'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","changedFiles":["changed files"],"nextSteps":["Keep going"]}',
   "DEV_GOAL_VALIDATED: yes",
   "DEV_GOAL_DECISION: continue",
-].join("\n")), [
+].join("\n");
+
+assert.deepEqual(parserMod.validateReportQuality(malformedReportText), [
   "missing Blocked Work section",
   "missing Pivoted Work Completed section",
   "relative human-readable changed file \"README.md\"",
   "vague DEV_GOAL_REPORT.changedFiles entry \"changed files\"",
+]);
+
+assert.deepEqual(parserMod.validateReportQualityIssues(malformedReportText), [
+  { code: "missing_blocked_work", message: "missing Blocked Work section" },
+  { code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" },
+  { code: "relative_human_changed_file", message: "relative human-readable changed file \"README.md\"", value: "README.md" },
+  { code: "vague_typed_changed_file", message: "vague DEV_GOAL_REPORT.changedFiles entry \"changed files\"", value: "changed files" },
 ]);
 
 assert.deepEqual(parseOk([
@@ -132,5 +163,11 @@ assert.deepEqual(parseOk([
     pivotedWorkCompleted: "README template updated",
     changedFiles: ["changed files"],
     reportQualityWarnings: ["vague DEV_GOAL_REPORT.changedFiles entry \"changed files\""],
+  },
+  quality: {
+    valid: false,
+    issues: [
+      { code: "vague_typed_changed_file", message: "vague DEV_GOAL_REPORT.changedFiles entry \"changed files\"", value: "changed files" },
+    ],
   },
 });

@@ -41,6 +41,8 @@ export type LoopLogRecord = {
   commitHash?: string;
   pushStatus?: string;
   reportQualityWarnings?: string[];
+  reportQualityIssueCodes?: string[];
+  blockerKind?: string;
   finalStatus?: string;
   likelyCause?: string;
   nextSafeAction?: string;

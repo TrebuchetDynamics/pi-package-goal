@@ -471,8 +471,10 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(reportRecordMod.recordPivotedWorkCompleted({ pivotedWorkCompleted: "docs cleanup" }), "docs cleanup");
   assert.equal(reportRecordMod.recordBlockerState({ missingPrerequisites: "TEST_TOKEN" }), "TEST_TOKEN");
   assert.equal(reportRecordMod.recordBlockerState({ blockedWork: "full validation" }), "full validation");
+  assert.equal(reportRecordMod.recordBlockerKind({ blockerKind: "malformed_final_report" }), "malformed_final_report");
   assert.equal(reportRecordMod.recordBlockerKind({ blockerState: "git push rejected: fetch-first" }), "git_push_fetch_first");
   assert.equal(reportRecordMod.recordBlockerKind({ reason: "validation failed twice on npm test" }), "validation_failed_twice");
+  assert.equal(reportRecordMod.blockerKindRecommendation("malformed_final_report"), "Malformed final-report blockers: repair only the final report, address the exact issue codes, then restart the same Development Goal if the work remains valid.");
   assert.equal(reportRecordMod.blockerKindRecommendation("git_push_fetch_first"), "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.");
   assert.deepEqual(reportRecordMod.recordReportNextSteps({ nextStep: "rerun npm test" }), ["rerun npm test"]);
   assert.equal(reportRecordMod.recordPushStatus({ pushed: "pushed" }), "pushed");
@@ -534,6 +536,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     push: false,
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    usedReportRepairRetry: false,
     autoContinueCount: 0,
   });
   const validLoopState = { ...inactiveLoopState, active: true, adapterName: "generic-git", topic: "ship", iteration: 2, maxIterations: 3, phase: "running" };
@@ -820,11 +823,13 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
 
   const blockerMod = await jiti.import(path.join(root, "extensions", "development-goal-blocker.ts"));
+  assert.equal(blockerMod.likelyBlockerCause("malformed_final_report"), "malformed_final_report");
   assert.equal(blockerMod.likelyBlockerCause("missing DEV_GOAL_DECISION final marker after recovery request"), "assistant_response_missing_final_markers");
   assert.equal(blockerMod.likelyBlockerCause("missing DEV_GOAL_VALIDATED: yes for continue/done decision"), "validation_evidence_missing_or_red");
   assert.equal(blockerMod.likelyBlockerCause("empty provider response retry limit reached"), "provider_returned_empty_response");
   assert.equal(blockerMod.likelyBlockerCause("provider context_length_exceeded before markers"), "provider_context_overflow");
   assert.equal(blockerMod.likelyBlockerCause("manual operator stop"), "loop_blocked");
+  assert.match(blockerMod.nextSafeBlockerAction("malformed_final_report"), /exact report quality issue codes/);
   assert.match(blockerMod.nextSafeBlockerAction("missing_final_markers"), /return only DEV_GOAL_VALIDATED/);
   assert.match(blockerMod.nextSafeBlockerAction("missing DEV_GOAL_VALIDATED"), /run the configured validation commands/);
   assert.match(blockerMod.nextSafeBlockerAction("context overflow"), /compact the session/);
@@ -864,8 +869,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(mergedSteering.length, 240);
   assert.match(mergedSteering, /…$/);
 
-  assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), "continue");
-  assert.equal(mod.__test__.parseValidated("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), true);
+  assert.equal(mod.__test__.parseLoopDecision("Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), "continue");
+  assert.equal(mod.__test__.parseValidated("Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
   const parsedTwoHourSince = mod.__test__.parseSinceFilter("2h", Date.parse("2026-05-22T21:00:00.000Z"));
   assert.equal(parsedTwoHourSince?.cutoffIso, "2026-05-22T19:00:00.000Z");
@@ -916,7 +921,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   });
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_GOAL_VALIDATED: yes|no\nDEV_GOAL_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_GOAL_VALIDATED: yes|no\nDEV_GOAL_DECISION: continue|stop|blocked|done"), undefined);
-  assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue\npostscript"), undefined);
+  assert.equal(mod.__test__.parseLoopDecision("Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue\npostscript"), undefined);
 
   const promptRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-prompt-topic-"));
   fs.mkdirSync(path.join(promptRoot, ".git"));
@@ -1077,6 +1082,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
     assert.match(sent[0].content, /"blockerState":"why blocked"/);
     assert.match(sent[0].content, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+    assert.match(sent[0].content, /one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report/);
+    assert.match(sent[0].content, /Repair retries forbid code edits, scope changes, new task discovery, and validation reruns/);
     assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
     assert.doesNotMatch(sent[0].content, /Example partial validation end report/);
     assert.match(sent[0].content, /Decision guide for final markers/);
@@ -1232,8 +1239,8 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Changed files:",
-          "- `README.md`",
-          "- `extensions/development-goal.ts`",
+          `- \`${path.join(e2eRoot, "README.md")}\``,
+          `- \`${path.join(e2eRoot, "extensions", "development-goal.ts")}\``,
           "",
           "Validation evidence:",
           "- `git diff --check` exited 0",
@@ -1244,6 +1251,8 @@ async function testExtensionLoadsAndRegistersCommands() {
           "Possible next steps:",
           "- Add structured nextSteps to status output",
           "- Show recent loop summaries in analyze-logs",
+          "Blocked Work: none",
+          "Pivoted Work Completed: none",
           "",
           "DEV_GOAL_VALIDATED: yes",
           "DEV_GOAL_DECISION: continue",
@@ -1254,18 +1263,13 @@ async function testExtensionLoadsAndRegistersCommands() {
     const deliveryEvidenceRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const iterationResultWithEvidence = deliveryEvidenceRecords.find((record) => record.event === "iteration_result" && record.decision === "continue");
     assert.equal(iterationResultWithEvidence.runId, firstRunId);
-    assert.deepEqual(iterationResultWithEvidence.changedFiles, ["README.md", "extensions/development-goal.ts"]);
+    assert.deepEqual(iterationResultWithEvidence.changedFiles, [path.join(e2eRoot, "README.md"), path.join(e2eRoot, "extensions", "development-goal.ts")]);
     assert.deepEqual(iterationResultWithEvidence.validationCommands, ["git diff --check", "npm test"]);
     assert.equal(iterationResultWithEvidence.commitHash, "6da2dcd");
     assert.equal(iterationResultWithEvidence.pushStatus, "pushed");
     assert.equal(iterationResultWithEvidence.summary, "improved loop final-report delivery evidence extraction.");
     assert.deepEqual(iterationResultWithEvidence.nextSteps, ["Add structured nextSteps to status output", "Show recent loop summaries in analyze-logs"]);
-    assert.deepEqual(iterationResultWithEvidence.reportQualityWarnings, [
-      "missing Blocked Work section",
-      "missing Pivoted Work Completed section",
-      "relative human-readable changed file \"README.md\"",
-      "relative human-readable changed file \"extensions/development-goal.ts\"",
-    ]);
+    assert.equal(iterationResultWithEvidence.reportQualityWarnings, undefined);
     assert.equal(sent.length, sentBeforeContinue + 1);
     assert.match(sent.at(-1).content, /Development goal iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
@@ -1273,7 +1277,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.active, false);
@@ -1288,7 +1292,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       await handlers.get("agent_end")({
         messages: [{
           role: "assistant",
-          content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue",
+          content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue",
         }],
       }, ctx);
       await new Promise((resolve) => setTimeout(resolve, 80));
@@ -1305,7 +1309,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       await handlers.get("agent_end")({
         messages: [{
           role: "assistant",
-          content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+          content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
         }],
       }, ctx);
     } finally {
@@ -1375,6 +1379,47 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(typedBlockedStatus, /blocker Missing GORMES_PROFILE_TOKEN credential for integration validation/);
     assert.match(typedBlockedStatus, /next 1 Provide GORMES_PROFILE_TOKEN/);
 
+    await command.handler("start --iterations=2 malformed final report", ctx);
+    const malformedRunId = entries.at(-1).data.runId;
+    const sentBeforeMalformedReport = sent.length;
+    const malformedContinueReport = [
+      "Scope: /repo with adapter generic-git.",
+      "Changed files:",
+      "- `README.md` — changed docs.",
+      "Validation evidence: npm test (pass).",
+      'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"all good","changedFiles":["changed files"],"validationCommands":["npm test"],"nextSteps":["Continue"]}',
+      "DEV_GOAL_VALIDATED: yes",
+      "DEV_GOAL_DECISION: continue",
+    ].join("\n");
+    await handlers.get("agent_end")({ messages: [{ role: "assistant", content: malformedContinueReport }] }, ctx);
+    assert.equal(sent.length, sentBeforeMalformedReport + 1, "invalid continue report should request one repair-only retry instead of queuing the next iteration");
+    assert.match(sent.at(-1).content, /Repair only the development goal final report/);
+    assert.match(sent.at(-1).content, /Do not edit code/);
+    assert.match(sent.at(-1).content, /Do not change scope/);
+    assert.match(sent.at(-1).content, /Do not run task discovery/);
+    assert.match(sent.at(-1).content, /Only rewrite the final report/);
+    assert.match(sent.at(-1).content, /missing_blocked_work/);
+    assert.match(sent.at(-1).content, /missing_pivoted_work_completed/);
+    assert.match(sent.at(-1).content, /relative_human_changed_file/);
+    assert.match(sent.at(-1).content, /vague_typed_changed_file/);
+    assert.equal(entries.at(-1).data.active, true);
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.usedReportRepairRetry, true);
+    const malformedRecordsAfterRetry = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const repairRequestRecord = malformedRecordsAfterRetry.find((record) => record.event === "malformed_final_report_repair_requested" && record.runId === malformedRunId);
+    assert.deepEqual(repairRequestRecord.reportQualityIssueCodes, ["missing_blocked_work", "missing_pivoted_work_completed", "relative_human_changed_file", "vague_typed_changed_file"]);
+
+    await handlers.get("agent_end")({ messages: [{ role: "assistant", content: malformedContinueReport }] }, ctx);
+    assert.equal(entries.at(-1).data.active, false, "a second invalid report should block instead of retrying indefinitely");
+    assert.equal(entries.at(-1).data.phase, "blocked");
+    assert.equal(entries.at(-1).data.lastReason, "malformed_final_report");
+    const malformedRecordsAfterBlock = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    const malformedBlockedRecord = malformedRecordsAfterBlock.find((record) => record.event === "loop_blocked" && record.runId === malformedRunId);
+    assert.equal(malformedBlockedRecord.decision, "blocked");
+    assert.equal(malformedBlockedRecord.blockerKind, "malformed_final_report");
+    assert.match(malformedBlockedRecord.blockerState, /missing_blocked_work/);
+    assert.match(malformedBlockedRecord.blockerState, /vague_typed_changed_file/);
+
     await command.handler("start --iterations=1 context overflow", ctx);
     const sentBeforeContextOverflow = sent.length;
     const compactCallsBeforeContextOverflow = contextOverflowCompactCalls.length;
@@ -1414,7 +1459,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
@@ -1438,7 +1483,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
@@ -1457,7 +1502,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent.at(-1).content, /DEV_GOAL_VALIDATED: yes\|no/);
 
     await handlers.get("agent_end")({
-      messages: [{ role: "assistant", content: "DEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
+      messages: [{ role: "assistant", content: "Blocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
     }, ctx);
     assert.equal(entries.at(-1).data.active, false, "valid recovered markers should complete the loop normally");
     assert.equal(entries.at(-1).data.phase, "done");
@@ -1498,7 +1543,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.ok(providerNoiseStart.topicLength > providerNoiseStart.topic.length, "provider-noise logs should preserve raw topic length for diagnostics");
     assert.doesNotMatch(statusUpdates.at(-1).value, /Codex error|context_length|input exceeds the context window|Warning: Development goal/i);
     await handlers.get("agent_end")({
-      messages: [{ role: "assistant", content: "DEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
+      messages: [{ role: "assistant", content: "Blocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
     }, ctx);
 
     const noisySteeringRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-noisy-steering-"));
@@ -1596,7 +1641,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       await handlers.get("agent_end")({
         messages: [{
           role: "assistant",
-          content: "Validated.\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue",
+          content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: continue",
         }],
       }, proactiveCtx);
       assert.equal(compactCalls.length, 1, "high context usage should compact before next iteration");
@@ -3031,6 +3076,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /"blockedWork":"none"/);
   assert.match(readme, /"pivotedWorkCompleted":"none"/);
   assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+  assert.match(readme, /one repair-only retry with exact issue codes, then blocks as `malformed_final_report`/);
   assert.doesNotMatch(readme, /Example interrupted resume end report/);
   assert.doesNotMatch(readme, /Example partial validation end report/);
   assert.match(readme, /DEV_GOAL_DECISION: done/);

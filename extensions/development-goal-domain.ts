@@ -38,6 +38,7 @@ export type DevelopmentLoopRun = {
   push: boolean;
   emptyResponseRetries?: number;
   markerRecoveryRetries?: number;
+  usedReportRepairRetry?: boolean;
   autoContinueCount?: number;
 };
 
@@ -68,6 +69,8 @@ export type LoopEvent = {
   commitHash?: string;
   pushStatus?: string;
   reportQualityWarnings?: string[];
+  reportQualityIssueCodes?: string[];
+  blockerKind?: string;
   finalStatus?: string;
   likelyCause?: string;
   nextSafeAction?: string;

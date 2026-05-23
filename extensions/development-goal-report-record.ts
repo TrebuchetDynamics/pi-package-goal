@@ -73,6 +73,8 @@ export function recordPivotedWorkCompleted(record: Record<string, unknown>): str
 }
 
 export function recordBlockerKind(record: Record<string, unknown>): string | undefined {
+  const explicitKind = stringOrUndefined(record.blockerKind) || stringOrUndefined(record.blocker_kind);
+  if (explicitKind) return explicitKind;
   const text = [
     recordBlockerState(record),
     recordReason(record, recordEvent(record) || ""),
@@ -80,12 +82,14 @@ export function recordBlockerKind(record: Record<string, unknown>): string | und
     stringOrUndefined(record.message),
   ].filter(Boolean).join(" ").toLowerCase();
   if (!text) return undefined;
+  if (/malformed[_\s-]+final[_\s-]+report/.test(text)) return "malformed_final_report";
   if (/\bgit\s+push\b/.test(text) && /(fetch-first|non[-\s]?fast[-\s]?forward|rejected|failed to push some refs|remote contains work)/.test(text)) return "git_push_fetch_first";
   if (isValidationFailedTwiceText(text)) return "validation_failed_twice";
   return undefined;
 }
 
 export function blockerKindRecommendation(kind: string | undefined): string | undefined {
+  if (kind === "malformed_final_report") return "Malformed final-report blockers: repair only the final report, address the exact issue codes, then restart the same Development Goal if the work remains valid.";
   if (kind === "git_push_fetch_first") return "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.";
   if (kind === "validation_failed_twice") return "Validation failed twice blockers: fix the first failing assertion, rerun required validation, then commit/push only after green.";
   return undefined;

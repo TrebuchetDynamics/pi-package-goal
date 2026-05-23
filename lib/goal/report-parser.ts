@@ -9,11 +9,29 @@ export type FinalStatus =
   | "review_needed"
   | "unsafe_to_continue";
 
+export type ReportQualityIssueCode =
+  | "missing_blocked_work"
+  | "missing_pivoted_work_completed"
+  | "relative_human_changed_file"
+  | "vague_typed_changed_file";
+
+export type ReportQualityIssue = {
+  code: ReportQualityIssueCode;
+  message: string;
+  value?: string;
+};
+
+export type ReportQuality = {
+  valid: boolean;
+  issues: ReportQualityIssue[];
+};
+
 export type FinalReport = {
   decision: GoalDecision;
   finalStatus?: FinalStatus;
   validated: boolean;
   deliveryEvidence: DeliveryEvidence;
+  quality: ReportQuality;
 };
 
 export type FinalReportParseError = {
@@ -55,6 +73,7 @@ export function parseFinalReport(text: string): FinalReportParseResult {
 
   const typedReport = parseTypedReport(text, markerBlock.index);
   const finalStatus = typedReport?.finalStatus || defaultFinalStatus(markerBlock.decision);
+  const quality = reportQualityFromIssues(validateReportQualityIssues(text, markerBlock.index, typedReport?.deliveryEvidence || {}));
   return {
     ok: true,
     report: {
@@ -62,6 +81,7 @@ export function parseFinalReport(text: string): FinalReportParseResult {
       finalStatus,
       validated: markerBlock.validated,
       deliveryEvidence: typedReport?.deliveryEvidence || {},
+      quality,
     },
   };
 }
@@ -257,25 +277,29 @@ function parseJsonRecord(value: string): Record<string, unknown> | undefined {
 }
 
 export function validateReportQuality(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}): string[] {
+  return validateReportQualityIssues(text, markerIndex, deliveryEvidence).map((issue) => issue.message);
+}
+
+export function validateReportQualityIssues(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}): ReportQualityIssue[] {
   const reportText = reportBodyText(text, markerIndex);
   const surface = reportQualitySurface(reportText);
-  const warnings: string[] = [];
+  const issues: ReportQualityIssue[] = [];
   const blockedWork = stringOrUndefined(deliveryEvidence.blockedWork) || surface.blockedWork;
   const pivotedWorkCompleted = stringOrUndefined(deliveryEvidence.pivotedWorkCompleted) || surface.pivotedWorkCompleted;
 
-  if (!surface.hasBlockedWorkSection && !blockedWork) warnings.push("missing Blocked Work section");
-  if (!surface.hasPivotedWorkCompletedSection && !pivotedWorkCompleted) warnings.push("missing Pivoted Work Completed section");
+  if (!surface.hasBlockedWorkSection && !blockedWork) issues.push({ code: "missing_blocked_work", message: "missing Blocked Work section" });
+  if (!surface.hasPivotedWorkCompletedSection && !pivotedWorkCompleted) issues.push({ code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" });
 
   for (const changedFile of surface.humanChangedFiles) {
     if (isNoChangedFilesEvidence(changedFile)) continue;
-    if (!isAbsoluteChangedFilePath(changedFile)) warnings.push(`relative human-readable changed file "${changedFile}"`);
+    if (!isAbsoluteChangedFilePath(changedFile)) issues.push({ code: "relative_human_changed_file", message: `relative human-readable changed file "${changedFile}"`, value: changedFile });
   }
 
   for (const changedFile of surface.typedChangedFiles) {
-    if (isVagueChangedFileEvidence(changedFile)) warnings.push(`vague DEV_GOAL_REPORT.changedFiles entry "${changedFile}"`);
+    if (isVagueChangedFileEvidence(changedFile)) issues.push({ code: "vague_typed_changed_file", message: `vague DEV_GOAL_REPORT.changedFiles entry "${changedFile}"`, value: changedFile });
   }
 
-  return uniqueStrings(warnings);
+  return uniqueIssues(issues);
 }
 
 function reportBodyText(text: string, markerIndex?: number): string {
@@ -383,8 +407,20 @@ function isVagueChangedFileEvidence(value: string): boolean {
   return false;
 }
 
-function uniqueStrings(values: string[]): string[] {
-  return [...new Set(values)];
+function uniqueIssues(issues: ReportQualityIssue[]): ReportQualityIssue[] {
+  const seen = new Set<string>();
+  const unique: ReportQualityIssue[] = [];
+  for (const issue of issues) {
+    const key = `${issue.code}:${issue.value ?? ""}:${issue.message}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(issue);
+  }
+  return unique;
+}
+
+function reportQualityFromIssues(issues: ReportQualityIssue[]): ReportQuality {
+  return { valid: issues.length === 0, issues };
 }
 
 function loopDecisionOrUndefined(value: unknown): GoalDecision | undefined {

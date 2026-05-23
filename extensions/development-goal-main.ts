@@ -39,6 +39,7 @@ import {
   buildEmptyResponseRetryPrompt,
   buildIterationPrompt,
   buildMissingMarkerRecoveryPrompt,
+  buildReportRepairPrompt,
   buildSteeringPrompt,
   PROMPT_OBJECTIVE_MAX,
 } from "./development-goal-prompts.ts";
@@ -86,7 +87,7 @@ import {
   recordReportSummary,
   recordValidationEvidence,
 } from "./development-goal-report-record.ts";
-import { parseFinalReport, parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
+import { parseFinalReport, parseLoopDeliveryEvidence, parseLoopReport, type ReportQualityIssue } from "./development-goal-report-parser.ts";
 import { terminalAuditEvent } from "./development-goal-terminal-audit.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
 import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
@@ -448,6 +449,25 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       state = { ...state, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
     }
 
+    if (finalReport && !finalReport.quality.valid) {
+      if (!state.usedReportRepairRetry) {
+        requestReportRepair(pi, ctx, finalReport.quality.issues);
+        return;
+      }
+      const issueSummary = reportQualityIssueSummary(finalReport.quality.issues);
+      blockLoop(pi, ctx, "malformed_final_report", "blocked", {
+        blockerKind: "malformed_final_report",
+        blockerState: issueSummary,
+        reportQualityIssueCodes: finalReport.quality.issues.map((issue) => issue.code),
+        reportQualityWarnings: finalReport.quality.issues.map((issue) => issue.message),
+      });
+      return;
+    }
+
+    if (state.usedReportRepairRetry) {
+      state = { ...state, usedReportRepairRetry: false };
+    }
+
     if (requiresValidation(decision) && validated !== true) {
       blockLoop(pi, ctx, "missing DEV_GOAL_VALIDATED: yes for continue/done decision", decision);
       return;
@@ -626,7 +646,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   }
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
-  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0, autoContinueCount: 0 };
+  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false, autoContinueCount: 0 };
   appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -672,6 +692,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
     push,
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    usedReportRepairRetry: false,
     autoContinueCount: 0,
   };
 
@@ -686,7 +707,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (!state.active) return;
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
-  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
   notify(ctx, `Queued development goal iteration ${iterationProgress(state)}; it will start automatically when the current turn is idle.`);
@@ -704,6 +725,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
     lastReason: "compaction_before_next_iteration",
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    usedReportRepairRetry: false,
   };
   appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -749,7 +771,7 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
   appendLoopLog("compaction_resume_queued");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt);
-  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
   appendLoopLog("compaction_resume_sent");
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -783,6 +805,28 @@ function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolv
 
     scheduleAutomaticIteration(pi, ctx, resolved, targetIteration, attempt + 1);
   }, delay);
+}
+
+function requestReportRepair(pi: ExtensionAPI, ctx: UiLikeContext, issues: ReportQualityIssue[]) {
+  state = {
+    ...state,
+    phase: "running",
+    lastReason: "malformed_final_report_repair_requested",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
+    usedReportRepairRetry: true,
+  };
+  appendLoopLog("malformed_final_report_repair_requested", {
+    reason: "malformed_final_report",
+    blockerKind: "malformed_final_report",
+    blockerState: reportQualityIssueSummary(issues),
+    reportQualityIssueCodes: issues.map((issue) => issue.code),
+    reportQualityWarnings: issues.map((issue) => issue.message),
+  });
+  pi.appendEntry(CUSTOM_STATE_TYPE, state);
+  refreshUi(ctx);
+  notify(ctx, "Development goal is requesting a repair-only final report after report quality validation failed.", "warning");
+  sendLoopPrompt(pi, ctx, buildReportRepairPrompt(state, issues), true);
 }
 
 function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
@@ -822,7 +866,7 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
   const autoContinueLimit = autoContinueLimitFromEnv();
   if (shouldPauseForAutoContinueLimit(state.autoContinueCount, autoContinueLimit)) {
-    state = { ...state, phase: "paused", lastReason: "auto_continue_limit_reached", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+    state = { ...state, phase: "paused", lastReason: "auto_continue_limit_reached", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
     appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -830,7 +874,7 @@ function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: Res
     return;
   }
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0, autoContinueCount: (state.autoContinueCount ?? 0) + 1 };
+  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false, autoContinueCount: (state.autoContinueCount ?? 0) + 1 };
   appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent", { reason: `auto_continue ${state.autoContinueCount}/${autoContinueLimit}` });
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt, asFollowUp);
@@ -848,12 +892,13 @@ function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, as
   }
 }
 
-function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string) {
-  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
-  appendLoopLog("loop_blocked", { decision, reason });
+function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string, extra: Partial<LoopLogRecord> = {}) {
+  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
+  appendLoopLog("loop_blocked", { decision, reason, ...extra });
   appendLoopLog("loop_postmortem", {
     decision: decision ?? "blocked",
     reason,
+    blockerState: extra.blockerState,
     likelyCause: likelyBlockerCause(reason),
     nextSafeAction: nextSafeBlockerAction(reason),
   });
@@ -2134,6 +2179,10 @@ function refreshUi(ctx: UiLikeContext) {
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {
   const logPath = state.logPath || path.join(process.cwd(), DEFAULT_LOG_RELATIVE);
   appendLoopLogRecord(logPath, buildLoopLogRecord({ ...state, logPath }, event, extra, new Date().toISOString(), LOG_TOPIC_MAX));
+}
+
+function reportQualityIssueSummary(issues: ReportQualityIssue[]): string {
+  return issues.map((issue) => issue.code).join("; ") || "malformed_final_report";
 }
 
 function recordSelfImprovementAction(record: Record<string, unknown>): string | undefined {

@@ -130,6 +130,7 @@ DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 
 Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries.
+Malformed final report policy: the goal asks for one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report if the repair is still invalid. Repair retries forbid code edits, scope changes, new task discovery, and validation reruns; only rewrite the final report.
 Blocked DEV_GOAL_REPORT objects should include blockerState, blockedWork, and nextSteps.
 
 Decision guide for final markers:
@@ -198,6 +199,18 @@ The previous assistant response was non-empty but did not end with the required 
 Use exactly these two final lines and nothing else:
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done`;
+}
+
+export function buildReportRepairPrompt(s: LoopState, issues: Array<{ code: string; message: string; value?: string }>): string {
+  const issueLines = issues.map((issue) => `- ${issue.code}: ${issue.message}${issue.value ? ` (value: ${issue.value})` : ""}`).join("\n");
+  return `Repair only the development goal final report for iteration ${iterationProgress(s)}.
+
+The previous final report was malformed. Do not edit code. Do not change scope. Do not run task discovery. Do not run validation commands. Only rewrite the final report and final markers.
+
+You must address these exact issue codes:
+${issueLines || "- unknown_report_quality_issue: report quality validation failed"}
+
+Return the corrected human-readable final report, DEV_GOAL_REPORT, DEV_GOAL_VALIDATED, and DEV_GOAL_DECISION. Keep the original work, validation evidence, decision intent, and changed-file evidence unless one of the issue codes requires correcting that evidence.`;
 }
 
 export function buildDevelopmentGoalCompactionInstructions(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
