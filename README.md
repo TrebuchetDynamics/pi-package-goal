@@ -115,7 +115,7 @@ Tips:
 - New goal runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
 - Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a `DEV_GOAL_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `changedFiles`, `validationCommands`, `commitHash`, and `pushStatus` log fields.
-- Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, and Possible next steps. Use decision-specific next steps: continue should name the next largest safe useful package, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_GOAL_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into goal logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_GOAL_REPORT and final markers last so automation can parse them.
+- Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, Blocked Work, Pivoted Work Completed, and Possible next steps. Use absolute paths for the scope and human-readable changed-file evidence. Use decision-specific next steps: continue should name the next largest safe useful package, blocked should name concrete unblocking actions or missing prerequisites, and stop should name handoff or cleanup actions. Typed `DEV_GOAL_REPORT` objects may also include structured `summary`, `blockerState`, and `nextSteps` fields, which are persisted into goal logs and status summaries; blocked typed reports should include `blockerState` plus concrete `nextSteps`. Keep the machine-readable DEV_GOAL_REPORT and final markers last so automation can parse them.
 - Completion audit before `DEV_GOAL_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
 - Run `/development-goal analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including goal starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
 
@@ -135,12 +135,14 @@ Example continue end report:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: one largest safe useful improvement package.
-Changed files: path/to/file.ts — what changed and why.
+Changed files: /absolute/project/path/src/file.ts — what changed and why.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: abc1234 pushed to current branch.
 Blocker state: none.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: next largest safe useful package, named concretely.
-DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path/to/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
 DEV_GOAL_VALIDATED: yes
 DEV_GOAL_DECISION: continue
 ```
@@ -154,6 +156,8 @@ Changed files: none committed; validation stopped before safe delivery.
 Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
 Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
+Blocked Work: TEST_SERVICE_TOKEN credential.
+Pivoted Work Completed: none.
 Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart /development-goal with the same objective.
 DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate integration-dependent path","blockerState":"Missing TEST_SERVICE_TOKEN credential required for integration validation","nextSteps":["Provide TEST_SERVICE_TOKEN","Rerun npm test","Restart /development-goal with the same objective"]}
 DEV_GOAL_VALIDATED: no
@@ -165,12 +169,14 @@ Example stop handoff end report:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: final documentation cleanup and handoff.
-Changed files: README.md — documented the completed workflow and resume notes.
+Changed files: /absolute/project/path/README.md — documented the completed workflow and resume notes.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: review the pushed commit; open /development-goal status for recent context; restart with the next objective.
-DEV_GOAL_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-goal status for recent context","Restart with the next objective"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
+DEV_GOAL_REPORT: {"validated":true,"decision":"stop","summary":"Completed final documentation cleanup and handoff","nextSteps":["Review the pushed commit","Open /development-goal status for recent context","Restart with the next objective"],"changedFiles":["/absolute/project/path/README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"def5678","pushStatus":"pushed"}
 DEV_GOAL_VALIDATED: yes
 DEV_GOAL_DECISION: stop
 ```
@@ -180,12 +186,14 @@ Example done end report:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: completed the final objective cleanup.
-Changed files: README.md — captured the final report behavior and no remaining goal work.
+Changed files: /absolute/project/path/README.md — captured the final report behavior and no remaining goal work.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: fedcba9 pushed to current branch.
 Blocker state: none; done because the objective is complete, the goal oracle is satisfied, and no goal follow-up remains.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: review the delivered commit; archive development-goal state if desired; start a new objective only if new work appears.
-DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Completed the final objective cleanup","nextSteps":["Review the delivered commit","Archive development-goal state if desired","Start a new objective only if new work appears"],"changedFiles":["README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"fedcba9","pushStatus":"pushed"}
+DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Completed the final objective cleanup","nextSteps":["Review the delivered commit","Archive development-goal state if desired","Start a new objective only if new work appears"],"changedFiles":["/absolute/project/path/README.md"],"validationCommands":["npm test","git diff --check"],"commitHash":"fedcba9","pushStatus":"pushed"}
 DEV_GOAL_VALIDATED: yes
 DEV_GOAL_DECISION: done
 ```
@@ -199,6 +207,8 @@ Changed files: none committed; resume prompt preserved current dirty state.
 Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: inspect `.pi/development-goal/logs.jsonl`; run `/development-goal status`; continue the same safe package.
 DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-goal/logs.jsonl","Run /development-goal status","Continue the same safe package"],"changedFiles":[],"validationCommands":["git diff --check"]}
 DEV_GOAL_VALIDATED: yes
@@ -210,12 +220,14 @@ Example partial validation end report:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: implemented one path but only ran a targeted check.
-Changed files: path/to/file.ts — draft implementation kept local until full validation passes.
+Changed files: /absolute/project/path/src/file.ts — draft implementation kept local until full validation passes.
 Validation evidence: targeted test command (pass); required validation `npm test` not run.
 Commit/push evidence: not attempted because full validation is missing.
 Blocker state: full required validation is missing, so commit and push are unsafe.
+Blocked Work: full required validation.
+Pivoted Work Completed: none.
 Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass.
-DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Targeted check passed but required validation is missing","blockerState":"Full required validation is missing, so commit and push are unsafe","nextSteps":["Run npm test","Run git diff --check","Commit and push only after both pass"],"changedFiles":["path/to/file.ts"],"validationCommands":["targeted test command"]}
+DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Targeted check passed but required validation is missing","blockerState":"Full required validation is missing, so commit and push are unsafe","nextSteps":["Run npm test","Run git diff --check","Commit and push only after both pass"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["targeted test command"]}
 DEV_GOAL_VALIDATED: no
 DEV_GOAL_DECISION: blocked
 ```
@@ -238,7 +250,9 @@ Completion audit before `DEV_GOAL_DECISION: done`:
 
 End report quality checklist:
 
-- Scope and slice: exact project path, adapter, and selected slice.
+- Scope and slice: exact absolute project path, adapter, and selected slice.
+- Paths: use absolute paths for scope and human-readable changed-file evidence.
+- Blocked Work and Pivoted Work Completed: include both sections; write `none` when no blocker or pivot exists.
 - Changes: exact files plus what changed and why.
 - Validation: each command with pass, fail, or not-run reason.
 - Delivery: commit hash and push status, or why delivery was skipped.

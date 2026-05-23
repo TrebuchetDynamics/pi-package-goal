@@ -114,7 +114,7 @@ Run one complete vertical development iteration:
 8. If validation fails twice with the same cause, stop and report the first failing stderr line.
 9. Apply the commit/push policy above.
 10. End with exact changed files, validations, blocker state, a machine-readable delivery line when evidence exists, and these final marker lines:
-DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["path"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","nextSteps":["next safe step"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 
@@ -124,10 +124,12 @@ DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"brief blocke
 Example continue end report:
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: one largest safe useful improvement package.
-Changed files: path/to/file.ts — what changed and why.
+Changed files: /absolute/project/path/src/file.ts — what changed and why.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: abc1234 pushed to current branch.
 Blocker state: none.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: next largest safe useful package, named concretely.
 
 Example blocked end report:
@@ -137,24 +139,30 @@ Changed files: none committed; validation stopped before safe delivery.
 Validation evidence: npm test (failed: missing TEST_SERVICE_TOKEN).
 Commit/push evidence: not attempted because validation failed.
 Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation.
+Blocked Work: TEST_SERVICE_TOKEN credential.
+Pivoted Work Completed: none.
 Possible next steps: provide TEST_SERVICE_TOKEN; rerun \`npm test\`; restart /development-goal with the same objective.
 
 Example stop handoff end report:
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: final documentation cleanup and handoff.
-Changed files: README.md — documented the completed workflow and resume notes.
+Changed files: /absolute/project/path/README.md — documented the completed workflow and resume notes.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: def5678 pushed to current branch.
 Blocker state: none; stopping because the selected objective is complete.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: review the pushed commit; open /development-goal status for recent context; restart with the next objective.
 
 Example done end report:
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: completed the final objective cleanup.
-Changed files: README.md — captured the final report behavior and no remaining goal work.
+Changed files: /absolute/project/path/README.md — captured the final report behavior and no remaining goal work.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: fedcba9 pushed to current branch.
 Blocker state: none; done because the objective is complete, the goal oracle is satisfied, and no goal follow-up remains.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: review the delivered commit; archive development-goal state if desired; start a new objective only if new work appears.
 
 Example interrupted resume end report:
@@ -164,15 +172,19 @@ Changed files: none committed; resume prompt preserved current dirty state.
 Validation evidence: git diff --check (pass) after resume; npm test not run because no code changed.
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
+Blocked Work: none.
+Pivoted Work Completed: none.
 Possible next steps: inspect \`.pi/development-goal/logs.jsonl\`; run \`/development-goal status\`; continue the same safe package.
 
 Example partial validation end report:
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: implemented one path but only ran a targeted check.
-Changed files: path/to/file.ts — draft implementation kept local until full validation passes.
+Changed files: /absolute/project/path/src/file.ts — draft implementation kept local until full validation passes.
 Validation evidence: targeted test command (pass); required validation \`npm test\` not run.
 Commit/push evidence: not attempted because full validation is missing.
 Blocker state: full required validation is missing, so commit and push are unsafe.
+Blocked Work: full required validation.
+Pivoted Work Completed: none.
 Possible next steps: run \`npm test\`; run \`git diff --check\`; commit and push only after both pass.
 
 Decision guide for final markers:
@@ -188,7 +200,9 @@ Completion audit before DEV_GOAL_DECISION: done:
 - If anything is missing, weakly verified, or uncertain, do not use done; choose continue or blocked with concrete nextSteps instead.
 
 End report quality checklist:
-- Scope and slice: exact project path, adapter, and selected slice.
+- Scope and slice: exact absolute project path, adapter, and selected slice.
+- Paths: use absolute paths for scope and human-readable changed-file evidence.
+- Blocked Work and Pivoted Work Completed: include both sections; write \`none\` when no blocker or pivot exists.
 - Changes: exact files plus what changed and why.
 - Validation: each command with pass, fail, or not-run reason.
 - Delivery: commit hash and push status, or why delivery was skipped.
@@ -203,7 +217,8 @@ End report anti-patterns to avoid:
 
 Human-readable end report requirements, before DEV_GOAL_REPORT:
 - Scope and selected slice.
-- What changed and why, with exact files.
+- What changed and why, with exact absolute file paths.
+- Blocked Work and Pivoted Work Completed sections, using \`none\` when no blocker or pivot exists.
 - Validation evidence, commit/push evidence, and blocker state.
 - Possible next steps, especially if decision is continue, blocked, or stop.
   - For continue: name the next largest safe useful package.

@@ -1092,7 +1092,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
     assert.match(sent[0].content, /If anything is missing, weakly verified, or uncertain, do not use done/);
     assert.match(sent[0].content, /End report quality checklist/);
-    assert.match(sent[0].content, /Scope and slice: exact project path, adapter, and selected slice/);
+    assert.match(sent[0].content, /Scope and slice: exact absolute project path, adapter, and selected slice/);
+    assert.match(sent[0].content, /Paths: use absolute paths for scope and human-readable changed-file evidence/);
+    assert.match(sent[0].content, /Blocked Work and Pivoted Work Completed: include both sections/);
     assert.match(sent[0].content, /Changes: exact files plus what changed and why/);
     assert.match(sent[0].content, /Validation: each command with pass, fail, or not-run reason/);
     assert.match(sent[0].content, /Delivery: commit hash and push status, or why delivery was skipped/);
@@ -3051,7 +3053,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
   assert.match(readme, /If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`/);
   assert.match(readme, /End report quality checklist/);
-  assert.match(readme, /Scope and slice: exact project path, adapter, and selected slice/);
+  assert.match(readme, /Scope and slice: exact absolute project path, adapter, and selected slice/);
+  assert.match(readme, /Paths: use absolute paths for scope and human-readable changed-file evidence/);
+  assert.match(readme, /Blocked Work and Pivoted Work Completed: include both sections/);
   assert.match(readme, /Changes: exact files plus what changed and why/);
   assert.match(readme, /Validation: each command with pass, fail, or not-run reason/);
   assert.match(readme, /Delivery: commit hash and push status, or why delivery was skipped/);

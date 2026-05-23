@@ -10,6 +10,7 @@ const jiti = createJiti(import.meta.url, { interopDefault: true });
 const parserMod = await jiti.import(path.join(root, "extensions", "development-goal-report-parser.ts"));
 
 assert.equal(typeof parserMod.parseFinalReport, "function");
+assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");
 
 function parseOk(text) {
   const result = parserMod.parseFinalReport(text);
@@ -74,4 +75,23 @@ assert.deepEqual(parseError([
 assert.deepEqual(parseError("Validation passed, but the assistant forgot the final marker block."), {
   code: "missing_final_marker",
   message: "missing DEV_GOAL_VALIDATED/DEV_GOAL_DECISION final marker block",
+});
+
+assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
+  "Summary: Blocked Work: OBI artifact; Flutter validation. Pivoted Work Completed: no new pivot.",
+  "Changed files:",
+  "- `/home/xel/git/pi-package-development-loop/extensions/development-goal-prompts.ts` — clarified report requirements.",
+  "Validation evidence:",
+  "- `npm test` (pass)",
+  "- `git diff --check` (pass)",
+  "Blocked Work: OBI artifact; Flutter validation.",
+  "Pivoted Work Completed: no new pivot.",
+  "Possible next steps:",
+  "- Continue with parser extraction cleanup.",
+].join("\n")), {
+  summary: "Blocked Work: OBI artifact; Flutter validation. Pivoted Work Completed: no new pivot.",
+  blockerState: "OBI artifact; Flutter validation.",
+  nextSteps: ["Continue with parser extraction cleanup."],
+  changedFiles: ["/home/xel/git/pi-package-development-loop/extensions/development-goal-prompts.ts"],
+  validationCommands: ["npm test", "git diff --check"],
 });

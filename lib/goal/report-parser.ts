@@ -109,7 +109,7 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
       continue;
     }
 
-    const blockerHeader = trimmed.match(/^(?:Blocker state|Blocked because|Blocking reason|Missing prerequisites?|Blockers?)(?:\s+[^:]*)?:\s*(.*)$/i);
+    const blockerHeader = trimmed.match(/^(?:Blocker state|Blocked because|Blocked Work|Blocking reason|Missing prerequisites?|Blockers?)(?:\s+[^:]*)?:\s*(.*)$/i);
     if (blockerHeader) {
       section = "blocker";
       addInlineListItems(blockerStateLines, blockerHeader[1], cleanReportText);
