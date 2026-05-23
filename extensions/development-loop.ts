@@ -18,6 +18,7 @@ import {
   safeRead,
   writeJsonFileAtomic,
 } from "./development-loop-files.ts";
+import { likelyBlockerCause, nextSafeBlockerAction } from "./development-loop-blocker.ts";
 import {
   parseArgs,
   parseSinceFilter,
@@ -804,21 +805,6 @@ async function buildInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandConte
   const defaults = initDefaults(parsed, cwd);
   if (!shouldPromptForInit(parsed, ctx)) return defaults.config;
   return promptForInitConfig(parsed, ctx, cwd, defaults.adapterName);
-}
-
-function likelyBlockerCause(reason: string): string {
-  if (/missing DEV_LOOP_DECISION|missing_final_marker/i.test(reason)) return "assistant_response_missing_final_markers";
-  if (/missing DEV_LOOP_VALIDATED/i.test(reason)) return "validation_evidence_missing_or_red";
-  if (/empty provider response/i.test(reason)) return "provider_returned_empty_response";
-  if (/context[_ -]?overflow|context[_ -]?length/i.test(reason)) return "provider_context_overflow";
-  return "loop_blocked";
-}
-
-function nextSafeBlockerAction(reason: string): string {
-  if (/missing DEV_LOOP_DECISION|missing_final_marker/i.test(reason)) return "reuse completed work if present, then return only DEV_LOOP_VALIDATED and DEV_LOOP_DECISION markers or restart the iteration";
-  if (/missing DEV_LOOP_VALIDATED/i.test(reason)) return "run the configured validation commands, then report DEV_LOOP_VALIDATED: yes only with evidence or fix failures first";
-  if (/empty provider response|context[_ -]?overflow|context[_ -]?length/i.test(reason)) return "compact the session if needed, preserve unrelated dirty work, then retry the same iteration";
-  return "inspect the blocker, preserve unrelated dirty work, and restart with the smallest safe validated slice";
 }
 
 async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string, initialAdapterName: string): Promise<ProjectConfig | undefined> {

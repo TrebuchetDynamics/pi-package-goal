@@ -715,6 +715,17 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildDevelopmentLoopCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development loop state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
 
+  const blockerMod = await jiti.import(path.join(root, "extensions", "development-loop-blocker.ts"));
+  assert.equal(blockerMod.likelyBlockerCause("missing DEV_LOOP_DECISION final marker after recovery request"), "assistant_response_missing_final_markers");
+  assert.equal(blockerMod.likelyBlockerCause("missing DEV_LOOP_VALIDATED: yes for continue/done decision"), "validation_evidence_missing_or_red");
+  assert.equal(blockerMod.likelyBlockerCause("empty provider response retry limit reached"), "provider_returned_empty_response");
+  assert.equal(blockerMod.likelyBlockerCause("provider context_length_exceeded before markers"), "provider_context_overflow");
+  assert.equal(blockerMod.likelyBlockerCause("manual operator stop"), "loop_blocked");
+  assert.match(blockerMod.nextSafeBlockerAction("missing_final_markers"), /return only DEV_LOOP_VALIDATED/);
+  assert.match(blockerMod.nextSafeBlockerAction("missing DEV_LOOP_VALIDATED"), /run the configured validation commands/);
+  assert.match(blockerMod.nextSafeBlockerAction("context overflow"), /compact the session/);
+  assert.match(blockerMod.nextSafeBlockerAction("manual operator stop"), /restart with the smallest safe validated slice/);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
