@@ -11,6 +11,7 @@ const parserMod = await jiti.import(path.join(root, "extensions", "development-g
 
 assert.equal(typeof parserMod.parseFinalReport, "function");
 assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");
+assert.equal(typeof parserMod.validateReportQuality, "function");
 
 function parseOk(text) {
   const result = parserMod.parseFinalReport(text);
@@ -60,6 +61,10 @@ assert.deepEqual(parseOk([
   validated: true,
   deliveryEvidence: {
     summary: "Dirty worktree needs review",
+    reportQualityWarnings: [
+      "missing Blocked Work section",
+      "missing Pivoted Work Completed section",
+    ],
   },
 });
 
@@ -91,7 +96,41 @@ assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
 ].join("\n")), {
   summary: "Blocked Work: OBI artifact; Flutter validation. Pivoted Work Completed: no new pivot.",
   blockerState: "OBI artifact; Flutter validation.",
+  blockedWork: "OBI artifact; Flutter validation.",
+  pivotedWorkCompleted: "no new pivot.",
   nextSteps: ["Continue with parser extraction cleanup."],
   changedFiles: ["/home/xel/git/pi-package-development-loop/extensions/development-goal-prompts.ts"],
   validationCommands: ["npm test", "git diff --check"],
+});
+
+assert.deepEqual(parserMod.validateReportQuality([
+  "Scope: /repo with adapter generic-git.",
+  "Changed files:",
+  "- `README.md` — documented the behavior.",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","changedFiles":["changed files"],"nextSteps":["Keep going"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: continue",
+].join("\n")), [
+  "missing Blocked Work section",
+  "missing Pivoted Work Completed section",
+  "relative human-readable changed file \"README.md\"",
+  "vague DEV_GOAL_REPORT.changedFiles entry \"changed files\"",
+]);
+
+assert.deepEqual(parseOk([
+  "Scope: /repo with adapter generic-git.",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","blockedWork":"none","pivotedWorkCompleted":"README template updated","changedFiles":["changed files"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: continue",
+].join("\n")), {
+  decision: "continue",
+  finalStatus: undefined,
+  validated: true,
+  deliveryEvidence: {
+    blockerState: "none",
+    blockedWork: "none",
+    pivotedWorkCompleted: "README template updated",
+    changedFiles: ["changed files"],
+    reportQualityWarnings: ["vague DEV_GOAL_REPORT.changedFiles entry \"changed files\""],
+  },
 });

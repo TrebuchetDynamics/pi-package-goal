@@ -1,3 +1,4 @@
+import * as path from "node:path";
 import type { DeliveryEvidence, LoopReport } from "../../extensions/development-goal-domain.ts";
 
 export type GoalDecision = "continue" | "stop" | "blocked" | "done";
@@ -75,6 +76,7 @@ export function parseLoopReport(text: string): LoopReport | undefined {
 }
 
 export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
+  const markerBlock = parseFinalMarkerBlock(text);
   const typedReport = parseLoopReport(text);
   if (typedReport && Object.keys(typedReport.deliveryEvidence).length > 0) return typedReport.deliveryEvidence;
 
@@ -83,10 +85,12 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
   const validationCommands: string[] = [];
   const nextSteps: string[] = [];
   const blockerStateLines: string[] = [];
+  const blockedWorkLines: string[] = [];
+  const pivotedWorkCompletedLines: string[] = [];
   let summary: string | undefined;
   let commitHash: string | undefined;
   let pushStatus: string | undefined;
-  let section: "changed" | "validation" | "nextSteps" | "blocker" | undefined;
+  let section: "changed" | "validation" | "nextSteps" | "blocker" | "blockedWork" | "pivotedWorkCompleted" | undefined;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -109,7 +113,21 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
       continue;
     }
 
-    const blockerHeader = trimmed.match(/^(?:Blocker state|Blocked because|Blocked Work|Blocking reason|Missing prerequisites?|Blockers?)(?:\s+[^:]*)?:\s*(.*)$/i);
+    const blockedWorkHeader = trimmed.match(/^Blocked Work(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (blockedWorkHeader) {
+      section = "blockedWork";
+      addInlineListItems(blockedWorkLines, blockedWorkHeader[1], cleanReportText);
+      continue;
+    }
+
+    const pivotedWorkHeader = trimmed.match(/^Pivoted Work Completed(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (pivotedWorkHeader) {
+      section = "pivotedWorkCompleted";
+      addInlineListItems(pivotedWorkCompletedLines, pivotedWorkHeader[1], cleanReportText);
+      continue;
+    }
+
+    const blockerHeader = trimmed.match(/^(?:Blocker state|Blocked because|Blocking reason|Missing prerequisites?|Blockers?)(?:\s+[^:]*)?:\s*(.*)$/i);
     if (blockerHeader) {
       section = "blocker";
       addInlineListItems(blockerStateLines, blockerHeader[1], cleanReportText);
@@ -150,17 +168,28 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
     if (section === "validation") addUnique(validationCommands, cleanValidationEvidence(bullet[1]));
     if (section === "nextSteps") addUnique(nextSteps, cleanReportText(bullet[1]));
     if (section === "blocker") addUnique(blockerStateLines, cleanReportText(bullet[1]));
+    if (section === "blockedWork") addUnique(blockedWorkLines, cleanReportText(bullet[1]));
+    if (section === "pivotedWorkCompleted") addUnique(pivotedWorkCompletedLines, cleanReportText(bullet[1]));
   }
 
-  const blockerState = blockerStateLines.join("; ");
-  return {
+  const blockedWork = blockedWorkLines.join("; ");
+  const pivotedWorkCompleted = pivotedWorkCompletedLines.join("; ");
+  const blockerState = blockerStateLines.join("; ") || blockedWork;
+  const deliveryEvidence: DeliveryEvidence = {
     ...(summary ? { summary } : {}),
     ...(blockerState ? { blockerState } : {}),
+    ...(blockedWork ? { blockedWork } : {}),
+    ...(pivotedWorkCompleted ? { pivotedWorkCompleted } : {}),
     ...(nextSteps.length ? { nextSteps } : {}),
     ...(changedFiles.length ? { changedFiles } : {}),
     ...(validationCommands.length ? { validationCommands } : {}),
     ...(commitHash ? { commitHash } : {}),
     ...(pushStatus ? { pushStatus } : {}),
+  };
+  const reportQualityWarnings = validateReportQuality(text, markerBlock?.index, deliveryEvidence);
+  return {
+    ...deliveryEvidence,
+    ...(reportQualityWarnings.length ? { reportQualityWarnings } : {}),
   };
 }
 
@@ -190,21 +219,30 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
   const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
   const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
   const summary = stringOrUndefined(rawReport.summary) || stringOrUndefined(rawReport.whatChanged);
-  const blockerState = recordBlockerState(rawReport);
+  const blockedWork = stringListAsText(rawReport.blockedWork) || stringListAsText(rawReport.blocked_work);
+  const pivotedWorkCompleted = stringListAsText(rawReport.pivotedWorkCompleted) || stringListAsText(rawReport.pivoted_work_completed) || stringListAsText(rawReport.pivotedWork);
+  const blockerState = recordBlockerState(rawReport) || blockedWork;
   const nextSteps = stringArrayOrSingleString(rawReport.nextSteps) || stringArrayOrSingleString(rawReport.possibleNextSteps) || stringArrayOrSingleString(rawReport.nextStep) || stringArrayOrSingleString(rawReport.nextActions);
+  const deliveryEvidence: DeliveryEvidence = {
+    ...(summary ? { summary } : {}),
+    ...(blockerState ? { blockerState } : {}),
+    ...(blockedWork ? { blockedWork } : {}),
+    ...(pivotedWorkCompleted ? { pivotedWorkCompleted } : {}),
+    ...(nextSteps ? { nextSteps } : {}),
+    ...(changedFiles ? { changedFiles } : {}),
+    ...(validationCommands ? { validationCommands } : {}),
+    ...(commitHash ? { commitHash } : {}),
+    ...(pushStatus ? { pushStatus } : {}),
+  };
+  const reportQualityWarnings = validateReportQuality(reportText, undefined, deliveryEvidence);
 
   return {
     ...(decision ? { decision } : {}),
     ...(validated !== undefined ? { validated } : {}),
     ...(finalStatus ? { finalStatus } : {}),
     deliveryEvidence: {
-      ...(summary ? { summary } : {}),
-      ...(blockerState ? { blockerState } : {}),
-      ...(nextSteps ? { nextSteps } : {}),
-      ...(changedFiles ? { changedFiles } : {}),
-      ...(validationCommands ? { validationCommands } : {}),
-      ...(commitHash ? { commitHash } : {}),
-      ...(pushStatus ? { pushStatus } : {}),
+      ...deliveryEvidence,
+      ...(reportQualityWarnings.length ? { reportQualityWarnings } : {}),
     },
   };
 }
@@ -216,6 +254,137 @@ function parseJsonRecord(value: string): Record<string, unknown> | undefined {
   } catch {
     return undefined;
   }
+}
+
+export function validateReportQuality(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}): string[] {
+  const reportText = reportBodyText(text, markerIndex);
+  const surface = reportQualitySurface(reportText);
+  const warnings: string[] = [];
+  const blockedWork = stringOrUndefined(deliveryEvidence.blockedWork) || surface.blockedWork;
+  const pivotedWorkCompleted = stringOrUndefined(deliveryEvidence.pivotedWorkCompleted) || surface.pivotedWorkCompleted;
+
+  if (!surface.hasBlockedWorkSection && !blockedWork) warnings.push("missing Blocked Work section");
+  if (!surface.hasPivotedWorkCompletedSection && !pivotedWorkCompleted) warnings.push("missing Pivoted Work Completed section");
+
+  for (const changedFile of surface.humanChangedFiles) {
+    if (isNoChangedFilesEvidence(changedFile)) continue;
+    if (!isAbsoluteChangedFilePath(changedFile)) warnings.push(`relative human-readable changed file "${changedFile}"`);
+  }
+
+  for (const changedFile of surface.typedChangedFiles) {
+    if (isVagueChangedFileEvidence(changedFile)) warnings.push(`vague DEV_GOAL_REPORT.changedFiles entry "${changedFile}"`);
+  }
+
+  return uniqueStrings(warnings);
+}
+
+function reportBodyText(text: string, markerIndex?: number): string {
+  const index = markerIndex ?? parseFinalMarkerBlock(text)?.index;
+  return index === undefined ? text : text.slice(0, index);
+}
+
+type ReportQualitySurface = {
+  hasBlockedWorkSection: boolean;
+  hasPivotedWorkCompletedSection: boolean;
+  blockedWork?: string;
+  pivotedWorkCompleted?: string;
+  humanChangedFiles: string[];
+  typedChangedFiles: string[];
+};
+
+function reportQualitySurface(reportText: string): ReportQualitySurface {
+  const blockedWorkLines: string[] = [];
+  const pivotedWorkCompletedLines: string[] = [];
+  const humanChangedFiles: string[] = [];
+  let hasBlockedWorkSection = false;
+  let hasPivotedWorkCompletedSection = false;
+  let section: "changed" | "blockedWork" | "pivotedWorkCompleted" | undefined;
+
+  for (const line of reportText.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      section = undefined;
+      continue;
+    }
+
+    const blockedWorkHeader = trimmed.match(/^Blocked Work(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (blockedWorkHeader) {
+      hasBlockedWorkSection = true;
+      section = "blockedWork";
+      addInlineListItems(blockedWorkLines, blockedWorkHeader[1], cleanReportText);
+      continue;
+    }
+
+    const pivotedWorkHeader = trimmed.match(/^Pivoted Work Completed(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (pivotedWorkHeader) {
+      hasPivotedWorkCompletedSection = true;
+      section = "pivotedWorkCompleted";
+      addInlineListItems(pivotedWorkCompletedLines, pivotedWorkHeader[1], cleanReportText);
+      continue;
+    }
+
+    const changedHeader = trimmed.match(/^Changed files(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (changedHeader) {
+      section = "changed";
+      addInlineListItems(humanChangedFiles, changedHeader[1], cleanChangedFileEvidence);
+      continue;
+    }
+
+    if (looksLikeReportQualityResetHeader(trimmed) || looksLikeSectionHeader(trimmed)) {
+      section = undefined;
+      continue;
+    }
+
+    const bullet = trimmed.match(/^(?:[-*]\s+|\d+\.\s+)(.+)$/);
+    if (!bullet || !section) continue;
+    if (section === "changed") addUnique(humanChangedFiles, cleanChangedFileEvidence(bullet[1]));
+    if (section === "blockedWork") addUnique(blockedWorkLines, cleanReportText(bullet[1]));
+    if (section === "pivotedWorkCompleted") addUnique(pivotedWorkCompletedLines, cleanReportText(bullet[1]));
+  }
+
+  const rawReport = parseTypedReportRecord(reportText);
+  const typedChangedFiles = rawReport
+    ? stringArrayOrUndefined(rawReport.changedFiles) || stringArrayOrUndefined(rawReport.files) || []
+    : [];
+
+  return {
+    hasBlockedWorkSection,
+    hasPivotedWorkCompletedSection,
+    blockedWork: blockedWorkLines.join("; ") || undefined,
+    pivotedWorkCompleted: pivotedWorkCompletedLines.join("; ") || undefined,
+    humanChangedFiles,
+    typedChangedFiles,
+  };
+}
+
+function parseTypedReportRecord(reportText: string): Record<string, unknown> | undefined {
+  const match = reportText.match(/(?:^|\r?\n)\s*DEV_GOAL_REPORT:\s*(\{[^\r\n]*\})\s*$/i);
+  return match ? parseJsonRecord(match[1]) : undefined;
+}
+
+function isAbsoluteChangedFilePath(value: string): boolean {
+  return path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
+}
+
+function isNoChangedFilesEvidence(value: string): boolean {
+  return /^(?:none|no changed files|no files|none committed|not applicable|n\/a)\b/i.test(value.trim());
+}
+
+function isVagueChangedFileEvidence(value: string): boolean {
+  const text = cleanEvidenceText(value)?.replace(/\s+/g, " ").trim() || "";
+  if (!text) return true;
+  if (isNoChangedFilesEvidence(text)) return true;
+  const normalized = text.toLowerCase().replace(/[.!]+$/g, "");
+  if (/^(?:changed files?|files?|various files?|multiple files?|several files?|source files?|code|docs?|documentation|tests?|test files?|project|repo|repository|workspace|worktree|changes?|updates?|misc(?:ellaneous)?|stuff|all files)$/.test(normalized)) return true;
+  if (/[?*…]/.test(text)) return true;
+  if (/\b(?:etc\.?|and others|various|multiple|several)\b/i.test(text)) return true;
+  const file = cleanChangedFileEvidence(text) || text;
+  if (!/[\\/]/.test(file) && !/\.[A-Za-z0-9][A-Za-z0-9_-]{0,9}$/.test(file)) return true;
+  return false;
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function loopDecisionOrUndefined(value: unknown): GoalDecision | undefined {
@@ -261,6 +430,12 @@ function stringArrayOrSingleString(value: unknown): string[] | undefined {
   return single ? [single] : undefined;
 }
 
+function stringListAsText(value: unknown): string | undefined {
+  const array = stringArrayOrUndefined(value);
+  if (array) return array.join("; ");
+  return stringOrUndefined(value);
+}
+
 function booleanOrUndefined(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
@@ -270,7 +445,9 @@ function recordBlockerState(record: Record<string, unknown>): string | undefined
     || stringOrUndefined(record.blockerReason)
     || stringOrUndefined(record.blockedReason)
     || stringOrUndefined(record.blockers)
-    || stringOrUndefined(record.missingPrerequisites);
+    || stringOrUndefined(record.missingPrerequisites)
+    || stringListAsText(record.blockedWork)
+    || stringListAsText(record.blocked_work);
 }
 
 function addInlineListItems(target: string[], value: string | undefined, clean: (item: string) => string | undefined) {
@@ -307,6 +484,10 @@ function addUnique(target: string[], value: string | undefined) {
 
 function looksLikeSectionHeader(value: string): boolean {
   return /^[A-Z][A-Za-z0-9 /_-]{0,60}:\s*\S/.test(value);
+}
+
+function looksLikeReportQualityResetHeader(value: string): boolean {
+  return /^(?:Scope|Selected slice|Validation(?: evidence)?|Commit\/push evidence|Blocker state|Possible next steps|Next steps|DEV_GOAL_REPORT):/i.test(value);
 }
 
 function normalizePushStatus(value: string): string {

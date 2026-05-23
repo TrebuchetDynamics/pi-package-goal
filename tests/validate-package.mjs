@@ -459,13 +459,18 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   const reportRecordMod = await jiti.import(path.join(root, "extensions", "development-goal-report-record.ts"));
   assert.equal(reportRecordMod.recordHasDeliveryEvidence({ changedFiles: ["README.md"] }), true);
+  assert.equal(reportRecordMod.recordHasDeliveryEvidence({ blockedWork: "full validation" }), true);
   assert.deepEqual(reportRecordMod.recordChangedFiles({ files: ["src/a.ts", " ", 42] }), ["src/a.ts"]);
   assert.deepEqual(reportRecordMod.recordValidationEvidence({ validation: { "npm test": true, "git diff --check": true } }), ["npm test", "git diff --check"]);
   assert.equal(reportRecordMod.recordCommitHash({ commit: "abc1234" }), "abc1234");
   assert.equal(reportRecordMod.recordReportSummary({ whatChanged: "tightened parsing" }), "tightened parsing");
   assert.equal(reportRecordMod.recordReportQualityWarning("iteration_result", "fixed stuff"), "vague report summary \"fixed stuff\"");
+  assert.deepEqual(reportRecordMod.recordReportQualityWarnings("iteration_result", { summary: "fixed stuff", reportQualityWarnings: ["missing Blocked Work section"] }), ["missing Blocked Work section", "vague report summary \"fixed stuff\""]);
   assert.equal(reportRecordMod.recordReportMissingNextStepsDecision("loop_finished", "continue", []), "continue");
+  assert.equal(reportRecordMod.recordBlockedWork({ blockedWork: "full validation" }), "full validation");
+  assert.equal(reportRecordMod.recordPivotedWorkCompleted({ pivotedWorkCompleted: "docs cleanup" }), "docs cleanup");
   assert.equal(reportRecordMod.recordBlockerState({ missingPrerequisites: "TEST_TOKEN" }), "TEST_TOKEN");
+  assert.equal(reportRecordMod.recordBlockerState({ blockedWork: "full validation" }), "full validation");
   assert.equal(reportRecordMod.recordBlockerKind({ blockerState: "git push rejected: fetch-first" }), "git_push_fetch_first");
   assert.equal(reportRecordMod.recordBlockerKind({ reason: "validation failed twice on npm test" }), "validation_failed_twice");
   assert.equal(reportRecordMod.blockerKindRecommendation("git_push_fetch_first"), "Fetch-first push blockers: approve fetch/rebase/merge workflow, rerun validation, then push.");
@@ -869,7 +874,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false, "moderate 40% context usage should continue directly instead of spending a turn on compaction");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, contextWindow: 300000 }) }), true, "high 73% context usage should compact before the next iteration");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }) }), true, "absolute high token usage should still compact even on very large context windows");
-  const typedFinalReport = 'Typed final report.\nDEV_GOAL_REPORT: {"validated":true,"decision":"continue","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
+  const typedFinalReport = 'Typed final report.\nDEV_GOAL_REPORT: {"validated":true,"decision":"continue","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
   assert.equal(mod.__test__.parseLoopDecision(typedFinalReport), "continue");
   assert.equal(mod.__test__.parseValidated(typedFinalReport), true);
   assert.equal(typeof mod.__test__.parseLoopReport, "function");
@@ -877,6 +882,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     decision: "continue",
     validated: true,
     deliveryEvidence: {
+      blockerState: "none",
+      blockedWork: "none",
+      pivotedWorkCompleted: "none",
       changedFiles: ["README.md"],
       validationCommands: ["npm test"],
       commitHash: "abc1234",
@@ -900,6 +908,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     validationCommands: ["npm test"],
     commitHash: "abc1234",
     pushStatus: "pushed",
+    reportQualityWarnings: [
+      "missing Blocked Work section",
+      "missing Pivoted Work Completed section",
+      "relative human-readable changed file \"extensions/development-goal-report-parser.ts\"",
+    ],
   });
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_GOAL_VALIDATED: yes|no\nDEV_GOAL_DECISION: continue|stop|blocked|done"), undefined);
   assert.equal(mod.__test__.parseValidated("Instructions only:\nDEV_GOAL_VALIDATED: yes|no\nDEV_GOAL_DECISION: continue|stop|blocked|done"), undefined);
@@ -1054,35 +1067,18 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Run budget: elapsed .*; iterations 1\/2; remaining 1; token budget 98\.5K/);
     assert.match(sent[0].content, /DEV_GOAL_DECISION/);
     assert.match(sent[0].content, /DEV_GOAL_REPORT/);
+    assert.match(sent[0].content, /Canonical final-report template/);
+    assert.match(sent[0].content, /Changed files: \/absolute\/project\/path\/src\/file.ts/);
+    assert.match(sent[0].content, /Blocked Work: none \|/);
+    assert.match(sent[0].content, /Pivoted Work Completed: none \|/);
     assert.match(sent[0].content, /"summary":"brief result"/);
+    assert.match(sent[0].content, /"blockedWork":"none"/);
+    assert.match(sent[0].content, /"pivotedWorkCompleted":"none"/);
     assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
     assert.match(sent[0].content, /"blockerState":"why blocked"/);
-    assert.match(sent[0].content, /Blocked DEV_GOAL_REPORT objects should include blockerState and nextSteps/);
-    assert.match(sent[0].content, /Example continue end report/);
-    assert.match(sent[0].content, /Validation evidence: npm test \(pass\); git diff --check \(pass\)/);
-    assert.match(sent[0].content, /Blocker state: none/);
-    assert.match(sent[0].content, /Possible next steps: next largest safe useful package/);
-    assert.match(sent[0].content, /Example blocked end report/);
-    assert.match(sent[0].content, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
-    assert.match(sent[0].content, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
-    assert.match(sent[0].content, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-goal with the same objective/);
-    assert.match(sent[0].content, /Example stop handoff end report/);
-    assert.match(sent[0].content, /Selected slice: final documentation cleanup and handoff/);
-    assert.match(sent[0].content, /Blocker state: none; stopping because the selected objective is complete/);
-    assert.match(sent[0].content, /Possible next steps: review the pushed commit; open \/development-goal status for recent context; restart with the next objective/);
-    assert.match(sent[0].content, /Example done end report/);
-    assert.match(sent[0].content, /Selected slice: completed the final objective cleanup/);
-    assert.match(sent[0].content, /Blocker state: none; done because the objective is complete, the goal oracle is satisfied, and no goal follow-up remains/);
-    assert.match(sent[0].content, /Possible next steps: review the delivered commit; archive development-goal state if desired; start a new objective only if new work appears/);
-    assert.match(sent[0].content, /Example interrupted resume end report/);
-    assert.match(sent[0].content, /Selected slice: resumed the same iteration after compaction without advancing the goal/);
-    assert.match(sent[0].content, /Blocker state: none; provider interruption recovered, same slice resumed/);
-    assert.match(sent[0].content, /Possible next steps: inspect `.pi\/development-goal\/logs.jsonl`; run `\/development-goal status`; continue the same safe package/);
-    assert.match(sent[0].content, /Example partial validation end report/);
-    assert.match(sent[0].content, /Selected slice: implemented one path but only ran a targeted check/);
-    assert.match(sent[0].content, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
-    assert.match(sent[0].content, /Blocker state: full required validation is missing, so commit and push are unsafe/);
-    assert.match(sent[0].content, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
+    assert.match(sent[0].content, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+    assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
+    assert.doesNotMatch(sent[0].content, /Example partial validation end report/);
     assert.match(sent[0].content, /Decision guide for final markers/);
     assert.match(sent[0].content, /continue: use when validation passed and the full goal is not proven complete yet/);
     assert.match(sent[0].content, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
@@ -1264,6 +1260,12 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(iterationResultWithEvidence.pushStatus, "pushed");
     assert.equal(iterationResultWithEvidence.summary, "improved loop final-report delivery evidence extraction.");
     assert.deepEqual(iterationResultWithEvidence.nextSteps, ["Add structured nextSteps to status output", "Show recent loop summaries in analyze-logs"]);
+    assert.deepEqual(iterationResultWithEvidence.reportQualityWarnings, [
+      "missing Blocked Work section",
+      "missing Pivoted Work Completed section",
+      "relative human-readable changed file \"README.md\"",
+      "relative human-readable changed file \"extensions/development-goal.ts\"",
+    ]);
     assert.equal(sent.length, sentBeforeContinue + 1);
     assert.match(sent.at(-1).content, /Development goal iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
@@ -1320,7 +1322,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Typed delivery evidence follows.",
-          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Profile Control Center TUI shell and draft apply flow","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed","nextSteps":["Exercise real profile apply command","Add profile selection tests"]}',
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Profile Control Center TUI shell and draft apply flow","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed","nextSteps":["Exercise real profile apply command","Add profile selection tests"]}',
           "DEV_GOAL_VALIDATED: yes",
           "DEV_GOAL_DECISION: done",
         ].join("\n"),
@@ -1336,6 +1338,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(typedReportFinished.commitHash, "abc1234");
     assert.equal(typedReportFinished.pushStatus, "pushed");
     assert.equal(typedReportFinished.summary, "Profile Control Center TUI shell and draft apply flow");
+    assert.equal(typedReportFinished.blockedWork, "none");
+    assert.equal(typedReportFinished.pivotedWorkCompleted, "none");
     assert.deepEqual(typedReportFinished.nextSteps, ["Exercise real profile apply command", "Add profile selection tests"]);
     const typedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
     assert.match(typedStatus, /summary Profile Control Center TUI shell and draft apply flow/);
@@ -1354,7 +1358,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Blocked report.",
-          'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate profile apply flow","blockerState":"Missing GORMES_PROFILE_TOKEN credential for integration validation","nextSteps":["Provide GORMES_PROFILE_TOKEN","Restart /development-goal with the same profile apply objective"]}',
+          'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Could not validate profile apply flow","blockerState":"Missing GORMES_PROFILE_TOKEN credential for integration validation","blockedWork":"GORMES_PROFILE_TOKEN credential","pivotedWorkCompleted":"none","nextSteps":["Provide GORMES_PROFILE_TOKEN","Restart /development-goal with the same profile apply objective"]}',
           "DEV_GOAL_VALIDATED: no",
           "DEV_GOAL_DECISION: blocked",
         ].join("\n"),
@@ -1365,6 +1369,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     const typedBlockedRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const typedBlockedFinished = typedBlockedRecords.find((record) => record.event === "loop_blocked" && record.runId === typedBlockedRunId);
     assert.equal(typedBlockedFinished.blockerState, "Missing GORMES_PROFILE_TOKEN credential for integration validation");
+    assert.equal(typedBlockedFinished.blockedWork, "GORMES_PROFILE_TOKEN credential");
+    assert.equal(typedBlockedFinished.pivotedWorkCompleted, "none");
     const typedBlockedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
     assert.match(typedBlockedStatus, /blocker Missing GORMES_PROFILE_TOKEN credential for integration validation/);
     assert.match(typedBlockedStatus, /next 1 Provide GORMES_PROFILE_TOKEN/);
@@ -1690,7 +1696,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.match(messages.at(-1).content, /Missing report next steps: include nextSteps for continue and blocked reports so queued follow-up work has a concrete next action/);
       assert.match(messages.at(-1).content, /Report quality warning records: 1/);
       assert.match(messages.at(-1).content, /Top report quality warning: vague report summary "all good" \(1 record\)/);
-      assert.match(messages.at(-1).content, /Report quality warnings: replace vague or incomplete summaries with scope, changes, validation, delivery, blocker state, and next-step evidence/);
+      assert.match(messages.at(-1).content, /Report quality warnings: include Blocked Work and Pivoted Work Completed, use absolute human-readable changed-file paths, replace vague DEV_GOAL_REPORT.changedFiles entries, and avoid vague summaries/);
       assert.match(messages.at(-1).content, /Top report summary: implemented profile control center \(1 record\)/);
       assert.match(messages.at(-1).content, /Top report blocker state: Missing DEV_GOAL_REPORT blockerState after blocked ending \(1 record\)/);
       assert.match(messages.at(-1).content, /Top report next step: exercise real profile apply command \(1 record\)/);
@@ -3011,39 +3017,23 @@ async function testNoticesAndDocs() {
   assert.match(readme, /runaway auto-continuation guard/);
   assert.match(readme, /No GoalBuddy code is copied/);
   assert.match(readme, /Human-readable end report/);
-  assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
-  assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);
+  assert.match(readme, /structured `summary`, `blockerState`, `blockedWork`, `pivotedWorkCompleted`, and `nextSteps`/);
+  assert.match(readme, /report summary, blocker-state, blocked-work, pivoted-work, next-step, missing-next-steps, and report quality warning counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
   assert.match(readme, /continue should name the next largest safe useful package/);
   assert.match(readme, /blocked should name concrete unblocking actions/);
   assert.match(readme, /blocked typed reports should include `blockerState`/);
-  assert.match(readme, /Example continue end report/);
-  assert.match(readme, /Validation evidence: npm test \(pass\); git diff --check \(pass\)/);
-  assert.match(readme, /Blocker state: none/);
-  assert.match(readme, /Possible next steps: next largest safe useful package/);
-  assert.match(readme, /Example blocked end report/);
-  assert.match(readme, /Validation evidence: npm test \(failed: missing TEST_SERVICE_TOKEN\)/);
-  assert.match(readme, /Blocker state: Missing TEST_SERVICE_TOKEN credential required for integration validation/);
-  assert.match(readme, /Possible next steps: provide TEST_SERVICE_TOKEN; rerun `npm test`; restart \/development-goal with the same objective/);
-  assert.match(readme, /Example stop handoff end report/);
-  assert.match(readme, /Selected slice: final documentation cleanup and handoff/);
-  assert.match(readme, /Blocker state: none; stopping because the selected objective is complete/);
-  assert.match(readme, /Possible next steps: review the pushed commit; open \/development-goal status for recent context; restart with the next objective/);
-  assert.match(readme, /Example done end report/);
-  assert.match(readme, /Selected slice: completed the final objective cleanup/);
-  assert.match(readme, /Blocker state: none; done because the objective is complete, the goal oracle is satisfied, and no goal follow-up remains/);
-  assert.match(readme, /Possible next steps: review the delivered commit; archive development-goal state if desired; start a new objective only if new work appears/);
+  assert.match(readme, /Canonical final-report template/);
+  assert.match(readme, /Changed files: \/absolute\/project\/path\/src\/file.ts/);
+  assert.match(readme, /Blocked Work: none \|/);
+  assert.match(readme, /Pivoted Work Completed: none \|/);
+  assert.match(readme, /"blockedWork":"none"/);
+  assert.match(readme, /"pivotedWorkCompleted":"none"/);
+  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+  assert.doesNotMatch(readme, /Example interrupted resume end report/);
+  assert.doesNotMatch(readme, /Example partial validation end report/);
   assert.match(readme, /DEV_GOAL_DECISION: done/);
-  assert.match(readme, /Example interrupted resume end report/);
-  assert.match(readme, /Selected slice: resumed the same iteration after compaction without advancing the goal/);
-  assert.match(readme, /Blocker state: none; provider interruption recovered, same slice resumed/);
-  assert.match(readme, /Possible next steps: inspect `.pi\/development-goal\/logs.jsonl`; run `\/development-goal status`; continue the same safe package/);
-  assert.match(readme, /Example partial validation end report/);
-  assert.match(readme, /Selected slice: implemented one path but only ran a targeted check/);
-  assert.match(readme, /Validation evidence: targeted test command \(pass\); required validation `npm test` not run/);
-  assert.match(readme, /Blocker state: full required validation is missing, so commit and push are unsafe/);
-  assert.match(readme, /Possible next steps: run `npm test`; run `git diff --check`; commit and push only after both pass/);
   assert.match(readme, /Decision guide for final markers/);
   assert.match(readme, /continue: use when validation passed and the full goal is not proven complete yet/);
   assert.match(readme, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);

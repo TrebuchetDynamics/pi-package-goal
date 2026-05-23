@@ -33,11 +33,14 @@ export type LoopLogRecord = {
   reason?: string;
   summary?: string;
   blockerState?: string;
+  blockedWork?: string;
+  pivotedWorkCompleted?: string;
   nextSteps?: string[];
   changedFiles?: string[];
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
+  reportQualityWarnings?: string[];
   finalStatus?: string;
   likelyCause?: string;
   nextSafeAction?: string;

@@ -6,6 +6,8 @@ export function recordHasDeliveryEvidence(record: Record<string, unknown>): bool
     || Boolean(recordCommitHash(record))
     || Boolean(recordReportSummary(record))
     || Boolean(recordBlockerState(record))
+    || Boolean(recordBlockedWork(record))
+    || Boolean(recordPivotedWorkCompleted(record))
     || recordReportNextSteps(record).length > 0
     || Boolean(recordPushStatus(record));
 }
@@ -37,6 +39,13 @@ export function recordReportQualityWarning(event: string, reportSummary: string 
   return undefined;
 }
 
+export function recordReportQualityWarnings(event: string, record: Record<string, unknown>): string[] {
+  if (event !== "iteration_result" && event !== "loop_finished") return [];
+  const warnings = stringArrayOrUndefined(record.reportQualityWarnings) || stringArrayOrUndefined(record.report_quality_warnings) || [];
+  const summaryWarning = recordReportQualityWarning(event, recordReportSummary(record));
+  return uniqueStrings([...warnings, ...(summaryWarning ? [summaryWarning] : [])]);
+}
+
 export function recordReportMissingNextStepsDecision(event: string, decision: string | undefined, reportNextSteps: string[]): string | undefined {
   if (event !== "iteration_result" && event !== "loop_finished") return undefined;
   const normalizedDecision = decision?.trim().toLowerCase();
@@ -49,7 +58,18 @@ export function recordBlockerState(record: Record<string, unknown>): string | un
     || stringOrUndefined(record.blockerReason)
     || stringOrUndefined(record.blockedReason)
     || stringOrUndefined(record.blockers)
-    || stringOrUndefined(record.missingPrerequisites);
+    || stringOrUndefined(record.missingPrerequisites)
+    || recordBlockedWork(record);
+}
+
+export function recordBlockedWork(record: Record<string, unknown>): string | undefined {
+  return stringListAsText(record.blockedWork) || stringListAsText(record.blocked_work);
+}
+
+export function recordPivotedWorkCompleted(record: Record<string, unknown>): string | undefined {
+  return stringListAsText(record.pivotedWorkCompleted)
+    || stringListAsText(record.pivoted_work_completed)
+    || stringListAsText(record.pivotedWork);
 }
 
 export function recordBlockerKind(record: Record<string, unknown>): string | undefined {
@@ -119,6 +139,16 @@ function stringArrayOrSingleString(value: unknown): string[] | undefined {
   if (array) return array;
   const single = stringOrUndefined(value);
   return single ? [single] : undefined;
+}
+
+function stringListAsText(value: unknown): string | undefined {
+  const array = stringArrayOrUndefined(value);
+  if (array) return array.join("; ");
+  return stringOrUndefined(value);
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function stringOrUndefined(value: unknown): string | undefined {
