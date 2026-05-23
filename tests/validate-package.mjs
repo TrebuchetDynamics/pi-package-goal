@@ -474,6 +474,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     push: false,
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    autoContinueCount: 0,
   });
   const validLoopState = { ...inactiveLoopState, active: true, adapterName: "generic-git", topic: "ship", iteration: 2, maxIterations: 3, phase: "running" };
   assert.equal(loopStateMod.isLoopState(validLoopState), true);
@@ -546,6 +547,12 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(budgetMod.formatTokenBudget(98500), "98.5K");
   assert.equal(budgetMod.formatTokenBudget(undefined), "none");
   assert.equal(budgetMod.loopBudgetSummary({ startedAt: "2026-05-22T20:00:00.000Z", iteration: 2, maxIterations: 5, tokenBudget: 98500 }, Date.parse("2026-05-22T20:01:30.000Z")), "elapsed 1m; iterations 2/5; remaining 3; token budget 98.5K");
+  const runawayMod = await jiti.import(path.join(root, "extensions", "development-loop-runaway.ts"));
+  assert.equal(runawayMod.DEFAULT_MAX_AUTO_CONTINUES, 500);
+  assert.equal(runawayMod.autoContinueLimitFromEnv({ PI_DEV_LOOP_MAX_AUTO_CONTINUES: "2" }), 2);
+  assert.equal(runawayMod.autoContinueLimitFromEnv({ PI_DEV_LOOP_MAX_AUTO_CONTINUES: "0" }), 500);
+  assert.equal(runawayMod.shouldPauseForAutoContinueLimit(1, 2), false);
+  assert.equal(runawayMod.shouldPauseForAutoContinueLimit(2, 2), true);
   assert.deepEqual(compactionMod.recordCompactionContextUsage({ reason: "tokens=120000 context_window=300000" }), { tokens: 120000, contextWindow: 300000 });
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
@@ -1202,6 +1209,42 @@ async function testExtensionLoadsAndRegistersCommands() {
         content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done",
       }],
     }, ctx);
+    assert.equal(entries.at(-1).data.active, false);
+    assert.equal(entries.at(-1).data.phase, "done");
+
+    const previousAutoContinueLimit = process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES;
+    try {
+      process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES = "1";
+      await command.handler("start --iterations=2 runaway guard", ctx);
+      assert.equal(entries.at(-1).data.autoContinueCount, 1);
+      const sentBeforeGuardedContinue = sent.length;
+      await handlers.get("agent_end")({
+        messages: [{
+          role: "assistant",
+          content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue",
+        }],
+      }, ctx);
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      assert.equal(sent.length, sentBeforeGuardedContinue, "auto-continuation guard should pause instead of sending an over-limit prompt");
+      assert.equal(entries.at(-1).data.active, true);
+      assert.equal(entries.at(-1).data.phase, "paused");
+      assert.equal(entries.at(-1).data.lastReason, "auto_continue_limit_reached");
+      assert.match(statusUpdates.at(-1).value, /<warning>Ⅱ pause<\/warning>/);
+      if (previousAutoContinueLimit === undefined) delete process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES;
+      else process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES = previousAutoContinueLimit;
+      await command.handler("resume", ctx);
+      assert.equal(sent.length, sentBeforeGuardedContinue + 1, "resume should reset the runaway guard window and send the queued iteration");
+      assert.equal(entries.at(-1).data.autoContinueCount, 1);
+      await handlers.get("agent_end")({
+        messages: [{
+          role: "assistant",
+          content: "Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: done",
+        }],
+      }, ctx);
+    } finally {
+      if (previousAutoContinueLimit === undefined) delete process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES;
+      else process.env.PI_DEV_LOOP_MAX_AUTO_CONTINUES = previousAutoContinueLimit;
+    }
     assert.equal(entries.at(-1).data.active, false);
     assert.equal(entries.at(-1).data.phase, "done");
 
@@ -2876,6 +2919,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Run budget metadata shows elapsed time and remaining iterations/);
   assert.match(readme, /`--tokens 250K`/);
   assert.match(readme, /soft token budget/);
+  assert.match(readme, /PI_DEV_LOOP_MAX_AUTO_CONTINUES/);
+  assert.match(readme, /auto-continuation guard/);
   assert.match(readme, /Human-readable end report/);
   assert.match(readme, /structured `summary`, `blockerState`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, next-step, missing-next-steps, and report quality warning counts/);

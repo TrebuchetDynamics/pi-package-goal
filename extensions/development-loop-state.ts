@@ -48,5 +48,6 @@ export function inactiveState(defaultLogPath = DEFAULT_LOG_RELATIVE, defaultIter
     push: false,
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    autoContinueCount: 0,
   };
 }

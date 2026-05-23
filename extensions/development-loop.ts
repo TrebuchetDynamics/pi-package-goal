@@ -84,6 +84,7 @@ import {
   recordValidationEvidence,
 } from "./development-loop-report-record.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
+import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-loop-runaway.ts";
 import { createRunId, lastAssistantText } from "./development-loop-runtime.ts";
 import { mergeSteeringTopic } from "./development-loop-steering.ts";
 import {
@@ -594,7 +595,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   }
   const cwd = contextCwd(ctx);
   const resolved = resolveProjectAdapter(cwd, state.adapterName);
-  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0, autoContinueCount: 0 };
   appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -639,6 +640,7 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
     push,
     emptyResponseRetries: 0,
     markerRecoveryRetries: 0,
+    autoContinueCount: 0,
   };
 
   appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_adapter" });
@@ -786,9 +788,18 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
 }
 
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
+  const autoContinueLimit = autoContinueLimitFromEnv();
+  if (shouldPauseForAutoContinueLimit(state.autoContinueCount, autoContinueLimit)) {
+    state = { ...state, phase: "paused", lastReason: "auto_continue_limit_reached", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+    appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+    notify(ctx, `Development loop auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-loop resume or raise PI_DEV_LOOP_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
+    return;
+  }
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
-  appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent");
+  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0, autoContinueCount: (state.autoContinueCount ?? 0) + 1 };
+  appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent", { reason: `auto_continue ${state.autoContinueCount}/${autoContinueLimit}` });
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt, asFollowUp);
   state = { ...state, phase: "running" };
@@ -945,6 +956,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "",
     "Active-loop behavior:",
     "- DEV_LOOP_DECISION: continue starts the next iteration automatically when Pi is idle.",
+    "- PI_DEV_LOOP_MAX_AUTO_CONTINUES caps automatic prompt sends before the loop pauses for manual resume. Default: 500.",
     "- A non-empty response missing final markers gets one final-marker-only recovery prompt before blocking.",
     "- Plain text typed during an active loop becomes steering for the current or next safe slice.",
   ].join("\n");

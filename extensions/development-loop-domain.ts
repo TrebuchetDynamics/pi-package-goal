@@ -35,6 +35,7 @@ export type DevelopmentLoopRun = {
   push: boolean;
   emptyResponseRetries?: number;
   markerRecoveryRetries?: number;
+  autoContinueCount?: number;
 };
 
 export type LoopEvent = {
