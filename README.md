@@ -323,7 +323,11 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
 
 ### Status bar integration
 
-`/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events. If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote it into a dedicated segment:
+`/development-loop` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
+
+`/e2e-loop` uses the same compact status style through the `e2e-loop` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available.
+
+If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-footer), you can promote loop statuses into dedicated segments:
 
 ```json
 {
@@ -335,6 +339,13 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
         "position": "secondary",
         "prefix": "loop",
         "color": "accent"
+      },
+      {
+        "id": "e2e-loop",
+        "statusKey": "e2e-loop",
+        "position": "secondary",
+        "prefix": "e2e",
+        "color": "warning"
       }
     ]
   }

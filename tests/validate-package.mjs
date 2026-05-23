@@ -2258,6 +2258,9 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
       cwd: e2eRoot,
       hasUI: true,
       ui: {
+        theme: {
+          fg(color, text) { return `<${color}>${text}</${color}>`; },
+        },
         notify() {},
         setStatus(key, value) { statusUpdates.push({ key, value }); },
       },
@@ -2282,7 +2285,7 @@ async function testE2ELoopExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /TUI transcript/i);
     assert.match(sent[0].content, /E2E_LOOP_DECISION/);
     assert.equal(sent[0].options, undefined, "idle e2e-loop start should send immediately");
-    assert.match(statusUpdates.at(-1).value, /e2e 1\/2/);
+    assert.equal(statusUpdates.at(-1).value, "<accent>● run</accent> · <dim>i1/2</dim> · <muted>checkout flow</muted>");
     assert.equal(entries.at(-1).customType, "e2e-loop-state");
     assert.equal(entries.at(-1).data.objective, "checkout flow");
     assert.equal(entries.at(-1).data.maxIterations, 2);

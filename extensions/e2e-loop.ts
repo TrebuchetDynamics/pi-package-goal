@@ -35,10 +35,15 @@ type E2ELogRecord = {
   reason?: string;
 };
 
+type UiThemeLike = {
+  fg?: (color: string, text: string) => string;
+};
+
 type UiLikeContext = {
   cwd?: string;
   hasUI?: boolean;
   ui?: {
+    theme?: UiThemeLike;
     notify?: (message: string, level?: string) => void;
     setStatus?: (key: string, value: string | undefined) => void;
   };
@@ -261,17 +266,36 @@ function statusReport(s: E2EState, cwd = process.cwd()): string {
   ].join("\n");
 }
 
-function statusLine(s: E2EState): string {
+function statusLine(s: E2EState, theme?: UiThemeLike): string {
+  const status = e2eStatusMeta(s);
+  const context = statusContext(s);
   return compactJoin([
-    s.active ? "● running" : s.phase === "blocked" ? "■ blocked" : s.phase === "done" ? "✓ done" : "○ idle",
-    `e2e ${s.iteration}/${s.maxIterations}`,
-    compactObjective(s.objective),
+    paint(theme, status.color, `${status.icon} ${status.label}`),
+    paint(theme, "dim", s.active ? `i${s.iteration}/${s.maxIterations}` : "loop"),
+    context ? paint(theme, "muted", context) : undefined,
   ]);
 }
 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
-  ctx.ui.setStatus?.("e2e-loop", statusLine(state));
+  ctx.ui.setStatus?.("e2e-loop", statusLine(state, ctx.ui.theme));
+}
+
+function e2eStatusMeta(s: E2EState): { icon: string; label: string; color: string } {
+  if (s.phase === "blocked") return { icon: "■", label: "block", color: "error" };
+  if (s.phase === "done") return { icon: "✓", label: "done", color: "success" };
+  if (!s.active) return { icon: "○", label: "idle", color: "dim" };
+  return { icon: "●", label: "run", color: "accent" };
+}
+
+function statusContext(s: E2EState): string | undefined {
+  if (s.active) return compactObjective(s.objective);
+  if (s.phase === "blocked") return compactObjective(s.lastReason || String(s.lastDecision || "blocked"));
+  return undefined;
+}
+
+function paint(theme: UiThemeLike | undefined, color: string, text: string): string {
+  return theme?.fg ? theme.fg(color, text) : text;
 }
 
 function stateExplanation(s: E2EState): string {
