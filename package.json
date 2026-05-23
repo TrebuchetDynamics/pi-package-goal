@@ -48,7 +48,7 @@
     "typebox": "*"
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs"
+    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-worktree-risk.test.mjs"
   }
 }
