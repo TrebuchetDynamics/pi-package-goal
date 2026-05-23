@@ -773,7 +773,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(blockerMod.nextSafeBlockerAction("missing_final_markers"), /return only DEV_GOAL_VALIDATED/);
   assert.match(blockerMod.nextSafeBlockerAction("missing DEV_GOAL_VALIDATED"), /run the configured validation commands/);
   assert.match(blockerMod.nextSafeBlockerAction("context overflow"), /compact the session/);
-  assert.match(blockerMod.nextSafeBlockerAction("manual operator stop"), /restart with the smallest safe validated slice/);
+  assert.match(blockerMod.nextSafeBlockerAction("manual operator stop"), /restart with the largest safe validated package/);
 
   const runtimeMod = await jiti.import(path.join(root, "extensions", "development-goal-runtime.ts"));
   assert.equal(runtimeMod.messageText({ content: "plain text" }), "plain text");

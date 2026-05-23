@@ -200,7 +200,7 @@ Validation evidence: git diff --check (pass) after resume; npm test not run beca
 Commit/push evidence: not attempted; no deliverable slice yet.
 Blocker state: none; provider interruption recovered, same slice resumed.
 Possible next steps: inspect `.pi/development-goal/logs.jsonl`; run `/development-goal status`; continue the same safe package.
-DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-goal/logs.jsonl","Run /development-goal status","Continue the same smallest slice"],"changedFiles":[],"validationCommands":["git diff --check"]}
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"Recovered provider interruption and resumed the same slice","nextSteps":["Inspect .pi/development-goal/logs.jsonl","Run /development-goal status","Continue the same safe package"],"changedFiles":[],"validationCommands":["git diff --check"]}
 DEV_GOAL_VALIDATED: yes
 DEV_GOAL_DECISION: continue
 ```
