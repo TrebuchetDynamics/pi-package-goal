@@ -431,7 +431,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     JSON.stringify({ at: "2026-05-22T20:05:00.000Z", event: "loop_finished", iteration: 2, decision: "done", blockerState: "none" }),
   ].join("\n"), "utf8");
   const statusState = { active: true, adapterName: "generic-git", topic: "Ship status helper", iteration: 2, maxIterations: 3, phase: "running", logPath: statusLogPath, commit: true, push: true };
-  assert.equal(statusMod.statusLine(statusState), "● run · loop 2/3 · generic-git · git:push · Ship status helper");
+  assert.equal(statusMod.statusLine(statusState), "● run · i2/3 · generic-git · git:push · Ship status helper");
+  assert.equal(statusMod.statusLine(statusState, { fg: (color, text) => `<${color}>${text}</${color}>` }), "<accent>● run</accent> · <dim>i2/3</dim> · <dim>generic-git</dim> · <success>git:push</success> · <muted>Ship status helper</muted>");
+  assert.equal(statusMod.statusLine({ ...statusState, active: false, phase: "done", lastDecision: "done", lastReason: "preparing_for_compaction" }), "✓ done · loop · generic-git · git:push");
   const extractedStatus = statusMod.statusReport(statusState, statusTemp);
   assert.match(extractedStatus, /budget: elapsed .*; iterations 2\/3; remaining 1/);
   assert.match(extractedStatus, /Last event: loop_finished; at 2026-05-22T20:05:00.000Z; iteration 2; decision done; blocker none/);
@@ -1071,7 +1073,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(firstRunLogRecords[0].runId, firstRunId);
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
     assert.equal(entries.at(-1).data.tokenBudget, 98500);
-    assert.match(statusUpdates.at(-1).value, /loop 1\/2 · generic-git · git:manual · README polish/);
+    assert.match(statusUpdates.at(-1).value, /<dim>i1\/2<\/dim> · <dim>generic-git<\/dim> · <dim>git:manual<\/dim> · <muted>README polish<\/muted>/);
     assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
     assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
     assert.doesNotMatch(widgetUpdates.at(-1).value[0], /loop 1\/2/);

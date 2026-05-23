@@ -52,10 +52,10 @@ export function statusLine(s: LoopStatusState, theme?: UiThemeLike): string {
   const context = statusContext(s);
   return compactJoin([
     paint(theme, status.color, `${status.icon} ${status.label}`),
-    s.active ? `loop ${s.iteration}/${s.maxIterations}` : "loop",
-    s.adapterName !== "none" ? s.adapterName : undefined,
-    s.adapterName !== "none" ? deliverySegment(s) : undefined,
-    context,
+    paint(theme, "dim", s.active ? `i${s.iteration}/${s.maxIterations}` : "loop"),
+    s.adapterName !== "none" ? paint(theme, "dim", s.adapterName) : undefined,
+    s.adapterName !== "none" ? paint(theme, deliveryColor(s), deliverySegment(s)) : undefined,
+    context ? paint(theme, "muted", context) : undefined,
   ]);
 }
 
@@ -129,8 +129,14 @@ function deliverySegment(s: LoopStatusState): string {
 function statusContext(s: LoopStatusState): string | undefined {
   if (s.active) return compactTopic(objectiveText(s.topic, PROMPT_OBJECTIVE_MAX), STATUS_TOPIC_MAX);
   if (s.phase === "blocked") return compactStatusText(s.lastReason || String(s.lastDecision || "blocked"));
-  if (s.phase === "done") return compactStatusText(s.lastReason || "complete");
+  if (s.phase === "done") return undefined;
   return s.lastDecision ? compactStatusText(String(s.lastDecision)) : undefined;
+}
+
+function deliveryColor(s: LoopStatusState): string {
+  if (s.push) return "success";
+  if (s.commit) return "warning";
+  return "dim";
 }
 
 function compactJoin(parts: Array<string | undefined>): string {
