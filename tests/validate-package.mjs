@@ -687,6 +687,34 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(initSummary, /Git delivery: push/);
   assert.match(initSummary, /Validation: npm test/);
 
+  const promptsMod = await jiti.import(path.join(root, "extensions", "development-loop-prompts.ts"));
+  assert.equal(promptsMod.PROMPT_OBJECTIVE_MAX, 600);
+  assert.ok(promptsMod.TASK_DISCOVERY_CUES.some((cue) => cue.includes("repo-local skills")));
+  assert.ok(promptsMod.REVIEW_LOOP_GUIDANCE.some((cue) => cue.includes("Greptile")));
+  const promptState = {
+    active: true,
+    adapterName: "generic-git",
+    runId: "dl-test",
+    topic: "ship prompt helpers",
+    iteration: 2,
+    maxIterations: 3,
+    startedAt: new Date(0).toISOString(),
+    logPath: path.join(adapterTemp, ".pi", "development-loop", "logs.jsonl"),
+    phase: "running",
+    commit: true,
+    push: true,
+  };
+  const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
+  assert.match(extractedPrompt, /Use the project instructions and matching skills now\. Development loop iteration 2\/3/);
+  assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
+  assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
+  assert.match(extractedPrompt, /Task discovery cues for broad objectives:/);
+  assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development loop after compaction[\s\S]*Development loop iteration 2\/3/);
+  assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development loop iteration after empty provider response[\s\S]*Development loop iteration 2\/3/);
+  assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development loop final markers for iteration 2\/3/);
+  assert.match(promptsMod.buildDevelopmentLoopCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development loop state:[\s\S]*- Git delivery: push/);
+  assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
