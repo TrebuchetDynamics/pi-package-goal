@@ -1072,10 +1072,14 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(firstRunId, /^dl-[0-9a-z]+-[0-9a-f]{6}$/);
     const firstRunLogRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     assert.equal(firstRunLogRecords[0].runId, firstRunId);
+    assert.equal(statusUpdates.at(-1).key, "development-goal");
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
+    assert.ok(statusUpdates.some((update) => update.key === "development-loop" && update.value === undefined), "legacy development-loop status should be cleared after the status key rename");
     assert.equal(entries.at(-1).data.tokenBudget, 98500);
     assert.match(statusUpdates.at(-1).value, /<dim>i1\/2<\/dim> · <dim>generic-git<\/dim> · <dim>git:manual<\/dim> · <muted>README polish<\/muted>/);
-    assert.equal(widgetUpdates.at(-1).value.length, 1, "development-loop widget should show only detail because footer already shows status");
+    assert.equal(widgetUpdates.at(-1).key, "development-goal");
+    assert.ok(widgetUpdates.some((update) => update.key === "development-loop" && update.value === undefined), "legacy development-loop widget should be cleared after the widget key rename");
+    assert.equal(widgetUpdates.at(-1).value.length, 1, "development-goal widget should show only detail because footer already shows status");
     assert.match(widgetUpdates.at(-1).value[0], /last iteration_prompt_sent/);
     assert.doesNotMatch(widgetUpdates.at(-1).value[0], /loop 1\/2/);
 
@@ -1413,7 +1417,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(statusUpdates.at(-1).value, /<error>■ block<\/error>/);
     assert.match(statusUpdates.at(-1).value, /git:manual/);
     assert.doesNotMatch(statusUpdates.at(-1).value, /blocked \(blocked\)/);
-    assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-loop widget should show only detail because footer already shows status");
+    assert.equal(widgetUpdates.at(-1).value.length, 1, "blocked development-goal widget should show only detail because footer already shows status");
     const postmortemRecords = fs.readFileSync(path.join(e2eRoot, ".pi", "development-loop", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const missingMarkerPostmortem = postmortemRecords.find((record) => record.event === "loop_postmortem" && record.runId === blockerRunId);
     assert.equal(missingMarkerPostmortem.reason, "missing DEV_LOOP_DECISION final marker after recovery request");
@@ -2918,7 +2922,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /## Update or remove/);
   assert.match(readme, /### Status bar integration/);
   assert.match(readme, /pi-powerline-footer/);
-  assert.match(readme, /"statusKey": "development-loop"/);
+  assert.match(readme, /"statusKey": "development-goal"/);
   assert.match(readme, /below-editor widget includes the last report summary, first next step, and count of additional next steps/);
   assert.match(readme, /status report includes recent report context/);
   assert.match(readme, /### Steer an active loop/);

@@ -2065,8 +2065,10 @@ function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: 
 function refreshUi(ctx: UiLikeContext) {
   if (!ctx.hasUI || !ctx.ui) return;
   const theme = ctx.ui.theme;
-  ctx.ui.setStatus?.("development-loop", statusLine(state, theme));
-  ctx.ui.setWidget?.("development-loop", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
+  ctx.ui.setStatus?.("development-loop", undefined);
+  ctx.ui.setWidget?.("development-loop", undefined);
+  ctx.ui.setStatus?.("development-goal", statusLine(state, theme));
+  ctx.ui.setWidget?.("development-goal", statusWidgetLines(state, contextCwd(ctx), theme), { placement: "belowEditor" });
 }
 
 function appendLoopLog(event: string, extra: Partial<LoopLogRecord> = {}) {

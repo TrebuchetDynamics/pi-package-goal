@@ -324,7 +324,7 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
 
 ### Status bar integration
 
-`/development-goal` publishes a compact powerline-friendly status through the `development-loop` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
+`/development-goal` publishes a compact powerline-friendly status through the `development-goal` status key, for example `● run · i2/3 · generic-git · git:manual · release checks`. The extension clears the legacy `development-loop` status/widget keys on refresh so old UI state does not linger after reload. It colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest loop record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up slices and handoff actions remain visible after later log events.
 
 `/e2e-loop` uses the same compact status style through the `e2e-loop` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available. Its below-editor widget shows compact last-event context such as `last iteration_prompt_sent · i1 · log .pi/e2e-loop/logs.jsonl`, and `/e2e-loop status` includes the same last-event context plus elapsed/iteration budget context in text form.
 
@@ -336,7 +336,7 @@ If you use [`pi-powerline-footer`](https://github.com/nicobailon/pi-powerline-fo
     "customItems": [
       {
         "id": "dev-loop",
-        "statusKey": "development-loop",
+        "statusKey": "development-goal",
         "position": "secondary",
         "prefix": "loop",
         "color": "accent"
