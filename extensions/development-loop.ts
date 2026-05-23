@@ -86,6 +86,12 @@ import {
 import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-loop-report-parser.ts";
 import { createRunId, lastAssistantText } from "./development-loop-runtime.ts";
 import {
+  numberOrUndefined,
+  selectValue,
+  singleLineText,
+  stringOrUndefined,
+} from "./development-loop-values.ts";
+import {
   readLastLoopRecord,
   readRecentReportRecords,
   statusLine,
@@ -2037,25 +2043,6 @@ function parseValidated(text: string): boolean | undefined {
 
 function requiresValidation(decision: LoopDecision): boolean {
   return decision === "continue" || decision === "done";
-}
-
-function stringOrUndefined(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined;
-}
-
-function singleLineText(value: unknown): string {
-  return typeof value === "string" ? value.replace(/\[object Object\]/g, " ").replace(/[\u2500-\u257F]{3,}/g, " ").replace(/↑↓\s*(?:navi(?:gate)?|nav|na)?/gi, " ").replace(/\s+/g, " ").trim() : "";
-}
-
-function selectValue(value: unknown): string | undefined {
-  if (typeof value === "string") return stringOrUndefined(value);
-  if (!value || typeof value !== "object") return undefined;
-  return stringOrUndefined((value as { value?: unknown }).value);
-}
-
-function numberOrUndefined(value: unknown): number | undefined {
-  const number = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(number) && number > 0 ? Math.floor(number) : undefined;
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {

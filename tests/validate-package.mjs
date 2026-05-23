@@ -739,6 +739,19 @@ async function testExtensionLoadsAndRegistersCommands() {
   const encodedRunTime = Date.parse("2026-05-22T21:00:00.000Z").toString(36);
   assert.match(runtimeMod.createRunId("2026-05-22T21:00:00.000Z"), new RegExp(`^dl-${encodedRunTime}-[0-9a-f]{6}$`));
 
+  const valuesMod = await jiti.import(path.join(root, "extensions", "development-loop-values.ts"));
+  assert.equal(valuesMod.stringOrUndefined("  value  "), "value");
+  assert.equal(valuesMod.stringOrUndefined("   "), undefined);
+  assert.equal(valuesMod.stringOrUndefined(123), undefined);
+  assert.equal(valuesMod.singleLineText("Development loop adapter → [object Object]\nDefault objective ───────── ship it ↑↓ navi"), "Development loop adapter → Default objective ship it");
+  assert.equal(valuesMod.singleLineText({ value: "nope" }), "");
+  assert.equal(valuesMod.selectValue(" English "), "English");
+  assert.equal(valuesMod.selectValue({ value: " Spanish " }), "Spanish");
+  assert.equal(valuesMod.selectValue({ value: " " }), undefined);
+  assert.equal(valuesMod.numberOrUndefined("3.8"), 3);
+  assert.equal(valuesMod.numberOrUndefined(0), undefined);
+  assert.equal(valuesMod.numberOrUndefined("nope"), undefined);
+
   assert.equal(mod.__test__.parseLoopDecision("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), "continue");
   assert.equal(mod.__test__.parseValidated("Validated.\nDEV_LOOP_VALIDATED: yes\nDEV_LOOP_DECISION: continue"), true);
   assert.equal(typeof mod.__test__.parseSinceFilter, "function");
