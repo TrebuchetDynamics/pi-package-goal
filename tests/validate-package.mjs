@@ -32,6 +32,11 @@ const expectedSkills = [
   "pi-extensions-helper",
 ];
 
+const skillDescriptionBudget = {
+  maxPerSkillChars: 500,
+  maxTotalChars: 4500,
+};
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(path.join(root, file), "utf8"));
 }
@@ -322,6 +327,29 @@ function parseFrontmatter(content) {
   assert.ok(name, "frontmatter must include name");
   assert.ok(description !== undefined, `frontmatter for ${name} must include description`);
   return { name, description };
+}
+
+function normalizeSkillDescription(description) {
+  return description.replace(/\s+/g, " ").trim();
+}
+
+function collectSkillDescriptionBudgetIssues(baseDir, budget = skillDescriptionBudget) {
+  const issues = [];
+  let totalChars = 0;
+
+  for (const file of listSkillFiles(baseDir)) {
+    const { description } = parseFrontmatter(fs.readFileSync(path.join(baseDir, file), "utf8"));
+    const normalized = normalizeSkillDescription(description);
+    totalChars += normalized.length;
+    if (normalized.length > budget.maxPerSkillChars) {
+      issues.push(`${file}: description ${normalized.length} chars exceeds ${budget.maxPerSkillChars}`);
+    }
+  }
+
+  if (totalChars > budget.maxTotalChars) {
+    issues.push(`all skill descriptions: ${totalChars} chars exceeds ${budget.maxTotalChars}`);
+  }
+  return issues;
 }
 
 async function testPackageManifest() {
@@ -873,12 +901,31 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(extractedPrompt, /lightweight architecture scout/i);
   assert.match(extractedPrompt, /Do not write .*architecture-review.*\.html/i);
   assert.match(extractedPrompt, /Do not spend time on weak tests/i);
+  assert.match(extractedPrompt, /Topology check for non-trivial work:[\s\S]*State ownership[\s\S]*Feedback\/validation[\s\S]*Blast radius[\s\S]*Timing\/ordering/);
+  assert.ok(extractedPrompt.length <= 10000, `iteration prompt should stay compact; got ${extractedPrompt.length} chars`);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
   assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
+
+  const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal-tool-safety.ts"));
+  assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: false, push: false }, "bash", { command: "git push origin main" }), { action: "allow" });
+  assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: false }, "bash", { command: "git push origin main" }), {
+    action: "block",
+    kind: "git_push_not_allowed",
+    reason: "Active development goal blocks git push because push delivery is not enabled for this run.",
+  });
+  assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "git push --force origin main" }), {
+    action: "block",
+    kind: "force_push_blocked",
+    reason: "Active development goal blocks force push; report git_push_fetch_first or ask for explicit human approval outside the goal.",
+  });
+  assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "git push origin main" }).action, "allow");
+  assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "npm run deploy" }).kind, "deploy_blocked");
+  assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "npx prisma migrate deploy" }).kind, "migration_blocked");
+  assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "rm README.md" }).kind, "delete_blocked");
 
   const blockerMod = await jiti.import(path.join(root, "extensions", "development-goal-blocker.ts"));
   assert.equal(blockerMod.likelyBlockerCause("malformed_final_report"), "malformed_final_report");
@@ -1094,6 +1141,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(handlers.has("session_start"));
   assert.ok(handlers.has("agent_end"));
   assert.ok(handlers.has("input"));
+  assert.ok(handlers.has("tool_call"));
   assert.ok(handlers.has("session_before_compact"));
   assert.ok(handlers.has("session_compact"));
 
@@ -1165,6 +1213,8 @@ async function testExtensionLoadsAndRegistersCommands() {
 
     await command.handler("start --iterations=2 --tokens 98.5K README polish", ctx);
     assert.equal(sent.length, 1);
+    const blockedPush = await handlers.get("tool_call")({ toolName: "bash", input: { command: "git push origin main" } }, ctx);
+    assert.deepEqual(blockedPush, { block: true, reason: "Active development goal blocks git push because push delivery is not enabled for this run." });
     assert.match(sent[0].content, /Development goal iteration 1\/2/);
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
     assert.match(sent[0].content, /Run budget: elapsed .*; iterations 1\/2; remaining 1; token budget 98\.5K/);
@@ -2585,15 +2635,22 @@ async function testSkills() {
   try {
     fs.mkdirSync(path.join(fixtureRoot, "skills", "expected"), { recursive: true });
     fs.mkdirSync(path.join(fixtureRoot, "skills", "extra"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, "skills", "long"), { recursive: true });
     fs.writeFileSync(path.join(fixtureRoot, "skills", "expected", "SKILL.md"), "---\nname: expected\ndescription: Expected skill\n---\n");
     fs.writeFileSync(path.join(fixtureRoot, "skills", "extra", "SKILL.md"), "---\nname: extra\ndescription: Extra skill\n---\n");
+    fs.writeFileSync(path.join(fixtureRoot, "skills", "long", "SKILL.md"), `---\nname: long\ndescription: ${"x".repeat(40)}\n---\n`);
 
-    assert.deepEqual(collectSkillInventoryIssues(fixtureRoot, ["expected"]), ["unexpected skill: extra"]);
+    assert.deepEqual(collectSkillInventoryIssues(fixtureRoot, ["expected"]), ["unexpected skill: extra", "unexpected skill: long"]);
+    assert.deepEqual(collectSkillDescriptionBudgetIssues(fixtureRoot, { maxPerSkillChars: 20, maxTotalChars: 50 }), [
+      "skills/long/SKILL.md: description 40 chars exceeds 20",
+      "all skill descriptions: 65 chars exceeds 50",
+    ]);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
 
   assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
+  assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
 
   const skillFiles = listSkillFiles();
   for (const skill of expectedSkills) {
@@ -2603,6 +2660,15 @@ async function testSkills() {
     const { name } = parseFrontmatter(read(file));
     assert.equal(file, `skills/${name}/SKILL.md`, `${file} should live under skills/${name}`);
   }
+
+  const writeSkill = read("skills/write-a-skill/SKILL.md");
+  assert.match(writeSkill, /## Skill contract template/);
+  assert.match(writeSkill, /Entry protocol/);
+  assert.match(writeSkill, /Topology check/);
+  assert.match(writeSkill, /Verification gate/);
+  assert.match(writeSkill, /references\/skill-contract\.md/);
+  assert.ok(exists("skills/write-a-skill/references/skill-contract.md"), "missing write-a-skill contract reference");
+  assert.ok(writeSkill.split(/\r?\n/).length <= 100, "write-a-skill SKILL.md should stay compact and put details in references");
 }
 
 async function testMarkdownLinks() {

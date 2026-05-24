@@ -1,16 +1,6 @@
 ---
 name: chrome-extensions
-description: >
-  Build and publish Chrome Extensions using Manifest V3 best practices. Use this skill
-  whenever the user asks to create, modify, debug, or understand Chrome browser extensions,
-  add-ons, or anything involving the Chrome Extensions API. Trigger on mentions of: 'Chrome
-  extension', 'browser extension', 'manifest.json', 'content script', 'service worker' (in
-  browser context), 'popup' (in browser extension context), 'side panel', 'chrome.* API',
-  'declarativeNetRequest', 'omnibox', 'context menu' (in extension context), or any request
-  to build functionality that integrates with the Chrome browser UI. Also trigger for
-  publishing to the Chrome Web Store: 'publish extension', preparing an extension for
-  publishing, responding to a review rejection, writing permission justifications, or
-  drafting a privacy policy.
+description: Build, debug, review, and publish Chrome Extensions using Manifest V3 and Chrome Web Store practices. Use when the user mentions Chrome/browser extensions, manifest.json, content scripts, extension service workers, popup/side panel UI, chrome.* APIs, declarativeNetRequest, omnibox, context menus, permission justifications, privacy policy, or store review/publishing.
 ---
 
 # Chrome Extensions

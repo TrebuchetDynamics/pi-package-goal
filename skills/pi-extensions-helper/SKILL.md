@@ -1,6 +1,6 @@
 ---
 name: pi-extensions-helper
-description: Build, debug, package, or review Pi extensions using current Pi extension APIs and examples. Use when creating Pi extensions, custom tools, slash commands, event hooks, TUI/status UI, providers, resource discovery, session/compaction behavior, or package-bundled extensions.
+description: Build, debug, package, or review Pi extensions using current Pi APIs and examples. Use for custom tools, slash commands, event hooks, TUI/status UI, providers, resource discovery, sessions, compaction, or package-bundled extensions.
 ---
 
 # Pi Extensions Helper

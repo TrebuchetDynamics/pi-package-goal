@@ -13,28 +13,28 @@ import { objectiveIntakeSummary, promptObjectiveText } from "./development-goal-
 export const PROMPT_OBJECTIVE_MAX = 600;
 
 export const TASK_DISCOVERY_CUES = [
-  "repo-local skills whose names match the work, including *-git, *-release, *-e2e, *-playwright, and *-maestro-flutter when present",
-  "TODO.md, TODOS.md, TODO.txt, PLAN.md, PLANS.md, ROADMAP.md, and similar planning files",
-  "progress.json, progress/*.json, status.json, backlog files, and project task trackers",
-  "PR/MR/CL review state and Greptile review comments when greploop is explicitly requested or git delivery is enabled",
-  "docs/plans, docs/adr, docs/roadmap, issues, and other project progress notes",
+  "repo-local skills matching the work (*-git, *-release, *-e2e, *-playwright, *-maestro-flutter)",
+  "TODO.md, TODOS.md, TODO.txt, PLAN.md, PLANS.md, ROADMAP.md, and similar plans",
+  "progress.json, progress/*.json, status.json, backlog files, and task trackers",
+  "PR/MR/CL or Greptile review state only when greploop or git delivery is in scope",
+  "docs/plans, docs/adr, docs/roadmap, issues, and project progress notes",
 ];
 
 export const REVIEW_GUIDANCE = [
-  "Use greploop for PR/MR/CL review cleanup only when the user requested Greptile review cleanup, a PR/MR/CL is available, and required gh/glab/p4 authentication is present.",
-  "Do not trigger Greptile, post review comments, resolve review threads, push, or re-shelve unless the commit/push policy permits it or the user explicitly asked for that external review action.",
-  "If Greptile, required CLIs, credentials, or PR/MR/CL context are unavailable for requested greploop work, report DEV_GOAL_DECISION: blocked with the missing prerequisite.",
+  "Use greploop for PR/MR/CL review cleanup only when requested, review context exists, and gh/glab/p4 plus Greptile auth are available.",
+  "Do not trigger Greptile, post comments, resolve threads, push, or re-shelve unless commit/push policy or user request permits it.",
+  "If Greptile/tooling/credentials/context are missing, report DEV_GOAL_DECISION: blocked with the missing prerequisite.",
 ];
 
 export const GOALBUDDY_INSPIRED_GUIDANCE = [
   "Use the GoalBuddy-style invariant: Intent -> Oracle -> Surface -> Work package -> Proof.",
-  "Identify the goal oracle early: the observable test, demo, artifact, metric, source-backed answer, review, or owner decision that proves the original outcome.",
-  "Use improve-codebase-architecture as a lightweight architecture scout during startup: Do not write /tmp/architecture-review*.html or open a browser unless the objective explicitly asks for a full architecture report.",
-  "Start every development-goal run by using improve-codebase-architecture, then grill-me in self-answer-first mode before selecting the first work package; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.",
-  "Do not spend time on weak tests: add tests that would fail on the real requirement or defect and exercise behavior through public interfaces; otherwise name the validation limit instead.",
-  "Choose the largest safe useful slice, not the tiniest possible helper. Safe means bounded, explicit, verified, reversible, and respectful of unrelated dirty work.",
-  "A blocked slice does not automatically stop the goal. If safe local follow-up work exists, record the blocker in DEV_GOAL_REPORT nextSteps and continue with that safe work.",
-  "Only use done after a final audit maps the original request to current receipts, validation evidence, delivery evidence, and the goal oracle.",
+  "Identify the goal oracle early: the test, demo, artifact, metric, source-backed answer, review, or owner decision that proves the outcome.",
+  "Use improve-codebase-architecture as a lightweight architecture scout; Do not write /tmp/architecture-review*.html or open a browser unless a full report is requested.",
+  "Start every development-goal run by using improve-codebase-architecture, then grill-me in self-answer-first mode; answer source-backed gaps, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.",
+  "Do not spend time on weak tests: add tests that would fail on the real requirement or defect through public behavior, or name the validation limit.",
+  "Choose the largest safe useful slice: bounded, explicit, verified, reversible, and respectful of unrelated dirty work.",
+  "A blocked slice can still continue if safe local follow-up work exists; record blocker and nextSteps in DEV_GOAL_REPORT.",
+  "Only use done after final audit maps the request to receipts, validation, delivery, and the goal oracle.",
 ];
 
 export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -112,18 +112,22 @@ ${pushSafetyPolicy ? `- ${pushSafetyPolicy}\n` : ""}- ${worktreeScopePolicy}
 Stop conditions:
 ${stopConditions.map((condition) => `- ${condition}`).join("\n")}
 
+Topology check for non-trivial work:
+- State ownership clear?
+- Feedback/validation clear?
+- Blast radius/deletion impact known?
+- Timing/ordering safe?
+For trivial low-risk edits, do not over-process; inspect scope, edit, validate.
+
 Run one complete vertical development iteration:
 1. State scope lock with exact absolute project path and adapter.
-2. Start with improve-codebase-architecture as a lightweight architecture scout: map architectural friction, repo vocabulary, and the safest high-leverage direction, but Do not write /tmp/architecture-review*.html or open a browser unless the objective explicitly asks for a full architecture report.
-3. Use grill-me to identify missing decisions; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.
-4. Read project instructions and use matching repo-local skills before risky work.
-5. Inspect current dirty state and preserve unrelated work.
-6. Define the goal oracle and choose the largest safe useful work package from the user topic, repo-local skills, or task discovery cues above.
-7. Prefer test-first changes when editing code, but Do not spend time on weak tests; add tests that would fail on the real requirement or defect and exercise behavior through public interfaces.
-8. Run the validation commands above. If a command is not applicable, explain exact evidence and substitute the closest project-appropriate check.
-9. If validation fails twice with the same cause, stop and report the first failing stderr line.
-10. Apply the commit/push policy above.
-11. End with the canonical final-report template below. Fill every section; write \`none\` when empty.
+2. Use improve-codebase-architecture as a lightweight architecture scout: map friction and safe direction; Do not write /tmp/architecture-review*.html or open a browser unless explicitly requested.
+3. Use grill-me self-answer-first: answer source-backed gaps yourself; only ask hard owner-decision or pivot questions; If no hard question remains, proceed without asking the user.
+4. Read project instructions and matching repo-local skills, inspect dirty state, preserve unrelated work.
+5. Define the goal oracle, choose the largest safe useful work package, and prefer test-first changes.
+6. Do not spend time on weak tests; add tests that would fail on the real requirement or defect through public behavior, or state the validation limit.
+7. Run validation commands; if not applicable, give exact evidence and the closest substitute. If validation fails twice with the same cause, stop and report the first failing stderr line.
+8. Apply commit/push policy, then end with the canonical final-report template. Fill every section; write \`none\` when empty.
 
 Canonical final-report template:
 Scope: /absolute/project/path with adapter generic-git.
@@ -140,7 +144,7 @@ DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 
 Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries.
-Malformed final report policy: the goal asks for one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report if the repair is still invalid. Repair retries forbid code edits, scope changes, new task discovery, and validation reruns; only rewrite the final report.
+Malformed final report policy: one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report. Repair retries forbid code edits, scope changes, new task discovery, and validation reruns; only rewrite the final report.
 Blocked DEV_GOAL_REPORT objects should include blockerState, blockedWork, and nextSteps.
 
 Decision guide for final markers:
@@ -149,11 +153,7 @@ Decision guide for final markers:
 - stop: use for clean handoff or review before more automation.
 - done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains.
 
-Completion audit before DEV_GOAL_DECISION: done:
-- Restate the objective as concrete deliverables and success criteria.
-- Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected.
-- Identify missing, incomplete, weakly verified, or uncovered requirements.
-- If anything is missing, weakly verified, or uncertain, do not use done; choose continue or blocked with concrete nextSteps instead.
+Completion audit before DEV_GOAL_DECISION: done: restate deliverables, then Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected. If anything is missing, weakly verified, or uncertain, do not use done; choose continue or blocked with concrete nextSteps instead.
 
 End report quality checklist:
 - Scope and slice: exact absolute project path, adapter, and selected slice.
@@ -165,22 +165,9 @@ End report quality checklist:
 - Blocker state: none, or the specific missing prerequisite or unsafe condition.
 - Next step: one concrete action matched to continue, blocked, stop, or done.
 
-End report anti-patterns to avoid:
-- Do not write vague summaries like "fixed stuff" or "all good".
-- Do not claim tests pass without naming the exact commands and outcomes.
-- Do not choose continue when validation is red or required evidence is missing.
-- Do not omit why commit or push was skipped.
+End report anti-patterns to avoid: Do not write vague summaries like "fixed stuff" or "all good". Do not claim tests pass without naming the exact commands and outcomes. Do not choose continue when validation is red or required evidence is missing. Do not omit why commit or push was skipped.
 
-Human-readable end report requirements, before DEV_GOAL_REPORT:
-- Scope and selected slice.
-- What changed and why, with exact absolute file paths.
-- Blocked Work and Pivoted Work Completed sections, using \`none\` when no blocker or pivot exists.
-- Validation evidence, commit/push evidence, and blocker state.
-- Possible next steps, especially if decision is continue, blocked, or stop.
-  - For continue: name the next largest safe useful package.
-  - For blocked: name concrete unblocking actions, missing prerequisites, or credentials.
-  - For stop: name handoff or cleanup actions so the user can resume safely.
-- Keep the machine-readable DEV_GOAL_REPORT and final markers last so the goal runner can parse them.
+Human-readable end report requirements, before DEV_GOAL_REPORT: Scope and selected slice; What changed and why with exact absolute file paths; Blocked Work and Pivoted Work Completed using \`none\`; validation evidence, commit/push evidence, blocker state; Possible next steps. For continue: name the next largest safe useful package. For blocked: name concrete unblocking actions, missing prerequisites, or credentials. For stop: name handoff or cleanup actions so the user can resume safely. Keep the machine-readable DEV_GOAL_REPORT and final markers last so the goal runner can parse them.
 
 Omit unavailable DEV_GOAL_REPORT fields. Use false and blocked when validation is red. Only use DEV_GOAL_VALIDATED: yes after validation evidence exists. Use DEV_GOAL_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
 }

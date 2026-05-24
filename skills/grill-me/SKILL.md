@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Stress-test a plan or design with self-answer-first interrogation, asking the user only for hard owner-decision or pivot questions. Use when user wants to stress-test a plan, get grilled on their design, fill requirement gaps, reduce unnecessary questions, or mentions "grill me".
+description: Stress-test a plan or design in self-answer-first mode, asking only hard owner-decision or pivot questions. Use when the user wants plan gaps found, fewer unnecessary questions, or says "grill me".
 ---
 
 Interview the plan until the remaining uncertainty is explicit, but use self-answer-first mode:

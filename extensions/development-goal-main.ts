@@ -96,6 +96,7 @@ import { evaluateFinalReportGate } from "./development-goal-final-report-gate.ts
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
 import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
 import { mergeSteeringTopic } from "./development-goal-steering.ts";
+import { evaluateActiveGoalToolCallSafety } from "./development-goal-tool-safety.ts";
 import {
   selectValue,
   singleLineText,
@@ -583,11 +584,21 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     };
   }
 
+  async function onToolCall(event: { toolName: string; input?: unknown }, ctx: ExtensionContext) {
+    const decision = evaluateActiveGoalToolCallSafety({ active: state.active, push: state.push }, event.toolName, event.input);
+    if (decision.action === "allow") return undefined;
+
+    appendLoopLog("tool_call_blocked", { reason: decision.reason, blockerKind: decision.kind });
+    notify(ctx, decision.reason, "warning");
+    return { block: true, reason: decision.reason };
+  }
+
   pi.on("session_start", onSessionStart);
   pi.on("agent_end", onAgentEnd);
   pi.on("session_before_compact", onSessionBeforeCompact);
   pi.on("session_compact", onSessionCompact);
   pi.on("input", onInput);
+  pi.on("tool_call", onToolCall);
 
   const command = {
     description: "Run an adapter-aware project development goal",

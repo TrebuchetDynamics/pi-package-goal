@@ -1,6 +1,6 @@
 ---
 name: pi-ecosystem-scout
-description: Use when creating, choosing, packaging, or extending Pi extensions, skills, prompt templates, themes, package bundles, session tools, notification tools, status bars, subagent/task orchestration, remote execution, browser tooling, or ecosystem integrations.
+description: Scout existing Pi ecosystem packages, extensions, skills, prompts, themes, tools, and integration patterns before building. Use when creating, choosing, packaging, or extending Pi resources.
 ---
 
 # Pi Ecosystem Scout
