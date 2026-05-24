@@ -62,6 +62,12 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/openclaw-agent-skills-LICENSE`
 
+## Lum1104/Understand-Anything
+
+- Source: https://github.com/Lum1104/Understand-Anything
+- Usage: the local `/understand` extension can clone and load the upstream Understand-Anything skills from a user checkout; no upstream code is bundled in this package tarball.
+- License: MIT
+
 ## tolibear/goalbuddy
 
 - Source: https://github.com/tolibear/goalbuddy

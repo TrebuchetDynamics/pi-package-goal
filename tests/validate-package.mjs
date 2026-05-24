@@ -306,9 +306,9 @@ async function testPackageManifest() {
   assert.match(pkg.description, /skills/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
-  assert.equal(pkg.pi.extensions, undefined, "package must not register Pi extensions");
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
-  assert.equal(pkg.files.includes("extensions"), false, "package tarball must not include extensions");
+  assert.equal(pkg.files.includes("extensions"), true, "package tarball must include the understand extension");
   assert.equal(pkg.files.includes("skills"), true);
   const gitignore = read(".gitignore");
   assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
@@ -331,12 +331,11 @@ async function testPackageManifestPaths() {
   assert.deepEqual(collectMissingPackageManifestPaths(root, readJson("package.json")), []);
 }
 
-async function testNoPackagedExtensionsRemain() {
-  const extensionsDir = path.join(root, "extensions");
-  const files = fs.existsSync(extensionsDir)
-    ? listRelativePackagePaths(extensionsDir).filter((item) => fs.statSync(path.join(extensionsDir, item)).isFile())
-    : [];
-  assert.deepEqual(files, [], "extensions directory must be absent or empty");
+async function testUnderstandExtension() {
+  const extension = read("extensions/understand.js");
+  assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
+  assert.match(extension, /https:\/\/github\.com\/Lum1104\/Understand-Anything\.git/);
+  assert.match(extension, /resources_discover/);
 }
 
 async function testPiCoreDependencies() {
@@ -361,13 +360,13 @@ async function testDocsAndNotices() {
   assert.match(readme, /bundles curated agent skills/);
   assert.match(readme, /git-commit-push/);
   assert.doesNotMatch(readme, /\/development-goal/);
-  assert.doesNotMatch(readme, /## Included extensions/);
-  assert.doesNotMatch(readme, /pi\.extensions/);
+  assert.match(readme, /## Included extension/);
+  assert.match(readme, /pi\.extensions/);
 }
 
 await testPackageManifest();
 await testPackageManifestPaths();
-await testNoPackagedExtensionsRemain();
+await testUnderstandExtension();
 await testPiCoreDependencies();
 await testSkills();
 await testDocsAndNotices();

@@ -1,6 +1,6 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills for goal discipline, safe git delivery, engineering workflows, Pi ecosystem work, and modern web guidance.
+A Pi package that bundles curated agent skills for goal discipline, safe git delivery, engineering workflows, Pi ecosystem work, and modern web guidance, plus a `/understand` bridge extension for [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
 
 ## Quick start
 
@@ -32,7 +32,7 @@ After installing or updating, run this inside Pi:
 /reload
 ```
 
-### Step 3: Use the bundled skills
+### Step 3: Use the bundled skills and extension
 
 Pi loads skills on demand. You can invoke them naturally or with `/skill:<name>` when skill commands are enabled.
 
@@ -45,6 +45,31 @@ Examples:
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
 ```
+
+The package also registers `/understand`. On first use it prompts to clone `Lum1104/Understand-Anything` into `~/.understand-anything/repo`, then loads the upstream Understand-Anything skills under the hood.
+
+```text
+/understand
+/understand src/frontend --language zh
+/understand dashboard
+/understand chat How does the payment flow work?
+/understand diff
+/understand agent
+/understand agent codebase-map-understand.md
+/understand agent @frontend
+/understand explain src/auth/login.ts
+/understand onboard
+/understand domain
+/understand knowledge ~/path/to/wiki
+/understand update
+```
+
+## Included extension
+
+- `/understand` — bridge command that installs/updates the upstream Understand-Anything checkout and dispatches to its real skill workflows.
+- Direct aliases: `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`.
+
+The extension honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults. `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default for future LLM agents. `/understand agent @frontend` writes `frontend-codebase-map-understand.md`.
 
 ## Included skills
 
@@ -88,13 +113,14 @@ It does not deploy, publish, force-push, rewrite history, rebase, or merge remot
 
 ## Package shape
 
-This package now ships skills only. It does not register Pi extensions.
+This package ships curated skills and one Pi extension.
 
-Package resources are declared in `package.json`:
+Package resources are declared in `package.json` with both `pi.extensions` and `pi.skills`:
 
 ```json
 {
   "pi": {
+    "extensions": ["./extensions/understand.js"],
     "skills": ["./skills"]
   }
 }

@@ -1,16 +1,20 @@
 # pi-package-goal Context
 
-This package now ships Pi skills only. It does not register Pi extensions.
+This package ships Pi skills plus a single `/understand` bridge extension.
 
 ## Language
 
 **Package Identity**:
-The npm/Pi package metadata: package name, repository URL, homepage, issue URL, package description, package keywords, packaged files, and `pi.skills` manifest. Package Identity must not reintroduce `pi.extensions` unless the product explicitly changes back to extension delivery.
-_Avoid_: stale extension manifests, deleted command entrypoints, docs that promise slash-command extensions
+The npm/Pi package metadata: package name, repository URL, homepage, issue URL, package description, package keywords, packaged files, `pi.skills`, and `pi.extensions` manifests.
+_Avoid_: stale resource manifests, deleted command entrypoints, docs that omit packaged resources
+
+**Understand Extension**:
+The package-local extension at `extensions/understand.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.
+_Avoid_: silent startup network work, shell-injected git commands, bundling upstream code without notices
 
 **Skill Bundle**:
-The curated set of bundled skills under `skills/`. Skills are the package's primary product surface and load on demand through Pi's skill discovery.
-_Avoid_: hidden extension behavior, startup code, unlisted resource paths
+The curated set of bundled skills under `skills/`. Skills load on demand through Pi's skill discovery.
+_Avoid_: hidden behavior not represented in docs or manifests, unlisted resource paths
 
 **Goal Skill**:
 An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation and requires a completion audit before done.

@@ -11,8 +11,8 @@ const jiti = createJiti(import.meta.url, { interopDefault: true });
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 assert.ok(pkg.files.includes("lib"), "published package must include lib goal modules");
-assert.equal(pkg.files.includes("extensions"), false, "published package must not include deleted extensions");
-assert.equal(pkg.pi.extensions, undefined, "package must not register deleted extensions");
+assert.equal(pkg.files.includes("extensions"), true, "published package must include the understand extension");
+assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js"], "package must register the understand extension");
 
 const reportParser = await jiti.import(path.join(root, "lib", "goal", "report-parser.ts"));
 assert.equal(typeof reportParser.parseFinalReport, "function");

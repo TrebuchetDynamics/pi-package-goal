@@ -1,7 +1,7 @@
 {
   "name": "pi-package-goal",
   "version": "0.1.0",
-  "description": "Pi package bundling high-signal engineering, goal discipline, safe git delivery, Pi ecosystem, and modern web skills.",
+  "description": "Pi package bundling high-signal engineering skills plus an Understand-Anything slash-command extension.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
@@ -22,10 +22,13 @@
     "safe-delivery",
     "coding-agent",
     "tdd",
-    "modern-web"
+    "modern-web",
+    "pi-extension",
+    "understand-anything"
   ],
   "files": [
     "lib",
+    "extensions",
     "skills",
     "licenses",
     "README.md",
@@ -33,6 +36,9 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "pi": {
+    "extensions": [
+      "./extensions/understand.js"
+    ],
     "skills": [
       "./skills"
     ]
@@ -58,7 +64,7 @@
     }
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
+    "test": "node tests/validate-package.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
   }
 }
