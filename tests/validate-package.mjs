@@ -1258,11 +1258,23 @@ async function testExtensionLoadsAndRegistersCommands() {
   const broadFirstPrompt = promptsMod.buildIterationPrompt({ ...promptState, topic: "discover and complete largest safe useful work", iteration: 1 }, resolvedAdapter, adapterTemp);
   assert.match(broadFirstPrompt, /Development Goal iteration 1\/3: Broad scout/);
   assert.match(broadFirstPrompt, /Lane broad-first-pass; target 2500 tokens/);
-  assert.match(broadFirstPrompt, /scout once, cache repo map\/risks\/tests\/architecture notes/);
-  const broadPrompt = promptsMod.buildIterationPrompt({ ...promptState, topic: "discover and complete largest safe useful work" }, resolvedAdapter, adapterTemp);
+  assert.match(broadFirstPrompt, /include broadScoutCache in DEV_GOAL_REPORT/);
+  const broadPrompt = promptsMod.buildIterationPrompt({
+    ...promptState,
+    topic: "discover and complete largest safe useful work",
+    broadScoutCache: {
+      repoMap: "extensions/development-goal owns prompts, state, logs, final report parsing",
+      riskAreas: ["prompt bloat", "stale scout cache"],
+      testCommands: ["npm test"],
+      architectureNotes: ["cache lives in Development Goal state"],
+    },
+  }, resolvedAdapter, adapterTemp);
   assert.match(broadPrompt, /Development Goal iteration 2\/3: Broad scout/);
   assert.match(broadPrompt, /Lane broad-followup; target 1400 tokens/);
   assert.match(broadPrompt, /reuse cached scout notes/);
+  assert.match(broadPrompt, /Cached scout: repoMap=extensions\/development-goal owns prompts/);
+  assert.match(broadPrompt, /riskAreas=prompt bloat \| stale scout cache/);
+  assert.match(broadPrompt, /testCommands=npm test/);
   assert.match(broadPrompt, /Start with improve-codebase-architecture/);
   assert.match(broadPrompt, /grill-me self-answer-first/);
   assert.match(broadPrompt, /For broad work, inspect:/);
@@ -1350,7 +1362,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false, "moderate 40% context usage should continue directly instead of spending a turn on compaction");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, contextWindow: 300000 }) }), true, "high 73% context usage should compact before the next iteration");
   assert.equal(mod.__test__.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }) }), true, "absolute high token usage should still compact even on very large context windows");
-  const typedFinalReport = 'Typed final report.\nDEV_GOAL_REPORT: {"validated":true,"decision":"continue","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed"}';
+  const typedFinalReport = 'Typed final report.\nDEV_GOAL_REPORT: {"validated":true,"decision":"continue","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["npm test"],"commitHash":"abc1234","pushStatus":"pushed","broadScoutCache":{"repoMap":"extensions/development-goal owns prompts/state","riskAreas":["prompt bloat"],"testCommands":["npm test"],"architectureNotes":["reuse cache after first broad pass"]}}';
   assert.equal(mod.__test__.parseLoopDecision(typedFinalReport), "continue");
   assert.equal(mod.__test__.parseValidated(typedFinalReport), true);
   assert.equal(typeof mod.__test__.parseLoopReport, "function");
@@ -1365,6 +1377,12 @@ async function testExtensionLoadsAndRegistersCommands() {
       validationCommands: ["npm test"],
       commitHash: "abc1234",
       pushStatus: "pushed",
+      broadScoutCache: {
+        repoMap: "extensions/development-goal owns prompts/state",
+        riskAreas: ["prompt bloat"],
+        testCommands: ["npm test"],
+        architectureNotes: ["reuse cache after first broad pass"],
+      },
     },
   });
   assert.equal(typeof mod.__test__.parseLoopDeliveryEvidence, "function");
@@ -1801,6 +1819,30 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(entries.at(-1).data.active, false);
     assert.equal(entries.at(-1).data.phase, "done");
+
+    await command.handler("start --iterations=2 discover useful project work", ctx);
+    const sentBeforeScoutContinue = sent.length;
+    await handlers.get("agent_end")({
+      messages: [{
+        role: "assistant",
+        content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"scouted repo","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["git diff --check"],"broadScoutCache":{"repoMap":"extensions/development-goal owns prompts/state/parser","riskAreas":["prompt bloat"],"testCommands":["npm test"],"architectureNotes":["cache broad scout after first pass"]}}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: continue",
+        ].join("\n"),
+      }],
+    }, ctx);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    assert.deepEqual(entries.at(-1).data.broadScoutCache, {
+      repoMap: "extensions/development-goal owns prompts/state/parser",
+      riskAreas: ["prompt bloat"],
+      testCommands: ["npm test"],
+      architectureNotes: ["cache broad scout after first pass"],
+    });
+    assert.equal(sent.length, sentBeforeScoutContinue + 1);
+    assert.match(sent.at(-1).content, /Lane broad-followup; target 1400 tokens/);
+    assert.match(sent.at(-1).content, /Cached scout: repoMap=extensions\/development-goal owns prompts\/state\/parser/);
+    await command.handler("stop", ctx);
 
     const previousAutoContinueLimit = process.env.PI_DEV_GOAL_MAX_AUTO_CONTINUES;
     try {

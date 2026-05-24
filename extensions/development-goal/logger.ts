@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ObjectiveKind } from "./domain.ts";
+import type { BroadScoutCache, ObjectiveKind } from "./domain.ts";
 import { objectiveInfo } from "./topic.ts";
 
 const DEFAULT_LOG_TOPIC_MAX = 600;
@@ -40,6 +40,7 @@ export type LoopLogRecord = {
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
+  broadScoutCache?: BroadScoutCache;
   reportQualityWarnings?: string[];
   reportQualityIssueCodes?: string[];
   blockerKind?: string;

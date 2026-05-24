@@ -60,6 +60,7 @@ import {
   hasTransportProviderError,
 } from "./provider-error.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport, type FinalReport } from "./report-parser.ts";
+import type { BroadScoutCache, DeliveryEvidence } from "./domain.ts";
 import { terminalAuditEvent } from "./terminal-audit.ts";
 import { evaluateFinalReportGate } from "./final-report-gate.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./runaway.ts";
@@ -301,7 +302,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       return;
     }
 
-    state = { ...state, phase: "reported", lastDecision: decision };
+    state = { ...state, phase: "reported", lastDecision: decision, ...broadScoutStateUpdate(deliveryEvidence) };
     appendLoopLog("iteration_result", { decision, ...deliveryEvidence });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -1040,6 +1041,10 @@ function parseValidated(text: string): boolean | undefined {
 
 function requiresValidation(decision: LoopDecision): boolean {
   return decision === "continue" || decision === "done";
+}
+
+function broadScoutStateUpdate(deliveryEvidence: DeliveryEvidence): { broadScoutCache?: BroadScoutCache } {
+  return deliveryEvidence.broadScoutCache ? { broadScoutCache: deliveryEvidence.broadScoutCache } : {};
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {

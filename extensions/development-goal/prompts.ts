@@ -86,8 +86,9 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const openingLine = broadScout
     ? `Development Goal iteration ${iterationLabel}: Broad scout. Lane ${lane}; target ${laneBudget} tokens. Start with improve-codebase-architecture as lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision/pivot questions. Caveman mode: always on; terse, no filler.`
     : `Development Goal iteration ${iterationLabel}: Direct slice. Lane direct; target ${laneBudget} tokens. Concrete objective; skip architecture/grill scouting unless blocked by real design uncertainty. Caveman mode: always on; terse, no filler.`;
+  const cachedScoutText = formatBroadScoutCache(s.broadScoutCache);
   const protocolStep3 = broadScout
-    ? `Broad path: ${lane === "broad-first-pass" ? "scout once, cache repo map/risks/tests/architecture notes, then execute one row" : "reuse cached scout notes; do not rediscover"}. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.`
+    ? `Broad path: ${lane === "broad-first-pass" ? "scout once, include broadScoutCache in DEV_GOAL_REPORT, then execute one row" : "reuse cached scout notes; do not rediscover"}. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.${cachedScoutText ? `\nCached scout: ${cachedScoutText}` : ""}`
     : "Direct path: scalpel mode. Task, constraints, validation, final JSON. Inspect only needed files/tests; no TODO/roadmap unless needed.";
   const promptSkills = broadScout ? skills : skills.filter((skill) => !/^improve-codebase-architecture\b|^grill-me\b/i.test(skill));
   const skillsText = promptSkills.length ? promptSkills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
@@ -122,22 +123,39 @@ Scope expansion: ${scopeExpansionGuidance}
 Greptile/review: explicit review context + gh/glab/p4 + auth only; else block with missing prereq. No comments/resolution/push/reshelve unless delivery policy allows.
 
 Final contract (JSON-only preferred; keep last):
-DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked"}
+DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked","broadScoutCache":{"repoMap":"compact map","riskAreas":["risk"],"testCommands":["cmd"],"architectureNotes":["note"]}}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 Rules: yes only after validation evidence. continue=green one row + more queued work. blocked=red/evidence missing/unsafe/prereq. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
 
 }
 
-export function promptLaneForState(s: Pick<LoopState, "topic" | "iteration">): PromptLane {
+export function promptLaneForState(s: Pick<LoopState, "topic" | "iteration" | "broadScoutCache">): PromptLane {
   if (!objectiveNeedsBroadScouting(s.topic, PROMPT_OBJECTIVE_MAX)) return "direct";
-  return s.iteration <= 1 ? "broad-first-pass" : "broad-followup";
+  if (s.broadScoutCache && Object.keys(s.broadScoutCache).length > 0) return "broad-followup";
+  return "broad-first-pass";
 }
 
 export function laneTokenBudget(lane: PromptLane): number {
   if (lane === "direct") return LANE_TOKEN_BUDGETS.direct;
   if (lane === "broad-first-pass") return LANE_TOKEN_BUDGETS.broadFirstPass;
   return LANE_TOKEN_BUDGETS.broadFollowup;
+}
+
+function formatBroadScoutCache(cache: LoopState["broadScoutCache"]): string {
+  if (!cache) return "";
+  const parts = [
+    cache.repoMap ? `repoMap=${compactOneLine(cache.repoMap, 160)}` : "",
+    cache.riskAreas?.length ? `riskAreas=${cache.riskAreas.map((item) => compactOneLine(item, 80)).join(" | ")}` : "",
+    cache.testCommands?.length ? `testCommands=${cache.testCommands.join(" | ")}` : "",
+    cache.architectureNotes?.length ? `architectureNotes=${cache.architectureNotes.map((item) => compactOneLine(item, 80)).join(" | ")}` : "",
+  ].filter(Boolean);
+  return parts.join("; ");
+}
+
+function compactOneLine(value: string, maxLength: number): string {
+  const text = value.replace(/\s+/g, " ").trim();
+  return text.length <= maxLength ? text : `${text.slice(0, maxLength - 1)}…`;
 }
 
 function compactPreviousReportJson(report: { decision?: string; validated?: boolean; deliveryEvidence?: unknown }): string {

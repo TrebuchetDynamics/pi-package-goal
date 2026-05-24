@@ -2,6 +2,13 @@ export type LoopPhase = "idle" | "started" | "queued" | "running" | "reported" |
 export type LoopDecision = "continue" | "stop" | "blocked" | "done";
 export type ObjectiveKind = "short" | "oversized" | "provider-noise";
 
+export type BroadScoutCache = {
+  repoMap?: string;
+  riskAreas?: string[];
+  testCommands?: string[];
+  architectureNotes?: string[];
+};
+
 export type DeliveryEvidence = {
   summary?: string;
   blockerState?: string;
@@ -12,6 +19,7 @@ export type DeliveryEvidence = {
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
+  broadScoutCache?: BroadScoutCache;
   reportQualityWarnings?: string[];
 };
 
@@ -34,6 +42,7 @@ export type DevelopmentLoopRun = {
   requiredSkill?: string;
   commandIntent?: string;
   allWorktreeChangesInScope?: boolean;
+  broadScoutCache?: BroadScoutCache;
   phase: LoopPhase;
   lastDecision?: LoopDecision | string;
   lastReason?: string;
@@ -71,6 +80,7 @@ export type LoopEvent = {
   validationCommands?: string[];
   commitHash?: string;
   pushStatus?: string;
+  broadScoutCache?: BroadScoutCache;
   reportQualityWarnings?: string[];
   reportQualityIssueCodes?: string[];
   blockerKind?: string;

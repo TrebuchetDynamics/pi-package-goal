@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import type { DeliveryEvidence, LoopReport } from "../../extensions/development-goal/domain.ts";
+import type { BroadScoutCache, DeliveryEvidence, LoopReport } from "../../extensions/development-goal/domain.ts";
 
 export type GoalDecision = "continue" | "stop" | "blocked" | "done";
 
@@ -244,6 +244,7 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
   const pivotedWorkCompleted = stringListAsText(rawReport.pivotedWorkCompleted) || stringListAsText(rawReport.pivoted_work_completed) || stringListAsText(rawReport.pivotedWork);
   const blockerState = recordBlockerState(rawReport) || blockedWork;
   const nextSteps = stringArrayOrSingleString(rawReport.nextSteps) || stringArrayOrSingleString(rawReport.possibleNextSteps) || stringArrayOrSingleString(rawReport.nextStep) || stringArrayOrSingleString(rawReport.nextActions);
+  const broadScoutCache = broadScoutCacheOrUndefined(rawReport);
   const deliveryEvidence: DeliveryEvidence = {
     ...(summary ? { summary } : {}),
     ...(blockerState ? { blockerState } : {}),
@@ -254,6 +255,7 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
     ...(validationCommands ? { validationCommands } : {}),
     ...(commitHash ? { commitHash } : {}),
     ...(pushStatus ? { pushStatus } : {}),
+    ...(broadScoutCache ? { broadScoutCache } : {}),
   };
   const reportQualityWarnings = validateReportQuality(reportText, undefined, deliveryEvidence, decision);
 
@@ -266,6 +268,23 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
       ...(reportQualityWarnings.length ? { reportQualityWarnings } : {}),
     },
   };
+}
+
+function broadScoutCacheOrUndefined(rawReport: Record<string, unknown>): BroadScoutCache | undefined {
+  const source = rawReport.broadScoutCache && typeof rawReport.broadScoutCache === "object" && !Array.isArray(rawReport.broadScoutCache)
+    ? rawReport.broadScoutCache as Record<string, unknown>
+    : rawReport;
+  const repoMap = stringOrUndefined(source.repoMap);
+  const riskAreas = stringArrayOrSingleString(source.riskAreas);
+  const testCommands = stringArrayOrSingleString(source.testCommands);
+  const architectureNotes = stringArrayOrSingleString(source.architectureNotes);
+  const cache: BroadScoutCache = {
+    ...(repoMap ? { repoMap } : {}),
+    ...(riskAreas ? { riskAreas } : {}),
+    ...(testCommands ? { testCommands } : {}),
+    ...(architectureNotes ? { architectureNotes } : {}),
+  };
+  return Object.keys(cache).length ? cache : undefined;
 }
 
 function parseJsonRecord(value: string): Record<string, unknown> | undefined {
