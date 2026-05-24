@@ -53,6 +53,15 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/greptileai-skills-LICENSE`
 
+## openclaw/agent-skills
+
+- Source: https://github.com/openclaw/agent-skills
+- Snapshot inspected: `c06e64114b3e71f3aefa1f29f5fff6a43f040888`
+- Bundled paths:
+  - `skills/autoreview/`
+- License: MIT
+- Full license copy: `licenses/openclaw-agent-skills-LICENSE`
+
 ## tolibear/goalbuddy
 
 - Source: https://github.com/tolibear/goalbuddy

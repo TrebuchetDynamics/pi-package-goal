@@ -358,6 +358,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `caveman` — ultra-compressed status communication.
 - `write-a-skill` — skill authoring guidance.
 - `greploop` — Greptile review goal for PR/MR/CL cleanup when review automation, required CLI auth, and git delivery are intentionally enabled.
+- `autoreview` — structured closeout review workflow using an available autoreview helper for Codex/Claude/second-model review.
 
 ### Web and browser
 

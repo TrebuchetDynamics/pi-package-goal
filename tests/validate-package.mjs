@@ -28,6 +28,7 @@ const expectedSkills = [
   "caveman",
   "write-a-skill",
   "greploop",
+  "autoreview",
   "pi-ecosystem-scout",
   "pi-extensions-helper",
 ];
@@ -3431,6 +3432,8 @@ async function testNoticesAndDocs() {
   assert.doesNotMatch(read("skills/triage/SKILL.md"), /setup-matt-pocock-skills/);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review goal/);
+  assert.match(readme, /`autoreview`/);
+  assert.match(readme, /structured closeout review/);
   assert.match(readme, /`lgtm`/);
   assert.match(readme, /`pi-extensions-helper`/);
   const piExtensionsHelper = read("skills/pi-extensions-helper/SKILL.md");
@@ -3465,6 +3468,8 @@ async function testNoticesAndDocs() {
   assert.match(notices, /qualisero\/awesome-pi-agent/);
   assert.match(notices, /greptileai\/skills/);
   assert.match(notices, /skills\/greploop\//);
+  assert.match(notices, /openclaw\/agent-skills/);
+  assert.match(notices, /skills\/autoreview\//);
   assert.match(notices, /tolibear\/goalbuddy/);
   assert.match(notices, /no GoalBuddy code is bundled/);
 
@@ -3472,6 +3477,7 @@ async function testNoticesAndDocs() {
   assert.ok(exists("licenses/mattpocock-skills-LICENSE"));
   assert.ok(exists("licenses/qualisero-awesome-pi-agent-LICENSE"));
   assert.ok(exists("licenses/greptileai-skills-LICENSE"));
+  assert.ok(exists("licenses/openclaw-agent-skills-LICENSE"));
   assert.ok(exists("licenses/tolibear-goalbuddy-LICENSE"));
 }
 
