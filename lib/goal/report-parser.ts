@@ -492,9 +492,27 @@ function addInlineListItems(target: string[], value: string | undefined, clean: 
 }
 
 function cleanChangedFileEvidence(value: string): string | undefined {
+  const leadingPath = cleanLeadingChangedFilePath(value);
+  if (leadingPath) return leadingPath;
   const text = cleanEvidenceText(value);
   if (!text) return undefined;
   return text.split(/\s+(?:[-–—]|\()\s*/)[0]?.trim() || undefined;
+}
+
+function cleanLeadingChangedFilePath(value: string): string | undefined {
+  const trimmed = value.replace(/^\[[ x-]\]\s*/i, "").trim();
+  const leadingCode = trimmed.match(/^`([^`]+)`/);
+  if (leadingCode) return leadingCode[1].trim() || undefined;
+
+  const candidate = trimmed.split(/\s+(?:[-–—]|\()\s*/)[0]?.replace(/^`|`$/g, "").trim();
+  if (!candidate) return undefined;
+  if (looksLikeChangedFileEvidenceToken(candidate) || isNoChangedFilesEvidence(candidate)) return candidate;
+  return undefined;
+}
+
+function looksLikeChangedFileEvidenceToken(value: string): boolean {
+  if (/[\\/]/.test(value)) return true;
+  return /\.[A-Za-z0-9][A-Za-z0-9_-]{0,9}$/.test(value);
 }
 
 function cleanValidationEvidence(value: string): string | undefined {

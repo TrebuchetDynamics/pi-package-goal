@@ -125,6 +125,21 @@ assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   validationCommands: ["npm test", "git diff --check"],
 });
 
+const reportWithCodeSpansInChangedDescriptions = [
+  "Scope: /repo with adapter generic-git.",
+  "Changed files:",
+  "- /repo/workspace/workspace.go — moved implementation into the `workspace` package.",
+  "- /repo/architecture_layout_test.go — removed root `.go` test coverage.",
+  "Blocked Work: none.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"continue","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/workspace/workspace.go","/repo/architecture_layout_test.go"],"nextSteps":["Keep going"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: continue",
+].join("\n");
+
+assert.deepEqual(parserMod.validateReportQualityIssues(reportWithCodeSpansInChangedDescriptions), []);
+assert.equal(parseOk(reportWithCodeSpansInChangedDescriptions).quality.valid, true);
+
 const malformedReportText = [
   "Scope: /repo with adapter generic-git.",
   "Changed files:",
