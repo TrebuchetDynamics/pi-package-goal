@@ -57,6 +57,8 @@ The package also registers `/understand`. On first use it prompts to clone `Lum1
 /understand agent
 /understand agent codebase-map-understand.md
 /understand agent @frontend
+/understand compare ../project-a ../project-b
+/understand-compare @project-a @project-b
 /understand explain src/auth/login.ts
 /understand onboard
 /understand domain
@@ -67,9 +69,9 @@ The package also registers `/understand`. On first use it prompts to clone `Lum1
 ## Included extension
 
 - `/understand` — bridge command that installs/updates the upstream Understand-Anything checkout and dispatches to its real skill workflows.
-- Direct aliases: `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`.
+- Direct aliases: `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`, `/understand-compare`.
 
-The extension honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults. `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default for future LLM agents. `/understand agent @frontend` writes `frontend-codebase-map-understand.md`.
+The extension honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults. `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default for future LLM agents. `/understand agent @frontend` writes `frontend-codebase-map-understand.md`. `/understand compare <folder-a> <folder-b>` requires both folders to already have `.understand-anything/knowledge-graph.json`, then writes `<folder-a>-vs-<folder-b>-understand-compare.md` for porting or pattern borrowing. Compare is deterministic file generation only; ask the LLM to reason over the generated file when you want analysis.
 
 ## Included skills
 

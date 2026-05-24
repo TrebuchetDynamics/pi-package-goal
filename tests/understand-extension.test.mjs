@@ -1,5 +1,15 @@
 import assert from "node:assert/strict";
-import { buildSkillInvocation, generateAgentMapMarkdown, getUnderstandPaths, normalizeAgentOutputArg, parseUnderstandCommand, splitFirstArg } from "../extensions/understand.js";
+import {
+  buildSkillInvocation,
+  generateAgentMapMarkdown,
+  generateCompareMarkdown,
+  getUnderstandPaths,
+  normalizeAgentOutputArg,
+  parseCompareArgs,
+  parseUnderstandCommand,
+  splitArgs,
+  splitFirstArg,
+} from "../extensions/understand.js";
 
 assert.deepEqual(splitFirstArg(" chat how does auth work? "), {
   first: "chat",
@@ -32,6 +42,24 @@ assert.deepEqual(parseUnderstandCommand("understand", "update"), {
 assert.deepEqual(parseUnderstandCommand("understand", "agent and codebase-map-understand.md"), {
   type: "agent",
   args: "and codebase-map-understand.md",
+});
+
+assert.deepEqual(parseUnderstandCommand("understand", "compare @project-a @project-b"), {
+  type: "compare",
+  args: "@project-a @project-b",
+});
+
+assert.deepEqual(parseUnderstandCommand("understand-compare", "@project-a @project-b"), {
+  type: "compare",
+  args: "@project-a @project-b",
+});
+
+assert.deepEqual(splitArgs("'project a' \"project b\" out.md"), ["project a", "project b", "out.md"]);
+assert.deepEqual(parseCompareArgs("@project-a @project-b"), {
+  ok: true,
+  folderA: "@project-a",
+  folderB: "@project-b",
+  output: "project-a-vs-project-b-understand-compare.md",
 });
 
 assert.equal(normalizeAgentOutputArg("@frontend"), "frontend-codebase-map-understand.md");
@@ -78,5 +106,36 @@ assert.match(markdown, /# Codebase Map from Understand-Anything/);
 assert.match(markdown, /Demo project/);
 assert.match(markdown, /codebase-map-understand\.md/);
 assert.match(markdown, /Most important \/ complex nodes/);
+
+const compareMarkdown = generateCompareMarkdown({
+  project: {
+    name: "Source",
+    description: "Source project",
+    languages: ["TypeScript"],
+    frameworks: ["Pi"],
+  },
+  nodes: [
+    { id: "file:src/index.ts", type: "file", name: "src/index.ts", filePath: "src/index.ts", summary: "Main entrypoint", tags: ["entry"], complexity: "complex" },
+  ],
+  edges: [{ source: "file:src/index.ts", target: "file:src/index.ts", type: "routes", weight: 0.7 }],
+  layers: [{ id: "app", name: "App", description: "Application layer", nodeIds: ["file:src/index.ts"] }],
+  tour: [],
+}, {
+  project: {
+    name: "Target",
+    description: "Target project",
+    languages: ["Python"],
+    frameworks: ["FastAPI"],
+  },
+  nodes: [
+    { id: "file:app.py", type: "file", name: "app.py", filePath: "app.py", summary: "App entrypoint", tags: ["entry"], complexity: "moderate" },
+  ],
+  edges: [{ source: "file:app.py", target: "file:app.py", type: "routes", weight: 0.7 }],
+  layers: [{ id: "api", name: "API", description: "API layer", nodeIds: ["file:app.py"] }],
+  tour: [],
+}, { cwd: "/repo", folderA: "/repo/source", folderB: "/repo/target", outputPath: "/repo/source-vs-target-understand-compare.md" });
+assert.match(compareMarkdown, /Understand-Anything Compare: Source vs Target/);
+assert.match(compareMarkdown, /Patterns to borrow from Source/);
+assert.match(compareMarkdown, /source-vs-target-understand-compare\.md/);
 
 console.log("understand-extension ok");

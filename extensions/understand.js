@@ -25,7 +25,8 @@ const SUBCOMMAND_TO_SKILL = new Map([
   ["knowledge", "understand-knowledge"],
 ]);
 
-const META_COMMANDS = new Set(["help", "install", "status", "update", "agent"]);
+const META_COMMANDS = new Set(["help", "install", "status", "update", "agent", "compare"]);
+const DIRECT_META_COMMANDS = new Set(["understand-compare"]);
 
 export function getUnderstandPaths(env = process.env, home = homedir()) {
   const repoDir = env.UA_DIR?.trim() || join(home, ".understand-anything", "repo");
@@ -44,6 +45,8 @@ export function splitFirstArg(args = "") {
 }
 
 export function parseUnderstandCommand(commandName, args = "") {
+  if (DIRECT_META_COMMANDS.has(commandName)) return { type: "compare", args: args.trim() };
+
   if (commandName !== "understand") {
     if (!SKILL_NAMES.has(commandName)) throw new Error(`Unknown understand command: ${commandName}`);
     return { type: "skill", skillName: commandName, args: args.trim() };
@@ -62,6 +65,35 @@ export function parseUnderstandCommand(commandName, args = "") {
   }
 
   return { type: "skill", skillName: "understand", args: args.trim() };
+}
+
+export function splitArgs(args = "") {
+  const tokens = [];
+  const pattern = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g;
+  for (const match of args.matchAll(pattern)) {
+    tokens.push((match[1] ?? match[2] ?? match[3] ?? "").replace(/\\(["'\\])/g, "$1"));
+  }
+  return tokens;
+}
+
+function folderBasename(folder) {
+  const cleaned = folder.replace(/^@/, "").replace(/[\\/]+$/, "").trim();
+  return basename(cleaned) || "project";
+}
+
+export function parseCompareArgs(args = "") {
+  const tokens = splitArgs(args);
+  if (tokens.length < 2) {
+    return { ok: false, message: "Usage: /understand compare <folder-a> <folder-b> [output.md]" };
+  }
+
+  const [folderA, folderB, output] = tokens;
+  return {
+    ok: true,
+    folderA,
+    folderB,
+    output: output || `${folderBasename(folderA)}-vs-${folderBasename(folderB)}-understand-compare.md`,
+  };
 }
 
 export function buildSkillInvocation({ skillName, skillPath, skillContent, args = "" }) {
@@ -144,6 +176,16 @@ function formatAnalyzedAt(value) {
   if (!value) return "unknown";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
+}
+
+function graphParts(graph) {
+  return {
+    nodes: Array.isArray(graph?.nodes) ? graph.nodes : [],
+    edges: Array.isArray(graph?.edges) ? graph.edges : [],
+    layers: Array.isArray(graph?.layers) ? graph.layers : [],
+    tour: Array.isArray(graph?.tour) ? graph.tour : [],
+    project: graph?.project ?? {},
+  };
 }
 
 export function generateAgentMapMarkdown(graph, { cwd = process.cwd(), graphPath = ".understand-anything/knowledge-graph.json", outputPath = "codebase-map-understand.md" } = {}) {
@@ -230,6 +272,136 @@ export function generateAgentMapMarkdown(graph, { cwd = process.cwd(), graphPath
     "- Prefer this Markdown file for quick orientation.",
     "- Use the full JSON graph when you need exact node IDs, line ranges, or relationship details.",
     "- Re-run `/understand` after major code changes, then re-run `/understand agent` to refresh this file.",
+    "",
+  ];
+
+  return `${lines.join("\n").replace(/\n{3,}/g, "\n\n")}\n`;
+}
+
+function topCounts(items, keyFn, max = 10) {
+  return countBy(items, keyFn).slice(0, max);
+}
+
+function sharedValues(aValues = [], bValues = []) {
+  const bSet = new Set(bValues.map((value) => String(value).toLowerCase()));
+  return aValues.filter((value) => bSet.has(String(value).toLowerCase()));
+}
+
+function uniqueValues(values = [], otherValues = []) {
+  const otherSet = new Set(otherValues.map((value) => String(value).toLowerCase()));
+  return values.filter((value) => !otherSet.has(String(value).toLowerCase()));
+}
+
+function similarNodeNames(aNodes, bNodes, max = 20) {
+  const bNames = new Set(bNodes.map((node) => String(node.name ?? "").toLowerCase()).filter(Boolean));
+  return aNodes
+    .filter((node) => bNames.has(String(node.name ?? "").toLowerCase()))
+    .slice(0, max)
+    .map((node) => node.name);
+}
+
+function formatCountList(items) {
+  return items.length ? items.map(([name, count]) => `- ${name}: ${count}`).join("\n") : "- None";
+}
+
+function formatPatternCandidates(nodes, max = 12) {
+  const candidates = sortImportantNodes(nodes.filter((node) => node.complexity === "complex" || node.type === "concept" || node.type === "module"));
+  return formatNodeList(candidates, process.cwd(), max);
+}
+
+export function generateCompareMarkdown(graphA, graphB, { cwd = process.cwd(), folderA = "project-a", folderB = "project-b", outputPath = "understand-compare.md" } = {}) {
+  const a = graphParts(graphA);
+  const b = graphParts(graphB);
+  const aName = a.project.name ?? folderBasename(folderA);
+  const bName = b.project.name ?? folderBasename(folderB);
+  const outputRel = isAbsolute(outputPath) ? relative(cwd, outputPath) || outputPath : outputPath;
+  const sharedLanguages = sharedValues(a.project.languages, b.project.languages);
+  const sharedFrameworks = sharedValues(a.project.frameworks, b.project.frameworks);
+  const sharedNames = similarNodeNames(a.nodes, b.nodes, 25);
+
+  const lines = [
+    `# Understand-Anything Compare: ${aName} vs ${bName}`,
+    "",
+    "This file compares two Understand-Anything knowledge graphs for porting, rewrite planning, and pattern borrowing.",
+    "",
+    "## Inputs",
+    "",
+    `- **A:** ${aName} — \`${folderA}\``,
+    `- **B:** ${bName} — \`${folderB}\``,
+    `- **This file:** \`${outputRel}\``,
+    "",
+    "## Project summaries",
+    "",
+    `- **${aName}:** ${truncateText(a.project.description ?? "No description", 500)}`,
+    `- **${bName}:** ${truncateText(b.project.description ?? "No description", 500)}`,
+    "",
+    "## Size and shape",
+    "",
+    tableRow(["Metric", aName, bName]),
+    tableRow(["---", "---:", "---:"]),
+    tableRow(["Nodes", a.nodes.length, b.nodes.length]),
+    tableRow(["Edges", a.edges.length, b.edges.length]),
+    tableRow(["Layers", a.layers.length, b.layers.length]),
+    tableRow(["Tour steps", a.tour.length, b.tour.length]),
+    "",
+    "## Languages and frameworks",
+    "",
+    `- **Shared languages:** ${sharedLanguages.join(", ") || "none"}`,
+    `- **Only ${aName}:** ${uniqueValues(a.project.languages, b.project.languages).join(", ") || "none"}`,
+    `- **Only ${bName}:** ${uniqueValues(b.project.languages, a.project.languages).join(", ") || "none"}`,
+    `- **Shared frameworks:** ${sharedFrameworks.join(", ") || "none"}`,
+    `- **Frameworks only ${aName}:** ${uniqueValues(a.project.frameworks, b.project.frameworks).join(", ") || "none"}`,
+    `- **Frameworks only ${bName}:** ${uniqueValues(b.project.frameworks, a.project.frameworks).join(", ") || "none"}`,
+    "",
+    "## Node type mix",
+    "",
+    `### ${aName}`,
+    "",
+    formatCountList(topCounts(a.nodes, (node) => node.type)),
+    "",
+    `### ${bName}`,
+    "",
+    formatCountList(topCounts(b.nodes, (node) => node.type)),
+    "",
+    "## Relationship mix",
+    "",
+    `### ${aName}`,
+    "",
+    formatCountList(topCounts(a.edges, (edge) => edge.type)),
+    "",
+    `### ${bName}`,
+    "",
+    formatCountList(topCounts(b.edges, (edge) => edge.type)),
+    "",
+    "## Architecture layers",
+    "",
+    `### ${aName}`,
+    "",
+    a.layers.length ? a.layers.map((layer) => `- **${layer.name ?? layer.id}** (${layer.nodeIds?.length ?? 0} nodes): ${truncateText(layer.description, 220)}`).join("\n") : "- No layers found.",
+    "",
+    `### ${bName}`,
+    "",
+    b.layers.length ? b.layers.map((layer) => `- **${layer.name ?? layer.id}** (${layer.nodeIds?.length ?? 0} nodes): ${truncateText(layer.description, 220)}`).join("\n") : "- No layers found.",
+    "",
+    "## Shared vocabulary / likely mapping points",
+    "",
+    sharedNames.length ? sharedNames.map((name) => `- ${name}`).join("\n") : "- No exact shared node names found. Compare layers and relationship types instead.",
+    "",
+    `## Patterns to borrow from ${aName}`,
+    "",
+    formatPatternCandidates(a.nodes),
+    "",
+    `## Patterns to borrow from ${bName}`,
+    "",
+    formatPatternCandidates(b.nodes),
+    "",
+    "## Porting checklist for agents",
+    "",
+    `- Map ${aName} layers to ${bName} layers before translating files one by one.`,
+    "- Compare relationship mix: many `routes`, `configures`, or `depends_on` edges identify framework seams.",
+    "- Start with shared node names and entrypoints; then port or steal patterns around those nodes.",
+    "- Use each project's full `.understand-anything/knowledge-graph.json` for exact IDs and line ranges.",
+    "- Re-run `/understand <folder>` for both projects after large changes, then regenerate this compare file.",
     "",
   ];
 
@@ -333,11 +505,12 @@ function helpText(paths = getUnderstandPaths()) {
     `  /understand chat <question>       Ask about the graph\n` +
     `  /understand diff                  Analyze current changes\n` +
     `  /understand agent [output.md]     Write an agent-readable Markdown map\n` +
+    `  /understand compare <a> <b> [out] Compare two folders with existing graphs\n` +
     `  /understand explain <target>      Explain a file/function\n` +
     `  /understand onboard               Generate onboarding guide\n` +
     `  /understand domain                Extract business domain graph\n` +
     `  /understand knowledge <wiki>      Analyze a knowledge base\n\n` +
-    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge.\n\n` +
+    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-compare.\n\n` +
     `Management:\n` +
     `  /understand install               Clone upstream Understand-Anything\n` +
     `  /understand update                git pull --ff-only upstream checkout\n` +
@@ -385,10 +558,58 @@ async function writeAgentMap(ctx, args) {
   };
 }
 
+function resolveFolderArg(cwd, folder) {
+  const cleaned = folder.replace(/^@/, "");
+  return isAbsolute(cleaned) ? cleaned : resolve(cwd, cleaned);
+}
+
+async function readGraphForFolder(folderPath) {
+  const graphPath = resolve(folderPath, ".understand-anything", "knowledge-graph.json");
+  return { graphPath, graph: JSON.parse(await readFile(graphPath, "utf8")) };
+}
+
+async function writeCompareMap(ctx, args) {
+  const parsed = parseCompareArgs(args);
+  if (!parsed.ok) return { written: false, message: parsed.message };
+
+  const folderA = resolveFolderArg(ctx.cwd, parsed.folderA);
+  const folderB = resolveFolderArg(ctx.cwd, parsed.folderB);
+  const outputPath = isAbsolute(parsed.output) ? parsed.output : resolve(ctx.cwd, parsed.output);
+
+  let a;
+  let b;
+  try {
+    [a, b] = await Promise.all([readGraphForFolder(folderA), readGraphForFolder(folderB)]);
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return {
+        written: false,
+        message: `Missing Understand-Anything graph. Run /understand <folder> for both inputs first. Checked ${folderA}/.understand-anything/knowledge-graph.json and ${folderB}/.understand-anything/knowledge-graph.json.`,
+      };
+    }
+    throw error;
+  }
+
+  const markdown = generateCompareMarkdown(a.graph, b.graph, { cwd: ctx.cwd, folderA, folderB, outputPath });
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, markdown, "utf8");
+  return {
+    written: true,
+    outputPath,
+    folderA,
+    folderB,
+    graphA: a.graphPath,
+    graphB: b.graphPath,
+    message: `Wrote Understand-Anything compare map to ${outputPath}`,
+  };
+}
+
 function registerUnderstandCommand(pi, name, paths) {
   const description = name === "understand"
     ? "Run Understand-Anything analysis and related graph workflows"
-    : `Run the upstream ${name} Understand-Anything workflow`;
+    : name === "understand-compare"
+      ? "Compare two folders with existing Understand-Anything graphs"
+      : `Run the upstream ${name} Understand-Anything workflow`;
 
   pi.registerCommand(name, {
     description,
@@ -423,6 +644,12 @@ function registerUnderstandCommand(pi, name, paths) {
         return;
       }
 
+      if (parsed.type === "compare") {
+        const result = await writeCompareMap(ctx, parsed.args);
+        await postMessage(pi, result.message, result);
+        return;
+      }
+
       await sendSkillInvocation(pi, ctx, paths, parsed.skillName, parsed.args);
     },
   });
@@ -437,6 +664,7 @@ export default function understandAnythingExtension(pi) {
   });
 
   registerUnderstandCommand(pi, "understand", paths);
+  registerUnderstandCommand(pi, "understand-compare", paths);
   for (const name of SKILL_NAMES) {
     if (name !== "understand") registerUnderstandCommand(pi, name, paths);
   }
