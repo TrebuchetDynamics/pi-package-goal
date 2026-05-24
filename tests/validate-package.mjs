@@ -465,6 +465,7 @@ async function testExtensionFolderArchitecture() {
     "final-report-gate.ts",
     "identity.ts",
     "init-config.ts",
+    "log-analysis.ts",
     "log-record.ts",
     "logger.ts",
     "main.ts",

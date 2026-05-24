@@ -32,6 +32,10 @@ _Avoid_: Type-only identity checks, unchecked plain objects
 The Goal Identity for Development Goal.
 _Avoid_: Development loop identity, dev-loop branding
 
+**Goal Log Analysis**:
+A Development Goal module that reads one or more goal `logs.jsonl` files and turns raw Goal Run events into health counters, top blockers, evidence summaries, and recommendations. Goal Log Analysis owns log discovery, parsing accumulation, health report formatting, JSON output, and optional HTML report generation behind one interface so command handling does not know every counter or event-specific rule.
+_Avoid_: Inline analyze-logs helpers, scattered log dashboard counters, command-owned health report formatting
+
 **Migration Policy**:
 The explicit rule for how a Development Goal handles old public names, old persisted paths, old status keys, and old final markers after an identity change. The current Development Goal Migration Policy is a hard break: old names, paths, markers, and aliases are removed rather than redirected.
 _Avoid_: Ad hoc backwards compatibility, silent fallback, scattered aliases
