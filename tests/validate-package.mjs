@@ -443,6 +443,54 @@ async function testPiCoreDependencies() {
   assert.deepEqual(collectPiCoreDependencyIssues(root, readJson("package.json")), []);
 }
 
+async function testExtensionFolderArchitecture() {
+  const extensionRoot = path.join(root, "extensions");
+  const rootModules = fs.readdirSync(extensionRoot)
+    .filter((name) => name.endsWith(".ts"))
+    .sort();
+  assert.deepEqual(rootModules, ["development-goal.ts", "e2e-goal.ts"], "extension root must contain only public goal entrypoints");
+
+  const expectedPrivateModules = [
+    "adapter.ts",
+    "blocker.ts",
+    "budget.ts",
+    "command.ts",
+    "compaction.ts",
+    "config.ts",
+    "domain.ts",
+    "files.ts",
+    "final-report-gate.ts",
+    "identity.ts",
+    "init-config.ts",
+    "log-record.ts",
+    "logger.ts",
+    "main.ts",
+    "prompts.ts",
+    "provider-error.ts",
+    "report-parser.ts",
+    "report-record.ts",
+    "runaway.ts",
+    "runtime.ts",
+    "scope-expansion.ts",
+    "state.ts",
+    "status.ts",
+    "steering.ts",
+    "terminal-audit.ts",
+    "tool-safety.ts",
+    "topic.ts",
+    "validation-receipts.ts",
+    "values.ts",
+    "worktree-risk.ts",
+  ];
+  for (const file of expectedPrivateModules) {
+    assert.ok(exists(path.join("extensions", "development-goal", file)), `missing Development Goal private module ${file}`);
+  }
+
+  for (const file of ["identity.ts", "main.ts"]) {
+    assert.ok(exists(path.join("extensions", "e2e-goal", file)), `missing E2E Goal private module ${file}`);
+  }
+}
+
 async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(exists("extensions/development-goal.ts"), "development-goal extension missing");
   assert.ok(exists("extensions/development-goal.ts"), "legacy development-goal extension entrypoint missing");
@@ -484,7 +532,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(identityMod.validateGoalIdentity({ ...debugGoalIdentity, statusKey: "" }, { mode: "production", warn: (message) => identityWarnings.push(message) }), undefined);
   assert.match(identityWarnings[0], /GoalIdentity\.statusKey/);
 
-  const developmentGoalIdentityMod = await jiti.import(path.join(root, "extensions", "development-goal-identity.ts"));
+  const developmentGoalIdentityMod = await jiti.import(path.join(root, "extensions", "development-goal", "identity.ts"));
   assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.slug, "development-goal");
   assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.command.name, "development-goal");
   assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.stateType, "development-goal-state");
@@ -494,13 +542,13 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.markers.decision, "DEV_GOAL_DECISION");
   assert.equal(developmentGoalIdentityMod.DEVELOPMENT_GOAL_IDENTITY.migrationPolicy.mode, "hard-break");
 
-  const e2eGoalIdentityMod = await jiti.import(path.join(root, "extensions", "e2e-goal-identity.ts"));
+  const e2eGoalIdentityMod = await jiti.import(path.join(root, "extensions", "e2e-goal", "identity.ts"));
   assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.slug, "e2e-goal");
   assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.command.name, "e2e-goal");
   assert.deepEqual(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.command.aliases, ["e2e"]);
   assert.equal(e2eGoalIdentityMod.E2E_GOAL_IDENTITY.markers.validated, "E2E_GOAL_VALIDATED");
 
-  const logRecordMod = await jiti.import(path.join(root, "extensions", "development-goal-log-record.ts"));
+  const logRecordMod = await jiti.import(path.join(root, "extensions", "development-goal", "log-record.ts"));
   assert.equal(typeof logRecordMod.parseLoopLogRecord, "function");
   assert.deepEqual(logRecordMod.parseLoopLogRecord('{"event":"loop_start","timestamp":"2026-05-22T21:00:00.000Z","run_id":"legacy-run"}'), {
     event: "loop_start",
@@ -517,7 +565,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(logRecordMod.recordDecision({ event: "done" }, "loop_finished"), "done");
   assert.equal(logRecordMod.recordReason({ type: "blocked" }, "loop_blocked"), "blocked");
 
-  const reportRecordMod = await jiti.import(path.join(root, "extensions", "development-goal-report-record.ts"));
+  const reportRecordMod = await jiti.import(path.join(root, "extensions", "development-goal", "report-record.ts"));
   assert.equal(reportRecordMod.recordHasDeliveryEvidence({ changedFiles: ["README.md"] }), true);
   assert.equal(reportRecordMod.recordHasDeliveryEvidence({ blockedWork: "full validation" }), true);
   assert.deepEqual(reportRecordMod.recordChangedFiles({ files: ["src/a.ts", " ", 42] }), ["src/a.ts"]);
@@ -541,7 +589,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(reportRecordMod.recordCiGreen({ ci_gate: "missing_CI_GREEN_yes" }, "iteration_result"), false);
   assert.equal(reportRecordMod.recordCiGreen({}, "ci_gate_missing"), false);
 
-  const statusMod = await jiti.import(path.join(root, "extensions", "development-goal-status.ts"));
+  const statusMod = await jiti.import(path.join(root, "extensions", "development-goal", "status.ts"));
   const statusTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-status-"));
   const statusLogPath = path.join(statusTemp, ".pi", "development-goal", "logs.jsonl");
   fs.mkdirSync(path.dirname(statusLogPath), { recursive: true });
@@ -567,7 +615,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(statusMod.readRecentReportRecords(statusLogPath).map((record) => record.iteration), [2, 1]);
   assert.deepEqual(statusMod.statusWidgetLines(statusState, statusTemp), ["last loop_finished · 20:05:00 · i2 · blocker none · log .pi/development-goal/logs.jsonl"]);
 
-  const loggerMod = await jiti.import(path.join(root, "extensions", "development-goal-logger.ts"));
+  const loggerMod = await jiti.import(path.join(root, "extensions", "development-goal", "logger.ts"));
   const loggerTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-logger-"));
   const loggerLogPath = path.join(loggerTemp, ".pi", "development-goal", "logs.jsonl");
   const loggerState = { adapterName: "generic-git", runId: "dl-test", topic: "ship logs Error: Codex error: {code:context_length_exceeded}", iteration: 2, maxIterations: 5, phase: "running", logPath: loggerLogPath };
@@ -584,7 +632,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(longTopicFields.topicTruncated, true);
   assert.equal(longTopicFields.topicLength, 605);
 
-  const loopStateMod = await jiti.import(path.join(root, "extensions", "development-goal-state.ts"));
+  const loopStateMod = await jiti.import(path.join(root, "extensions", "development-goal", "state.ts"));
   assert.equal(loopStateMod.CUSTOM_STATE_TYPE, "development-goal-state");
   const inactiveLoopState = loopStateMod.inactiveState("custom/logs.jsonl", 7);
   assert.deepEqual(inactiveLoopState, {
@@ -612,7 +660,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     { type: "custom", customType: "development-goal-state", data: validLoopState },
   ]), validLoopState);
 
-  const fileMod = await jiti.import(path.join(root, "extensions", "development-goal-files.ts"));
+  const fileMod = await jiti.import(path.join(root, "extensions", "development-goal", "files.ts"));
   const fileTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-files-"));
   const nestedJsonPath = path.join(fileTemp, "nested", "state.json");
   assert.equal(fileMod.absoluteLogPath(fileTemp, ".pi/logs.jsonl"), path.join(fileTemp, ".pi", "logs.jsonl"));
@@ -629,7 +677,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(fileMod.contextCwd({ sessionManager: { getCwd: () => fileTemp }, cwd: "ignored" }), fileTemp);
   assert.equal(fileMod.contextCwd({ cwd: fileTemp }), fileTemp);
 
-  const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-goal-provider-error.ts"));
+  const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-goal", "provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
   assert.equal(providerErrorMod.isTransportProviderError("Error: WebSocket error"), true);
@@ -645,7 +693,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(providerErrorMod.recordProviderErrorCategory({ providerError: "WebSocket error" }, "provider_error", "<missing code>"), "transport");
   assert.equal(providerErrorMod.recordProviderErrorCategory({ provider_error: { message: "too many requests" } }, "provider_error", "429"), "rate-limit");
 
-  const topicMod = await jiti.import(path.join(root, "extensions", "development-goal-topic.ts"));
+  const topicMod = await jiti.import(path.join(root, "extensions", "development-goal", "topic.ts"));
   assert.equal(topicMod.compactTopic("abcdefghij", 6), "abcde…");
   assert.equal(topicMod.promptObjectiveText("abcdefghij", 6), "abcde…");
   assert.equal(topicMod.objectiveText("line one\nline two", 600), "line one line two");
@@ -660,7 +708,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   });
   assert.match(topicMod.objectiveIntakeSummary("abcdefghij", 6), /^oversized objective · length 10 · hash [0-9a-f]{12}$/);
 
-  const compactionMod = await jiti.import(path.join(root, "extensions", "development-goal-compaction.ts"));
+  const compactionMod = await jiti.import(path.join(root, "extensions", "development-goal", "compaction.ts"));
   assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 120000, contextWindow: 300000 }) }), false);
   assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 220000, maxTokens: 300000 }) }), true);
   assert.equal(compactionMod.shouldCompactBeforeNextIteration({ getContextUsage: () => ({ tokens: 300000, contextWindow: 1000000 }) }), true);
@@ -668,7 +716,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(compactionMod.contextUsageReason({}), "tokens=unknown");
   assert.equal(compactionMod.compactionReason(42), "tokens_before=42");
   assert.equal(compactionMod.compactionReason(), "tokens_before=unknown");
-  const budgetMod = await jiti.import(path.join(root, "extensions", "development-goal-budget.ts"));
+  const budgetMod = await jiti.import(path.join(root, "extensions", "development-goal", "budget.ts"));
   assert.equal(budgetMod.formatElapsedDuration(0), "0s");
   assert.equal(budgetMod.formatElapsedDuration(90_000), "1m");
   assert.equal(budgetMod.formatElapsedDuration(65 * 60_000), "1h 5m");
@@ -678,7 +726,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(budgetMod.formatTokenBudget(98500), "98.5K");
   assert.equal(budgetMod.formatTokenBudget(undefined), "none");
   assert.equal(budgetMod.loopBudgetSummary({ startedAt: "2026-05-22T20:00:00.000Z", iteration: 2, maxIterations: 5, tokenBudget: 98500 }, Date.parse("2026-05-22T20:01:30.000Z")), "elapsed 1m; iterations 2/5; remaining 3; token budget 98.5K");
-  const runawayMod = await jiti.import(path.join(root, "extensions", "development-goal-runaway.ts"));
+  const runawayMod = await jiti.import(path.join(root, "extensions", "development-goal", "runaway.ts"));
   assert.equal(runawayMod.DEFAULT_MAX_AUTO_CONTINUES, 500);
   assert.equal(runawayMod.autoContinueLimitFromEnv({ PI_DEV_GOAL_MAX_AUTO_CONTINUES: "2" }), 2);
   assert.equal(runawayMod.autoContinueLimitFromEnv({ PI_DEV_GOAL_MAX_AUTO_CONTINUES: "0" }), 500);
@@ -688,7 +736,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=120000 context_window=300000" }, "compaction_before_next_iteration"), true);
   assert.equal(compactionMod.isPrematureCompactionRecord({ reason: "tokens=220000 context_window=300000" }, "compaction_before_next_iteration"), false);
 
-  const commandMod = await jiti.import(path.join(root, "extensions", "development-goal-command.ts"));
+  const commandMod = await jiti.import(path.join(root, "extensions", "development-goal", "command.ts"));
   assert.deepEqual(commandMod.tokenizeArgs("restart --validation 'npm test' topic words"), ["restart", "--validation", "npm test", "topic", "words"]);
   assert.deepEqual(commandMod.completeCommandArgs("st"), [
     { value: "status", label: "status" },
@@ -728,7 +776,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     stopConditions: [],
   });
   const misspelledArchitectureCommand = ["improve-codebase-achi", "tecture"].join("");
-  assert.equal(read("extensions/development-goal-command.ts").includes(misspelledArchitectureCommand), false);
+  assert.equal(read("extensions/development-goal/command.ts").includes(misspelledArchitectureCommand), false);
   assert.doesNotMatch(read("README.md"), /\/development-goal start/);
   assert.match(read("README.md"), /\/development-goal git-commit-push/);
   assert.match(read("README.md"), /\/development-goal improve-codebase-architecture/);
@@ -781,7 +829,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     label: "last 2h",
   });
 
-  const configMod = await jiti.import(path.join(root, "extensions", "development-goal-config.ts"));
+  const configMod = await jiti.import(path.join(root, "extensions", "development-goal", "config.ts"));
   assert.deepEqual(configMod.normalizeConfig({
     adapter: { value: "generic-git" },
     defaultTopic: " ship it ",
@@ -829,7 +877,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   fs.writeFileSync(configPath, JSON.stringify("not-object"), "utf8");
   assert.deepEqual(configMod.loadProjectConfig(configPath), { error: "config is not a JSON object" });
 
-  const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal-adapter.ts"));
+  const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal", "adapter.ts"));
   assert.deepEqual(adapterMod.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
   assert.deepEqual(adapterMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
   const genericAdapter = adapterMod.getAdapterByName("generic-git");
@@ -866,7 +914,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(resolvedAdapter.config.skills.includes("writing-shape"));
   assert.ok(resolvedAdapter.config.skills.includes("improve-codebase-architecture"));
 
-  const initConfigMod = await jiti.import(path.join(root, "extensions", "development-goal-init-config.ts"));
+  const initConfigMod = await jiti.import(path.join(root, "extensions", "development-goal", "init-config.ts"));
   const initDefaults = initConfigMod.initDefaults({
     command: "init",
     topic: "ship init defaults",
@@ -901,7 +949,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(initSummary, /Git delivery: push/);
   assert.match(initSummary, /Validation: npm test/);
 
-  const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal-prompts.ts"));
+  const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal", "prompts.ts"));
   assert.equal(promptsMod.PROMPT_OBJECTIVE_MAX, 600);
   assert.ok(promptsMod.TASK_DISCOVERY_CUES.some((cue) => cue.includes("repo-local skills")));
   assert.ok(promptsMod.REVIEW_GUIDANCE.some((cue) => cue.includes("Greptile")));
@@ -940,7 +988,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
   assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
 
-  const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal-tool-safety.ts"));
+  const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal", "tool-safety.ts"));
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: false, push: false }, "bash", { command: "git push origin main" }), { action: "allow" });
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: false }, "bash", { command: "git push origin main" }), {
     action: "block",
@@ -957,7 +1005,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "npx prisma migrate deploy" }).kind, "migration_blocked");
   assert.equal(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: true }, "bash", { command: "rm README.md" }).kind, "delete_blocked");
 
-  const blockerMod = await jiti.import(path.join(root, "extensions", "development-goal-blocker.ts"));
+  const blockerMod = await jiti.import(path.join(root, "extensions", "development-goal", "blocker.ts"));
   assert.equal(blockerMod.likelyBlockerCause("malformed_final_report"), "malformed_final_report");
   assert.equal(blockerMod.likelyBlockerCause("missing DEV_GOAL_DECISION final marker after recovery request"), "assistant_response_missing_final_markers");
   assert.equal(blockerMod.likelyBlockerCause("missing DEV_GOAL_VALIDATED: yes for continue/done decision"), "validation_evidence_missing_or_red");
@@ -970,7 +1018,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(blockerMod.nextSafeBlockerAction("context overflow"), /compact the session/);
   assert.match(blockerMod.nextSafeBlockerAction("manual operator stop"), /restart with the largest safe validated package/);
 
-  const runtimeMod = await jiti.import(path.join(root, "extensions", "development-goal-runtime.ts"));
+  const runtimeMod = await jiti.import(path.join(root, "extensions", "development-goal", "runtime.ts"));
   assert.equal(runtimeMod.messageText({ content: "plain text" }), "plain text");
   assert.equal(runtimeMod.messageText({ content: ["alpha", { text: "beta" }, { type: "image" }] }), "alpha\nbeta\n");
   assert.equal(runtimeMod.messageText({ content: 42 }), "");
@@ -983,7 +1031,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   const encodedRunTime = Date.parse("2026-05-22T21:00:00.000Z").toString(36);
   assert.match(runtimeMod.createRunId("2026-05-22T21:00:00.000Z"), new RegExp(`^dl-${encodedRunTime}-[0-9a-f]{6}$`));
 
-  const valuesMod = await jiti.import(path.join(root, "extensions", "development-goal-values.ts"));
+  const valuesMod = await jiti.import(path.join(root, "extensions", "development-goal", "values.ts"));
   assert.equal(valuesMod.stringOrUndefined("  value  "), "value");
   assert.equal(valuesMod.stringOrUndefined("   "), undefined);
   assert.equal(valuesMod.stringOrUndefined(123), undefined);
@@ -996,7 +1044,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(valuesMod.numberOrUndefined(0), undefined);
   assert.equal(valuesMod.numberOrUndefined("nope"), undefined);
 
-  const steeringMod = await jiti.import(path.join(root, "extensions", "development-goal-steering.ts"));
+  const steeringMod = await jiti.import(path.join(root, "extensions", "development-goal", "steering.ts"));
   assert.equal(steeringMod.STEERING_TOPIC_MAX, 240);
   assert.equal(steeringMod.mergeSteeringTopic("", "focus release hygiene"), "active development goal; latest user steering: focus release hygiene");
   assert.equal(steeringMod.mergeSteeringTopic("ship [object Object]\nplan", "use ───── clean route ↑↓ navi"), "ship plan; latest user steering: use clean route");
@@ -1035,7 +1083,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(mod.__test__.parseLoopDeliveryEvidence([
     "Summary: improved report parsing locality.",
     "Changed files:",
-    "- `extensions/development-goal-report-parser.ts` — moved prose parser behind report parser module.",
+    "- `extensions/development-goal/report-parser.ts` — moved prose parser behind report parser module.",
     "Validation evidence:",
     "- `npm test` exited 0",
     "Commit/push evidence: `abc1234` pushed to current branch.",
@@ -1044,14 +1092,14 @@ async function testExtensionLoadsAndRegistersCommands() {
   ].join("\n")), {
     summary: "improved report parsing locality.",
     nextSteps: ["Extract log analysis helpers."],
-    changedFiles: ["extensions/development-goal-report-parser.ts"],
+    changedFiles: ["extensions/development-goal/report-parser.ts"],
     validationCommands: ["npm test"],
     commitHash: "abc1234",
     pushStatus: "pushed",
     reportQualityWarnings: [
       "missing Blocked Work section",
       "missing Pivoted Work Completed section",
-      "relative human-readable changed file \"extensions/development-goal-report-parser.ts\"",
+      "relative human-readable changed file \"extensions/development-goal/report-parser.ts\"",
     ],
   });
   assert.equal(mod.__test__.parseLoopDecision("Instructions only:\nDEV_GOAL_VALIDATED: yes|no\nDEV_GOAL_DECISION: continue|stop|blocked|done"), undefined);
@@ -3484,6 +3532,7 @@ async function testNoticesAndDocs() {
 await testPackageManifest();
 await testPackageManifestPaths();
 await testPiCoreDependencies();
+await testExtensionFolderArchitecture();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();

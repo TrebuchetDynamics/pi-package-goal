@@ -1,4 +1,4 @@
-import { defineGoalIdentity } from "./goal-core/identity.ts";
+import { defineGoalIdentity } from "../goal-core/identity.ts";
 
 export const DEVELOPMENT_GOAL_IDENTITY = defineGoalIdentity({
   slug: "development-goal",

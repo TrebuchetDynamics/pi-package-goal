@@ -1,4 +1,4 @@
-import { parseTokenBudget } from "./development-goal-budget.ts";
+import { parseTokenBudget } from "./budget.ts";
 
 export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "grill-me" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
 

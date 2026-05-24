@@ -1,4 +1,4 @@
-import { recordReason } from "./development-goal-log-record.ts";
+import { recordReason } from "./log-record.ts";
 
 export const PROACTIVE_COMPACTION_MIN_TOKENS = 240_000;
 export const PROACTIVE_COMPACTION_CONTEXT_RATIO = 0.70;

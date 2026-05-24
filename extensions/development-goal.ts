@@ -1,1 +1,1 @@
-export { default, __test__ } from "./development-goal-main.ts";
+export { default, __test__ } from "./development-goal/main.ts";

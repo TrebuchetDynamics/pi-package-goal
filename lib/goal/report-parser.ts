@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import type { DeliveryEvidence, LoopReport } from "../../extensions/development-goal-domain.ts";
+import type { DeliveryEvidence, LoopReport } from "../../extensions/development-goal/domain.ts";
 
 export type GoalDecision = "continue" | "stop" | "blocked" | "done";
 

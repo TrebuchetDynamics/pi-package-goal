@@ -1,6 +1,6 @@
-import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
-import type { DevelopmentLoopRun } from "./development-goal-domain.ts";
-import { goalLogRelative } from "./goal-core/identity.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
+import type { DevelopmentLoopRun } from "./domain.ts";
+import { goalLogRelative } from "../goal-core/identity.ts";
 
 export const CUSTOM_STATE_TYPE = DEVELOPMENT_GOAL_IDENTITY.stateType;
 export const DEFAULT_LOG_RELATIVE = goalLogRelative(DEVELOPMENT_GOAL_IDENTITY);

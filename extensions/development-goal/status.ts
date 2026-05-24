@@ -1,12 +1,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./development-goal-log-record.ts";
-import { loopBudgetSummary } from "./development-goal-budget.ts";
-import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./development-goal-report-record.ts";
-import { compactTopic, objectiveText } from "./development-goal-topic.ts";
-import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
-import { compactIterationProgress } from "./development-goal-state.ts";
-import { goalLogRelative } from "./goal-core/identity.ts";
+import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./log-record.ts";
+import { loopBudgetSummary } from "./budget.ts";
+import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./report-record.ts";
+import { compactTopic, objectiveText } from "./topic.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
+import { compactIterationProgress } from "./state.ts";
+import { goalLogRelative } from "../goal-core/identity.ts";
 
 const DEFAULT_LOG_RELATIVE = goalLogRelative(DEVELOPMENT_GOAL_IDENTITY);
 const STATUS_TOPIC_MAX = 72;

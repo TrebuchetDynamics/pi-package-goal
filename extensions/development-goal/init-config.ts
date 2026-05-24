@@ -5,11 +5,11 @@ import {
   ensureMandatorySkills,
   getAdapterByName,
   type LoopAdapter,
-} from "./development-goal-adapter.ts";
-import type { ParsedCommand } from "./development-goal-command.ts";
-import { resolveCommitPush, type ProjectConfig } from "./development-goal-config.ts";
-import { relativeToCwd, splitLines } from "./development-goal-files.ts";
-import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE, hasIterationCap } from "./development-goal-state.ts";
+} from "./adapter.ts";
+import type { ParsedCommand } from "./command.ts";
+import { resolveCommitPush, type ProjectConfig } from "./config.ts";
+import { relativeToCwd, splitLines } from "./files.ts";
+import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE, hasIterationCap } from "./state.ts";
 
 export const HARD_MAX_ITERATIONS = 25;
 

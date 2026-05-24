@@ -3,12 +3,12 @@ import {
   ensureMandatorySkills,
   nonEmpty,
   type ResolvedProjectAdapter,
-} from "./development-goal-adapter.ts";
-import { loopBudgetSummary } from "./development-goal-budget.ts";
-import { relativeToCwd } from "./development-goal-files.ts";
-import { iterationProgress, hasIterationCap, type LoopState } from "./development-goal-state.ts";
-import { resolveScopeExpansionPolicy } from "./development-goal-scope-expansion.ts";
-import { objectiveIntakeSummary, promptObjectiveText } from "./development-goal-topic.ts";
+} from "./adapter.ts";
+import { loopBudgetSummary } from "./budget.ts";
+import { relativeToCwd } from "./files.ts";
+import { iterationProgress, hasIterationCap, type LoopState } from "./state.ts";
+import { resolveScopeExpansionPolicy } from "./scope-expansion.ts";
+import { objectiveIntakeSummary, promptObjectiveText } from "./topic.ts";
 
 export const PROMPT_OBJECTIVE_MAX = 600;
 

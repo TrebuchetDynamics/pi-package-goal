@@ -1,4 +1,4 @@
-import { recordEvent, recordReason } from "./development-goal-log-record.ts";
+import { recordEvent, recordReason } from "./log-record.ts";
 
 export function recordHasDeliveryEvidence(record: Record<string, unknown>): boolean {
   return recordChangedFiles(record).length > 0

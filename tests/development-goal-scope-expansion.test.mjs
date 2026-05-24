@@ -9,10 +9,10 @@ const require = createRequire(import.meta.url);
 const jitiEntry = "/home/xel/.nvm/versions/node/v22.21.1/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/jiti/lib/jiti.cjs";
 const { createJiti } = require(jitiEntry);
 const jiti = createJiti(import.meta.url, { interopDefault: true });
-const scopeMod = await jiti.import(path.join(root, "extensions", "development-goal-scope-expansion.ts"));
-const configMod = await jiti.import(path.join(root, "extensions", "development-goal-config.ts"));
-const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal-adapter.ts"));
-const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal-prompts.ts"));
+const scopeMod = await jiti.import(path.join(root, "extensions", "development-goal", "scope-expansion.ts"));
+const configMod = await jiti.import(path.join(root, "extensions", "development-goal", "config.ts"));
+const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal", "adapter.ts"));
+const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal", "prompts.ts"));
 
 assert.equal(typeof scopeMod.resolveScopeExpansionPolicy, "function");
 assert.equal(typeof scopeMod.decideEmptyQueueAction, "function");

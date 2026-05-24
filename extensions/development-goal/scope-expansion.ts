@@ -1,4 +1,4 @@
-import type { FinalStatus, GoalDecision } from "./development-goal-report-parser.ts";
+import type { FinalStatus, GoalDecision } from "./report-parser.ts";
 
 export type ScopeExpansionConfig = {
   allowScopeExpansion?: boolean;

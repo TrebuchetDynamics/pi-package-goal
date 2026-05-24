@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const jitiEntry = "/home/xel/.nvm/versions/node/v22.21.1/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/jiti/lib/jiti.cjs";
 const { createJiti } = require(jitiEntry);
 const jiti = createJiti(import.meta.url, { interopDefault: true });
-const parserMod = await jiti.import(path.join(root, "extensions", "development-goal-report-parser.ts"));
+const parserMod = await jiti.import(path.join(root, "extensions", "development-goal", "report-parser.ts"));
 
 assert.equal(typeof parserMod.parseFinalReport, "function");
 assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");
@@ -107,7 +107,7 @@ assert.deepEqual(parseError("Validation passed, but the assistant forgot the fin
 assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   "Summary: Blocked Work: OBI artifact; Flutter validation. Pivoted Work Completed: no new pivot.",
   "Changed files:",
-  "- `/home/xel/git/pi-package-development-loop/extensions/development-goal-prompts.ts` — clarified report requirements.",
+  "- `/home/xel/git/pi-package-development-loop/extensions/development-goal/prompts.ts` — clarified report requirements.",
   "Validation evidence:",
   "- `npm test` (pass)",
   "- `git diff --check` (pass)",
@@ -121,7 +121,7 @@ assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   blockedWork: "OBI artifact; Flutter validation.",
   pivotedWorkCompleted: "no new pivot.",
   nextSteps: ["Continue with parser extraction cleanup."],
-  changedFiles: ["/home/xel/git/pi-package-development-loop/extensions/development-goal-prompts.ts"],
+  changedFiles: ["/home/xel/git/pi-package-development-loop/extensions/development-goal/prompts.ts"],
   validationCommands: ["npm test", "git diff --check"],
 });
 

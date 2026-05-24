@@ -1,4 +1,4 @@
-import { defineGoalIdentity } from "./goal-core/identity.ts";
+import { defineGoalIdentity } from "../goal-core/identity.ts";
 
 export const E2E_GOAL_IDENTITY = defineGoalIdentity({
   slug: "e2e-goal",

@@ -8,17 +8,17 @@ import {
   ensureMandatorySkills,
   resolveProjectAdapter,
   type ResolvedProjectAdapter,
-} from "./development-goal-adapter.ts";
-import { resolveCommitPush, type ProjectConfig } from "./development-goal-config.ts";
-import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
+} from "./adapter.ts";
+import { resolveCommitPush, type ProjectConfig } from "./config.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
 import {
   absoluteLogPath,
   contextCwd,
   relativeToCwd,
   safeRead,
   writeJsonFileAtomic,
-} from "./development-goal-files.ts";
-import { likelyBlockerCause, nextSafeBlockerAction } from "./development-goal-blocker.ts";
+} from "./files.ts";
+import { likelyBlockerCause, nextSafeBlockerAction } from "./blocker.ts";
 import {
   completeCommandArgs,
   parseArgs,
@@ -26,14 +26,14 @@ import {
   tokenizeArgs,
   type ParsedCommand,
   type SinceFilter,
-} from "./development-goal-command.ts";
+} from "./command.ts";
 import {
   clampIterations,
   initConfigSummary,
   initDefaults,
   shouldPromptForInit,
   splitLinesOrDefault,
-} from "./development-goal-init-config.ts";
+} from "./init-config.ts";
 import {
   buildCompactionResumePrompt,
   buildDevelopmentGoalCompactionInstructions,
@@ -45,18 +45,18 @@ import {
   buildTransportErrorRetryPrompt,
   buildSteeringPrompt,
   PROMPT_OBJECTIVE_MAX,
-} from "./development-goal-prompts.ts";
+} from "./prompts.ts";
 import {
   compactionReason,
   contextUsageReason,
   isPrematureCompactionRecord,
   shouldCompactBeforeNextIteration,
-} from "./development-goal-compaction.ts";
+} from "./compaction.ts";
 import {
   appendLoopLogRecord,
   buildLoopLogRecord,
   type LoopLogRecord,
-} from "./development-goal-logger.ts";
+} from "./logger.ts";
 import {
   parseLoopLogRecord as parseLogRecord,
   recordDecision,
@@ -64,7 +64,7 @@ import {
   recordReason,
   recordRunId,
   recordTimestampMs,
-} from "./development-goal-log-record.ts";
+} from "./log-record.ts";
 import {
   hasContextOverflowProviderError,
   hasTransportProviderError,
@@ -73,7 +73,7 @@ import {
   recordHasProviderError,
   recordProviderErrorCategory,
   recordProviderErrorCode,
-} from "./development-goal-provider-error.ts";
+} from "./provider-error.ts";
 import {
   blockerKindRecommendation,
   recordBlockedWork,
@@ -90,26 +90,26 @@ import {
   recordReportQualityWarnings,
   recordReportSummary,
   recordValidationEvidence,
-} from "./development-goal-report-record.ts";
-import { parseLoopDeliveryEvidence, parseLoopReport } from "./development-goal-report-parser.ts";
-import { terminalAuditEvent } from "./development-goal-terminal-audit.ts";
-import { evaluateFinalReportGate } from "./development-goal-final-report-gate.ts";
-import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./development-goal-runaway.ts";
-import { createRunId, lastAssistantText } from "./development-goal-runtime.ts";
-import { mergeSteeringTopic } from "./development-goal-steering.ts";
-import { evaluateActiveGoalToolCallSafety } from "./development-goal-tool-safety.ts";
+} from "./report-record.ts";
+import { parseLoopDeliveryEvidence, parseLoopReport } from "./report-parser.ts";
+import { terminalAuditEvent } from "./terminal-audit.ts";
+import { evaluateFinalReportGate } from "./final-report-gate.ts";
+import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./runaway.ts";
+import { createRunId, lastAssistantText } from "./runtime.ts";
+import { mergeSteeringTopic } from "./steering.ts";
+import { evaluateActiveGoalToolCallSafety } from "./tool-safety.ts";
 import {
   selectValue,
   singleLineText,
   stringOrUndefined,
-} from "./development-goal-values.ts";
+} from "./values.ts";
 import {
   readLastLoopRecord,
   readRecentReportRecords,
   statusLine,
   statusReport,
   statusWidgetLines,
-} from "./development-goal-status.ts";
+} from "./status.ts";
 import {
   CUSTOM_STATE_TYPE,
   DEFAULT_ITERATIONS,
@@ -119,8 +119,8 @@ import {
   iterationProgress,
   restoreState,
   type LoopState,
-} from "./development-goal-state.ts";
-import { hashText } from "./development-goal-topic.ts";
+} from "./state.ts";
+import { hashText } from "./topic.ts";
 
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 

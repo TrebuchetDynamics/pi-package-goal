@@ -1,8 +1,8 @@
 import * as path from "node:path";
-import { loadProjectConfig, type ProjectConfig } from "./development-goal-config.ts";
-import { DEVELOPMENT_GOAL_IDENTITY } from "./development-goal-identity.ts";
-import { dirExists } from "./development-goal-files.ts";
-import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./development-goal-state.ts";
+import { loadProjectConfig, type ProjectConfig } from "./config.ts";
+import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
+import { dirExists } from "./files.ts";
+import { DEFAULT_ITERATIONS, DEFAULT_LOG_RELATIVE } from "./state.ts";
 
 export type LoopAdapter = {
   name: string;

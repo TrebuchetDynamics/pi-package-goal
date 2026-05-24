@@ -1,4 +1,4 @@
-import { hasIterationCap } from "./development-goal-state.ts";
+import { hasIterationCap } from "./state.ts";
 
 export type LoopBudgetState = {
   startedAt?: string;

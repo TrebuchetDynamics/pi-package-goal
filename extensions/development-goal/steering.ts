@@ -1,4 +1,4 @@
-import { singleLineText } from "./development-goal-values.ts";
+import { singleLineText } from "./values.ts";
 
 export const STEERING_TOPIC_MAX = 240;
 
