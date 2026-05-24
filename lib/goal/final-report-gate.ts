@@ -1,4 +1,4 @@
-import type { DeliveryEvidence } from "../../extensions/development-goal/domain.ts";
+import type { DeliveryEvidence } from "./domain.ts";
 import {
   parseFinalReport,
   parseLoopDeliveryEvidence,

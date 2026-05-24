@@ -6,7 +6,7 @@ license: MIT; adapted from https://github.com/jthack/claude-goal
 
 # Goal
 
-Use this skill to run a lightweight Goal Run inside the current Pi conversation. It is inspired by `jthack/claude-goal`, but does not install hooks or persist SQLite state. For automatic persisted continuation, prefer `/development-goal`.
+Use this skill to run a lightweight Goal Run inside the current Pi conversation. It is inspired by `jthack/claude-goal`, but does not install hooks, register extensions, or persist SQLite state.
 
 ## Quick start
 
@@ -68,7 +68,7 @@ Before accepting `goal complete` or declaring completion:
 - Do not mark complete from memory alone.
 - Do not hide blockers.
 - Do not run destructive actions, publish, deploy, spend money, expose secrets, or rewrite Git history unless the user explicitly asks for that risky action.
-- Do not invent persistent state outside the conversation. If durable automation is needed, recommend `/development-goal`.
+- Do not invent persistent state outside the conversation. If durable automation is needed, ask the user which project-specific runner they want to use.
 
 ## References
 

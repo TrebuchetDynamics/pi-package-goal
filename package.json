@@ -1,7 +1,7 @@
 {
   "name": "pi-package-goal",
   "version": "0.1.0",
-  "description": "Pi development-goal, E2E-goal, context-goal, git-commit-push, and understand extensions bundled with high-signal engineering and web skills.",
+  "description": "Pi package bundling high-signal engineering, goal discipline, safe git delivery, Pi ecosystem, and modern web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
@@ -16,19 +16,15 @@
     "pi-package",
     "pi",
     "pi-agent",
-    "development-goal",
-    "goal-runner",
-    "e2e-goal",
-    "context-goal",
-    "git-commit-push",
-    "understand",
     "agent-skills",
+    "goal-runner",
+    "git-commit-push",
+    "safe-delivery",
     "coding-agent",
     "tdd",
     "modern-web"
   ],
   "files": [
-    "extensions",
     "lib",
     "skills",
     "licenses",
@@ -37,13 +33,6 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "pi": {
-    "extensions": [
-      "./extensions/development-goal.ts",
-      "./extensions/e2e-goal.ts",
-      "./extensions/context-goal.ts",
-      "./extensions/git-commit-push.ts",
-      "./extensions/understand.ts"
-    ],
     "skills": [
       "./skills"
     ]
@@ -69,7 +58,7 @@
     }
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
+    "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
   }
 }

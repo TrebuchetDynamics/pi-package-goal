@@ -1,7 +1,7 @@
 # Third Party Notices
 
 This package bundles selected skills and guidance from upstream open-source repositories.
-The local development-goal extension and package-specific docs are Copyright (c) 2026
+The local package-specific skills, helper libraries, and docs are Copyright (c) 2026
 Trebuchet Dynamics under the MIT License.
 
 ## GoogleChrome/modern-web-guidance
@@ -66,7 +66,7 @@ Trebuchet Dynamics under the MIT License.
 
 - Source: https://github.com/tolibear/goalbuddy
 - Snapshot inspected: v0.3.7 repository snapshot on 2026-05-23
-- Usage: behavior-pattern inspiration for development-goal prompts and docs; no GoalBuddy code is bundled.
+- Usage: behavior-pattern inspiration for local goal-discipline skills and docs; no GoalBuddy code is bundled.
 - License: MIT
 - Full license copy: `licenses/tolibear-goalbuddy-LICENSE`
 

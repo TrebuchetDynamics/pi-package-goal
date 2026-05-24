@@ -18,12 +18,13 @@ License: MIT, Joseph Thacker. Full license copy is in `licenses/jthack-claude-go
 
 ## Pi adaptation
 
-This package already has a persisted `/development-goal` extension for durable automatic continuation. The `goal` skill is intentionally lighter:
+This package ships the `goal` workflow as a skill rather than a persistent extension. The adaptation is intentionally lightweight:
 
 - no hook installation;
 - no SQLite state;
 - no filesystem writes;
+- no registered slash-command extension;
 - no auto-continuation beyond the active Pi turn/session;
 - same command vocabulary and completion-audit discipline.
 
-Use `/development-goal` when the user wants persisted Goal Run state, logs, status UI, or automatic continuation across turns. Use this skill when the user wants a quick in-conversation goal discipline.
+Use this skill when the user wants quick in-conversation goal discipline. If they need persisted state, logs, status UI, or automatic continuation across turns, ask which project-specific runner they want to use.

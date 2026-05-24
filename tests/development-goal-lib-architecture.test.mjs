@@ -11,9 +11,14 @@ const jiti = createJiti(import.meta.url, { interopDefault: true });
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 assert.ok(pkg.files.includes("lib"), "published package must include lib goal modules");
+assert.equal(pkg.files.includes("extensions"), false, "published package must not include deleted extensions");
+assert.equal(pkg.pi.extensions, undefined, "package must not register deleted extensions");
 
 const reportParser = await jiti.import(path.join(root, "lib", "goal", "report-parser.ts"));
 assert.equal(typeof reportParser.parseFinalReport, "function");
+
+const finalReportGate = await jiti.import(path.join(root, "lib", "goal", "final-report-gate.ts"));
+assert.equal(typeof finalReportGate.evaluateFinalReportGate, "function");
 
 const worktreeRisk = await jiti.import(path.join(root, "lib", "goal", "worktree-risk.ts"));
 assert.equal(typeof worktreeRisk.evaluateWorktreeRisk, "function");
@@ -23,9 +28,3 @@ assert.equal(typeof validationReceipts.recordValidationReceipt, "function");
 
 const terminalAudit = await jiti.import(path.join(root, "lib", "goal", "terminal-audit.ts"));
 assert.equal(typeof terminalAudit.terminalAuditEvent, "function");
-
-const developmentGoalMain = fs.readFileSync(path.join(root, "extensions", "development-goal", "main.ts"), "utf8");
-assert.doesNotMatch(developmentGoalMain, /from "\.\/final-report-gate\.ts"/, "main.ts should delegate Final Report Gate handling to the Goal Run result module");
-assert.doesNotMatch(developmentGoalMain, /from "\.\/provider-error\.ts"/, "main.ts should delegate provider-error handling to the Goal Run result module");
-assert.match(developmentGoalMain, /from "\.\/goal-run-result\.ts"/, "main.ts should wire the Goal Run result module");
-assert.doesNotMatch(developmentGoalMain, /from "\.\/goal-run-transitions\.ts"/, "main.ts should not own Goal Run state transitions directly");

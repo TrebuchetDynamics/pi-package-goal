@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const jitiEntry = "/home/xel/.nvm/versions/node/v22.21.1/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/jiti/lib/jiti.cjs";
 const { createJiti } = require(jitiEntry);
 const jiti = createJiti(import.meta.url, { interopDefault: true });
-const parserMod = await jiti.import(path.join(root, "extensions", "development-goal", "report-parser.ts"));
+const parserMod = await jiti.import(path.join(root, "lib", "goal", "report-parser.ts"));
 
 assert.equal(typeof parserMod.parseFinalReport, "function");
 assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");

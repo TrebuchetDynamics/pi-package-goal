@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import type { BroadScoutCache, DeliveryEvidence, LoopReport } from "../../extensions/development-goal/domain.ts";
+import type { BroadScoutCache, DeliveryEvidence, LoopReport } from "./domain.ts";
 
 export type GoalDecision = "continue" | "stop" | "blocked" | "done";
 

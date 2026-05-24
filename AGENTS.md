@@ -1,6 +1,6 @@
 # AGENTS.md — pi-package-goal
 
-This repository packages a global Pi development-goal extension plus selected third-party skills.
+This repository packages a global Pi skills bundle plus selected third-party skills.
 
 ## Rules
 
