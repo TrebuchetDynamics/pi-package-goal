@@ -36,12 +36,15 @@ import {
   transitionLastReason,
   transitionMissingMarkerRecoveryRequested,
   transitionPaused,
+  transitionPreparingForCompaction,
   transitionPromptNowRunning,
   transitionPromptSent,
   transitionReportRepairRequested,
   transitionResumed,
+  transitionRetryCounterRestored,
   transitionRetryingAfterEmptyProviderResponse,
   transitionRetryingAfterProviderTransport,
+  transitionStoppedByUser,
 } from "./goal-run-transitions.ts";
 
 const AUTO_CONTINUATION_RETRY_MS = 50;
@@ -49,7 +52,7 @@ const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 2;
 
-type UiLikeContext = {
+export type UiLikeContext = {
   cwd?: string;
   hasUI?: boolean;
   ui?: {
@@ -74,6 +77,29 @@ export type GoalRunControllerDeps = {
   notify: (ctx: UiLikeContext, message: string, level?: "info" | "warning" | "error") => void;
 };
 
+export function resumePendingRetryAfterSessionRestore(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps) {
+  const state = deps.getState();
+  if (state.active && state.phase === "running" && state.lastReason === "empty_agent_response_waiting_for_compaction") {
+    const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
+    if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
+      const restoredState = transitionRetryCounterRestored(state, retryNumber);
+      deps.setState(restoredState);
+      pi.appendEntry(CUSTOM_STATE_TYPE, restoredState);
+      scheduleEmptyResponseRetry(pi, ctx, deps, restoredState.iteration, retryNumber);
+    }
+  }
+  const currentState = deps.getState();
+  if (currentState.active && currentState.phase === "running" && currentState.lastReason === "provider_transport_error_waiting_for_retry") {
+    const retryNumber = Math.max(1, currentState.emptyResponseRetries ?? 0);
+    if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
+      const restoredState = transitionRetryCounterRestored(currentState, retryNumber);
+      deps.setState(restoredState);
+      pi.appendEntry(CUSTOM_STATE_TYPE, restoredState);
+      scheduleTransportErrorRetry(pi, ctx, deps, restoredState.iteration, retryNumber);
+    }
+  }
+}
+
 export function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps) {
   const state = deps.getState();
   if (!state.active) {
@@ -90,6 +116,15 @@ export function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunCon
   pi.appendEntry(CUSTOM_STATE_TYPE, nextState);
   deps.refreshUi(ctx);
   deps.notify(ctx, "Development goal paused. Use /development-goal resume to continue.");
+}
+
+export function stopLoop(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps) {
+  const nextState = transitionStoppedByUser(deps.getState());
+  deps.setState(nextState);
+  deps.appendLoopLog("loop_stopped", { reason: "stopped_by_user" });
+  pi.appendEntry(CUSTOM_STATE_TYPE, nextState);
+  deps.refreshUi(ctx);
+  deps.notify(ctx, "Development goal stopped.");
 }
 
 export function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps) {
@@ -221,6 +256,15 @@ export function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: UiLikeCo
       deps.notify(ctx, `Compaction failed after provider context-overflow error: ${error.message}. Waiting for manual compaction or retry.`, "warning");
     },
   });
+}
+
+export function prepareForCompaction(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps, reason: string) {
+  const nextState = transitionPreparingForCompaction(deps.getState());
+  deps.setState(nextState);
+  deps.appendLoopLog("compaction_started", { reason });
+  pi.appendEntry(CUSTOM_STATE_TYPE, nextState);
+  deps.refreshUi(ctx);
+  deps.notify(ctx, "Development goal state saved before compaction.");
 }
 
 export function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: UiLikeContext, deps: GoalRunControllerDeps) {

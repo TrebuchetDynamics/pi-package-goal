@@ -938,6 +938,14 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(transitionsMod.transitionCompactionResumeSent({ ...validLoopState, emptyResponseRetries: 1, markerRecoveryRetries: 1, usedReportRepairRetry: true }), { ...validLoopState, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false });
   assert.deepEqual(transitionsMod.transitionMissingMarkerRecoveryRequested({ ...validLoopState, emptyResponseRetries: 1 }, 1), { ...validLoopState, phase: "running", lastReason: "missing_final_marker_recovery_requested", emptyResponseRetries: 0, markerRecoveryRetries: 1 });
 
+  const runControllerMod = await jiti.import(path.join(root, "extensions", "development-goal", "goal-run-controller.ts"));
+  assert.equal(typeof runControllerMod.startLoop, "function");
+  assert.equal(typeof runControllerMod.sendLoopPrompt, "function");
+  const runResultMod = await jiti.import(path.join(root, "extensions", "development-goal", "goal-run-result.ts"));
+  assert.equal(typeof runResultMod.handleGoalRunAssistantResult, "function");
+  const runSteeringMod = await jiti.import(path.join(root, "extensions", "development-goal", "goal-run-steering.ts"));
+  assert.equal(typeof runSteeringMod.handleGoalRunInput, "function");
+
   const fileMod = await jiti.import(path.join(root, "extensions", "development-goal", "files.ts"));
   const fileTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-files-"));
   const nestedJsonPath = path.join(fileTemp, "nested", "state.json");
