@@ -194,6 +194,14 @@ The previous model request returned no assistant text, likely because the provid
 ${buildIterationPrompt(s, resolved, cwd)}`;
 }
 
+export function buildTransportErrorRetryPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+  return `Retry development goal iteration after provider transport error.
+
+The previous model request ended with a provider transport error such as a WebSocket, socket, network, timeout, connection, or stream failure before trustworthy DEV_GOAL markers were emitted. Retry the same iteration from current repository state. Do not increment the goal iteration, do not restart from scratch, and do not request final-marker-only recovery solely because of provider transport error text.
+
+${buildIterationPrompt(s, resolved, cwd)}`;
+}
+
 export function buildMissingMarkerRecoveryPrompt(s: LoopState): string {
   return `Return only the development goal final markers for iteration ${iterationProgress(s)}.
 

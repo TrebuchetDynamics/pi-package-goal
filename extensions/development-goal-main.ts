@@ -40,6 +40,7 @@ import {
   buildIterationPrompt,
   buildMissingMarkerRecoveryPrompt,
   buildReportRepairPrompt,
+  buildTransportErrorRetryPrompt,
   buildSteeringPrompt,
   PROMPT_OBJECTIVE_MAX,
 } from "./development-goal-prompts.ts";
@@ -64,6 +65,7 @@ import {
 } from "./development-goal-log-record.ts";
 import {
   hasContextOverflowProviderError,
+  hasTransportProviderError,
   isContextOverflowProviderError,
   recordHasContextOverflowProviderError,
   recordHasProviderError,
@@ -396,6 +398,14 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         scheduleEmptyResponseRetry(pi, ctx, state.iteration, retryNumber);
       }
     }
+    if (state.active && state.phase === "running" && state.lastReason === "provider_transport_error_waiting_for_retry") {
+      const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
+      if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
+        state = { ...state, emptyResponseRetries: retryNumber };
+        pi.appendEntry(CUSTOM_STATE_TYPE, state);
+        scheduleTransportErrorRetry(pi, ctx, state.iteration, retryNumber);
+      }
+    }
   }
 
   async function onAgentEnd(event: { messages?: Array<{ role?: string; content?: unknown; stopReason?: string }> }, ctx: ExtensionContext) {
@@ -419,6 +429,20 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         refreshUi(ctx);
         notify(ctx, "Development goal is waiting for compaction after a provider context-overflow error.", "warning");
         if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
+        return;
+      }
+      if (hasTransportProviderError(messages)) {
+        const transportRetries = (state.emptyResponseRetries ?? 0) + 1;
+        if (transportRetries > EMPTY_RESPONSE_MAX_RETRIES) {
+          blockLoop(pi, ctx, "provider transport error retry limit reached", "blocked", { blockerKind: "provider_transport_error", blockerState: "provider transport error retry limit reached" });
+          return;
+        }
+        state = { ...state, phase: "running", lastReason: "provider_transport_error_waiting_for_retry", emptyResponseRetries: transportRetries, markerRecoveryRetries: 0 };
+        appendLoopLog("provider_transport_error_waiting_for_retry", { reason: "provider_transport_error", providerError: "transport" });
+        pi.appendEntry(CUSTOM_STATE_TYPE, state);
+        refreshUi(ctx);
+        notify(ctx, "Development goal is retrying the same iteration after a provider transport error.");
+        scheduleTransportErrorRetry(pi, ctx, state.iteration, transportRetries);
         return;
       }
       if (!assistantText.trim()) {
@@ -818,7 +842,7 @@ function requestReportRepair(
   appendLoopLog(event, logExtra);
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, "Development goal is requesting a repair-only final report after report quality validation failed.", "warning");
+  notify(ctx, `Development goal sent a repair-only final-report prompt (${logEvent.reportQualityIssueCodes.join(", ") || "malformed_final_report"}).`);
   sendLoopPrompt(pi, ctx, buildReportRepairPrompt(state, issues), true);
 }
 
@@ -834,7 +858,7 @@ function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
   appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_GOAL_DECISION final marker" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, "Development goal is requesting a final-marker-only recovery response.", "warning");
+  notify(ctx, "Development goal sent a final-marker-only recovery prompt.");
   sendLoopPrompt(pi, ctx, buildMissingMarkerRecoveryPrompt(state), true);
 }
 
@@ -849,6 +873,24 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
     const prompt = buildEmptyResponseRetryPrompt(state, resolved, cwd);
     state = { ...state, lastReason: "retrying_after_empty_provider_response" };
     appendLoopLog("empty_provider_response_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}` });
+    refreshUi(ctx);
+    sendLoopPrompt(pi, ctx, prompt);
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+  }, EMPTY_RESPONSE_RETRY_MS);
+}
+
+function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targetIteration: number, retryNumber: number) {
+  setTimeout(() => {
+    if (!state.active || state.iteration !== targetIteration || state.phase !== "running") return;
+    if (state.lastReason !== "provider_transport_error_waiting_for_retry") return;
+    if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
+
+    const cwd = contextCwd(ctx);
+    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    const prompt = buildTransportErrorRetryPrompt(state, resolved, cwd);
+    state = { ...state, lastReason: "retrying_after_provider_transport_error" };
+    appendLoopLog("provider_transport_error_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}`, providerError: "transport" });
     refreshUi(ctx);
     sendLoopPrompt(pi, ctx, prompt);
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -1022,7 +1064,8 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "Active-goal behavior:",
     "- DEV_GOAL_DECISION: continue starts the next iteration automatically when Pi is idle until DEV_GOAL_DECISION: done, blocked, stop, or pause.",
     "- PI_DEV_GOAL_MAX_AUTO_CONTINUES caps automatic prompt sends before the goal pauses for manual resume. Default: 500.",
-    "- A non-empty response missing final markers gets one final-marker-only recovery prompt before blocking.",
+    "- Provider transport errors such as WebSocket failures retry the same iteration instead of triggering final-marker recovery.",
+    "- A useful non-provider response missing final markers gets one informational final-marker-only recovery prompt before blocking.",
     "- Plain text typed during an active goal becomes steering for the current or next safe package.",
   ].join("\n");
   notify(ctx, text);

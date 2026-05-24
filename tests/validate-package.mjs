@@ -569,8 +569,12 @@ async function testExtensionLoadsAndRegistersCommands() {
   const providerErrorMod = await jiti.import(path.join(root, "extensions", "development-goal-provider-error.ts"));
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: context_length_exceeded"), true);
   assert.equal(providerErrorMod.isContextOverflowProviderError("Error: rate_limit_exceeded"), false);
+  assert.equal(providerErrorMod.isTransportProviderError("Error: WebSocket error"), true);
+  assert.equal(providerErrorMod.isTransportProviderError("missing DEV_GOAL_DECISION"), false);
   assert.equal(providerErrorMod.hasContextOverflowProviderError([{ role: "assistant", content: [{ type: "text", text: "input exceeds the context window" }] }]), true);
   assert.equal(providerErrorMod.hasContextOverflowProviderError([{ role: "user", content: "input exceeds the context window" }]), false);
+  assert.equal(providerErrorMod.hasTransportProviderError([{ role: "assistant", content: "Error: WebSocket error" }]), true);
+  assert.equal(providerErrorMod.hasTransportProviderError([{ role: "user", content: "Error: WebSocket error" }]), false);
   assert.equal(providerErrorMod.recordHasContextOverflowProviderError({ provider_error: { error: { message: "Context overflow detected" } } }, "provider_error"), true);
   assert.equal(providerErrorMod.recordHasProviderError({ providerError: "WebSocket error" }, "iteration_result"), true);
   assert.equal(providerErrorMod.recordProviderErrorCode({ provider_error: { code: "rate_limit_exceeded" } }), "rate_limit_exceeded");
@@ -822,6 +826,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(extractedPrompt, /Do not spend time on weak tests/i);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development goal iteration 2\/3/);
+  assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
   assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
@@ -1049,6 +1054,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   try {
     const statusUpdates = [];
     const widgetUpdates = [];
+    const notifications = [];
     const contextOverflowCompactCalls = [];
     const ctx = {
       cwd: e2eRoot,
@@ -1057,7 +1063,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         theme: {
           fg(color, text) { return `<${color}>${text}</${color}>`; },
         },
-        notify() {},
+        notify(message, level) { notifications.push({ message, level: level || "info" }); },
         setStatus(key, value) { statusUpdates.push({ key, value }); },
         setWidget(key, value, options) { widgetUpdates.push({ key, value, options }); },
       },
@@ -1417,6 +1423,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.active, true);
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.usedReportRepairRetry, true);
+    assert.equal(notifications.at(-1).level, "info", "repair-only final-report prompts should be informational, not a warning");
     const malformedRecordsAfterRetry = fs.readFileSync(path.join(e2eRoot, ".pi", "development-goal", "logs.jsonl"), "utf8").trim().split(/\r?\n/).map((line) => JSON.parse(line));
     const repairRequestRecord = malformedRecordsAfterRetry.find((record) => record.event === "malformed_final_report_repair_requested" && record.runId === malformedRunId);
     assert.deepEqual(repairRequestRecord.reportQualityIssueCodes, ["missing_blocked_work", "missing_pivoted_work_completed", "relative_human_changed_file", "vague_typed_changed_file"]);
@@ -1502,6 +1509,20 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
 
+    await command.handler("start --iterations=1 websocket provider", ctx);
+    const sentBeforeWebSocketRetry = sent.length;
+    await handlers.get("agent_end")({
+      messages: [{ role: "assistant", content: "Error: WebSocket error" }],
+    }, ctx);
+    assert.equal(entries.at(-1).data.active, true, "provider transport errors should retry the iteration instead of requesting final-marker recovery");
+    assert.equal(entries.at(-1).data.phase, "running");
+    assert.equal(entries.at(-1).data.lastReason, "provider_transport_error_waiting_for_retry");
+    assert.equal(entries.at(-1).data.markerRecoveryRetries, 0);
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    assert.equal(sent.length, sentBeforeWebSocketRetry + 1, "provider transport errors should automatically retry the current iteration");
+    assert.match(sent.at(-1).content, /Retry development goal iteration after provider transport error/);
+    assert.doesNotMatch(sent.at(-1).content, /Return only the development goal final markers/);
+
     await command.handler("start --iterations=1 marker recovery", ctx);
     const sentBeforeMarkerRecovery = sent.length;
     await handlers.get("agent_end")({
@@ -1514,6 +1535,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(sent.length, sentBeforeMarkerRecovery + 1, "missing marker turns should send exactly one recovery prompt");
     assert.match(sent.at(-1).content, /Return only the development goal final markers/);
     assert.match(sent.at(-1).content, /DEV_GOAL_VALIDATED: yes\|no/);
+    assert.equal(notifications.at(-1).level, "info", "final-marker recovery should be informational, not a warning");
 
     await handlers.get("agent_end")({
       messages: [{ role: "assistant", content: "Blocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
@@ -3099,7 +3121,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /"blockedWork":"none"/);
   assert.match(readme, /"pivotedWorkCompleted":"none"/);
   assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
-  assert.match(readme, /one repair-only retry with exact issue codes, then blocks as `malformed_final_report`/);
+  assert.match(readme, /one informational repair-only retry with exact issue codes, then blocks as `malformed_final_report`/);
   assert.doesNotMatch(readme, /Example interrupted resume end report/);
   assert.doesNotMatch(readme, /Example partial validation end report/);
   assert.match(readme, /DEV_GOAL_DECISION: done/);
@@ -3127,8 +3149,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Keep the machine-readable DEV_GOAL_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);
   assert.match(readme, /WebSocket error/);
+  assert.match(readme, /provider_transport_error_waiting_for_retry/);
+  assert.match(readme, /instead of asking for final-marker-only recovery/);
   assert.match(readme, /context_length_exceeded/);
   assert.match(readme, /empty provider response/);
+  assert.match(readme, /This recovery notice is informational, not a warning/);
   assert.match(readme, /### Troubleshooting local Codex storage failures/);
   assert.match(readme, /No space left on device/);
   assert.match(readme, /database or disk is full/);

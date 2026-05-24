@@ -2,6 +2,10 @@ export function isContextOverflowProviderError(text: string): boolean {
   return /context[\s_-]*length[\s_-]*exceeded|input exceeds the context window|context overflow detected/i.test(text);
 }
 
+export function isTransportProviderError(text: string): boolean {
+  return /websocket|socket|network|timeout|timed?\s*out|connection|econn|stream/i.test(text);
+}
+
 export function recordHasContextOverflowProviderError(record: Record<string, unknown>, event: string): boolean {
   if (event === "context_overflow_waiting_for_compaction" || isContextOverflowProviderError(event)) return true;
   return [
@@ -24,6 +28,10 @@ export function valueHasContextOverflowProviderError(value: unknown): boolean {
 
 export function hasContextOverflowProviderError(messages: Array<{ role?: string; content?: unknown }>): boolean {
   return messages.some((message) => message.role !== "user" && isContextOverflowProviderError(messageText(message)));
+}
+
+export function hasTransportProviderError(messages: Array<{ role?: string; content?: unknown }>): boolean {
+  return messages.some((message) => message.role !== "user" && isTransportProviderError(messageText(message)));
 }
 
 export function recordHasProviderError(record: Record<string, unknown>, event: string): boolean {
@@ -51,7 +59,7 @@ export function recordProviderErrorCategory(record: Record<string, unknown>, eve
   if (isContextOverflowProviderError(text)) return "context-overflow";
   if (/rate[_ -]?limit|too[_ -]?many[_ -]?requests|\b429\b/i.test(text)) return "rate-limit";
   if (/auth|unauthorized|forbidden|invalid[_ -]?api[_ -]?key|permission|\b401\b|\b403\b/i.test(text)) return "auth";
-  if (/websocket|socket|network|timeout|timed?\s*out|connection|econn|stream/i.test(text)) return "transport";
+  if (isTransportProviderError(text)) return "transport";
   return "other";
 }
 
