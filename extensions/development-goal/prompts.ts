@@ -12,6 +12,15 @@ import { objectiveIntakeSummary, objectiveNeedsBroadScouting, promptObjectiveTex
 
 export const PROMPT_OBJECTIVE_MAX = 360;
 
+export const LANE_TOKEN_BUDGETS = {
+  direct: 1200,
+  repair: 700,
+  broadFirstPass: 2500,
+  broadFollowup: 1400,
+} as const;
+
+export type PromptLane = "direct" | "broad-first-pass" | "broad-followup";
+
 export const TASK_DISCOVERY_CUES = [
   "repo-local skills matching work",
   "TODO/PLAN/ROADMAP files",
@@ -71,13 +80,15 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const capNote = hasIterationCap(s)
     ? "Legacy cap active; continue until done or cap."
     : "No max-iteration stop; continue until done/blocked/paused/stopped.";
-  const broadScout = objectiveNeedsBroadScouting(s.topic, PROMPT_OBJECTIVE_MAX);
+  const lane = promptLaneForState(s);
+  const broadScout = lane !== "direct";
+  const laneBudget = laneTokenBudget(lane);
   const openingLine = broadScout
-    ? `Development Goal iteration ${iterationLabel}: Broad scout. Start with improve-codebase-architecture as lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision/pivot questions. Caveman mode: always on; terse, no filler.`
-    : `Development Goal iteration ${iterationLabel}: Direct slice. Concrete objective; skip architecture/grill scouting unless blocked by real design uncertainty. Caveman mode: always on; terse, no filler.`;
+    ? `Development Goal iteration ${iterationLabel}: Broad scout. Lane ${lane}; target ${laneBudget} tokens. Start with improve-codebase-architecture as lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision/pivot questions. Caveman mode: always on; terse, no filler.`
+    : `Development Goal iteration ${iterationLabel}: Direct slice. Lane direct; target ${laneBudget} tokens. Concrete objective; skip architecture/grill scouting unless blocked by real design uncertainty. Caveman mode: always on; terse, no filler.`;
   const protocolStep3 = broadScout
-    ? `Broad path: choose largest safe useful slice via Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.`
-    : "Direct path: objective already names slice; inspect only needed files/tests, skip architecture/grill scouting, do not browse TODO/roadmap unless needed.";
+    ? `Broad path: ${lane === "broad-first-pass" ? "scout once, cache repo map/risks/tests/architecture notes, then execute one row" : "reuse cached scout notes; do not rediscover"}. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.`
+    : "Direct path: scalpel mode. Task, constraints, validation, final JSON. Inspect only needed files/tests; no TODO/roadmap unless needed.";
   const promptSkills = broadScout ? skills : skills.filter((skill) => !/^improve-codebase-architecture\b|^grill-me\b/i.test(skill));
   const skillsText = promptSkills.length ? promptSkills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
   const preflightText = preflightCommands.join("; ");
@@ -110,14 +121,32 @@ ${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
 Scope expansion: ${scopeExpansionGuidance}
 Greptile/review: explicit review context + gh/glab/p4 + auth only; else block with missing prereq. No comments/resolution/push/reshelve unless delivery policy allows.
 
-Final report contract (keep last):
-Human lines required: Scope; Selected slice; Changed files with absolute paths and why; Validation evidence; Commit/push evidence; Blocker state; Blocked Work; Pivoted Work Completed; Possible next steps.
-DEV_GOAL_REPORT JSON fields: validated, decision, summary, blockerState, blockedWork, pivotedWorkCompleted, nextSteps, changedFiles (absolute), validationCommands, commitHash, pushStatus.
+Final contract (JSON-only preferred; keep last):
+DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked"}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
-Decision rules: yes only after validation evidence. continue=green slice + more goal work. blocked=red/evidence missing/unsafe/missing prereq. stop=handoff/review. done=objective mapped to evidence; nextSteps optional review/PR/handoff only.
-Quality: Blocked Work + Pivoted Work Completed required (write none); absolute human paths; no vague changedFiles/summary; DEV_GOAL_REPORT + markers last. One repair-only retry; no edits/discovery/validation rerun.`;
+Rules: yes only after validation evidence. continue=green one row + more queued work. blocked=red/evidence missing/unsafe/prereq. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
 
+}
+
+export function promptLaneForState(s: Pick<LoopState, "topic" | "iteration">): PromptLane {
+  if (!objectiveNeedsBroadScouting(s.topic, PROMPT_OBJECTIVE_MAX)) return "direct";
+  return s.iteration <= 1 ? "broad-first-pass" : "broad-followup";
+}
+
+export function laneTokenBudget(lane: PromptLane): number {
+  if (lane === "direct") return LANE_TOKEN_BUDGETS.direct;
+  if (lane === "broad-first-pass") return LANE_TOKEN_BUDGETS.broadFirstPass;
+  return LANE_TOKEN_BUDGETS.broadFollowup;
+}
+
+function compactPreviousReportJson(report: { decision?: string; validated?: boolean; deliveryEvidence?: unknown }): string {
+  const deliveryEvidence = report.deliveryEvidence && typeof report.deliveryEvidence === "object" ? report.deliveryEvidence as Record<string, unknown> : {};
+  return JSON.stringify({
+    validated: report.validated,
+    decision: report.decision,
+    ...deliveryEvidence,
+  });
 }
 
 function compactSkillPrompt(skill: string): string {
@@ -176,20 +205,23 @@ DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done`;
 }
 
-export function buildReportRepairPrompt(s: LoopState, issues: Array<{ code: string; message: string; value?: string }>): string {
-  const issueLines = issues.map((issue) => `- ${issue.code}: ${issue.message}${issue.value ? ` (value: ${issue.value})` : ""}`).join("\n");
-  const remediationLines = reportRepairRemediationLines(issues).join("\n");
-  return `Repair only the development goal final report for iteration ${iterationProgress(s)}.
+export function buildReportRepairPrompt(s: LoopState, reportOrIssues: { quality?: { issues?: Array<{ code: string; message: string; value?: string }> }; decision?: string; validated?: boolean; deliveryEvidence?: unknown } | Array<{ code: string; message: string; value?: string }>): string {
+  const issues = Array.isArray(reportOrIssues) ? reportOrIssues : reportOrIssues.quality?.issues ?? [];
+  const issueLines = issues.map((issue) => `- ${issue.code}${issue.value ? ` bad=${JSON.stringify(issue.value)}` : ""}`).join("\n");
+  const previousJson = Array.isArray(reportOrIssues) ? undefined : compactPreviousReportJson(reportOrIssues);
+  return `Repair lane. Target ${LANE_TOKEN_BUDGETS.repair} tokens. Iteration ${iterationProgress(s)}.
 
-The previous final report was malformed. Do not edit code. Do not change scope. Do not run task discovery. Do not run validation commands. Only rewrite the final report and final markers.
+Do not edit code. Do not change scope. Do not run discovery. Do not run validation.
 
-You must address these exact issue codes:
-${issueLines || "- unknown_report_quality_issue: report quality validation failed"}
+Issue codes:
+${issueLines || "- unknown_report_quality_issue"}
 
-Repair guidance:
-${remediationLines || "- Keep the original evidence, but rewrite it into the canonical final-report shape."}
-
-Return the corrected human-readable final report, DEV_GOAL_REPORT, DEV_GOAL_VALIDATED, and DEV_GOAL_DECISION. Keep the original work, validation evidence, decision intent, and changed-file evidence unless one of the issue codes requires correcting that evidence.`;
+Required schema:
+DEV_GOAL_REPORT: {"validated":boolean,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked"}
+DEV_GOAL_VALIDATED: yes|no
+DEV_GOAL_DECISION: continue|stop|blocked|done
+${previousJson ? `\nPrevious JSON:\n${previousJson}\n` : ""}
+Return only corrected DEV_GOAL_REPORT + markers. Preserve evidence unless issue code requires changing bad field.`;
 }
 
 function reportRepairRemediationLines(issues: Array<{ code: string; message: string; value?: string }>): string[] {

@@ -59,7 +59,7 @@ import {
   hasContextOverflowProviderError,
   hasTransportProviderError,
 } from "./provider-error.ts";
-import { parseLoopDeliveryEvidence, parseLoopReport } from "./report-parser.ts";
+import { parseLoopDeliveryEvidence, parseLoopReport, type FinalReport } from "./report-parser.ts";
 import { terminalAuditEvent } from "./terminal-audit.ts";
 import { evaluateFinalReportGate } from "./final-report-gate.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./runaway.ts";
@@ -255,7 +255,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (finalReportGate.action === "repair") {
-      requestReportRepair(pi, ctx, finalReportGate.report.quality.issues, finalReportGate.logEvent);
+      requestReportRepair(pi, ctx, finalReportGate.report, finalReportGate.logEvent);
       return;
     }
 
@@ -733,7 +733,7 @@ function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolv
 function requestReportRepair(
   pi: ExtensionAPI,
   ctx: UiLikeContext,
-  issues: Array<{ code: string; message: string; value?: string }>,
+  report: FinalReport,
   logEvent: { event: string; reason: string; blockerKind: string; reportQualityIssueCodes: string[] },
 ) {
   state = {
@@ -749,7 +749,7 @@ function requestReportRepair(
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
   notify(ctx, `Development goal sent a repair-only final-report prompt (${logEvent.reportQualityIssueCodes.join(", ") || "malformed_final_report"}).`);
-  sendLoopPrompt(pi, ctx, buildReportRepairPrompt(state, issues), true);
+  sendLoopPrompt(pi, ctx, buildReportRepairPrompt(state, report), true);
 }
 
 function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
