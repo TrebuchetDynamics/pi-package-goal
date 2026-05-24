@@ -352,6 +352,22 @@ function collectSkillDescriptionBudgetIssues(baseDir, budget = skillDescriptionB
   return issues;
 }
 
+function collectSkillFrontmatterYamlIssues(baseDir) {
+  const issues = [];
+  for (const file of listSkillFiles(baseDir)) {
+    const content = fs.readFileSync(path.join(baseDir, file), "utf8");
+    const frontmatter = content.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
+    const descriptionLine = frontmatter.split(/\r?\n/).find((line) => line.startsWith("description:"));
+    if (!descriptionLine) continue;
+    const descriptionValue = descriptionLine.replace(/^description:\s*/, "");
+    const isQuotedOrBlock = /^[>|'\"]/.test(descriptionValue);
+    if (!isQuotedOrBlock && /:\s/.test(descriptionValue)) {
+      issues.push(`${file}: description contains ": " and must be quoted or use a block scalar`);
+    }
+  }
+  return issues;
+}
+
 async function testPackageManifest() {
   const pkg = readJson("package.json");
   assert.equal(pkg.name, "pi-package-goal");
@@ -2679,8 +2695,24 @@ async function testSkills() {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
 
+  const yamlFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-skill-yaml-"));
+  try {
+    fs.mkdirSync(path.join(yamlFixtureRoot, "skills", "bad"), { recursive: true });
+    fs.mkdirSync(path.join(yamlFixtureRoot, "skills", "good-block"), { recursive: true });
+    fs.mkdirSync(path.join(yamlFixtureRoot, "skills", "good-quoted"), { recursive: true });
+    fs.writeFileSync(path.join(yamlFixtureRoot, "skills", "bad", "SKILL.md"), "---\nname: bad\ndescription: Bad description: breaks YAML compact mapping\n---\n");
+    fs.writeFileSync(path.join(yamlFixtureRoot, "skills", "good-block", "SKILL.md"), "---\nname: good-block\ndescription: >\n  Good description: block scalar is valid YAML.\n---\n");
+    fs.writeFileSync(path.join(yamlFixtureRoot, "skills", "good-quoted", "SKILL.md"), "---\nname: good-quoted\ndescription: 'Good description: quoted scalar is valid YAML.'\n---\n");
+    assert.deepEqual(collectSkillFrontmatterYamlIssues(yamlFixtureRoot), [
+      "skills/bad/SKILL.md: description contains \": \" and must be quoted or use a block scalar",
+    ]);
+  } finally {
+    fs.rmSync(yamlFixtureRoot, { recursive: true, force: true });
+  }
+
   assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
+  assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
 
   const skillFiles = listSkillFiles();
   for (const skill of expectedSkills) {

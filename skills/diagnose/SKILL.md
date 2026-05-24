@@ -1,6 +1,8 @@
 ---
 name: diagnose
-description: Disciplined bug/performance diagnosis loop: reproduce, minimize, hypothesize, instrument, fix, and regression-test. Use when the user says diagnose/debug, reports failing/broken/throwing behavior, or describes a performance regression.
+description: >
+  Disciplined bug/performance diagnosis loop: reproduce, minimize, hypothesize, instrument, fix, and regression-test.
+  Use when the user says diagnose/debug, reports failing/broken/throwing behavior, or describes a performance regression.
 ---
 
 # Diagnose
