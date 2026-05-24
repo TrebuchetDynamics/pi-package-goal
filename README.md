@@ -363,6 +363,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 ### Pi ecosystem
 
 - `pi-ecosystem-scout` — check the Pi ecosystem before reinventing extensions, packages, skills, themes, or tools.
+- `pi-extensions-helper` — create, debug, package, and review Pi extensions using current Pi docs and `examples/extensions` patterns.
 
 ## Development
 

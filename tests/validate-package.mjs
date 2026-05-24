@@ -29,6 +29,7 @@ const expectedSkills = [
   "write-a-skill",
   "greploop",
   "pi-ecosystem-scout",
+  "pi-extensions-helper",
 ];
 
 function readJson(file) {
@@ -3208,6 +3209,13 @@ async function testNoticesAndDocs() {
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review goal/);
   assert.match(readme, /`lgtm`/);
+  assert.match(readme, /`pi-extensions-helper`/);
+  const piExtensionsHelper = read("skills/pi-extensions-helper/SKILL.md");
+  assert.match(piExtensionsHelper, /https:\/\/pi\.dev\/docs\/latest\/extensions/);
+  assert.match(piExtensionsHelper, /examples\/extensions/);
+  assert.match(piExtensionsHelper, /StringEnum/);
+  assert.match(piExtensionsHelper, /withFileMutationQueue/);
+  assert.match(piExtensionsHelper, /truncate/);
   assert.match(readme, /pi update git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
