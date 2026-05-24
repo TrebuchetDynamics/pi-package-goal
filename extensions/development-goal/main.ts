@@ -3,14 +3,10 @@ import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEven
 import {
   DEVELOPMENT_GOAL_DEFAULTS,
   resolveDevelopmentGoalSettings,
-  type ResolvedDevelopmentGoalSettings,
 } from "./defaults.ts";
-import { resolveCommitPush } from "./config.ts";
 import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
 import {
-  absoluteLogPath,
   contextCwd,
-  relativeToCwd,
 } from "./files.ts";
 import { likelyBlockerCause, nextSafeBlockerAction } from "./blocker.ts";
 import {
@@ -21,23 +17,12 @@ import {
   type ParsedCommand,
 } from "./command.ts";
 import { publishLogAnalysis } from "./log-analysis.ts";
-import { clampIterations } from "./init-config.ts";
 import {
-  buildCompactionResumePrompt,
-  buildDevelopmentGoalCompactionInstructions,
-  buildEmptyResponseRetryPrompt,
   buildIterationPrompt,
-  buildMissingMarkerRecoveryPrompt,
-  buildReportRepairPrompt,
-  buildTransportErrorRetryPrompt,
   buildSteeringPrompt,
   PROMPT_OBJECTIVE_MAX,
 } from "./prompts.ts";
-import {
-  compactionReason,
-  contextUsageReason,
-  shouldCompactBeforeNextIteration,
-} from "./compaction.ts";
+import { compactionReason, shouldCompactBeforeNextIteration } from "./compaction.ts";
 import {
   appendLoopLogRecord,
   buildLoopLogRecord,
@@ -50,8 +35,7 @@ import {
 import { parseLoopDeliveryEvidence, parseLoopReport, type FinalReport } from "./report-parser.ts";
 import { terminalAuditEvent } from "./terminal-audit.ts";
 import { evaluateFinalReportGate } from "./final-report-gate.ts";
-import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./runaway.ts";
-import { createRunId, lastAssistantText } from "./runtime.ts";
+import { lastAssistantText } from "./runtime.ts";
 import { mergeSteeringTopic } from "./steering.ts";
 import { evaluateActiveGoalToolCallSafety } from "./tool-safety.ts";
 import { singleLineText } from "./values.ts";
@@ -66,11 +50,26 @@ import {
   DEFAULT_LOG_RELATIVE,
   hasIterationCap,
   inactiveState,
-  iterationProgress,
   restoreState,
   type LoopState,
 } from "./state.ts";
 import { initConfig, publishHelp, publishStatus } from "./command-ui.ts";
+import {
+  compactBeforeNextIteration as runCompactBeforeNextIteration,
+  continueQueuedIterationAfterCompaction as runContinueQueuedIterationAfterCompaction,
+  pauseLoop as runPauseLoop,
+  queueNextIteration as runQueueNextIteration,
+  requestContextOverflowCompaction as runRequestContextOverflowCompaction,
+  requestMissingMarkerRecovery as runRequestMissingMarkerRecovery,
+  requestReportRepair as runRequestReportRepair,
+  resumeCurrentIterationAfterCompaction as runResumeCurrentIterationAfterCompaction,
+  resumeLoop as runResumeLoop,
+  scheduleEmptyResponseRetry as runScheduleEmptyResponseRetry,
+  scheduleTransportErrorRetry as runScheduleTransportErrorRetry,
+  sendLoopPrompt,
+  startLoop as runStartLoop,
+  type GoalRunControllerDeps,
+} from "./goal-run-controller.ts";
 import {
   handleGrillGoalAssistantText as handleGrillGoalResult,
   restoreGrillGoalState,
@@ -78,31 +77,16 @@ import {
   type GrillGoalState,
 } from "./grill-goal.ts";
 import {
-  deferFirstPromptState,
-  queueNextIterationState,
-  startGoalRun,
-  transitionAutoContinueLimited,
   transitionBlocked,
-  transitionCompactionResumeQueued,
-  transitionCompactionResumeSent,
   transitionContextOverflowWaiting,
   transitionEmptyResponseWaiting,
   transitionIterationReported,
-  transitionLastReason,
   transitionMaxIterationsReached,
-  transitionMissingMarkerRecoveryRequested,
-  transitionPaused,
   transitionPreparingForCompaction,
-  transitionPromptNowRunning,
-  transitionPromptSent,
   transitionProviderTransportWaiting,
-  transitionReportRepairRequested,
   transitionReportRepairRetryCleared,
   transitionResponseRetryCountersCleared,
-  transitionResumed,
   transitionRetryCounterRestored,
-  transitionRetryingAfterEmptyProviderResponse,
-  transitionRetryingAfterProviderTransport,
   transitionStoppedByUser,
   transitionTerminalDecision,
   transitionUserSteering,
@@ -144,14 +128,21 @@ type UiLikeContext = {
 };
 
 const LOG_TOPIC_MAX = 600;
-const AUTO_CONTINUATION_RETRY_MS = 50;
-const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
-const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 2;
 const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
 
 let state: LoopState = inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
 let pendingGrillGoal: GrillGoalState | undefined;
+
+function controllerDeps(): GoalRunControllerDeps {
+  return {
+    getState: () => state,
+    setState: (nextState) => { state = nextState; },
+    appendLoopLog,
+    refreshUi,
+    notify,
+  };
+}
 
 export default function developmentLoopExtension(pi: ExtensionAPI) {
   async function onSessionStart(_event: unknown, ctx: ExtensionContext) {
@@ -164,7 +155,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
         state = transitionRetryCounterRestored(state, retryNumber);
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
-        scheduleEmptyResponseRetry(pi, ctx, state.iteration, retryNumber);
+        runScheduleEmptyResponseRetry(pi, ctx, controllerDeps(), state.iteration, retryNumber);
       }
     }
     if (state.active && state.phase === "running" && state.lastReason === "provider_transport_error_waiting_for_retry") {
@@ -172,7 +163,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
         state = transitionRetryCounterRestored(state, retryNumber);
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
-        scheduleTransportErrorRetry(pi, ctx, state.iteration, retryNumber);
+        runScheduleTransportErrorRetry(pi, ctx, controllerDeps(), state.iteration, retryNumber);
       }
     }
   }
@@ -182,7 +173,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     const assistantText = lastAssistantText(messages);
 
     if (pendingGrillGoal?.active) {
-      const result = await handleGrillGoalResult(pi, ctx, pendingGrillGoal, assistantText, notify, (parsed, replaceActive, options) => startLoop(pi, ctx, parsed, replaceActive, options));
+      const result = await handleGrillGoalResult(pi, ctx, pendingGrillGoal, assistantText, notify, (parsed, replaceActive, options) => runStartLoop(pi, ctx, controllerDeps(), parsed, replaceActive, options));
       pendingGrillGoal = result.pending;
       if (result.handled) return;
     }
@@ -203,7 +194,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development goal is waiting for compaction after a provider context-overflow error.", "warning");
-        if (!alreadyWaitingForContextOverflowCompaction) requestContextOverflowCompaction(pi, ctx);
+        if (!alreadyWaitingForContextOverflowCompaction) runRequestContextOverflowCompaction(pi, ctx, controllerDeps());
         return;
       }
       if (hasTransportProviderError(messages)) {
@@ -217,7 +208,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development goal is retrying the same iteration after a provider transport error.");
-        scheduleTransportErrorRetry(pi, ctx, state.iteration, transportRetries);
+        runScheduleTransportErrorRetry(pi, ctx, controllerDeps(), state.iteration, transportRetries);
         return;
       }
       if (!assistantText.trim()) {
@@ -231,14 +222,14 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
         notify(ctx, "Development goal is waiting for compaction or retry after an empty provider response.", "warning");
-        scheduleEmptyResponseRetry(pi, ctx, state.iteration, emptyResponseRetries);
+        runScheduleEmptyResponseRetry(pi, ctx, controllerDeps(), state.iteration, emptyResponseRetries);
         return;
       }
       if ((state.markerRecoveryRetries ?? 0) >= MISSING_MARKER_RECOVERY_MAX_RETRIES) {
         blockLoop(pi, ctx, "missing DEV_GOAL_DECISION final marker after recovery request");
         return;
       }
-      requestMissingMarkerRecovery(pi, ctx);
+      runRequestMissingMarkerRecovery(pi, ctx, controllerDeps());
       return;
     }
 
@@ -247,7 +238,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (finalReportGate.action === "repair") {
-      requestReportRepair(pi, ctx, finalReportGate.report, finalReportGate.logEvent);
+      runRequestReportRepair(pi, ctx, controllerDeps(), finalReportGate.report, finalReportGate.logEvent);
       return;
     }
 
@@ -301,8 +292,8 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       return;
     }
 
-    if (compactBeforeNextIteration(pi, ctx)) return;
-    queueNextIteration(pi, ctx);
+    if (runCompactBeforeNextIteration(pi, ctx, controllerDeps())) return;
+    runQueueNextIteration(pi, ctx, controllerDeps());
   }
 
   async function onSessionBeforeCompact(event: { preparation?: { tokensBefore?: number } }, ctx: ExtensionContext) {
@@ -317,11 +308,11 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   async function onSessionCompact(_event: unknown, ctx: ExtensionContext) {
     if (!state.active) return;
     if (state.phase === "running") {
-      resumeCurrentIterationAfterCompaction(pi, ctx);
+      runResumeCurrentIterationAfterCompaction(pi, ctx, controllerDeps());
       return;
     }
     if (state.phase === "queued" || state.phase === "reported") {
-      continueQueuedIterationAfterCompaction(pi, ctx);
+      runContinueQueuedIterationAfterCompaction(pi, ctx, controllerDeps());
     }
   }
 
@@ -379,10 +370,10 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       publishStatus(pi, ctx, state);
       return;
     case "pause":
-      pauseLoop(pi, ctx);
+      runPauseLoop(pi, ctx, controllerDeps());
       return;
     case "resume":
-      resumeLoop(pi, ctx);
+      runResumeLoop(pi, ctx, controllerDeps());
       return;
     case "stop":
       state = transitionStoppedByUser(state);
@@ -401,20 +392,20 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       await initConfig(parsed, ctx);
       return;
     case "improve-codebase-architecture":
-      await startLoop(pi, ctx, improveCodebaseArchitectureCommand(parsed), false);
+      await runStartLoop(pi, ctx, controllerDeps(), improveCodebaseArchitectureCommand(parsed), false);
       return;
     case "git-commit-push":
-      await startLoop(pi, ctx, gitCommitPushCommand(parsed), false);
+      await runStartLoop(pi, ctx, controllerDeps(), gitCommitPushCommand(parsed), false);
       return;
     case "grill-me":
       pendingGrillGoal = await startGrillGoalPlanning(pi, ctx, state, parsed, notify, sendLoopPrompt) ?? pendingGrillGoal;
       return;
     case "restart":
-      await startLoop(pi, ctx, parsed, true);
+      await runStartLoop(pi, ctx, controllerDeps(), parsed, true);
       return;
     case "start":
     default:
-      await startLoop(pi, ctx, parsed, false);
+      await runStartLoop(pi, ctx, controllerDeps(), parsed, false);
       return;
   }
 }
@@ -447,276 +438,6 @@ function gitCommitPushCommand(parsed: ParsedCommand): ParsedCommand {
     commandIntent: intent,
     topic: parsed.topic ? `${baseTopic}: ${parsed.topic}` : baseTopic,
   };
-}
-
-function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
-  if (!state.active) {
-    notify(ctx, "No active development goal to pause.");
-    return;
-  }
-  if (state.phase === "paused") {
-    notify(ctx, "Development goal already paused.");
-    return;
-  }
-  state = transitionPaused(state, "paused_by_user");
-  appendLoopLog("loop_paused", { reason: "paused_by_user" });
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, "Development goal paused. Use /development-goal resume to continue.");
-}
-
-function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
-  if (!state.active || state.phase !== "paused") {
-    notify(ctx, "No paused development goal to resume.");
-    return;
-  }
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = transitionResumed(state);
-  appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, `Resuming development goal iteration ${iterationProgress(state)}.`);
-  sendIterationPrompt(pi, ctx, resolved);
-}
-
-async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand, replaceActive: boolean, options: { deferFirstPromptUntilIdle?: boolean } = {}) {
-  if (state.active && !replaceActive) {
-    notify(ctx, `${statusLine(state)}\nNo user input is needed; queued goal iterations start automatically. Use /development-goal restart to replace it or /development-goal stop to stop it.`);
-    refreshUi(ctx);
-    return;
-  }
-
-  if (state.active && replaceActive && ctx.hasUI) {
-    const ok = await ctx.ui.confirm("Restart development goal", "Replace the current active goal state?");
-    if (!ok) return;
-  }
-
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  const defaults = resolved.defaults;
-  const topic = parsed.topic || resolved.config.defaultTopic || defaults.defaultTopic;
-  const configuredIterationCap = parsed.iterations ?? (hasIterationCap(resolved.config) ? resolved.config.maxIterations : undefined);
-  const maxIterations = configuredIterationCap ? clampIterations(configuredIterationCap) : DEFAULT_ITERATIONS;
-  const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, resolved.config.commit, resolved.config.push);
-  const logPath = absoluteLogPath(cwd, resolved.config.logPath);
-  const startedAt = new Date().toISOString();
-  const runId = createRunId(startedAt);
-
-  state = startGoalRun({
-    defaultsName: defaults.name,
-    runId,
-    topic,
-    maxIterations,
-    startedAt,
-    logPath,
-    tokenBudget: parsed.tokenBudget,
-    requiredSkill: parsed.requiredSkill,
-    commandIntent: parsed.commandIntent,
-    allWorktreeChangesInScope: parsed.allWorktreeChangesInScope,
-    commit,
-    push,
-  });
-
-  appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_defaults" });
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, `Starting development goal ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
-  if (options.deferFirstPromptUntilIdle) {
-    state = deferFirstPromptState(state);
-    appendLoopLog("iteration_queued", { reason: "deferred_first_prompt_until_idle" });
-    pi.appendEntry(CUSTOM_STATE_TYPE, state);
-    refreshUi(ctx);
-    scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
-    return;
-  }
-  sendIterationPrompt(pi, ctx, resolved);
-}
-
-function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
-  if (!state.active) return;
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = queueNextIterationState(state);
-  appendLoopLog("iteration_queued");
-  refreshUi(ctx);
-  notify(ctx, `Queued development goal iteration ${iterationProgress(state)}; it will start automatically when the current turn is idle.`);
-  scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
-}
-
-function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): boolean {
-  if (!state.active || !shouldCompactBeforeNextIteration(ctx) || typeof ctx.compact !== "function") return false;
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = queueNextIterationState(state, "compaction_before_next_iteration");
-  appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, `Compacting before development goal iteration ${iterationProgress(state)}.`);
-  ctx.compact({
-    customInstructions: buildDevelopmentGoalCompactionInstructions(state, resolved, cwd),
-    onComplete: () => notify(ctx, "Development goal compaction completed; continuing automatically."),
-    onError: (error) => {
-      state = transitionLastReason(state, "compaction_failed_before_next_iteration");
-      appendLoopLog("compaction_failed_before_next_iteration", { reason: error.message });
-      pi.appendEntry(CUSTOM_STATE_TYPE, state);
-      refreshUi(ctx);
-      notify(ctx, `Compaction failed before next iteration: ${error.message}. Continuing without compaction.`, "warning");
-      scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
-    },
-  });
-  return true;
-}
-
-function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
-  if (typeof ctx.compact !== "function") return;
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  ctx.compact({
-    customInstructions: `The provider reported a context-overflow error before DEV_GOAL markers were emitted. Compact the conversation, preserve the current development-goal state, and continue the same iteration after compaction.\n\n${buildDevelopmentGoalCompactionInstructions(state, resolved, cwd)}`,
-    onComplete: () => notify(ctx, "Development goal context-overflow compaction completed; continuing automatically."),
-    onError: (error) => {
-      state = transitionLastReason(state, "context_overflow_compaction_failed");
-      appendLoopLog("context_overflow_compaction_failed", { reason: error.message });
-      pi.appendEntry(CUSTOM_STATE_TYPE, state);
-      refreshUi(ctx);
-      notify(ctx, `Compaction failed after provider context-overflow error: ${error.message}. Waiting for manual compaction or retry.`, "warning");
-    },
-  });
-}
-
-function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  const prompt = buildCompactionResumePrompt(state, resolved, cwd);
-  state = transitionCompactionResumeQueued(state);
-  appendLoopLog("compaction_resume_queued");
-  refreshUi(ctx);
-  sendLoopPrompt(pi, ctx, prompt);
-  state = transitionCompactionResumeSent(state);
-  appendLoopLog("compaction_resume_sent");
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, `Resumed development goal iteration ${iterationProgress(state)} after compaction.`);
-}
-
-function continueQueuedIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
-  const cwd = contextCwd(ctx);
-  const resolved = resolveDevelopmentGoalSettings(cwd);
-  appendLoopLog("compaction_continue_queued_iteration");
-  notify(ctx, `Continuing development goal iteration ${iterationProgress(state)} after compaction.`);
-  sendIterationPrompt(pi, ctx, resolved);
-}
-
-function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedDevelopmentGoalSettings, targetIteration: number, attempt = 0) {
-  const delay = attempt === 0 ? 0 : AUTO_CONTINUATION_RETRY_MS;
-  setTimeout(() => {
-    if (!state.active || state.iteration !== targetIteration || state.phase !== "queued") return;
-
-    const idle = typeof ctx.isIdle === "function" ? ctx.isIdle() : true;
-    if (idle) {
-      sendIterationPrompt(pi, ctx, resolved);
-      return;
-    }
-
-    if (attempt >= AUTO_CONTINUATION_MAX_ATTEMPTS) {
-      appendLoopLog("iteration_prompt_follow_up_fallback", { reason: "agent_not_idle_after_retry" });
-      sendIterationPrompt(pi, ctx, resolved, true);
-      return;
-    }
-
-    scheduleAutomaticIteration(pi, ctx, resolved, targetIteration, attempt + 1);
-  }, delay);
-}
-
-function requestReportRepair(
-  pi: ExtensionAPI,
-  ctx: UiLikeContext,
-  report: FinalReport,
-  logEvent: { event: string; reason: string; blockerKind: string; reportQualityIssueCodes: string[] },
-) {
-  state = transitionReportRepairRequested(state);
-  const { event, ...logExtra } = logEvent;
-  appendLoopLog(event, logExtra);
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, `Development goal sent a repair-only final-report prompt (${logEvent.reportQualityIssueCodes.join(", ") || "malformed_final_report"}).`);
-  sendLoopPrompt(pi, ctx, buildReportRepairPrompt(state, report), true);
-}
-
-function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
-  const retryNumber = (state.markerRecoveryRetries ?? 0) + 1;
-  state = transitionMissingMarkerRecoveryRequested(state, retryNumber);
-  appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_GOAL_DECISION final marker" });
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-  notify(ctx, "Development goal sent a final-marker-only recovery prompt.");
-  sendLoopPrompt(pi, ctx, buildMissingMarkerRecoveryPrompt(state), true);
-}
-
-function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, targetIteration: number, retryNumber: number) {
-  setTimeout(() => {
-    if (!state.active || state.iteration !== targetIteration || state.phase !== "running") return;
-    if (state.lastReason !== "empty_agent_response_waiting_for_compaction") return;
-    if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
-
-    const cwd = contextCwd(ctx);
-    const resolved = resolveDevelopmentGoalSettings(cwd);
-    const prompt = buildEmptyResponseRetryPrompt(state, resolved, cwd);
-    state = transitionRetryingAfterEmptyProviderResponse(state);
-    appendLoopLog("empty_provider_response_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}` });
-    refreshUi(ctx);
-    sendLoopPrompt(pi, ctx, prompt);
-    pi.appendEntry(CUSTOM_STATE_TYPE, state);
-    refreshUi(ctx);
-  }, EMPTY_RESPONSE_RETRY_MS);
-}
-
-function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targetIteration: number, retryNumber: number) {
-  setTimeout(() => {
-    if (!state.active || state.iteration !== targetIteration || state.phase !== "running") return;
-    if (state.lastReason !== "provider_transport_error_waiting_for_retry") return;
-    if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
-
-    const cwd = contextCwd(ctx);
-    const resolved = resolveDevelopmentGoalSettings(cwd);
-    const prompt = buildTransportErrorRetryPrompt(state, resolved, cwd);
-    state = transitionRetryingAfterProviderTransport(state);
-    appendLoopLog("provider_transport_error_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}`, providerError: "transport" });
-    refreshUi(ctx);
-    sendLoopPrompt(pi, ctx, prompt);
-    pi.appendEntry(CUSTOM_STATE_TYPE, state);
-    refreshUi(ctx);
-  }, EMPTY_RESPONSE_RETRY_MS);
-}
-
-function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedDevelopmentGoalSettings, asFollowUp = false) {
-  const autoContinueLimit = autoContinueLimitFromEnv();
-  if (shouldPauseForAutoContinueLimit(state.autoContinueCount, autoContinueLimit)) {
-    state = transitionAutoContinueLimited(state);
-    appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
-    pi.appendEntry(CUSTOM_STATE_TYPE, state);
-    refreshUi(ctx);
-    notify(ctx, `Development goal auto-continuation guard reached after ${autoContinueLimit} prompt sends. Use /development-goal resume or raise PI_DEV_GOAL_MAX_AUTO_CONTINUES to continue automatically.`, "warning");
-    return;
-  }
-  const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = transitionPromptSent(state, asFollowUp);
-  appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent", { reason: `auto_continue ${state.autoContinueCount}/${autoContinueLimit}` });
-  refreshUi(ctx);
-  sendLoopPrompt(pi, ctx, prompt, asFollowUp);
-  state = transitionPromptNowRunning(state);
-  pi.appendEntry(CUSTOM_STATE_TYPE, state);
-  refreshUi(ctx);
-}
-
-function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, asFollowUp = false) {
-  const idle = typeof ctx.isIdle === "function" ? ctx.isIdle() : true;
-  if (asFollowUp || !idle) {
-    pi.sendUserMessage(prompt, { deliverAs: "followUp" });
-  } else {
-    pi.sendUserMessage(prompt);
-  }
 }
 
 function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string, extra: Partial<LoopLogRecord> = {}) {
