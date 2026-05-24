@@ -8,7 +8,7 @@ import { loopBudgetSummary } from "./budget.ts";
 import { relativeToCwd } from "./files.ts";
 import { iterationProgress, hasIterationCap, type LoopState } from "./state.ts";
 import { resolveScopeExpansionPolicy } from "./scope-expansion.ts";
-import { objectiveIntakeSummary, promptObjectiveText } from "./topic.ts";
+import { objectiveIntakeSummary, objectiveNeedsBroadScouting, promptObjectiveText } from "./topic.ts";
 
 export const PROMPT_OBJECTIVE_MAX = 360;
 
@@ -71,14 +71,21 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const capNote = hasIterationCap(s)
     ? "Legacy cap active; continue until done or cap."
     : "No max-iteration stop; continue until done/blocked/paused/stopped.";
-
-  const skillsText = skills.length ? skills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
+  const broadScout = objectiveNeedsBroadScouting(s.topic, PROMPT_OBJECTIVE_MAX);
+  const openingLine = broadScout
+    ? `Development Goal iteration ${iterationLabel}: Broad scout. Start with improve-codebase-architecture as lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision/pivot questions. Caveman mode: always on; terse, no filler.`
+    : `Development Goal iteration ${iterationLabel}: Direct slice. Concrete objective; skip architecture/grill scouting unless blocked by real design uncertainty. Caveman mode: always on; terse, no filler.`;
+  const protocolStep3 = broadScout
+    ? `Broad path: choose largest safe useful slice via Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.`
+    : "Direct path: objective already names slice; inspect only needed files/tests, skip architecture/grill scouting, do not browse TODO/roadmap unless needed.";
+  const promptSkills = broadScout ? skills : skills.filter((skill) => !/^improve-codebase-architecture\b|^grill-me\b/i.test(skill));
+  const skillsText = promptSkills.length ? promptSkills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
   const preflightText = preflightCommands.join("; ");
   const validationText = validationCommands.join("; ");
   const stopText = stopConditions.map(compactStopCondition).join("; ");
   const pushSafetyLine = pushSafetyPolicy ? `\n- ${pushSafetyPolicy}` : "";
 
-  return `Development Goal iteration ${iterationLabel}: Start with improve-codebase-architecture as a lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision or pivot questions; if none remain, proceed. Caveman mode: always on; terse, no filler.
+  return `${openingLine}
 
 Root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
@@ -94,7 +101,7 @@ Skills: ${skillsText}
 ${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
 1. Scope lock: ${cwd} with adapter ${adapter.name}; read AGENTS/CONTEXT and relevant repo-local skills.
 2. Preflight before edits: ${preflightText}
-3. Fast path: if objective or known queue gives a concrete slice, skip broad scouting and inspect only needed surfaces. Otherwise choose largest safe useful slice via Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.
+3. ${protocolStep3}
 4. Proof: use real interface when practical; avoid weak tests. For non-trivial work check state ownership, feedback/validation, blast radius, and ordering.
 5. Validation before DEV_GOAL_VALIDATED: yes: ${validationText}
 6. Delivery: ${commitPolicy}${pushSafetyLine}\n- ${worktreeScopePolicy}

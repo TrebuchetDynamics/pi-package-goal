@@ -973,6 +973,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     kind: "provider-noise",
     sanitized: true,
   });
+  assert.equal(topicMod.objectiveNeedsBroadScouting("ship prompt helpers", 360), false);
+  assert.equal(topicMod.objectiveNeedsBroadScouting("discover and complete useful work", 360), true);
+  assert.equal(topicMod.objectiveNeedsBroadScouting("x".repeat(361), 360), true);
   assert.match(topicMod.objectiveIntakeSummary("abcdefghij", 6), /^oversized objective · length 10 · hash [0-9a-f]{12}$/);
 
   const compactionMod = await jiti.import(path.join(root, "extensions", "development-goal", "compaction.ts"));
@@ -1236,21 +1239,27 @@ async function testExtensionLoadsAndRegistersCommands() {
     tokenBudget: 98500,
   };
   const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
-  assert.match(extractedPrompt, /Development Goal iteration 2\/3: Start with improve-codebase-architecture/);
-  assert.match(extractedPrompt, /grill-me self-answer-first/);
+  assert.match(extractedPrompt, /Development Goal iteration 2\/3: Direct slice/);
+  assert.doesNotMatch(extractedPrompt, /Start with improve-codebase-architecture/);
+  assert.doesNotMatch(extractedPrompt, /grill-me self-answer-first/);
+  assert.doesNotMatch(extractedPrompt, /For broad work, inspect:/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
   assert.match(extractedPrompt, /Budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
   assert.match(extractedPrompt, /Fast protocol:/);
-  assert.match(extractedPrompt, /For broad work, inspect:/);
-  assert.match(extractedPrompt, /lightweight architecture scout/i);
+  assert.match(extractedPrompt, /skip architecture\/grill scouting/i);
   assert.doesNotMatch(extractedPrompt, /Canonical final-report template/);
   assert.doesNotMatch(extractedPrompt, /End report anti-patterns to avoid/);
   assert.match(extractedPrompt, /avoid weak tests/i);
   assert.match(extractedPrompt, /state ownership, feedback\/validation, blast radius, and ordering/);
   assert.match(extractedPrompt, /Caveman mode: always on/);
-  assert.match(extractedPrompt, /Fast path: if objective or known queue gives a concrete slice/);
-  assert.ok(extractedPrompt.length <= 4500, `iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
+  assert.ok(extractedPrompt.length <= 3900, `direct iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
+  const broadPrompt = promptsMod.buildIterationPrompt({ ...promptState, topic: "discover and complete largest safe useful work" }, resolvedAdapter, adapterTemp);
+  assert.match(broadPrompt, /Development Goal iteration 2\/3: Broad scout/);
+  assert.match(broadPrompt, /Start with improve-codebase-architecture/);
+  assert.match(broadPrompt, /grill-me self-answer-first/);
+  assert.match(broadPrompt, /For broad work, inspect:/);
+  assert.ok(broadPrompt.length <= 4500, `broad iteration prompt should stay token-efficient; got ${broadPrompt.length} chars`);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
@@ -1604,9 +1613,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.doesNotMatch(sent[0].content, /Canonical final-report template/);
     assert.doesNotMatch(sent[0].content, /End report anti-patterns to avoid/);
     assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
-    assert.match(sent[0].content, /For broad work, inspect:/);
-    assert.match(sent[0].content, /TODO\/PLAN\/ROADMAP/);
-    assert.match(sent[0].content, /progress\/status\/backlog/);
+    assert.match(sent[0].content, /Direct path:/);
+    assert.match(sent[0].content, /skip architecture\/grill scouting/);
+    assert.doesNotMatch(sent[0].content, /For broad work, inspect:/);
+    assert.doesNotMatch(sent[0].content, /TODO\/PLAN\/ROADMAP/);
+    assert.doesNotMatch(sent[0].content, /progress\/status\/backlog/);
     assert.match(sent[0].content, /repo-local skills/);
     assert.match(sent[0].content, /to-prd for PRDs/);
     assert.match(sent[0].content, /to-issues for tracer-bullet issues/);
@@ -1615,12 +1626,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /tdd for code/);
     assert.doesNotMatch(sent[0].content, /test-driven-development for code changes/);
     assert.match(sent[0].content, /caveman/);
-    assert.match(sent[0].content, /grill-me/);
-    assert.match(sent[0].content, /self-answer-first/i);
-    assert.match(sent[0].content, /only hard owner-decision or pivot questions/i);
-    assert.match(sent[0].content, /if none remain, proceed/i);
-    assert.match(sent[0].content, /improve-codebase-architecture/);
-    assert.match(sent[0].content, /lightweight architecture scout/i);
+    assert.doesNotMatch(sent[0].content, /grill-me self-answer-first/);
+    assert.doesNotMatch(sent[0].content, /improve-codebase-architecture as lightweight architecture scout/);
     assert.match(sent[0].content, /avoid weak tests/i);
     assert.match(sent[0].content, /real interface/i);
     assert.match(sent[0].content, /Language: English/);
