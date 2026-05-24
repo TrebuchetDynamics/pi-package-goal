@@ -69,3 +69,12 @@ Trebuchet Dynamics under the MIT License.
 - Usage: behavior-pattern inspiration for development-goal prompts and docs; no GoalBuddy code is bundled.
 - License: MIT
 - Full license copy: `licenses/tolibear-goalbuddy-LICENSE`
+
+## jthack/claude-goal
+
+- Source: https://github.com/jthack/claude-goal
+- Snapshot inspected: `cacea1bbe7c5221a2197559313e1e464d48a3c90`
+- Bundled paths:
+  - `skills/goal/`
+- License: MIT
+- Full license copy: `licenses/jthack-claude-goal-LICENSE`

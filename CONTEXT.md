@@ -32,6 +32,14 @@ _Avoid_: Type-only identity checks, unchecked plain objects
 The Goal Identity for Development Goal.
 _Avoid_: Development loop identity, dev-loop branding
 
+**Development Goal Skill Stack**:
+The curated set of skills a Development Goal stitches into a Goal Run: `caveman`, `goal`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`, `diagnose`, `tdd`, `write-a-skill`, plus repo-local matching skills when relevant. The order matters: terse mode first, objective discipline second, plan grilling before architecture and diagnosis, implementation verification after. The Skill Stack is the primary product shape: a goal runner that preserves objective discipline, prompts, diagnoses, plans, documents, creates skills, and verifies work using these skills.
+_Avoid_: Hidden agent personality, unlisted prompt tricks, one-off skill mentions
+
+**Development Goal Defaults**:
+The single built-in configuration baseline for Development Goal runs: the `generic-git` name, default objective, Development Goal Skill Stack, preflight commands, validation commands, and stop conditions. Development Goal Defaults are implementation facts, not an Adapter seam; introduce a new seam only after a second concrete runtime variation exists.
+_Avoid_: Adapter registry, built-in adapter list, hypothetical adapter seam
+
 **Goal Log Analysis**:
 A Development Goal module that reads one or more goal `logs.jsonl` files and turns raw Goal Run events into health counters, top blockers, evidence summaries, and recommendations. Goal Log Analysis owns log discovery, parsing accumulation, health report formatting, JSON output, and optional HTML report generation behind one interface so command handling does not know every counter or event-specific rule.
 _Avoid_: Inline analyze-logs helpers, scattered log dashboard counters, command-owned health report formatting

@@ -11,7 +11,7 @@ const { createJiti } = require(jitiEntry);
 const jiti = createJiti(import.meta.url, { interopDefault: true });
 const scopeMod = await jiti.import(path.join(root, "extensions", "development-goal", "scope-expansion.ts"));
 const configMod = await jiti.import(path.join(root, "extensions", "development-goal", "config.ts"));
-const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal", "adapter.ts"));
+const defaultsMod = await jiti.import(path.join(root, "extensions", "development-goal", "defaults.ts"));
 const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal", "prompts.ts"));
 
 assert.equal(typeof scopeMod.resolveScopeExpansionPolicy, "function");
@@ -55,7 +55,7 @@ assert.equal(configMod.normalizeConfig({ requireReviewOnEmptyQueue: false }).req
 
 const promptRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-scope-policy-"));
 fs.mkdirSync(path.join(promptRoot, ".git"));
-const resolved = adapterMod.resolveProjectAdapter(promptRoot, "generic-git");
+const resolved = defaultsMod.resolveDevelopmentGoalSettings(promptRoot);
 const promptState = {
   active: true,
   adapterName: "generic-git",

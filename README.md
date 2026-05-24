@@ -57,7 +57,7 @@ Optional codebase knowledge graph:
 From the project you want to improve:
 
 ```text
-/development-goal adapters
+/development-goal help
 /development-goal improve the README
 /development-goal status
 ```
@@ -94,13 +94,11 @@ Run `/reload` after either command in an open Pi session.
 Useful commands:
 
 ```text
-/development-goal adapters
 /development-goal help
 /development-goal init
 /development-goal init --force
 /development-goal init --yes --dry-run --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-goal init --yes --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
-/development-goal providers
 /development-goal improve-codebase-architecture
 /development-goal grill-me release planning
 /git-commit-push
@@ -157,7 +155,7 @@ No GoalBuddy code is copied; this package adapts prompt/control patterns only.
 Canonical final-report template:
 
 ```text
-Scope: /absolute/project/path with adapter generic-git.
+Scope: /absolute/project/path.
 Selected slice: one largest safe useful package.
 Goal achieved: yes | no.
 Goal evidence: concrete request -> result -> validation proof.
@@ -193,7 +191,7 @@ Completion audit before `DEV_GOAL_DECISION: done`:
 
 End report quality checklist:
 
-- Scope and slice: exact absolute project path, adapter, and selected slice.
+- Scope and slice: exact absolute project path and selected slice.
 - Paths: use absolute paths for scope and human-readable changed-file evidence.
 - Goal verdict: include `goalAchieved` and concrete `goalEvidence`; for `done`, map original request -> delivered result -> validation receipts.
 - Blocked Work and Pivoted Work Completed: include both sections; write `none` when no blocker or pivot exists.
@@ -276,7 +274,7 @@ Do not run `rm -rf ~/.codex` unless you intentionally want to remove all local C
 
 ### Status bar integration
 
-`/development-goal` publishes a compact powerline-friendly status through the `development-goal` status key, for example `● run · i2/∞ · generic-git · git:manual · release checks`. It colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest goal record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up packages and handoff actions remain visible after later log events.
+`/development-goal` publishes a compact powerline-friendly status through the `development-goal` status key, for example `● run · i2/∞ · git:manual · release checks`. It colors status, iteration, delivery, and context segments when the active Pi theme is available, and terminal `done` statuses omit stale transient reasons such as compaction preparation. Its below-editor widget includes the last report summary, first next step, and count of additional next steps when the latest goal record contains typed `summary` or `nextSteps` evidence. The text status report includes recent report context so follow-up packages and handoff actions remain visible after later log events.
 
 `/e2e-goal` uses the same compact status style through the `e2e-goal` status key, for example `● run · i1/2 · checkout flow`, with themed status, iteration, and objective segments when Pi theme colors are available. Its below-editor widget shows compact last-event context such as `last iteration_prompt_sent · i1 · log .pi/e2e-goal/logs.jsonl`, and `/e2e-goal status` includes the same last-event context plus elapsed/iteration budget context in text form.
 
@@ -320,7 +318,7 @@ DEV_GOAL_DECISION: continue|stop|blocked|done
 
 ### Project-local configuration for any repo
 
-Create `.pi/development-goal.json` when a repo needs its own default objective, preferred language, skills, validation commands, optional iteration safety cap, git delivery policy, stop conditions, or log path. The development goal uses the single built-in `generic-git` adapter.
+Create `.pi/development-goal.json` when a repo needs its own default objective, preferred language, skills, validation commands, optional iteration safety cap, git delivery policy, stop conditions, or log path. The development goal is a Goal Run plus the Development Goal Skill Stack.
 
 `/development-goal init` accepts the same basic knobs used by `start` plus config-only fields:
 
@@ -336,16 +334,15 @@ Create `.pi/development-goal.json` when a repo needs its own default objective, 
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
-Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `caveman` as always-on terse/no-filler communication, use `improve-codebase-architecture` as a lightweight architecture scout, and take the fast path when a concrete slice is already clear. Do not write /tmp/architecture-review*.html unless a full architecture report is explicitly requested. Startup prompts also tell agents to use `grill-me` in self-answer-first mode so it answers easy/source-backed gaps itself, only asks hard owner-decision or pivot questions, and if no hard question remains, proceeds without interrupting the user. Do not spend time on weak tests; add tests that would fail on the real requirement or defect and exercise public behavior, or name the validation limit instead.
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `caveman`, `goal`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`, `diagnose`, `tdd`, and `write-a-skill` in its skill list, even when custom skills are configured; `caveman` is first so terse mode turns on before other workflow instructions; startup prompts tell agents to use `caveman` as always-on terse/no-filler communication, use `improve-codebase-architecture` as a lightweight architecture scout, and take the fast path when a concrete slice is already clear. Do not write /tmp/architecture-review*.html unless a full architecture report is explicitly requested. Startup prompts also tell agents to use `grill-me` in self-answer-first mode so it answers easy/source-backed gaps itself, only asks hard owner-decision or pivot questions, and if no hard question remains, proceeds without interrupting the user. Do not spend time on weak tests; add tests that would fail on the real requirement or defect and exercise public behavior, or name the validation limit instead.
 
 Example config:
 
 ```json
 {
-  "adapter": "generic-git",
   "defaultTopic": "improve documentation with tests",
   "language": "English",
-  "skills": ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "write-a-skill"],
+  "skills": ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
   "stopConditions": ["validation fails twice with the same blocker"],
@@ -355,11 +352,10 @@ Example config:
 }
 ```
 
-Run `/development-goal adapters` to confirm the `generic-git` adapter and config Pi will use.
 
 ## Included extensions
 
-- `/development-goal` — visible `generic-git` project goal for iterative work in any codebase, with built-in defaults and project-local configuration.
+- `/development-goal` — project Goal Run that stitches the Development Goal Skill Stack into iterative work in any codebase, with built-in defaults and project-local configuration.
 - `/e2e-goal` — real-usage E2E test goal that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists goal state and logs progress to `.pi/e2e-goal/logs.jsonl` by default.
 - `/e2e` — short alias for the E2E goal extension.
 - `/context-goal` — context stewardship for `CONTEXT.md` and guarded `MEMORY.md`: audits recent goal logs and project files, works when both files are absent, proposes vocabulary/ADR follow-ups, and creates baseline fresh-project files or applies safe context term additions only after explicit approval or `--yes`; it does not create `MEMORY.md` just because `CONTEXT.md` already exists.
@@ -370,6 +366,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 
 ### Development workflow
 
+- `goal` — lightweight Codex/Claude-style in-conversation goal discipline with pause/resume/clear/complete controls and a completion audit.
 - `tdd` — red-green-refactor delivery.
 - `diagnose` — disciplined bug and performance diagnosis.
 - `improve-codebase-architecture` — architecture deepening review; Development Goal startup uses it only as a lightweight architecture scout unless a full report is explicitly requested.

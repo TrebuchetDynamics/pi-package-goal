@@ -2,8 +2,8 @@ import {
   DEFAULT_LANGUAGE,
   ensureMandatorySkills,
   nonEmpty,
-  type ResolvedProjectAdapter,
-} from "./adapter.ts";
+  type ResolvedDevelopmentGoalSettings,
+} from "./defaults.ts";
 import { loopBudgetSummary } from "./budget.ts";
 import { relativeToCwd } from "./files.ts";
 import { iterationProgress, hasIterationCap, type LoopState } from "./state.ts";
@@ -46,14 +46,14 @@ export const GOALBUDDY_INSPIRED_GUIDANCE = [
   "Only use done after final audit maps the request to receipts, validation, delivery, and the goal oracle.",
 ];
 
-export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
-  const adapter = resolved.adapter;
+export function buildIterationPrompt(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string): string {
+  const defaults = resolved.defaults;
   const config = resolved.config;
-  const preflightCommands = nonEmpty(config.preflightCommands) ? config.preflightCommands! : adapter.preflightCommands;
-  const validationCommands = nonEmpty(config.validationCommands) ? config.validationCommands! : adapter.validationCommands;
-  const skills = ensureMandatorySkills(nonEmpty(config.skills) ? config.skills! : adapter.skills);
+  const preflightCommands = nonEmpty(config.preflightCommands) ? config.preflightCommands! : defaults.preflightCommands;
+  const validationCommands = nonEmpty(config.validationCommands) ? config.validationCommands! : defaults.validationCommands;
+  const skills = ensureMandatorySkills(nonEmpty(config.skills) ? config.skills! : defaults.skills);
   const language = config.language || DEFAULT_LANGUAGE;
-  const stopConditions = nonEmpty(config.stopConditions) ? config.stopConditions! : adapter.stopConditions;
+  const stopConditions = nonEmpty(config.stopConditions) ? config.stopConditions! : defaults.stopConditions;
   const scopeExpansionPolicy = resolveScopeExpansionPolicy(config);
   const scopeExpansionGuidance = scopeExpansionPolicy.allowScopeExpansion
     ? "Explicit scope expansion is allowed; after known queue empty, run bounded discovery."
@@ -100,18 +100,17 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   return `${openingLine}
 
 Root: ${cwd}
-Adapter: ${adapter.name} — ${adapter.description}
 Run id: ${s.runId || "legacy"}
 Topic/objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 Objective intake: ${objectiveIntakeSummary(s.topic, PROMPT_OBJECTIVE_MAX)}
 Language: ${language}
-Config/log: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}; ${relativeToCwd(cwd, s.logPath)}
+Config/log: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in Development Goal Defaults"}; ${relativeToCwd(cwd, s.logPath)}
 Budget: ${loopBudgetSummary(s)}; ${capNote}
 
 Skills: ${skillsText}
 
 ${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
-1. Scope lock: ${cwd} with adapter ${adapter.name}; read AGENTS/CONTEXT and relevant repo-local skills.
+1. Scope lock: ${cwd}; read AGENTS/CONTEXT and relevant repo-local skills.
 2. Preflight before edits: ${preflightText}
 3. ${protocolStep3}
 4. Proof: use real interface when practical; avoid weak tests. For non-trivial work check state ownership, feedback/validation, blast radius, and ordering.
@@ -189,7 +188,7 @@ function compactStopCondition(condition: string): string {
     .replace(/commit or push would include unrelated dirty work/i, "commit/push would include unrelated dirty work");
 }
 
-export function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+export function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string): string {
   return `Continue development goal after compaction.
 
 The previous model request may have failed or been compacted before it emitted DEV_GOAL markers. Resume the same iteration from the compacted summary and current repository state. Do not restart from scratch, do not mark the goal blocked solely because compaction happened, and preserve unrelated dirty work.
@@ -197,7 +196,7 @@ The previous model request may have failed or been compacted before it emitted D
 ${buildIterationPrompt(s, resolved, cwd)}`;
 }
 
-export function buildEmptyResponseRetryPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+export function buildEmptyResponseRetryPrompt(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string): string {
   return `Retry development goal iteration after empty provider response.
 
 The previous model request returned no assistant text, likely because the provider stream ended early. Retry the same iteration from current repository state. Do not increment the goal iteration, do not restart from scratch, and do not mark the goal blocked solely because the provider response was empty.
@@ -205,7 +204,7 @@ The previous model request returned no assistant text, likely because the provid
 ${buildIterationPrompt(s, resolved, cwd)}`;
 }
 
-export function buildTransportErrorRetryPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+export function buildTransportErrorRetryPrompt(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string): string {
   return `Retry development goal iteration after provider transport error.
 
 The previous model request ended with a provider transport error such as a WebSocket, socket, network, timeout, connection, or stream failure before trustworthy DEV_GOAL markers were emitted. Retry the same iteration from current repository state. Do not increment the goal iteration, do not restart from scratch, and do not request final-marker-only recovery solely because of provider transport error text.
@@ -261,12 +260,11 @@ function reportRepairRemediationLines(issues: Array<{ code: string; message: str
   return lines;
 }
 
-export function buildDevelopmentGoalCompactionInstructions(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
+export function buildDevelopmentGoalCompactionInstructions(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string): string {
   return `Preserve development goal state for automatic continuation.
 
 Current development goal state:
 - Project root: ${cwd}
-- Adapter: ${resolved.adapter.name}
 - Run id: ${s.runId || "legacy"}
 - Objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 - Iteration: ${iterationProgress(s)}
@@ -275,20 +273,19 @@ Current development goal state:
 - Log path: ${relativeToCwd(cwd, s.logPath)}
 
 In the compaction summary, include:
-1. Current objective and selected adapter.
+1. Current objective and Development Goal Defaults.
 2. Iteration number and whether the next action is to continue the queued goal work.
 3. Files changed/read and validation evidence seen so far.
 4. Any blockers or missing credentials.
 5. The requirement that the next assistant response ends with DEV_GOAL_VALIDATED and DEV_GOAL_DECISION markers.`;
 }
 
-export function buildGrillGoalPrompt(_s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, seedTopic: string): string {
+export function buildGrillGoalPrompt(_s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string, seedTopic: string): string {
   const language = resolved.config.language || DEFAULT_LANGUAGE;
-  const seed = seedTopic.trim() || resolved.config.defaultTopic || resolved.adapter.defaultTopic;
+  const seed = seedTopic.trim() || resolved.config.defaultTopic || resolved.defaults.defaultTopic;
   return `Use the grill-me skill in ${language} to define the next Development Goal objective. Caveman mode: always on; terse, no filler.
 
 Root: ${cwd}
-Adapter: ${resolved.adapter.name} — ${resolved.adapter.description}
 Language: ${language}
 Seed objective: ${seed}
 
@@ -303,12 +300,11 @@ DEV_GOAL_NEXT_BLOCKED: <specific blocker>
 After DEV_GOAL_NEXT_TOPIC, extension starts /development-goal automatically. Do not edit, commit, push, deploy, or validate unless source inspection is needed to answer easy gap.`;
 }
 
-export function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, steeringText: string): string {
-  const adapter = resolved.adapter;
+export function buildSteeringPrompt(s: LoopState, resolved: ResolvedDevelopmentGoalSettings, cwd: string, steeringText: string): string {
+  const defaults = resolved.defaults;
   return `Development goal steering request. Caveman mode: always on; terse, no filler.
 
 Root: ${cwd}
-Adapter: ${adapter.name} — ${adapter.description}
 Iteration: ${iterationProgress(s)}
 Current objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 User steering request: ${steeringText}

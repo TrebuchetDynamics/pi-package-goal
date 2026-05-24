@@ -2,10 +2,10 @@ import * as path from "node:path";
 import {
   DEFAULT_CONFIG_RELATIVE,
   DEFAULT_LANGUAGE,
+  DEVELOPMENT_GOAL_DEFAULTS,
   ensureMandatorySkills,
-  getAdapterByName,
-  type LoopAdapter,
-} from "./adapter.ts";
+  type DevelopmentGoalDefaults,
+} from "./defaults.ts";
 import type { ParsedCommand } from "./command.ts";
 import { resolveCommitPush, type ProjectConfig } from "./config.ts";
 import { relativeToCwd, splitLines } from "./files.ts";
@@ -17,7 +17,7 @@ type InitParsedCommand = Partial<ParsedCommand> & Pick<ParsedCommand, "command">
 
 export type InitDefaults = {
   adapterName: string;
-  adapter: LoopAdapter;
+  defaults: DevelopmentGoalDefaults;
   config: ProjectConfig;
 };
 
@@ -31,23 +31,22 @@ export type InitPromptContext = {
   };
 };
 
-export function initDefaults(parsed: InitParsedCommand, _cwd?: string, adapterName = "generic-git"): InitDefaults {
-  const adapter = getAdapterByName(adapterName) ?? getAdapterByName("generic-git")!;
-  const resolvedAdapterName = adapter.name;
-  const defaultTopic = parsed.topic || adapter.defaultTopic;
-  const validationCommands = parsed.validationCommands?.length ? parsed.validationCommands : adapter.validationCommands;
-  const preflightCommands = parsed.preflightCommands?.length ? parsed.preflightCommands : adapter.preflightCommands;
-  const skills = ensureMandatorySkills(parsed.skills?.length ? parsed.skills : adapter.skills);
-  const stopConditions = parsed.stopConditions?.length ? parsed.stopConditions : adapter.stopConditions;
+export function initDefaults(parsed: InitParsedCommand, _cwd?: string): InitDefaults {
+  const defaults = DEVELOPMENT_GOAL_DEFAULTS;
+  const resolvedAdapterName = defaults.name;
+  const defaultTopic = parsed.topic || defaults.defaultTopic;
+  const validationCommands = parsed.validationCommands?.length ? parsed.validationCommands : defaults.validationCommands;
+  const preflightCommands = parsed.preflightCommands?.length ? parsed.preflightCommands : defaults.preflightCommands;
+  const skills = ensureMandatorySkills(parsed.skills?.length ? parsed.skills : defaults.skills);
+  const stopConditions = parsed.stopConditions?.length ? parsed.stopConditions : defaults.stopConditions;
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, false, false);
   const maxIterations = parsed.iterations ? clampIterations(parsed.iterations) : undefined;
   const logPath = parsed.logPath || DEFAULT_LOG_RELATIVE;
 
   return {
     adapterName: resolvedAdapterName,
-    adapter,
+    defaults,
     config: {
-      adapter: resolvedAdapterName,
       defaultTopic,
       language: DEFAULT_LANGUAGE,
       skills,
@@ -79,7 +78,7 @@ export function splitLinesOrDefault(value: string, fallback: string[]): string[]
 export function initConfigSummary(config: ProjectConfig, cwd: string, configRelative = DEFAULT_CONFIG_RELATIVE): string {
   return [
     `Target: ${relativeToCwd(cwd, path.join(cwd, configRelative))}`,
-    `Adapter: ${config.adapter}`,
+    `Defaults: ${DEVELOPMENT_GOAL_DEFAULTS.name}`,
     `Objective: ${config.defaultTopic}`,
     `Preferred language: ${config.language || DEFAULT_LANGUAGE}`,
     `Iterations: ${iterationCapSummary(config.maxIterations)}`,

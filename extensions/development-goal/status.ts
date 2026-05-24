@@ -39,7 +39,6 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
   const last = readLastLoopRecord(logPath);
   return [
     statusLine(s),
-    ...(s.adapterName && s.adapterName !== "none" ? [`adapter: ${s.adapterName}`] : []),
     ...(s.topic ? [`topic: ${objectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}`] : []),
     `state: ${stateExplanation(s, last)}`,
     ...(s.active ? [`budget: ${loopBudgetSummary(s)}`] : []),
@@ -56,8 +55,7 @@ export function statusLine(s: LoopStatusState, theme?: UiThemeLike): string {
   return compactJoin([
     paint(theme, status.color, `${status.icon} ${status.label}`),
     paint(theme, "dim", s.active ? compactIterationProgress(s) : "goal"),
-    s.adapterName !== "none" ? paint(theme, "dim", s.adapterName) : undefined,
-    s.adapterName !== "none" ? paint(theme, deliveryColor(s), deliverySegment(s)) : undefined,
+    paint(theme, deliveryColor(s), deliverySegment(s)),
     context ? paint(theme, "muted", context) : undefined,
   ]);
 }
@@ -257,7 +255,7 @@ function statusCommandHints(s: LoopStatusState): string[] {
     "Commands:",
     "  start: /development-goal <topic>",
     "  inspect: /development-goal status | /development-goal analyze-logs",
-    "  configure: /development-goal init | /development-goal adapters | /development-goal help",
+    "  configure: /development-goal init | /development-goal help",
   ];
 }
 

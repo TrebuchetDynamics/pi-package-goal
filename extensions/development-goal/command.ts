@@ -1,6 +1,6 @@
 import { parseTokenBudget } from "./budget.ts";
 
-export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "grill-me" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
+export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "grill-me" | "pause" | "resume" | "stop" | "status" | "init" | "analyze-logs" | "help";
 
 export type SinceFilter = {
   cutoffMs: number;
@@ -10,7 +10,6 @@ export type SinceFilter = {
 
 export type ParsedCommand = {
   command: DevelopmentLoopCommand;
-  adapter?: string;
   topic?: string;
   iterations?: number;
   tokenBudget?: number;
@@ -32,9 +31,8 @@ export type ParsedCommand = {
   stopConditions: string[];
 };
 
-const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
-const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
-const DEFAULT_ADAPTER_NAMES = ["generic-git"];
+const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "stop", "status", "init", "analyze-logs", "help"]);
+const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "status", "stop", "init", "analyze-logs", "help"];
 
 export function completeCommandArgs(prefix: string) {
   return COMMAND_COMPLETIONS
@@ -42,7 +40,7 @@ export function completeCommandArgs(prefix: string) {
     .map((value) => ({ value, label: value }));
 }
 
-export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFAULT_ADAPTER_NAMES): ParsedCommand {
+export function parseArgs(raw: string | undefined): ParsedCommand {
   const tokens = tokenizeArgs(raw || "");
   const commandToken = tokens[0];
   const parsedCommand = commandToken ? commandFromToken(commandToken) : undefined;
@@ -55,18 +53,8 @@ export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFA
     stopConditions: [],
   };
   const positional: string[] = [];
-  const adapterSet = new Set(adapterNames);
-
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
-    if (token === "--adapter") {
-      parsed.adapter = tokens[++i];
-      continue;
-    }
-    if (token.startsWith("--adapter=")) {
-      parsed.adapter = token.slice("--adapter=".length);
-      continue;
-    }
     if (token === "--iterations" || token === "--max-iterations" || token === "-n") {
       parsed.iterations = numberOrUndefined(tokens[++i]);
       continue;
@@ -230,9 +218,6 @@ export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFA
     positional.push(token);
   }
 
-  if (command === "init" && !parsed.adapter && positional.length > 0 && adapterSet.has(positional[0])) {
-    parsed.adapter = positional.shift();
-  }
   if (!parsed.topic && positional.length > 0) {
     parsed.topic = positional.join(" ").trim();
   }

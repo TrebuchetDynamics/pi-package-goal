@@ -10,6 +10,7 @@ const require = createRequire(import.meta.url);
 const jitiEntry = "/home/xel/.nvm/versions/node/v22.21.1/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/jiti/lib/jiti.cjs";
 
 const expectedSkills = [
+  "goal",
   "modern-web-guidance",
   "chrome-extensions",
   "tdd",
@@ -35,7 +36,7 @@ const expectedSkills = [
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 4500,
+  maxTotalChars: 4700,
 };
 
 function readJson(file) {
@@ -454,7 +455,7 @@ async function testExtensionFolderArchitecture() {
   assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts", "git-commit-push.ts", "understand.ts"], "extension root must contain only public extension entrypoints");
 
   const expectedPrivateModules = [
-    "adapter.ts",
+    "defaults.ts",
     "blocker.ts",
     "budget.ts",
     "command.ts",
@@ -765,8 +766,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   const jiti = createJiti(import.meta.url, { interopDefault: true });
   const mod = await jiti.import(path.join(root, "extensions", "development-goal.ts"));
   assert.equal(typeof mod.default, "function");
-  assert.equal(typeof mod.__test__.resolveProjectAdapter, "function");
-  assert.deepEqual(mod.__test__.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
+  assert.equal(typeof mod.__test__.resolveDevelopmentGoalSettings, "function");
+  assert.equal(mod.__test__.DEVELOPMENT_GOAL_DEFAULTS.name, "generic-git");
 
   const identityMod = await jiti.import(path.join(root, "extensions", "goal-core", "identity.ts"));
   assert.deepEqual(identityMod.deriveGoalMarkers("development-goal"), {
@@ -866,9 +867,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     JSON.stringify({ at: "2026-05-22T20:05:00.000Z", event: "loop_finished", iteration: 2, decision: "done", blockerState: "none" }),
   ].join("\n"), "utf8");
   const statusState = { active: true, adapterName: "generic-git", topic: "Ship status helper", iteration: 2, maxIterations: 3, phase: "running", logPath: statusLogPath, commit: true, push: true };
-  assert.equal(statusMod.statusLine(statusState), "● run · i2/3 · generic-git · git:push · Ship status helper");
-  assert.equal(statusMod.statusLine(statusState, { fg: (color, text) => `<${color}>${text}</${color}>` }), "<accent>● run</accent> · <dim>i2/3</dim> · <dim>generic-git</dim> · <success>git:push</success> · <muted>Ship status helper</muted>");
-  assert.equal(statusMod.statusLine({ ...statusState, active: false, phase: "done", lastDecision: "done", lastReason: "preparing_for_compaction" }), "✓ done · goal · generic-git · git:push");
+  assert.equal(statusMod.statusLine(statusState), "● run · i2/3 · git:push · Ship status helper");
+  assert.equal(statusMod.statusLine(statusState, { fg: (color, text) => `<${color}>${text}</${color}>` }), "<accent>● run</accent> · <dim>i2/3</dim> · <success>git:push</success> · <muted>Ship status helper</muted>");
+  assert.equal(statusMod.statusLine({ ...statusState, active: false, phase: "done", lastDecision: "done", lastReason: "preparing_for_compaction" }), "✓ done · goal · git:push");
   const extractedStatus = statusMod.statusReport(statusState, statusTemp);
   assert.match(extractedStatus, /budget: elapsed .*; iterations 2\/3; remaining 1/);
   assert.match(extractedStatus, /Last event:\n  event: loop_finished\n  at: 2026-05-22T20:05:00.000Z\n  iteration: 2\n  decision: done\n  blocker: none/);
@@ -877,7 +878,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   const idleStatus = statusMod.statusReport({ active: false, adapterName: "none", topic: "", iteration: 1, maxIterations: Number.MAX_SAFE_INTEGER, phase: "idle", logPath: statusLogPath, commit: false, push: false }, statusTemp);
   assert.doesNotMatch(idleStatus, /adapter: none/);
   assert.doesNotMatch(idleStatus, /^topic:/m);
-  assert.match(idleStatus, /Commands:\n  start: \/development-goal <topic>\n  inspect: \/development-goal status \| \/development-goal analyze-logs\n  configure: \/development-goal init \| \/development-goal adapters \| \/development-goal help/);
+  assert.match(idleStatus, /Commands:\n  start: \/development-goal <topic>\n  inspect: \/development-goal status \| \/development-goal analyze-logs\n  configure: \/development-goal init \| \/development-goal help/);
   assert.equal(statusMod.readLastLoopRecord(statusLogPath).event, "loop_finished");
   assert.deepEqual(statusMod.readRecentReportRecords(statusLogPath).map((record) => record.iteration), [2, 1]);
   assert.deepEqual(statusMod.statusWidgetLines(statusState, statusTemp), ["last loop_finished · 20:05:00 · i2 · blocker none · log .pi/development-goal/logs.jsonl"]);
@@ -1051,9 +1052,9 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(read("README.md"), /\/git-commit-push/);
   assert.match(read("README.md"), /replaces `\/development-goal git-commit-push`/);
   assert.match(read("README.md"), /\/development-goal improve-codebase-architecture/);
-  assert.deepEqual(commandMod.parseArgs("init generic-git --yes --no-push"), {
+  assert.deepEqual(commandMod.parseArgs("init --yes --no-push release checks"), {
     command: "init",
-    adapter: "generic-git",
+    topic: "release checks",
     yes: true,
     push: false,
     validationCommands: [],
@@ -1148,42 +1149,40 @@ async function testExtensionLoadsAndRegistersCommands() {
   fs.writeFileSync(configPath, JSON.stringify("not-object"), "utf8");
   assert.deepEqual(configMod.loadProjectConfig(configPath), { error: "config is not a JSON object" });
 
-  const adapterMod = await jiti.import(path.join(root, "extensions", "development-goal", "adapter.ts"));
-  assert.deepEqual(adapterMod.BUILT_IN_ADAPTERS.map((adapter) => adapter.name), ["generic-git"]);
-  assert.deepEqual(adapterMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
-  const genericAdapter = adapterMod.getAdapterByName("generic-git");
-  assert.equal(genericAdapter.description, "Conservative generic git-project development goal");
-  assert.equal(adapterMod.getAdapterByName("missing"), undefined);
-  assert.deepEqual(adapterMod.mergeAdapterConfig(genericAdapter, {
+  const defaultsMod = await jiti.import(path.join(root, "extensions", "development-goal", "defaults.ts"));
+  assert.equal(defaultsMod.DEVELOPMENT_GOAL_DEFAULTS.name, "generic-git");
+  assert.deepEqual(defaultsMod.ensureMandatorySkills(["tdd", "caveman", "tdd"]), ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill"]);
+  const genericDefaults = defaultsMod.DEVELOPMENT_GOAL_DEFAULTS;
+  assert.equal(genericDefaults.description, "Conservative generic git-project development goal");
+  assert.deepEqual(defaultsMod.mergeDevelopmentGoalConfig({
     defaultTopic: "custom topic",
     skills: ["writing-plans"],
     validationCommands: ["npm test"],
     maxIterations: 4,
     push: true,
   }), {
-    adapter: "generic-git",
     defaultTopic: "custom topic",
     language: "English",
-    skills: ["improve-codebase-architecture", "grill-me", "caveman", "writing-plans"],
-    preflightCommands: genericAdapter.preflightCommands,
+    skills: ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill", "writing-plans"],
+    preflightCommands: genericDefaults.preflightCommands,
     validationCommands: ["npm test"],
     commit: false,
     push: true,
     logPath: path.join(".pi", "development-goal", "logs.jsonl"),
     maxIterations: 4,
-    stopConditions: genericAdapter.stopConditions,
+    stopConditions: genericDefaults.stopConditions,
   });
-  const adapterTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-adapter-"));
+  const adapterTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-defaults-"));
   fs.mkdirSync(path.join(adapterTemp, ".pi"), { recursive: true });
   fs.writeFileSync(path.join(adapterTemp, ".pi", "development-goal.json"), JSON.stringify({ defaultTopic: "from config", skills: ["writing-shape"], commit: true }), "utf8");
-  const resolvedAdapter = adapterMod.resolveProjectAdapter(adapterTemp, "generic-git");
-  assert.equal(resolvedAdapter.configLoaded, true);
-  assert.equal(resolvedAdapter.configPath, path.join(adapterTemp, ".pi", "development-goal.json"));
-  assert.equal(resolvedAdapter.adapter.name, "generic-git");
-  assert.equal(resolvedAdapter.config.defaultTopic, "from config");
-  assert.equal(resolvedAdapter.config.commit, true);
-  assert.ok(resolvedAdapter.config.skills.includes("writing-shape"));
-  assert.ok(resolvedAdapter.config.skills.includes("improve-codebase-architecture"));
+  const resolvedSettings = defaultsMod.resolveDevelopmentGoalSettings(adapterTemp);
+  assert.equal(resolvedSettings.configLoaded, true);
+  assert.equal(resolvedSettings.configPath, path.join(adapterTemp, ".pi", "development-goal.json"));
+  assert.equal(resolvedSettings.defaults.name, "generic-git");
+  assert.equal(resolvedSettings.config.defaultTopic, "from config");
+  assert.equal(resolvedSettings.config.commit, true);
+  assert.ok(resolvedSettings.config.skills.includes("writing-shape"));
+  assert.ok(resolvedSettings.config.skills.includes("improve-codebase-architecture"));
 
   const initConfigMod = await jiti.import(path.join(root, "extensions", "development-goal", "init-config.ts"));
   const initDefaults = initConfigMod.initDefaults({
@@ -1205,7 +1204,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(initDefaults.config.commit, true);
   assert.equal(initDefaults.config.push, true);
   assert.equal(initDefaults.config.logPath, "custom/logs.jsonl");
-  assert.deepEqual(initDefaults.config.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
+  assert.deepEqual(initDefaults.config.skills, ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill"]);
   assert.deepEqual(initConfigMod.splitLinesOrDefault(" one\n\n two \r\n", ["fallback"]), ["one", "two"]);
   assert.deepEqual(initConfigMod.splitLinesOrDefault("\n ", ["fallback"]), ["fallback"]);
   assert.equal(initConfigMod.shouldPromptForInit({ yes: true }, { hasUI: true, ui: { select() {}, input() {}, editor() {}, confirm() {} } }), false);
@@ -1213,10 +1212,10 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(initConfigMod.shouldPromptForInit({ yes: false }, { hasUI: true, ui: { select() {}, input() {}, editor() {} } }), false);
   assert.equal(initConfigMod.clampIterations(0), 1);
   assert.equal(initConfigMod.clampIterations(30), 25);
-  assert.deepEqual(initConfigMod.initDefaults({ command: "init", validationCommands: [], preflightCommands: [], skills: [], stopConditions: [] }).config.validationCommands, genericAdapter.validationCommands);
+  assert.deepEqual(initConfigMod.initDefaults({ command: "init", validationCommands: [], preflightCommands: [], skills: [], stopConditions: [] }).config.validationCommands, genericDefaults.validationCommands);
   const initSummary = initConfigMod.initConfigSummary(initDefaults.config, adapterTemp);
   assert.match(initSummary, /Target: \.pi\/development-goal\.json/);
-  assert.match(initSummary, /Adapter: generic-git/);
+  assert.match(initSummary, /Defaults: generic-git/);
   assert.match(initSummary, /Git delivery: push/);
   assert.match(initSummary, /Validation: npm test/);
 
@@ -1238,7 +1237,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     push: true,
     tokenBudget: 98500,
   };
-  const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
+  const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedSettings, adapterTemp);
   assert.match(extractedPrompt, /Development Goal iteration 2\/3: Direct slice/);
   assert.match(extractedPrompt, /Lane direct; target 1200 tokens/);
   assert.doesNotMatch(extractedPrompt, /Start with improve-codebase-architecture/);
@@ -1255,7 +1254,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(extractedPrompt, /state ownership, feedback\/validation, blast radius, and ordering/);
   assert.match(extractedPrompt, /Caveman mode: always on/);
   assert.ok(extractedPrompt.length <= 3900, `direct iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
-  const broadFirstPrompt = promptsMod.buildIterationPrompt({ ...promptState, topic: "discover and complete largest safe useful work", iteration: 1 }, resolvedAdapter, adapterTemp);
+  const broadFirstPrompt = promptsMod.buildIterationPrompt({ ...promptState, topic: "discover and complete largest safe useful work", iteration: 1 }, resolvedSettings, adapterTemp);
   assert.match(broadFirstPrompt, /Development Goal iteration 1\/3: Broad scout/);
   assert.match(broadFirstPrompt, /Lane broad-first-pass; target 2500 tokens/);
   assert.match(broadFirstPrompt, /include broadScoutCache in DEV_GOAL_REPORT/);
@@ -1268,7 +1267,7 @@ async function testExtensionLoadsAndRegistersCommands() {
       testCommands: ["npm test"],
       architectureNotes: ["cache lives in Development Goal state"],
     },
-  }, resolvedAdapter, adapterTemp);
+  }, resolvedSettings, adapterTemp);
   assert.match(broadPrompt, /Development Goal iteration 2\/3: Broad scout/);
   assert.match(broadPrompt, /Lane broad-followup; target 1400 tokens/);
   assert.match(broadPrompt, /reuse cached scout notes/);
@@ -1279,14 +1278,14 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(broadPrompt, /grill-me self-answer-first/);
   assert.match(broadPrompt, /For broad work, inspect:/);
   assert.ok(broadPrompt.length <= 4500, `broad iteration prompt should stay token-efficient; got ${broadPrompt.length} chars`);
-  assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
-  assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
-  assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
+  assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedSettings, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
+  assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedSettings, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
+  assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedSettings, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final report for iteration 2\/3/);
-  assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
-  assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
-  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
-  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
+  assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedSettings, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
+  assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedSettings, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
+  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedSettings, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
+  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedSettings, adapterTemp, "release hardening"), /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
 
   const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal", "tool-safety.ts"));
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: false, push: false }, "bash", { command: "git push origin main" }), { action: "allow" });
@@ -1415,7 +1414,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   const promptRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-prompt-topic-"));
   fs.mkdirSync(path.join(promptRoot, ".git"));
   try {
-    const resolved = mod.__test__.resolveProjectAdapter(promptRoot, "generic-git");
+    const resolved = mod.__test__.resolveDevelopmentGoalSettings(promptRoot);
     const prompt = mod.__test__.buildIterationPrompt({
       active: true,
       adapterName: "generic-git",
@@ -1670,7 +1669,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(statusUpdates.at(-1).value, /<accent>● run<\/accent>/);
     assert.ok(statusUpdates.some((update) => update.key === "development-goal" && update.value === undefined), "legacy development-goal status should be cleared after the status key rename");
     assert.equal(entries.at(-1).data.tokenBudget, 98500);
-    assert.match(statusUpdates.at(-1).value, /<dim>i1\/2<\/dim> · <dim>generic-git<\/dim> · <dim>git:manual<\/dim> · <muted>README polish<\/muted>/);
+    assert.match(statusUpdates.at(-1).value, /<dim>i1\/2<\/dim> · <dim>git:manual<\/dim> · <muted>README polish<\/muted>/);
     assert.equal(widgetUpdates.at(-1).key, "development-goal");
     assert.ok(widgetUpdates.some((update) => update.key === "development-goal" && update.value === undefined), "legacy development-goal widget should be cleared after the widget key rename");
     assert.equal(widgetUpdates.at(-1).value.length, 1, "development-goal widget should show only detail because footer already shows status");
@@ -2195,29 +2194,6 @@ async function testExtensionLoadsAndRegistersCommands() {
     } finally {
       fs.rmSync(noisySteeringRoot, { recursive: true, force: true });
     }
-
-    fs.mkdirSync(path.join(e2eRoot, ".pi"), { recursive: true });
-    fs.writeFileSync(path.join(e2eRoot, ".pi", "development-goal.json"), JSON.stringify({
-      adapter: "docs-only",
-      defaultTopic: "polish docs",
-      validationCommands: ["npm test"],
-    }, null, 2));
-    await command.handler("adapters", ctx);
-    assert.equal(messages.at(-1).customType, "development-goal-adapters");
-    assert.match(messages.at(-1).content, /Detected adapter: generic-git/);
-    assert.doesNotMatch(messages.at(-1).content, /Project-configured adapter|docs-only|Built-in adapters:/);
-
-    fs.writeFileSync(path.join(e2eRoot, ".pi", "development-goal.json"), JSON.stringify({
-      adapter: {
-        value: "gormes",
-        label: "Gormes",
-        description: "Gormes Go-native Hermes-compatible agent runtime",
-      },
-      defaultTopic: "legacy object-valued adapter config",
-    }, null, 2));
-    await command.handler("adapters", ctx);
-    assert.match(messages.at(-1).content, /Detected adapter: generic-git/);
-    assert.doesNotMatch(messages.at(-1).content, /Detected adapter: gormes|Project-configured adapter/);
 
     const proactiveRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-proactive-compact-"));
     fs.mkdirSync(path.join(proactiveRoot, ".git"));
@@ -2783,14 +2759,19 @@ async function testExtensionLoadsAndRegistersCommands() {
     await command.handler("init --yes", initCtx);
     assert.deepEqual(initPrompts, []);
     const written = JSON.parse(fs.readFileSync(path.join(initRoot, ".pi", "development-goal.json"), "utf8"));
-    assert.equal(written.adapter, "generic-git");
+    assert.equal(written.adapter, undefined);
     assert.equal(written.commit, false);
     assert.equal(written.push, false);
     assert.equal(written.maxIterations, undefined);
     assert.equal(written.language, "English");
-    assert.equal(written.skills[0], "improve-codebase-architecture");
-    assert.equal(written.skills[1], "grill-me");
-    assert.equal(written.skills[2], "caveman");
+    assert.equal(written.skills[0], "caveman");
+    assert.equal(written.skills[1], "goal");
+    assert.equal(written.skills[2], "grill-me");
+    assert.equal(written.skills[3], "grill-with-docs");
+    assert.equal(written.skills[4], "improve-codebase-architecture");
+    assert.equal(written.skills[5], "diagnose");
+    assert.equal(written.skills[6], "tdd");
+    assert.equal(written.skills[7], "write-a-skill");
     assert.ok(written.skills.some((skill) => /repo-local skills/.test(skill)));
     assert.ok(written.skills.some((skill) => /greploop/.test(skill)));
     assert.ok(written.stopConditions.some((condition) => /TODO\.md/.test(condition)));
@@ -2861,7 +2842,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.ok(promptCalls.some((call) => call.name === "confirm"), "interactive init must confirm before writing");
 
     const configured = JSON.parse(fs.readFileSync(path.join(interactiveInitRoot, ".pi", "development-goal.json"), "utf8"));
-    assert.equal(configured.adapter, "generic-git");
+    assert.equal(configured.adapter, undefined);
     assert.equal(configured.defaultTopic, "ship interactive init");
     assert.equal(configured.language, "Spanish");
     assert.equal(configured.maxIterations, undefined);
@@ -2869,7 +2850,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "verification-before-completion"]);
+    assert.deepEqual(configured.skills, ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill", "verification-before-completion"]);
     assert.deepEqual(configured.stopConditions, ["credentials missing"]);
     assert.equal(configured.logPath, ".dev-goal/logs.jsonl");
   } finally {
@@ -2902,7 +2883,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(configured.push, true);
     assert.deepEqual(configured.validationCommands, ["npm test", "git diff --check"]);
     assert.deepEqual(configured.preflightCommands, ["git status --short"]);
-    assert.deepEqual(configured.skills, ["improve-codebase-architecture", "grill-me", "caveman", "tdd"]);
+    assert.deepEqual(configured.skills, ["caveman", "goal", "grill-me", "grill-with-docs", "improve-codebase-architecture", "diagnose", "tdd", "write-a-skill"]);
     assert.deepEqual(configured.stopConditions, ["review blockers are unresolved"]);
     assert.equal(configured.logPath, ".dev-goal/logs.jsonl");
 
@@ -3670,7 +3651,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /\.pi\/e2e-goal\/logs\.jsonl/);
   assert.match(readme, /## Included skills/);
   assert.match(readme, /Project-local configuration for any repo/);
-  assert.match(readme, /"adapter": "generic-git"/);
+  assert.doesNotMatch(readme, /"adapter": "generic-git"/);
   assert.doesNotMatch(readme, /"adapter": "docs-goal"/);
   assert.doesNotMatch(readme, /--adapter <name>/);
   assert.doesNotMatch(readme, /wizard in the Pi TUI for adapter,/);
@@ -3745,7 +3726,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
   assert.match(readme, /If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`/);
   assert.match(readme, /End report quality checklist/);
-  assert.match(readme, /Scope and slice: exact absolute project path, adapter, and selected slice/);
+  assert.match(readme, /Scope and slice: exact absolute project path and selected slice/);
   assert.match(readme, /Paths: use absolute paths for scope and human-readable changed-file evidence/);
   assert.match(readme, /Blocked Work and Pivoted Work Completed: include both sections/);
   assert.match(readme, /Changes: exact files plus what changed and why/);
@@ -3791,6 +3772,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /mv ~\/\.codex\/state_\*\.sqlite\* "\$backup_dir"\//);
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-goal status/);
+  assert.match(readme, /`goal`/);
+  assert.match(readme, /completion audit/);
   assert.match(readme, /`grill-me`/);
   assert.match(readme, /`to-issues`/);
   assert.match(readme, /`to-prd`/);
@@ -3848,6 +3831,8 @@ async function testNoticesAndDocs() {
   assert.match(notices, /skills\/autoreview\//);
   assert.match(notices, /tolibear\/goalbuddy/);
   assert.match(notices, /no GoalBuddy code is bundled/);
+  assert.match(notices, /jthack\/claude-goal/);
+  assert.match(notices, /skills\/goal\//);
 
   assert.ok(exists("licenses/GoogleChrome-modern-web-guidance-LICENSE"));
   assert.ok(exists("licenses/mattpocock-skills-LICENSE"));
@@ -3855,6 +3840,7 @@ async function testNoticesAndDocs() {
   assert.ok(exists("licenses/greptileai-skills-LICENSE"));
   assert.ok(exists("licenses/openclaw-agent-skills-LICENSE"));
   assert.ok(exists("licenses/tolibear-goalbuddy-LICENSE"));
+  assert.ok(exists("licenses/jthack-claude-goal-LICENSE"));
 }
 
 await testPackageManifest();

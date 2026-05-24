@@ -2,13 +2,13 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
 import {
-  BUILT_IN_ADAPTERS,
   DEFAULT_CONFIG_RELATIVE,
   DEFAULT_LANGUAGE,
+  DEVELOPMENT_GOAL_DEFAULTS,
   ensureMandatorySkills,
-  resolveProjectAdapter,
-  type ResolvedProjectAdapter,
-} from "./adapter.ts";
+  resolveDevelopmentGoalSettings,
+  type ResolvedDevelopmentGoalSettings,
+} from "./defaults.ts";
 import { resolveCommitPush, type ProjectConfig } from "./config.ts";
 import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
 import {
@@ -348,7 +348,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (!steeringText || steeringText.startsWith("/")) return { action: "continue" };
 
     const cwd = contextCwd(ctx);
-    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    const resolved = resolveDevelopmentGoalSettings(cwd);
     state = {
       ...state,
       topic: mergeSteeringTopic(state.topic, steeringText),
@@ -383,7 +383,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   pi.on("tool_call", onToolCall);
 
   const command = {
-    description: "Run an adapter-aware project development goal",
+    description: "Run a project development goal",
     getArgumentCompletions: completeCommandArgs,
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
@@ -392,7 +392,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 }
 
 async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandContext) {
-  const parsed = parseArgs(args, BUILT_IN_ADAPTERS.map((adapter) => adapter.name));
+  const parsed = parseArgs(args);
   switch (parsed.command) {
     case "status":
       publishStatus(pi, ctx);
@@ -409,9 +409,6 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
       notify(ctx, "Development goal stopped.");
-      return;
-    case "adapters":
-      publishAdapters(pi, ctx);
       return;
     case "analyze-logs":
       publishLogAnalysis(pi, ctx, parsed, state.logPath || DEFAULT_LOG_RELATIVE);
@@ -478,14 +475,14 @@ async function startGrillGoal(pi: ExtensionAPI, ctx: UiLikeContext, parsed: Pars
   }
 
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, parsed.adapter);
-  const seedTopic = parsed.topic || resolved.config.defaultTopic || resolved.adapter.defaultTopic;
+  const resolved = resolveDevelopmentGoalSettings(cwd);
+  const seedTopic = parsed.topic || resolved.config.defaultTopic || resolved.defaults.defaultTopic;
   const language = resolved.config.language || DEFAULT_LANGUAGE;
   pendingGrillGoal = {
     active: true,
     seedTopic,
     language,
-    adapterName: resolved.adapter.name,
+    adapterName: resolved.defaults.name,
     startedAt: new Date().toISOString(),
   };
   pi.appendEntry(GRILL_STATE_TYPE, pendingGrillGoal);
@@ -558,7 +555,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
     return;
   }
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false, autoContinueCount: 0 };
   appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -580,9 +577,9 @@ async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCom
   }
 
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, parsed.adapter);
-  const adapter = resolved.adapter;
-  const topic = parsed.topic || resolved.config.defaultTopic || adapter.defaultTopic;
+  const resolved = resolveDevelopmentGoalSettings(cwd);
+  const defaults = resolved.defaults;
+  const topic = parsed.topic || resolved.config.defaultTopic || defaults.defaultTopic;
   const configuredIterationCap = parsed.iterations ?? (hasIterationCap(resolved.config) ? resolved.config.maxIterations : undefined);
   const maxIterations = configuredIterationCap ? clampIterations(configuredIterationCap) : DEFAULT_ITERATIONS;
   const { commit, push } = resolveCommitPush(parsed.commit, parsed.push, resolved.config.commit, resolved.config.push);
@@ -592,7 +589,7 @@ async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCom
 
   state = {
     active: true,
-    adapterName: adapter.name,
+    adapterName: defaults.name,
     runId,
     topic,
     iteration: 1,
@@ -612,10 +609,10 @@ async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCom
     autoContinueCount: 0,
   };
 
-  appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_adapter" });
+  appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_defaults" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
-  notify(ctx, `Starting development goal: ${adapter.name} ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
+  notify(ctx, `Starting development goal ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
   if (options.deferFirstPromptUntilIdle) {
     state = { ...state, phase: "queued" };
     appendLoopLog("iteration_queued", { reason: "deferred_first_prompt_until_idle" });
@@ -630,7 +627,7 @@ async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCom
 function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (!state.active) return;
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
@@ -641,7 +638,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
 function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): boolean {
   if (!state.active || !shouldCompactBeforeNextIteration(ctx) || typeof ctx.compact !== "function") return false;
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   state = {
     ...state,
     iteration: state.iteration + 1,
@@ -673,7 +670,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
 function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (typeof ctx.compact !== "function") return;
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   ctx.compact({
     customInstructions: `The provider reported a context-overflow error before DEV_GOAL markers were emitted. Compact the conversation, preserve the current development-goal state, and continue the same iteration after compaction.\n\n${buildDevelopmentGoalCompactionInstructions(state, resolved, cwd)}`,
     onComplete: () => notify(ctx, "Development goal context-overflow compaction completed; continuing automatically."),
@@ -689,7 +686,7 @@ function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContex
 
 function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   const prompt = buildCompactionResumePrompt(state, resolved, cwd);
   state = { ...state, phase: "queued", lastReason: "resuming_after_compaction" };
   appendLoopLog("compaction_resume_queued");
@@ -704,13 +701,13 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
 
 function continueQueuedIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionContext) {
   const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd, state.adapterName);
+  const resolved = resolveDevelopmentGoalSettings(cwd);
   appendLoopLog("compaction_continue_queued_iteration");
   notify(ctx, `Continuing development goal iteration ${iterationProgress(state)} after compaction.`);
   sendIterationPrompt(pi, ctx, resolved);
 }
 
-function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, targetIteration: number, attempt = 0) {
+function scheduleAutomaticIteration(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedDevelopmentGoalSettings, targetIteration: number, attempt = 0) {
   const delay = attempt === 0 ? 0 : AUTO_CONTINUATION_RETRY_MS;
   setTimeout(() => {
     if (!state.active || state.iteration !== targetIteration || state.phase !== "queued") return;
@@ -776,7 +773,7 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
     if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
 
     const cwd = contextCwd(ctx);
-    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    const resolved = resolveDevelopmentGoalSettings(cwd);
     const prompt = buildEmptyResponseRetryPrompt(state, resolved, cwd);
     state = { ...state, lastReason: "retrying_after_empty_provider_response" };
     appendLoopLog("empty_provider_response_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}` });
@@ -794,7 +791,7 @@ function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targe
     if ((state.emptyResponseRetries ?? 0) !== retryNumber) return;
 
     const cwd = contextCwd(ctx);
-    const resolved = resolveProjectAdapter(cwd, state.adapterName);
+    const resolved = resolveDevelopmentGoalSettings(cwd);
     const prompt = buildTransportErrorRetryPrompt(state, resolved, cwd);
     state = { ...state, lastReason: "retrying_after_provider_transport_error" };
     appendLoopLog("provider_transport_error_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}`, providerError: "transport" });
@@ -805,7 +802,7 @@ function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targe
   }, EMPTY_RESPONSE_RETRY_MS);
 }
 
-function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedProjectAdapter, asFollowUp = false) {
+function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedDevelopmentGoalSettings, asFollowUp = false) {
   const autoContinueLimit = autoContinueLimitFromEnv();
   if (shouldPauseForAutoContinueLimit(state.autoContinueCount, autoContinueLimit)) {
     state = { ...state, phase: "paused", lastReason: "auto_continue_limit_reached", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
@@ -878,15 +875,15 @@ async function initConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext) {
 async function buildInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string): Promise<ProjectConfig | undefined> {
   const defaults = initDefaults(parsed, cwd);
   if (!shouldPromptForInit(parsed, ctx)) return defaults.config;
-  return promptForInitConfig(parsed, ctx, cwd, defaults.adapterName);
+  return promptForInitConfig(parsed, ctx, cwd);
 }
 
-async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string, initialAdapterName: string): Promise<ProjectConfig | undefined> {
+async function promptForInitConfig(parsed: ParsedCommand, ctx: ExtensionCommandContext, cwd: string): Promise<ProjectConfig | undefined> {
   const ui = ctx.ui;
-  const defaults = initDefaults(parsed, cwd, initialAdapterName);
+  const defaults = initDefaults(parsed, cwd);
   const config: ProjectConfig = { ...defaults.config };
 
-  const defaultTopic = config.defaultTopic || defaults.adapter.defaultTopic;
+  const defaultTopic = config.defaultTopic || defaults.defaults.defaultTopic;
   const topicText = await ui.editor!("Default objective", defaultTopic);
   if (topicText === undefined) return cancelInit(ctx);
   config.defaultTopic = topicText.trim() || defaultTopic;
@@ -951,7 +948,6 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-goal resume — resume a paused goal at the current iteration",
     "- /development-goal stop — stop the active goal",
     "- /development-goal status — show current state",
-    "- /development-goal adapters — show detected adapter/config",
     "- /development-goal analyze-logs [path] — summarize one log file or a directory of goal logs",
     "- /development-goal analyze-logs --since=2h [path] — summarize only recent timestamped records",
     "- /development-goal analyze-logs --html [path] — also write a self-contained HTML health report",
@@ -981,20 +977,6 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   notify(ctx, text);
   if (typeof pi.sendMessage === "function") {
     pi.sendMessage({ customType: "development-goal-help", content: text, display: true });
-  }
-}
-
-function publishAdapters(pi: ExtensionAPI, ctx: UiLikeContext) {
-  const cwd = contextCwd(ctx);
-  const resolved = resolveProjectAdapter(cwd);
-  const text = [
-    `Detected adapter: ${resolved.adapter.name}`,
-    `Adapter description: ${resolved.adapter.description}`,
-    `Config: ${relativeToCwd(cwd, resolved.configPath)}${resolved.configLoaded ? " present" : " missing"}`,
-  ].join("\n");
-  notify(ctx, text);
-  if (typeof pi.sendMessage === "function") {
-    pi.sendMessage({ customType: "development-goal-adapters", content: text, display: true });
   }
 }
 
@@ -1056,7 +1038,7 @@ function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" |
 }
 
 export const __test__ = {
-  BUILT_IN_ADAPTERS,
+  DEVELOPMENT_GOAL_DEFAULTS,
   buildIterationPrompt,
   parseArgs,
   parseLoopDecision,
@@ -1064,7 +1046,7 @@ export const __test__ = {
   parseLoopReport,
   parseSinceFilter,
   parseValidated,
-  resolveProjectAdapter,
+  resolveDevelopmentGoalSettings,
   shouldCompactBeforeNextIteration,
   statusReport,
   tokenizeArgs,

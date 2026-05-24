@@ -1,7 +1,7 @@
 {
   "name": "pi-package-goal",
   "version": "0.1.0",
-  "description": "Adapter-aware Pi development-goal, E2E-goal, context-goal, git-commit-push, and understand extensions bundled with high-signal engineering and web skills.",
+  "description": "Pi development-goal, E2E-goal, context-goal, git-commit-push, and understand extensions bundled with high-signal engineering and web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
