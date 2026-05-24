@@ -1302,6 +1302,15 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedSettings, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
   assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedSettings, adapterTemp, "release hardening"), /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
 
+  const grillGoalMod = await jiti.import(path.join(root, "extensions", "development-goal", "grill-goal.ts"));
+  assert.equal(grillGoalMod.GRILL_STATE_TYPE, "development-goal-grill-state");
+  assert.equal(grillGoalMod.parseGrillGoalNextTopic("ready\nDEV_GOAL_NEXT_TOPIC: tighten prompts"), "tighten prompts");
+  assert.equal(grillGoalMod.parseGrillGoalNextTopic("DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>"), undefined);
+  assert.equal(grillGoalMod.parseGrillGoalBlocked("DEV_GOAL_NEXT_BLOCKED: owner decision"), "owner decision");
+  const grillState = { active: true, seedTopic: "seed", language: "English", adapterName: "generic-git", startedAt: new Date(0).toISOString() };
+  assert.equal(grillGoalMod.isGrillGoalState(grillState), true);
+  assert.strictEqual(grillGoalMod.restoreGrillGoalState([{ type: "custom", customType: "other", data: grillState }, { type: "custom", customType: "development-goal-grill-state", data: grillState }]), grillState);
+
   const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal", "tool-safety.ts"));
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: false, push: false }, "bash", { command: "git push origin main" }), { action: "allow" });
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: true, push: false }, "bash", { command: "git push origin main" }), {
