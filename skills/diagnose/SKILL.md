@@ -16,6 +16,14 @@ When exploring the codebase, use the project's domain glossary to get a clear me
 - [Codex local storage failures](references/codex-storage.md) — safe local cleanup path for `No space left on device`, `database or disk is full`, and damaged `~/.codex/state_*.sqlite` startup errors.
 - [Pi goal log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-goal`, `e2e-goal`, and custom goal logs across repo trees.
 
+## Skill handoffs
+
+- If a reproducible bug needs a new guardrail, hand the minimized failing case to `tdd` with trigger, repro artifact, next skill, and expected RED→GREEN regression signal.
+- If no correct test seam exists, hand off to `improve-codebase-architecture` with trigger, failed seam evidence, next skill, and expected deeper interface success signal.
+- If a suspected fix needs a disposable harness before touching production code, use `prototype` with trigger, prototype question, next skill, and expected learning signal.
+- If the bug is in a Pi extension, combine this loop with `pi-extensions-helper` API/docs checks and include the repro command plus expected smoke signal.
+- If Goal mode is active, report the repro command, failing symptom, fixed hypothesis, and passing signal as Goal evidence.
+
 ## Phase 1 — Build a feedback loop
 
 **This is the skill.** Everything else is mechanical. If you have a fast, deterministic, agent-runnable pass/fail signal for the bug, you will find the cause — bisection, hypothesis-testing, and instrumentation all just consume that signal. If you don't have one, no amount of staring at code will save you.

@@ -19,6 +19,14 @@ Read current docs first; Pi extension APIs move quickly.
 
 Do not rely on memory when writing API signatures.
 
+## Skill composition
+
+- Start with `pi-ecosystem-scout` when the work may reuse or adapt an existing Pi package, extension, or pattern; hand off the scout decision and candidate artifact.
+- Use `tdd` for command parsing, pure helpers, package manifests, and non-interactive extension behavior; success signal is focused tests around public extension behavior.
+- Use `diagnose` when extension behavior fails at runtime; build a small repro with `pi -e` or a focused command before changing code.
+- Use `prototype` for uncertain TUI/status/widget interactions before committing to package shape; preserve only the learned decision.
+- Hand final validation receipts to `git-commit-push`: type/test command, smoke test, manifest check, and `git diff --check`.
+
 ## Classify the extension shape
 
 Pick the smallest shape that matches the goal:

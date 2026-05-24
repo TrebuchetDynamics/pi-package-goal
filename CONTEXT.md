@@ -12,9 +12,25 @@ _Avoid_: stale resource manifests, deleted command entrypoints, docs that omit p
 The package-local extension at `extensions/understand.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.
 _Avoid_: silent startup network work, shell-injected git commands, bundling upstream code without notices
 
+**Understand Artifacts**:
+Generated files from `/understand`, such as `.understand-anything/knowledge-graph.json`, `.understand-anything/meta.json`, `codebase-map-understand.md`, and `*-understand-compare.md`. They are local agent-orientation artifacts, not package product files.
+_Avoid_: committing generated graph snapshots by default, treating stale maps as source of truth, packaging generated Understand output
+
+**Understand Compare**:
+A deterministic file-generation workflow that compares two existing Understand graphs for porting, rewrites, and pattern borrowing. It writes a Markdown compare map and does not auto-trigger follow-up LLM reasoning.
+_Avoid_: hidden model calls, expensive automatic analysis after file generation, requiring compare to run `/understand` itself
+
 **Skill Bundle**:
 The curated set of bundled skills under `skills/`. Skills load on demand through Pi's skill discovery.
 _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource paths
+
+**Skill Composition**:
+Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
+_Avoid_: central protocols every skill must remember, vague "use related skills" advice, handoffs without evidence
+
+**Handoff Evidence**:
+A small standard shape for skill-to-skill transfers: trigger, artifact, next skill, and success signal. It is guidance, not a rigid schema.
+_Avoid_: freeform vague handoffs, heavyweight forms, claims without a concrete artifact or success signal
 
 **Goal Skill**:
 An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation and requires a completion audit before done.

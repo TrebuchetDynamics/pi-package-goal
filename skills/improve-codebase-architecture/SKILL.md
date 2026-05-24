@@ -28,6 +28,14 @@ Key principles (see [LANGUAGE.md](LANGUAGE.md) for the full list):
 
 This skill is _informed_ by the project's domain model. The domain language gives names to good seams; ADRs record decisions the skill should not re-litigate.
 
+## Skill handoffs
+
+- Use evidence from `diagnose` when a bug exposed missing locality, hidden coupling, or no correct test seam; preserve the repro artifact and expected deeper-seam success signal.
+- Use failed/frustrating `tdd` planning as input when the public interface is too wide, too shallow, or unstable; preserve the testability artifact.
+- Use `grill-with-docs` after selecting a candidate so domain terms and durable decisions land in CONTEXT.md or ADRs.
+- Use `prototype` when two possible seams look plausible and a throwaway model can answer which has more leverage.
+- Return to `tdd` with the chosen interface, target tests, and success signal so behavior is locked at the new seam.
+
 ## Process
 
 ### 1. Explore

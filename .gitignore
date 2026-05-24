@@ -15,6 +15,12 @@ dist/
 *.tsbuildinfo
 *.tgz
 
+# Local Understand-Anything agent artifacts
+.understand-anything/
+*-codebase-map-understand.md
+*-understand-compare.md
+codebase-map-understand.md
+
 # Local environment and secrets
 .env
 .env.*

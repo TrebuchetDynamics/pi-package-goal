@@ -11,6 +11,13 @@ Use this before building new Pi infrastructure from scratch.
 
 Check whether the Pi ecosystem already has a useful package, extension, skill, theme, or reference pattern. Prefer adapting maintained community patterns over inventing a private one-off.
 
+## Skill composition
+
+- Hand `build` or `adapt` decisions to `pi-extensions-helper` with trigger, selected candidate/source artifact, next skill, and expected package validation signal.
+- Use `autoreview` before recommending installation of a third-party package with broad filesystem or shell access; success signal is no accepted safety findings.
+- Use `grill-me` when the scout result leaves a product choice: reuse, adapt, exclude, or build.
+- If a selected package changes the local repo, finish through `git-commit-push` so notices, licenses, and validation are audited.
+
 ## Sources
 
 Primary index:

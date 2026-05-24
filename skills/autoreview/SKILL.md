@@ -20,6 +20,13 @@ Based on the OpenClaw `autoreview` skill; this package bundles the workflow, not
 3. Use Codex review by default unless the user explicitly requested another engine.
 4. Do not push just to review. Push only when the user requested push, ship, or PR update.
 
+## Skill composition
+
+- Run after `tdd`, `diagnose`, or `pi-extensions-helper` has produced local validation evidence; review is not a substitute for tests.
+- Feed accepted findings back to the relevant specialist with trigger, finding artifact, next skill, and expected fix validation signal: bugs to `diagnose`, missing behavior coverage to `tdd`, API/package concerns to `pi-extensions-helper`.
+- If the user requested ship after review, hand the clean review result and test receipts to `git-commit-push`.
+- If Goal mode is active, record accepted/rejected findings and final clean review as Goal evidence.
+
 ## Contract
 
 - Treat findings as advisory. Never blindly apply them.

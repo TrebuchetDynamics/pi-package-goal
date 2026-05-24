@@ -14,6 +14,14 @@ Use this skill for the final delivery step after implementation work. It replace
 - If validation commands are provided, use them. Otherwise infer project validation, with `npm test` when `package.json` has a test script, plus `git diff --check`.
 - Ask only if ownership/scope is unclear, destructive git operations are needed, or credentials/remote state require an owner decision.
 
+## Skill composition
+
+- If validation fails because behavior is broken, pause delivery and use `diagnose`; hand off with trigger, failing command/output artifact, next skill, and expected passing repro/regression signal.
+- If the patch lacks focused coverage for new behavior, use `tdd`; hand off with changed behavior, uncovered artifact, next skill, and expected RED→GREEN test signal.
+- If the change is an extension/package resource, apply `pi-extensions-helper`; hand off with manifest/extension artifact and expected type/test/smoke signal.
+- If the user asks for a second-model or structured review before ship, run `autoreview`; hand off with diff scope and expected clean review signal.
+- If Goal mode is active, copy validation receipts, commit hash, and push result back into Goal evidence.
+
 ## Workflow
 
 1. Read repo instructions (`AGENTS.md`, package scripts, relevant docs) and inspect `git status --short --branch`.

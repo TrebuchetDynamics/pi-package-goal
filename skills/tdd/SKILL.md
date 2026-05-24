@@ -42,6 +42,14 @@ RIGHT (vertical):
 
 ## Workflow
 
+### Skill handoffs
+
+- Start from `diagnose` output when fixing a bug: the minimized repro artifact becomes the first RED test and the success signal is a passing regression plus original repro.
+- Use `prototype` before RED when the public behavior or state model is still unknown; hand off the question/artifact and do not turn prototype internals into tests.
+- Escalate to `improve-codebase-architecture` when the only available tests would couple to internals or miss the real seam; include failed seam evidence and expected interface success signal.
+- For Pi extension work, pair with `pi-extensions-helper` so tests cover current Pi APIs and package manifest behavior.
+- Before delivery, hand passing test evidence to `git-commit-push` rather than re-running an unrelated validation ritual.
+
 ### 1. Planning
 
 When exploring the codebase, use the project's domain glossary so that test names and interface vocabulary match the project's language, and respect ADRs in the area you're touching.
