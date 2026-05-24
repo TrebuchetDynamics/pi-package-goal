@@ -1282,7 +1282,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
-  assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
+  assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final report for iteration 2\/3/);
   assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
   assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
@@ -1814,7 +1814,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective satisfied by discovered project work and verified with npm test plus git diff --check.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)","git diff --check (pass)"],"nextSteps":["Optional: review final diff."]}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: done",
+        ].join("\n"),
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.active, false);
@@ -1870,7 +1874,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       await handlers.get("agent_end")({
         messages: [{
           role: "assistant",
-          content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+          content: [
+            'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective completed and verified with the configured validation commands.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)"],"nextSteps":["Optional: review final diff."]}',
+            "DEV_GOAL_VALIDATED: yes",
+            "DEV_GOAL_DECISION: done",
+          ].join("\n"),
         }],
       }, ctx);
     } finally {
@@ -1887,7 +1895,7 @@ async function testExtensionLoadsAndRegistersCommands() {
         role: "assistant",
         content: [
           "Typed delivery evidence follows.",
-          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Profile Control Center TUI shell and draft apply flow","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed","nextSteps":["Exercise real profile apply command","Add profile selection tests"]}',
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Profile Control Center TUI shell and draft apply flow","goalAchieved":true,"goalEvidence":"Profile Control Center TUI shell and draft apply flow are present in README.md and verified by git diff --check plus npm test.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["README.md"],"validationCommands":["git diff --check","npm test"],"commitHash":"abc1234","pushStatus":"pushed","nextSteps":["Optional: open a pull request for review."]}',
           "DEV_GOAL_VALIDATED: yes",
           "DEV_GOAL_DECISION: done",
         ].join("\n"),
@@ -1903,18 +1911,21 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(typedReportFinished.commitHash, "abc1234");
     assert.equal(typedReportFinished.pushStatus, "pushed");
     assert.equal(typedReportFinished.summary, "Profile Control Center TUI shell and draft apply flow");
+    assert.equal(typedReportFinished.goalAchieved, true);
+    assert.equal(typedReportFinished.goalEvidence, "Profile Control Center TUI shell and draft apply flow are present in README.md and verified by git diff --check plus npm test.");
     assert.equal(typedReportFinished.blockedWork, "none");
     assert.equal(typedReportFinished.pivotedWorkCompleted, "none");
-    assert.deepEqual(typedReportFinished.nextSteps, ["Exercise real profile apply command", "Add profile selection tests"]);
+    assert.deepEqual(typedReportFinished.nextSteps, ["Optional: open a pull request for review."]);
     const typedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
+    assert.match(typedStatus, /goal achieved: yes/);
+    assert.match(typedStatus, /goal evidence: Profile Control Center TUI shell/);
     assert.match(typedStatus, /summary: Profile Control Center TUI shell and draft apply flow/);
-    assert.match(typedStatus, /next 1: Exercise real profile apply command/);
-    assert.match(typedStatus, /next 2: Add profile selection tests/);
+    assert.match(typedStatus, /next 1: Optional: open a pull request for review\./);
     assert.match(typedStatus, /Recent report context:/);
-    assert.match(typedStatus, /1\. i1 · done\n     summary: Profile Control Center TUI shell and draft apply flow/);
-    assert.match(widgetUpdates.at(-1).value[0], /summary Profile Control Center TUI shell and draft apply flow/);
-    assert.match(widgetUpdates.at(-1).value[0], /next Exercise real profile apply command/);
-    assert.match(widgetUpdates.at(-1).value[0], /\+1 more/);
+    assert.match(typedStatus, /1\. i1 · done\n     goal achieved: yes\n     goal evidence: Profile Control Center TUI shell/);
+    assert.match(widgetUpdates.at(-1).value[0], /goal achieved/);
+    assert.match(widgetUpdates.at(-1).value[0], /proof Profile Control Center TUI shell/);
+    assert.match(widgetUpdates.at(-1).value[0], /next Optional: open a pull request for review\./);
 
     await command.handler("start --iterations=1 typed blocked report", ctx);
     const typedBlockedRunId = entries.at(-1).data.runId;
@@ -2027,7 +2038,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective completed and verified with the configured validation commands.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)"],"nextSteps":["Optional: review final diff."]}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: done",
+        ].join("\n"),
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
@@ -2051,7 +2066,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("agent_end")({
       messages: [{
         role: "assistant",
-        content: "Validated.\nBlocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done",
+        content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective completed and verified with the configured validation commands.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)"],"nextSteps":["Optional: review final diff."]}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: done",
+        ].join("\n"),
       }],
     }, ctx);
     assert.equal(entries.at(-1).data.phase, "done");
@@ -2068,7 +2087,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await new Promise((resolve) => setTimeout(resolve, 80));
     assert.equal(sent.length, sentBeforeWebSocketRetry + 1, "provider transport errors should automatically retry the current iteration");
     assert.match(sent.at(-1).content, /Retry development goal iteration after provider transport error/);
-    assert.doesNotMatch(sent.at(-1).content, /Return only the development goal final markers/);
+    assert.doesNotMatch(sent.at(-1).content, /Return only the development goal final report/);
 
     await command.handler("start --iterations=1 marker recovery", ctx);
     const sentBeforeMarkerRecovery = sent.length;
@@ -2080,12 +2099,16 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(entries.at(-1).data.lastReason, "missing_final_marker_recovery_requested");
     assert.equal(entries.at(-1).data.markerRecoveryRetries, 1);
     assert.equal(sent.length, sentBeforeMarkerRecovery + 1, "missing marker turns should send exactly one recovery prompt");
-    assert.match(sent.at(-1).content, /Return only the development goal final markers/);
+    assert.match(sent.at(-1).content, /Return only the development goal final report/);
     assert.match(sent.at(-1).content, /DEV_GOAL_VALIDATED: yes\|no/);
     assert.equal(notifications.at(-1).level, "info", "final-marker recovery should be informational, not a warning");
 
     await handlers.get("agent_end")({
-      messages: [{ role: "assistant", content: "Blocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
+      messages: [{ role: "assistant", content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective completed and verified with the configured validation commands.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)"],"nextSteps":["Optional: review final diff."]}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: done",
+        ].join("\n") }],
     }, ctx);
     assert.equal(entries.at(-1).data.active, false, "valid recovered markers should complete the loop normally");
     assert.equal(entries.at(-1).data.phase, "done");
@@ -2126,7 +2149,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.ok(providerNoiseStart.topicLength > providerNoiseStart.topic.length, "provider-noise logs should preserve raw topic length for diagnostics");
     assert.doesNotMatch(statusUpdates.at(-1).value, /Codex error|context_length|input exceeds the context window|Warning: Development goal/i);
     await handlers.get("agent_end")({
-      messages: [{ role: "assistant", content: "Blocked Work: none\nPivoted Work Completed: none\nDEV_GOAL_VALIDATED: yes\nDEV_GOAL_DECISION: done" }],
+      messages: [{ role: "assistant", content: [
+          'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Goal achieved with validation.","goalAchieved":true,"goalEvidence":"Original objective completed and verified with the configured validation commands.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":[],"validationCommands":["npm test (pass)"],"nextSteps":["Optional: review final diff."]}',
+          "DEV_GOAL_VALIDATED: yes",
+          "DEV_GOAL_DECISION: done",
+        ].join("\n") }],
     }, ctx);
 
     const noisySteeringRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-noisy-steering-"));
@@ -3691,7 +3718,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /runaway auto-continuation guard/);
   assert.match(readme, /No GoalBuddy code is copied/);
   assert.match(readme, /Human-readable end report/);
-  assert.match(readme, /structured `summary`, `blockerState`, `blockedWork`, `pivotedWorkCompleted`, and `nextSteps`/);
+  assert.match(readme, /structured `summary`, `goalAchieved`, `goalEvidence`, `blockerState`, `blockedWork`, `pivotedWorkCompleted`, and `nextSteps`/);
   assert.match(readme, /report summary, blocker-state, blocked-work, pivoted-work, next-step, missing-next-steps, and report quality warning counts/);
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
@@ -3704,7 +3731,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pivoted Work Completed: none \|/);
   assert.match(readme, /"blockedWork":"none"/);
   assert.match(readme, /"pivotedWorkCompleted":"none"/);
-  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports without `goalAchieved:true`, done reports missing concrete `goalEvidence`, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
   assert.match(readme, /one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report`/);
   assert.doesNotMatch(readme, /Example interrupted resume end report/);
   assert.doesNotMatch(readme, /Example partial validation end report/);

@@ -12,6 +12,10 @@ export type FinalStatus =
 export type ReportQualityIssueCode =
   | "missing_blocked_work"
   | "missing_pivoted_work_completed"
+  | "missing_goal_achieved"
+  | "done_without_goal_achieved"
+  | "missing_goal_evidence"
+  | "vague_goal_evidence"
   | "done_with_actionable_next_step"
   | "relative_human_changed_file"
   | "vague_typed_changed_file";
@@ -108,10 +112,12 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
   const blockerStateLines: string[] = [];
   const blockedWorkLines: string[] = [];
   const pivotedWorkCompletedLines: string[] = [];
+  const goalEvidenceLines: string[] = [];
   let summary: string | undefined;
+  let goalAchieved: boolean | undefined;
   let commitHash: string | undefined;
   let pushStatus: string | undefined;
-  let section: "changed" | "validation" | "nextSteps" | "blocker" | "blockedWork" | "pivotedWorkCompleted" | undefined;
+  let section: "changed" | "validation" | "nextSteps" | "blocker" | "blockedWork" | "pivotedWorkCompleted" | "goalEvidence" | undefined;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -124,6 +130,21 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
     if (summaryHeader) {
       summary = cleanReportText(summaryHeader[1]) || summary;
       section = undefined;
+      continue;
+    }
+
+    const goalAchievedHeader = trimmed.match(/^(?:Goal achieved|Objective achieved|Achieved goal)(?:\s+[^:]*)?:\s*(yes|no|true|false|achieved|not achieved|partial)\b\s*(.*)$/i);
+    if (goalAchievedHeader) {
+      goalAchieved = normalizeGoalAchieved(goalAchievedHeader[1]);
+      addInlineListItems(goalEvidenceLines, goalAchievedHeader[2], cleanReportText);
+      section = "goalEvidence";
+      continue;
+    }
+
+    const goalEvidenceHeader = trimmed.match(/^(?:Goal evidence|Completion evidence|Achievement evidence|How achieved|How proven|Goal proof)(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (goalEvidenceHeader) {
+      section = "goalEvidence";
+      addInlineListItems(goalEvidenceLines, goalEvidenceHeader[1], cleanReportText);
       continue;
     }
 
@@ -191,13 +212,17 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
     if (section === "blocker") addUnique(blockerStateLines, cleanReportText(bullet[1]));
     if (section === "blockedWork") addUnique(blockedWorkLines, cleanReportText(bullet[1]));
     if (section === "pivotedWorkCompleted") addUnique(pivotedWorkCompletedLines, cleanReportText(bullet[1]));
+    if (section === "goalEvidence") addUnique(goalEvidenceLines, cleanReportText(bullet[1]));
   }
 
   const blockedWork = blockedWorkLines.join("; ");
   const pivotedWorkCompleted = pivotedWorkCompletedLines.join("; ");
+  const goalEvidence = goalEvidenceLines.join("; ");
   const blockerState = blockerStateLines.join("; ") || blockedWork;
   const deliveryEvidence: DeliveryEvidence = {
     ...(summary ? { summary } : {}),
+    ...(goalAchieved !== undefined ? { goalAchieved } : {}),
+    ...(goalEvidence ? { goalEvidence } : {}),
     ...(blockerState ? { blockerState } : {}),
     ...(blockedWork ? { blockedWork } : {}),
     ...(pivotedWorkCompleted ? { pivotedWorkCompleted } : {}),
@@ -240,6 +265,12 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
   const pushValue = stringOrUndefined(rawReport.pushStatus) || stringOrUndefined(rawReport.pushed) || stringOrUndefined(rawReport.push);
   const pushStatus = pushValue ? normalizePushStatus(pushValue) : undefined;
   const summary = stringOrUndefined(rawReport.summary) || stringOrUndefined(rawReport.whatChanged);
+  const goalAchieved = booleanOrUndefined(rawReport.goalAchieved) ?? booleanOrUndefined(rawReport.objectiveAchieved) ?? normalizeGoalAchieved(stringOrUndefined(rawReport.achieved));
+  const goalEvidence = stringListAsText(rawReport.goalEvidence)
+    || stringListAsText(rawReport.completionEvidence)
+    || stringListAsText(rawReport.achievementEvidence)
+    || stringListAsText(rawReport.howProven)
+    || stringListAsText(rawReport.howAchieved);
   const blockedWork = stringListAsText(rawReport.blockedWork) || stringListAsText(rawReport.blocked_work);
   const pivotedWorkCompleted = stringListAsText(rawReport.pivotedWorkCompleted) || stringListAsText(rawReport.pivoted_work_completed) || stringListAsText(rawReport.pivotedWork);
   const blockerState = recordBlockerState(rawReport) || blockedWork;
@@ -247,6 +278,8 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
   const broadScoutCache = broadScoutCacheOrUndefined(rawReport);
   const deliveryEvidence: DeliveryEvidence = {
     ...(summary ? { summary } : {}),
+    ...(goalAchieved !== undefined ? { goalAchieved } : {}),
+    ...(goalEvidence ? { goalEvidence } : {}),
     ...(blockerState ? { blockerState } : {}),
     ...(blockedWork ? { blockedWork } : {}),
     ...(pivotedWorkCompleted ? { pivotedWorkCompleted } : {}),
@@ -306,11 +339,26 @@ export function validateReportQualityIssues(text: string, markerIndex?: number, 
   const issues: ReportQualityIssue[] = [];
   const blockedWork = stringOrUndefined(deliveryEvidence.blockedWork) || surface.blockedWork;
   const pivotedWorkCompleted = stringOrUndefined(deliveryEvidence.pivotedWorkCompleted) || surface.pivotedWorkCompleted;
+  const goalAchieved = booleanOrUndefined(deliveryEvidence.goalAchieved) ?? surface.goalAchieved;
+  const goalEvidence = stringOrUndefined(deliveryEvidence.goalEvidence) || surface.goalEvidence;
 
   if (!surface.hasBlockedWorkSection && !blockedWork) issues.push({ code: "missing_blocked_work", message: "missing Blocked Work section" });
   if (!surface.hasPivotedWorkCompletedSection && !pivotedWorkCompleted) issues.push({ code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" });
 
   const decisionForQuality = decision || parseFinalMarkerBlock(text)?.decision;
+  if (decisionForQuality === "done") {
+    if (goalAchieved === undefined) {
+      issues.push({ code: "missing_goal_achieved", message: "done report missing goalAchieved/Goal achieved evidence" });
+    } else if (goalAchieved !== true) {
+      issues.push({ code: "done_without_goal_achieved", message: "done report says goal is not achieved; use continue/blocked/stop instead" });
+    }
+    if (!goalEvidence) {
+      issues.push({ code: "missing_goal_evidence", message: "done report missing goalEvidence explaining how the objective was achieved" });
+    } else if (isVagueGoalEvidence(goalEvidence)) {
+      issues.push({ code: "vague_goal_evidence", message: `done report goalEvidence is too vague "${goalEvidence}"`, value: goalEvidence });
+    }
+  }
+
   const nextSteps = mergeNextSteps(stringArrayOrUndefined(deliveryEvidence.nextSteps), surface.nextSteps);
   const actionableDoneNextStep = decisionForQuality === "done" ? findActionableDoneNextStep(nextSteps) : undefined;
   if (actionableDoneNextStep) {
@@ -343,6 +391,8 @@ type ReportQualitySurface = {
   hasPivotedWorkCompletedSection: boolean;
   blockedWork?: string;
   pivotedWorkCompleted?: string;
+  goalAchieved?: boolean;
+  goalEvidence?: string;
   humanChangedFiles: string[];
   typedChangedFiles: string[];
   nextSteps: string[];
@@ -351,11 +401,13 @@ type ReportQualitySurface = {
 function reportQualitySurface(reportText: string): ReportQualitySurface {
   const blockedWorkLines: string[] = [];
   const pivotedWorkCompletedLines: string[] = [];
+  const goalEvidenceLines: string[] = [];
   const humanChangedFiles: string[] = [];
   const nextSteps: string[] = [];
   let hasBlockedWorkSection = false;
   let hasPivotedWorkCompletedSection = false;
-  let section: "changed" | "blockedWork" | "pivotedWorkCompleted" | "nextSteps" | undefined;
+  let goalAchieved: boolean | undefined;
+  let section: "changed" | "blockedWork" | "pivotedWorkCompleted" | "nextSteps" | "goalEvidence" | undefined;
 
   for (const line of reportText.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -377,6 +429,21 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
       hasPivotedWorkCompletedSection = true;
       section = "pivotedWorkCompleted";
       addInlineListItems(pivotedWorkCompletedLines, pivotedWorkHeader[1], cleanReportText);
+      continue;
+    }
+
+    const goalAchievedHeader = trimmed.match(/^(?:Goal achieved|Objective achieved|Achieved goal)(?:\s+[^:]*)?:\s*(yes|no|true|false|achieved|not achieved|partial)\b\s*(.*)$/i);
+    if (goalAchievedHeader) {
+      goalAchieved = normalizeGoalAchieved(goalAchievedHeader[1]);
+      section = "goalEvidence";
+      addInlineListItems(goalEvidenceLines, goalAchievedHeader[2], cleanReportText);
+      continue;
+    }
+
+    const goalEvidenceHeader = trimmed.match(/^(?:Goal evidence|Completion evidence|Achievement evidence|How achieved|How proven|Goal proof)(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (goalEvidenceHeader) {
+      section = "goalEvidence";
+      addInlineListItems(goalEvidenceLines, goalEvidenceHeader[1], cleanReportText);
       continue;
     }
 
@@ -405,6 +472,7 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
     if (section === "blockedWork") addUnique(blockedWorkLines, cleanReportText(bullet[1]));
     if (section === "pivotedWorkCompleted") addUnique(pivotedWorkCompletedLines, cleanReportText(bullet[1]));
     if (section === "nextSteps") addUnique(nextSteps, cleanReportText(bullet[1]));
+    if (section === "goalEvidence") addUnique(goalEvidenceLines, cleanReportText(bullet[1]));
   }
 
   const rawReport = parseTypedReportRecord(reportText);
@@ -417,6 +485,8 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
     hasPivotedWorkCompletedSection,
     blockedWork: blockedWorkLines.join("; ") || undefined,
     pivotedWorkCompleted: pivotedWorkCompletedLines.join("; ") || undefined,
+    goalAchieved,
+    goalEvidence: goalEvidenceLines.join("; ") || undefined,
     humanChangedFiles,
     typedChangedFiles,
     nextSteps,
@@ -440,6 +510,11 @@ function findActionableDoneNextStep(nextSteps: string[]): string | undefined {
     if (looksLikeGoalWorkNextStep(normalized)) return step;
   }
   return undefined;
+}
+
+function isVagueGoalEvidence(value: string): boolean {
+  const normalized = value.trim().toLowerCase().replace(/[.!]+$/g, "").replace(/\s+/g, " ");
+  return /^(?:done|complete|completed|fixed|works|it works|tests pass(?:ed)?|all tests pass(?:ed)?|validated|shipped|achieved|yes|no|none|n\/a)$/.test(normalized);
 }
 
 function isNoNextStepEvidence(value: string): boolean {
@@ -550,6 +625,14 @@ function booleanOrUndefined(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
 
+function normalizeGoalAchieved(value: string | undefined): boolean | undefined {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "yes" || normalized === "true" || normalized === "achieved") return true;
+  if (normalized === "no" || normalized === "false" || normalized === "not achieved" || normalized === "partial") return false;
+  return undefined;
+}
+
 function recordBlockerState(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.blockerState)
     || stringOrUndefined(record.blockerReason)
@@ -615,7 +698,7 @@ function looksLikeSectionHeader(value: string): boolean {
 }
 
 function looksLikeReportQualityResetHeader(value: string): boolean {
-  return /^(?:Scope|Selected slice|Validation(?: evidence)?|Commit\/push evidence|Blocker state|Possible next steps|Next steps|DEV_GOAL_REPORT):/i.test(value);
+  return /^(?:Scope|Selected slice|Goal achieved|Goal evidence|Completion evidence|Validation(?: evidence)?|Commit\/push evidence|Blocker state|Possible next steps|Next steps|DEV_GOAL_REPORT):/i.test(value);
 }
 
 function normalizePushStatus(value: string): string {

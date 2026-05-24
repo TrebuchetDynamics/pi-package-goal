@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseLoopLogRecord, recordEvent, recordTimestamp } from "./log-record.ts";
 import { loopBudgetSummary } from "./budget.ts";
-import { recordBlockerState, recordReportNextSteps, recordReportSummary } from "./report-record.ts";
+import { recordBlockerState, recordGoalAchieved, recordGoalEvidence, recordReportNextSteps, recordReportSummary } from "./report-record.ts";
 import { compactTopic, objectiveText } from "./topic.ts";
 import { DEVELOPMENT_GOAL_IDENTITY } from "./identity.ts";
 import { compactIterationProgress } from "./state.ts";
@@ -69,10 +69,14 @@ export function statusWidgetLines(s: LoopStatusState, cwd: string, theme?: UiThe
   const reportSummary = last ? recordReportSummary(last) : undefined;
   const reportNextSteps = last ? recordReportNextSteps(last) : [];
   const blockerState = last ? recordBlockerState(last) : undefined;
+  const goalAchieved = last ? recordGoalAchieved(last) : undefined;
+  const goalEvidence = last ? recordGoalEvidence(last) : undefined;
   const detail = compactJoin([
     recordEvent(last) ? `last ${recordEvent(last)}` : "last none",
     recordTime(last),
     last?.iteration !== undefined ? `i${String(last.iteration)}` : undefined,
+    goalAchieved !== undefined ? `goal ${goalAchieved ? "achieved" : "not achieved"}` : undefined,
+    goalEvidence ? `proof ${compactStatusText(goalEvidence)}` : undefined,
     reportSummary ? `summary ${compactStatusText(reportSummary)}` : undefined,
     blockerState ? `blocker ${compactStatusText(blockerState)}` : undefined,
     widgetNextStepsSummary(reportNextSteps),
@@ -184,6 +188,10 @@ function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
   if (record.iteration !== undefined) lines.push(`  iteration: ${String(record.iteration)}`);
   if (typeof record.decision === "string") lines.push(`  decision: ${record.decision}`);
   if (typeof record.reason === "string") lines.push(`  reason: ${record.reason}`);
+  const goalAchieved = recordGoalAchieved(record);
+  if (goalAchieved !== undefined) lines.push(`  goal achieved: ${goalAchieved ? "yes" : "no"}`);
+  const goalEvidence = recordGoalEvidence(record);
+  if (goalEvidence) lines.push(`  goal evidence: ${goalEvidence}`);
   const reportSummary = recordReportSummary(record);
   if (reportSummary) lines.push(`  summary: ${reportSummary}`);
   const blockerState = recordBlockerState(record);
@@ -211,6 +219,8 @@ function summarizeRecentReportContext(records: Record<string, unknown>[]): strin
 
 function formatRecentReportRecord(record: Record<string, unknown>, index: number): string[] {
   const summary = recordReportSummary(record);
+  const goalAchieved = recordGoalAchieved(record);
+  const goalEvidence = recordGoalEvidence(record);
   const blockerState = recordBlockerState(record);
   const header = compactJoin([
     typeof record.iteration === "number" ? `i${record.iteration}` : undefined,
@@ -219,6 +229,8 @@ function formatRecentReportRecord(record: Record<string, unknown>, index: number
   const nextSteps = recordReportNextSteps(record);
   return [
     `  ${index}. ${header}`,
+    goalAchieved !== undefined ? `     goal achieved: ${goalAchieved ? "yes" : "no"}` : undefined,
+    goalEvidence ? `     goal evidence: ${compactStatusText(goalEvidence)}` : undefined,
     summary ? `     summary: ${compactStatusText(summary)}` : undefined,
     blockerState ? `     blocker: ${compactStatusText(blockerState)}` : undefined,
     ...nextSteps.slice(0, 3).map((step, stepIndex) => `     next ${stepIndex + 1}: ${compactStatusText(step)}`),

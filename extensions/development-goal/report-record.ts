@@ -5,6 +5,8 @@ export function recordHasDeliveryEvidence(record: Record<string, unknown>): bool
     || recordValidationEvidence(record).length > 0
     || Boolean(recordCommitHash(record))
     || Boolean(recordReportSummary(record))
+    || recordGoalAchieved(record) !== undefined
+    || Boolean(recordGoalEvidence(record))
     || Boolean(recordBlockerState(record))
     || Boolean(recordBlockedWork(record))
     || Boolean(recordPivotedWorkCompleted(record))
@@ -31,6 +33,18 @@ export function recordCommitHash(record: Record<string, unknown>): string | unde
 
 export function recordReportSummary(record: Record<string, unknown>): string | undefined {
   return stringOrUndefined(record.summary) || stringOrUndefined(record.whatChanged);
+}
+
+export function recordGoalAchieved(record: Record<string, unknown>): boolean | undefined {
+  return booleanOrUndefined(record.goalAchieved) ?? booleanOrUndefined(record.objectiveAchieved);
+}
+
+export function recordGoalEvidence(record: Record<string, unknown>): string | undefined {
+  return stringListAsText(record.goalEvidence)
+    || stringListAsText(record.completionEvidence)
+    || stringListAsText(record.achievementEvidence)
+    || stringListAsText(record.howProven)
+    || stringListAsText(record.howAchieved);
 }
 
 export function recordReportQualityWarning(event: string, reportSummary: string | undefined): string | undefined {

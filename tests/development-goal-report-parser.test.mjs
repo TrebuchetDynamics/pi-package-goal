@@ -41,6 +41,8 @@ assert.deepEqual(parseOk([
     issues: [
       { code: "missing_blocked_work", message: "missing Blocked Work section" },
       { code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" },
+      { code: "missing_goal_achieved", message: "done report missing goalAchieved/Goal achieved evidence" },
+      { code: "missing_goal_evidence", message: "done report missing goalEvidence explaining how the objective was achieved" },
     ],
   },
 });
@@ -194,7 +196,7 @@ const doneWithActionableNextStep = [
   "Validation evidence: npm test (pass).",
   "Blocked Work: none.",
   "Pivoted Work Completed: none.",
-  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","goalAchieved":true,"goalEvidence":"Progress row was queued in /repo/progress.json and validated with npm test.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
   "DEV_GOAL_VALIDATED: yes",
   "DEV_GOAL_DECISION: done",
 ].join("\n");
@@ -215,7 +217,7 @@ const doneWithOptionalPrNextStep = [
   "Blocked Work: none.",
   "Pivoted Work Completed: none.",
   "Possible next steps: Optional: open or update a pull request from development to main.",
-  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Published final progress","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Optional: open or update a pull request from development to main."]}',
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Published final progress","goalAchieved":true,"goalEvidence":"Final progress was published in /repo/progress.json and validated with npm test.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Optional: open or update a pull request from development to main."]}',
   "DEV_GOAL_VALIDATED: yes",
   "DEV_GOAL_DECISION: done",
 ].join("\n");

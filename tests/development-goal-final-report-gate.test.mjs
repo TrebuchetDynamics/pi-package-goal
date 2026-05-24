@@ -110,7 +110,7 @@ const doneWithActionableNextStep = [
   "Validation evidence: npm test (pass).",
   "Blocked Work: none",
   "Pivoted Work Completed: none",
-  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","goalAchieved":true,"goalEvidence":"Progress row was queued in /repo/progress.json and validated with npm test.","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
   "DEV_GOAL_VALIDATED: yes",
   "DEV_GOAL_DECISION: done",
 ].join("\n");
@@ -118,6 +118,19 @@ const doneWithActionableNextStep = [
 const actionableDone = gateMod.evaluateFinalReportGate(doneWithActionableNextStep, { usedReportRepairRetry: false });
 assert.equal(actionableDone.action, "repair");
 assert.deepEqual(actionableDone.issueCodes, ["done_with_actionable_next_step"]);
+
+const doneMissingGoalProof = [
+  "Scope: /repo with adapter generic-git.",
+  "Validation evidence: npm test (pass).",
+  "Blocked Work: none",
+  "Pivoted Work Completed: none",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Stable slice shipped","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: done",
+].join("\n");
+const missingGoalProof = gateMod.evaluateFinalReportGate(doneMissingGoalProof, { usedReportRepairRetry: false });
+assert.equal(missingGoalProof.action, "repair");
+assert.deepEqual(missingGoalProof.issueCodes, ["missing_goal_achieved", "missing_goal_evidence"]);
 
 assert.deepEqual(gateMod.evaluateFinalReportGate("No markers", { usedReportRepairRetry: false }), {
   action: "parse_error",

@@ -123,10 +123,10 @@ Scope expansion: ${scopeExpansionGuidance}
 Greptile/review: explicit review context + gh/glab/p4 + auth only; else block with missing prereq. No comments/resolution/push/reshelve unless delivery policy allows.
 
 Final contract (JSON-only preferred; keep last):
-DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked","broadScoutCache":{"repoMap":"compact map","riskAreas":["risk"],"testCommands":["cmd"],"architectureNotes":["note"]}}
+DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief outcome","goalAchieved":true|false,"goalEvidence":"how objective is or is not satisfied; for done map request -> behavior/artifact -> validation receipts","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked","broadScoutCache":{"repoMap":"compact map","riskAreas":["risk"],"testCommands":["cmd"],"architectureNotes":["note"]}}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
-Rules: yes only after validation evidence. continue=green one row + more queued work. blocked=red/evidence missing/unsafe/prereq. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
+Rules: yes only after validation evidence. continue=green one row + more queued work. blocked=red/evidence missing/unsafe/prereq. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Every report states goalAchieved. done requires goalAchieved=true and goalEvidence explaining exactly how the original objective was achieved, with validation receipts. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
 
 }
 
@@ -214,11 +214,12 @@ ${buildIterationPrompt(s, resolved, cwd)}`;
 }
 
 export function buildMissingMarkerRecoveryPrompt(s: LoopState): string {
-  return `Return only the development goal final markers for iteration ${iterationProgress(s)}.
+  return `Return only the development goal final report for iteration ${iterationProgress(s)}.
 
-The previous assistant response was non-empty but did not end with the required DEV_GOAL markers. Do not redo the work, do not run new commands, and do not include a summary. If validation evidence is missing or red, choose DEV_GOAL_VALIDATED: no and DEV_GOAL_DECISION: blocked.
+The previous assistant response was non-empty but did not end with the required DEV_GOAL markers. Do not redo the work, do not run new commands, and do not include prose outside the final report. If validation evidence is missing or red, choose DEV_GOAL_VALIDATED: no and DEV_GOAL_DECISION: blocked.
 
-Use exactly these two final lines and nothing else:
+Required lines:
+DEV_GOAL_REPORT: {"validated":boolean,"decision":"continue|stop|blocked|done","summary":"brief outcome","goalAchieved":boolean,"goalEvidence":"concrete request->result->validation proof","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked"}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done`;
 }
@@ -226,6 +227,7 @@ DEV_GOAL_DECISION: continue|stop|blocked|done`;
 export function buildReportRepairPrompt(s: LoopState, reportOrIssues: { quality?: { issues?: Array<{ code: string; message: string; value?: string }> }; decision?: string; validated?: boolean; deliveryEvidence?: unknown } | Array<{ code: string; message: string; value?: string }>): string {
   const issues = Array.isArray(reportOrIssues) ? reportOrIssues : reportOrIssues.quality?.issues ?? [];
   const issueLines = issues.map((issue) => `- ${issue.code}${issue.value ? ` bad=${JSON.stringify(issue.value)}` : ""}`).join("\n");
+  const remediationLines = reportRepairRemediationLines(issues).join("\n");
   const previousJson = Array.isArray(reportOrIssues) ? undefined : compactPreviousReportJson(reportOrIssues);
   return `Repair lane. Target ${LANE_TOKEN_BUDGETS.repair} tokens. Iteration ${iterationProgress(s)}.
 
@@ -233,9 +235,10 @@ Do not edit code. Do not change scope. Do not run discovery. Do not run validati
 
 Issue codes:
 ${issueLines || "- unknown_report_quality_issue"}
+${remediationLines ? `\n\nRepairs:\n${remediationLines}` : ""}
 
 Required schema:
-DEV_GOAL_REPORT: {"validated":boolean,"decision":"continue|stop|blocked|done","summary":"brief","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked"}
+DEV_GOAL_REPORT JSON fields: validated,decision,summary,goalAchieved,goalEvidence,blockerState,blockedWork,pivotedWorkCompleted,nextSteps,changedFiles,validationCommands,commitHash,pushStatus
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 ${previousJson ? `\nPrevious JSON:\n${previousJson}\n` : ""}
@@ -245,11 +248,15 @@ Return only corrected DEV_GOAL_REPORT + markers. Preserve evidence unless issue 
 function reportRepairRemediationLines(issues: Array<{ code: string; message: string; value?: string }>): string[] {
   const codes = new Set(issues.map((issue) => issue.code));
   const lines: string[] = [];
-  if (codes.has("missing_blocked_work")) lines.push("- missing_blocked_work: add `Blocked Work: none` unless specific blocked work exists.");
-  if (codes.has("missing_pivoted_work_completed")) lines.push("- missing_pivoted_work_completed: add `Pivoted Work Completed: none` unless a safe pivot was completed.");
-  if (codes.has("relative_human_changed_file")) lines.push("- relative_human_changed_file: rewrite each human-readable Changed files entry with an absolute path rooted at the Scope path.");
-  if (codes.has("vague_typed_changed_file")) lines.push("- vague_typed_changed_file: replace vague DEV_GOAL_REPORT.changedFiles entries with exact absolute file paths, or omit changedFiles when no files changed.");
-  if (codes.has("done_with_actionable_next_step")) lines.push("- done_with_actionable_next_step: if more goal work remains, change DEV_GOAL_REPORT.decision and DEV_GOAL_DECISION to continue; keep done only for optional review/PR/handoff next steps.");
+  if (codes.has("missing_blocked_work")) lines.push("- missing_blocked_work: set blockedWork none|specific.");
+  if (codes.has("missing_pivoted_work_completed")) lines.push("- missing_pivoted_work_completed: set pivotedWorkCompleted none|specific.");
+  if (codes.has("relative_human_changed_file")) lines.push("- relative_human_changed_file: use absolute human Changed files paths.");
+  if (codes.has("vague_typed_changed_file")) lines.push("- vague_typed_changed_file: exact abs changedFiles or omit.");
+  if (codes.has("missing_goal_achieved")) lines.push("- missing_goal_achieved: set goalAchieved true only if objective fully done, else change decision.");
+  if (codes.has("done_without_goal_achieved")) lines.push("- done_without_goal_achieved: not done unless goalAchieved true.");
+  if (codes.has("missing_goal_evidence")) lines.push("- missing_goal_evidence: add concrete request->result->validation proof.");
+  if (codes.has("vague_goal_evidence")) lines.push("- vague_goal_evidence: make proof concrete.");
+  if (codes.has("done_with_actionable_next_step")) lines.push("- done_with_actionable_next_step: remaining goal work means continue, not done.");
   return lines;
 }
 

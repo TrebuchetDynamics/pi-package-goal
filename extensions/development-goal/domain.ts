@@ -11,6 +11,8 @@ export type BroadScoutCache = {
 
 export type DeliveryEvidence = {
   summary?: string;
+  goalAchieved?: boolean;
+  goalEvidence?: string;
   blockerState?: string;
   blockedWork?: string;
   pivotedWorkCompleted?: string;
@@ -72,6 +74,8 @@ export type LoopEvent = {
   decision?: string;
   reason?: string;
   summary?: string;
+  goalAchieved?: boolean;
+  goalEvidence?: string;
   blockerState?: string;
   blockedWork?: string;
   pivotedWorkCompleted?: string;

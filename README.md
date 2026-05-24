@@ -132,14 +132,14 @@ Tips:
 - Use `/development-goal pause` to pause automatic continuation without clearing goal state; resume continues the current iteration from the saved state.
 - Run budget metadata shows elapsed time and current iteration in prompts/status; add `--tokens 250K` or `--budget 1M` to record a soft token budget cue, not a hard timeout.
 - The auto-continuation guard pauses runaway goals after 500 prompt sends by default. Set `PI_DEV_GOAL_MAX_AUTO_CONTINUES=50` for a stricter cap, then run `/development-goal resume` to continue from the saved state.
-- If a non-empty assistant response forgets the final marker lines, the goal sends one marker-only recovery prompt before blocking.
+- If a non-empty assistant response forgets the final marker lines, the goal sends one final-report recovery prompt before blocking.
 - An active goal saves state before compaction and continues automatically after compaction, including retrying the same iteration up to twice after empty provider-error responses.
 - If validation is red or credentials are needed, the goal should report `blocked`; blocked runs write a `loop_postmortem` record with `likelyCause` and `nextSafeAction`.
 - Progress logs go to `.pi/development-goal/logs.jsonl` by default.
 - New goal runs include a `runId` in prompts, saved state, and log records so duplicate starts and terminal records can be correlated during analysis.
 - Oversized objectives are capped tightly in prompts and logs; provider context-overflow suffixes are stripped from repeated objective text; logs keep `topicLength`, `topicHash`, `topicKind`, and `topicSanitized` so copied context can be diagnosed without repeating it.
-- Final iteration records extract delivery evidence from conventional summaries (`Changed files`, `Validation evidence`, commit/push lines) or a `DEV_GOAL_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `changedFiles`, `validationCommands`, `commitHash`, `pushStatus`, `blockedWork`, and `pivotedWorkCompleted` log fields.
-- Human-readable end report text should briefly cover scope, selected slice, what changed and why, validation/commit/push evidence, blocker state, Blocked Work, Pivoted Work Completed, and Possible next steps. Use absolute paths for the scope and human-readable changed-file evidence. Use decision-specific next steps: continue should name the next largest safe useful package; done should list only optional non-goal cleanup, review, PR, or handoff steps; blocked should name concrete unblocking actions or missing prerequisites; and stop should name handoff or cleanup actions. Typed `DEV_GOAL_REPORT` objects may also include structured `summary`, `blockerState`, `blockedWork`, `pivotedWorkCompleted`, and `nextSteps` fields, which are persisted into goal logs and status summaries; blocked typed reports should include `blockerState` plus concrete `blockedWork` and `nextSteps`. Keep the machine-readable DEV_GOAL_REPORT and final markers last so automation can parse them. The report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports with actionable goal next steps, relative human-readable changed files, and vague `DEV_GOAL_REPORT.changedFiles` entries. A malformed final report gets one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report`; repair retries forbid code edits, scope changes, new task discovery, and validation reruns.
+- Final iteration records extract delivery evidence from conventional summaries (`Goal achieved`, `Goal evidence`, `Changed files`, `Validation evidence`, commit/push lines) or a `DEV_GOAL_REPORT: {"validated":true,"decision":"continue",...}` JSON object placed as the final line or immediately before the final marker block into `goalAchieved`, `goalEvidence`, `changedFiles`, `validationCommands`, `commitHash`, `pushStatus`, `blockedWork`, and `pivotedWorkCompleted` log fields.
+- Human-readable end report text should briefly cover scope, selected slice, whether the goal was achieved, how that verdict is proven, what changed and why, validation/commit/push evidence, blocker state, Blocked Work, Pivoted Work Completed, and Possible next steps. Use absolute paths for the scope and human-readable changed-file evidence. Use decision-specific next steps: continue should name the next largest safe useful package; done should list only optional non-goal cleanup, review, PR, or handoff steps; blocked should name concrete unblocking actions or missing prerequisites; and stop should name handoff or cleanup actions. Typed `DEV_GOAL_REPORT` objects may also include structured `summary`, `goalAchieved`, `goalEvidence`, `blockerState`, `blockedWork`, `pivotedWorkCompleted`, and `nextSteps` fields, which are persisted into goal logs and status summaries; blocked typed reports should include `blockerState` plus concrete `blockedWork` and `nextSteps`. Keep the machine-readable DEV_GOAL_REPORT and final markers last so automation can parse them. The report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports without `goalAchieved:true`, done reports missing concrete `goalEvidence`, done reports with actionable goal next steps, relative human-readable changed files, and vague `DEV_GOAL_REPORT.changedFiles` entries. A malformed final report gets one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report`; repair retries forbid code edits, scope changes, new task discovery, and validation reruns.
 - Completion audit before `DEV_GOAL_DECISION: done`: restate the objective as concrete deliverables, map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected, and list missing or weakly verified requirements. If anything is missing, weakly verified, or uncertain, report `continue` or `blocked` instead of `done`.
 - Run `/development-goal analyze-logs [path]` to summarize one log file or a directory of `logs.jsonl` files, including goal starts, iteration-result records, iteration-result-without-validation records, iteration prompt sent records, prompt/result imbalance with top source, duplicate prompt-sent groups, assistant decision records, queued iteration records with top source/reason, completion outcomes, finished-without-validation/delivery records, unresolved starts with top source, blocker reasons, blocker-kind counts such as `git_push_fetch_first` and `validation_failed_twice`, and top blocked log source, postmortem causes/actions, self-improvement follow-ups with top source/reason/action, final-marker recovery requests/successes/blocks with top request source/reason and block source/reason, delivery evidence, report summary, blocker-state, blocked-work, pivoted-work, next-step, missing-next-steps, and report quality warning counts, commit-without-push records with top source, CI-green/CI-red with top red source and missing-gate records with top source, empty provider responses/retries with top source/reason, provider error records with top source/code/category, context overflows, compaction events/resumes/failures with top source, premature-compaction records, and top failure reason, user steering records, provider-noise and sanitized topic records, topic sizes, repeated oversized topics, and likely improvement areas. Add `--since=2h` to include only recent timestamped records, `--html` to write a self-contained health report to the OS temp directory, or `--json` to emit the same analysis as machine-readable JSON for automation.
 
@@ -159,6 +159,8 @@ Canonical final-report template:
 ```text
 Scope: /absolute/project/path with adapter generic-git.
 Selected slice: one largest safe useful package.
+Goal achieved: yes | no.
+Goal evidence: concrete request -> result -> validation proof.
 Changed files: /absolute/project/path/src/file.ts — what changed and why.
 Validation evidence: npm test (pass); git diff --check (pass).
 Commit/push evidence: abc1234 pushed | not attempted because <reason>.
@@ -166,12 +168,12 @@ Blocker state: none | <specific missing prerequisite or unsafe condition>.
 Blocked Work: none | <work not completed because of blocker>.
 Pivoted Work Completed: none | <safe alternate work completed while blocked>.
 Possible next steps: next safe action matched to the decision.
-DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","blockerState":"why blocked","blockedWork":"none","pivotedWorkCompleted":"none","nextSteps":["next safe step"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
+DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","goalAchieved":false,"goalEvidence":"slice validated but full objective still has queued work","blockerState":"why blocked","blockedWork":"none","pivotedWorkCompleted":"none","nextSteps":["next safe step"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["npm test","git diff --check"],"commitHash":"abc1234","pushStatus":"pushed"}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 ```
 
-Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries. A Final Report Gate logs compact state transitions with aggregate issue codes, gives malformed reports one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report` if still invalid.
+Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports without `goalAchieved:true`, done reports missing concrete `goalEvidence`, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries. A Final Report Gate logs compact state transitions with aggregate issue codes, gives malformed reports one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report` if still invalid.
 
 Decision guide for final markers:
 
@@ -180,7 +182,7 @@ Decision guide for final markers:
 | continue: use when validation passed and the full goal is not proven complete yet | The package is validated and safe; more work remains in the same objective. | Name the next largest safe useful package. |
 | blocked: use when validation is red, required evidence is missing, or delivery is unsafe | Tests failed, credentials are missing, required validation was skipped, or commit/push would include unsafe work. | Name the blocker state and concrete unblock actions. |
 | stop: use for clean handoff or review before more automation | The user should review, hand off, or restart with a different objective. | Name handoff state and safe resume actions. |
-| done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains | Final requested work is validated, delivered when policy allows, and has no remaining goal slice. | Summarize completion evidence and only optional non-goal cleanup, review, PR, or handoff steps. |
+| done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains | Final requested work is validated, delivered when policy allows, and has no remaining goal slice. | Set `goalAchieved:true`, explain `goalEvidence` as request -> result -> validation, and list only optional non-goal cleanup, review, PR, or handoff steps. |
 
 Completion audit before `DEV_GOAL_DECISION: done`:
 
@@ -193,6 +195,7 @@ End report quality checklist:
 
 - Scope and slice: exact absolute project path, adapter, and selected slice.
 - Paths: use absolute paths for scope and human-readable changed-file evidence.
+- Goal verdict: include `goalAchieved` and concrete `goalEvidence`; for `done`, map original request -> delivered result -> validation receipts.
 - Blocked Work and Pivoted Work Completed: include both sections; write `none` when no blocker or pivot exists.
 - Changes: exact files plus what changed and why.
 - Validation: each command with pass, fail, or not-run reason.
@@ -204,6 +207,7 @@ End report anti-patterns to avoid:
 
 - Do not write vague summaries like "fixed stuff" or "all good".
 - Do not claim tests pass without naming the exact commands and outcomes.
+- Do not claim `done` without explaining how the original goal was achieved.
 - Do not choose continue when validation is red or required evidence is missing.
 - Do not omit why commit or push was skipped.
 
@@ -213,7 +217,7 @@ If Pi reports `Error: WebSocket error`, the goal treats it as a provider transpo
 
 If the provider reports `context_length_exceeded` or “input exceeds the context window” before final markers are emitted, the goal records `context_overflow_waiting_for_compaction` and keeps the same goal iteration active so Pi's compaction can resume it instead of blocking on a missing `DEV_GOAL_DECISION` marker.
 
-If an otherwise useful assistant response ends without `DEV_GOAL_VALIDATED` and `DEV_GOAL_DECISION`, the goal records `missing_final_marker_recovery_requested` and asks for exactly those two lines once. This recovery notice is informational, not a warning. A second non-empty response without markers blocks the goal to avoid infinite retries.
+If an otherwise useful assistant response ends without `DEV_GOAL_VALIDATED` and `DEV_GOAL_DECISION`, the goal records `missing_final_marker_recovery_requested` and asks once for a corrected `DEV_GOAL_REPORT` plus final markers. This recovery notice is informational, not a warning. A second non-empty response without markers blocks the goal to avoid infinite retries.
 
 For workspace-wide `.pi` goal triage from a checkout, run `node skills/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git` or add `--attention-only` to show only recent logs/configs that need action without stale goal or completed-goal config hygiene noise; the summary reports `attention_logs=` separately from status buckets and config-only `issues=` so blocked logs are not confused with generic `needs_attention` status, plus `blocker_kind_records=` and `top_blocker_kind=kind:count` for common actionable blockers. Blocked reports surface logged `blockerState`, known `blocker_kind=` classifiers such as `git_push_fetch_first` and `validation_failed_twice`, and first `nextSteps` entry as `blocker=` / `next_action=` when available, with blocker-kind fallback actions for common push-divergence and repeated-validation blockers. When a goal uses push delivery, the iteration prompt tells agents to inspect `git status --short --branch` before pushing and to block with `git_push_fetch_first` evidence instead of force-pushing or repairing history without explicit approval.
 
