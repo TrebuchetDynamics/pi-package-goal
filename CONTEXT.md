@@ -36,6 +36,14 @@ _Avoid_: Development loop identity, dev-loop branding
 A Development Goal module that reads one or more goal `logs.jsonl` files and turns raw Goal Run events into health counters, top blockers, evidence summaries, and recommendations. Goal Log Analysis owns log discovery, parsing accumulation, health report formatting, JSON output, and optional HTML report generation behind one interface so command handling does not know every counter or event-specific rule.
 _Avoid_: Inline analyze-logs helpers, scattered log dashboard counters, command-owned health report formatting
 
+**Context Goal**:
+A Pi extension that audits project understanding artifacts, works when both CONTEXT.md and MEMORY.md are absent, proposes baseline file creation, and applies only explicitly approved context/memory patches. A Context Goal keeps project vocabulary useful without turning MEMORY.md into a junk drawer.
+_Avoid_: Silent memory writes, unreviewed context edits, dumping session notes into MEMORY.md, unstructured memory junk drawers
+
+**Final Report Gate**:
+A Development Goal module that evaluates a parsed final report before Goal Run state transitions. The Final Report Gate decides whether to accept, request one repair-only report retry, or block malformed final reports.
+_Avoid_: Inline final-report checks, scattered malformed-report branches, accepting low-quality terminal markers
+
 **Migration Policy**:
 The explicit rule for how a Development Goal handles old public names, old persisted paths, old status keys, and old final markers after an identity change. The current Development Goal Migration Policy is a hard break: old names, paths, markers, and aliases are removed rather than redirected.
 _Avoid_: Ad hoc backwards compatibility, silent fallback, scattered aliases

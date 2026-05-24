@@ -379,7 +379,7 @@ async function testPackageManifest() {
   assert.match(pkg.description, /development-goal/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("development-goal"));
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts", "./extensions/context-goal.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
   const gitignore = read(".gitignore");
@@ -451,7 +451,7 @@ async function testExtensionFolderArchitecture() {
   const rootModules = fs.readdirSync(extensionRoot)
     .filter((name) => name.endsWith(".ts"))
     .sort();
-  assert.deepEqual(rootModules, ["development-goal.ts", "e2e-goal.ts"], "extension root must contain only public goal entrypoints");
+  assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts"], "extension root must contain only public goal entrypoints");
 
   const expectedPrivateModules = [
     "adapter.ts",
@@ -492,6 +492,85 @@ async function testExtensionFolderArchitecture() {
 
   for (const file of ["identity.ts", "main.ts"]) {
     assert.ok(exists(path.join("extensions", "e2e-goal", file)), `missing E2E Goal private module ${file}`);
+  }
+  assert.ok(exists(path.join("extensions", "context-goal", "main.ts")), "missing Context Goal private module main.ts");
+}
+
+async function testContextGoalExtensionLoadsAndRegistersCommands() {
+  assert.ok(exists("extensions/context-goal.ts"), "context-goal extension missing");
+  const { createJiti } = require(jitiEntry);
+  const jiti = createJiti(import.meta.url, { interopDefault: true });
+  const mod = await jiti.import(path.join(root, "extensions", "context-goal.ts"));
+  assert.equal(typeof mod.default, "function");
+  assert.equal(typeof mod.__test__.auditContext, "function");
+
+  const commands = new Map();
+  const messages = [];
+  const notifications = [];
+  const pi = {
+    registerCommand(name, command) { commands.set(name, command); },
+    sendMessage(message) { messages.push(message); },
+  };
+  mod.default(pi);
+  assert.ok(commands.has("context-goal"));
+
+  const contextRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-context-goal-"));
+  try {
+    fs.mkdirSync(path.join(contextRoot, ".pi", "development-goal"), { recursive: true });
+    fs.writeFileSync(path.join(contextRoot, "CONTEXT.md"), "# Test Context\n\n## Language\n\n");
+    fs.writeFileSync(path.join(contextRoot, ".pi", "development-goal", "logs.jsonl"), JSON.stringify({ event: "malformed_final_report_repair_requested", summary: "Final Report Gate requested repair" }) + "\n");
+    const ctx = {
+      cwd: contextRoot,
+      hasUI: false,
+      ui: { notify(message, level) { notifications.push({ message, level }); } },
+      sessionManager: { getCwd: () => contextRoot },
+    };
+
+    await commands.get("context-goal").handler("audit", ctx);
+    assert.match(messages.at(-1).content, /Context Goal audit/);
+    assert.match(messages.at(-1).content, /Add Final Report Gate to CONTEXT.md/);
+    assert.match(messages.at(-1).content, /Create MEMORY.md/);
+    assert.match(messages.at(-1).content, /MEMORY.md: absent; approval can create guarded template/);
+
+    await commands.get("context-goal").handler("apply --yes", ctx);
+    assert.match(fs.readFileSync(path.join(contextRoot, "CONTEXT.md"), "utf8"), /\*\*Final Report Gate\*\*/);
+    assert.doesNotMatch(fs.readFileSync(path.join(contextRoot, "CONTEXT.md"), "utf8"), /\*\*Context Goal\*\*/);
+    assert.match(fs.readFileSync(path.join(contextRoot, "MEMORY.md"), "utf8"), /Durable operational memory/);
+    assert.match(messages.at(-1).content, /Context Goal applied 2 approved patches/);
+
+    await commands.get("context-goal").handler("help", ctx);
+    assert.match(messages.at(-1).content, /can create baseline CONTEXT.md and guarded MEMORY.md/);
+
+    const missingArtifactRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-context-goal-empty-"));
+    try {
+      const emptyCtx = {
+        cwd: missingArtifactRoot,
+        hasUI: false,
+        ui: { notify(message, level) { notifications.push({ message, level }); } },
+        sessionManager: { getCwd: () => missingArtifactRoot },
+      };
+      await commands.get("context-goal").handler("status", emptyCtx);
+      assert.match(messages.at(-1).content, /not run yet for this project/);
+
+      await commands.get("context-goal").handler("audit", emptyCtx);
+      assert.match(messages.at(-1).content, /CONTEXT.md: absent; approval can create it/);
+      assert.match(messages.at(-1).content, /MEMORY.md: absent; approval can create guarded template/);
+      assert.equal(fs.existsSync(path.join(missingArtifactRoot, "CONTEXT.md")), false, "audit must not create CONTEXT.md");
+      assert.equal(fs.existsSync(path.join(missingArtifactRoot, "MEMORY.md")), false, "audit must not create MEMORY.md");
+
+      await commands.get("context-goal").handler("apply", emptyCtx);
+      assert.match(messages.at(-1).content, /Context Goal apply cancelled/);
+      assert.equal(fs.existsSync(path.join(missingArtifactRoot, "CONTEXT.md")), false, "unapproved apply must not create CONTEXT.md");
+      assert.equal(fs.existsSync(path.join(missingArtifactRoot, "MEMORY.md")), false, "unapproved apply must not create MEMORY.md");
+
+      await commands.get("context-goal").handler("apply --yes", emptyCtx);
+      assert.match(fs.readFileSync(path.join(missingArtifactRoot, "CONTEXT.md"), "utf8"), /\*\*Project Context\*\*/);
+      assert.match(fs.readFileSync(path.join(missingArtifactRoot, "MEMORY.md"), "utf8"), /Durable operational memory/);
+    } finally {
+      fs.rmSync(missingArtifactRoot, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(contextRoot, { recursive: true, force: true });
   }
 }
 
@@ -3507,7 +3586,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
   assert.match(readme, /E2E smoke coverage for starting and completing one development-goal extension run/);
-  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, and `\/e2e` command registration/);
+  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, `\/e2e`, and `\/context-goal` command registration/);
   assert.match(readme, /Skill frontmatter and exact expected bundle contents/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
   assert.match(readme, /Third-party notices, local notice paths, and license copies/);
@@ -3541,6 +3620,7 @@ await testPackageManifest();
 await testPackageManifestPaths();
 await testPiCoreDependencies();
 await testExtensionFolderArchitecture();
+await testContextGoalExtensionLoadsAndRegistersCommands();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();

@@ -1,7 +1,7 @@
 {
   "name": "pi-package-goal",
   "version": "0.1.0",
-  "description": "Adapter-aware Pi development-goal and E2E-goal extensions bundled with high-signal engineering and web skills.",
+  "description": "Adapter-aware Pi development-goal, E2E-goal, and context-goal extensions bundled with high-signal engineering and web skills.",
   "type": "module",
   "license": "MIT AND Apache-2.0",
   "repository": {
@@ -19,6 +19,7 @@
     "development-goal",
     "goal-runner",
     "e2e-goal",
+    "context-goal",
     "agent-skills",
     "coding-agent",
     "tdd",
@@ -36,7 +37,8 @@
   "pi": {
     "extensions": [
       "./extensions/development-goal.ts",
-      "./extensions/e2e-goal.ts"
+      "./extensions/e2e-goal.ts",
+      "./extensions/context-goal.ts"
     ],
     "skills": [
       "./skills"
