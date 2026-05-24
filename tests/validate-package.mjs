@@ -19,6 +19,10 @@ const expectedSkills = [
   "grill-with-docs",
   "prototype",
   "zoom-out",
+  "to-issues",
+  "to-prd",
+  "triage",
+  "writing-shape",
   "handoff",
   "lgtm",
   "caveman",
@@ -1128,6 +1132,13 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /TODO\.md/);
     assert.match(sent[0].content, /progress\.json/);
     assert.match(sent[0].content, /repo-local skills/);
+    assert.match(sent[0].content, /to-prd for turning current context into PRDs/);
+    assert.match(sent[0].content, /to-issues for breaking plans\/specs into independently grabbable issues/);
+    assert.match(sent[0].content, /triage for issue intake and issue workflow management/);
+    assert.match(sent[0].content, /write-a-skill for creating or updating skills/);
+    assert.match(sent[0].content, /tdd for code changes/);
+    assert.doesNotMatch(sent[0].content, /test-driven-development for code changes/);
+    assert.doesNotMatch(sent[0].content, /writing-skills for creating or updating skills/);
     assert.match(sent[0].content, /caveman/);
     assert.match(sent[0].content, /grill-me/);
     assert.match(sent[0].content, /self-answer-first mode/i);
@@ -3180,11 +3191,20 @@ async function testNoticesAndDocs() {
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-goal status/);
   assert.match(readme, /`grill-me`/);
+  assert.match(readme, /`to-issues`/);
+  assert.match(readme, /`to-prd`/);
+  assert.match(readme, /`triage`/);
+  assert.match(readme, /`writing-shape`/);
+  assert.doesNotMatch(readme, /`test-driven-development`/);
+  assert.doesNotMatch(readme, /`writing-skills`/);
   const grillMeSkill = read("skills/grill-me/SKILL.md");
   assert.match(grillMeSkill, /self-answer-first/i);
   assert.match(grillMeSkill, /Only ask the user when the remaining question is hard/i);
   assert.match(grillMeSkill, /If no hard question remains, proceed/i);
   assert.match(grillMeSkill, /pivot/i);
+  assert.doesNotMatch(read("skills/to-issues/SKILL.md"), /setup-matt-pocock-skills/);
+  assert.doesNotMatch(read("skills/to-prd/SKILL.md"), /setup-matt-pocock-skills/);
+  assert.doesNotMatch(read("skills/triage/SKILL.md"), /setup-matt-pocock-skills/);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review goal/);
   assert.match(readme, /`lgtm`/);
@@ -3206,6 +3226,10 @@ async function testNoticesAndDocs() {
   assert.match(notices, /GoogleChrome\/modern-web-guidance/);
   assert.match(notices, /Apache-2\.0/);
   assert.match(notices, /mattpocock\/skills/);
+  assert.match(notices, /skills\/to-issues\//);
+  assert.match(notices, /skills\/to-prd\//);
+  assert.match(notices, /skills\/triage\//);
+  assert.match(notices, /skills\/writing-shape\//);
   assert.match(notices, /MIT/);
   assert.match(notices, /qualisero\/awesome-pi-agent/);
   assert.match(notices, /greptileai\/skills/);

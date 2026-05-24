@@ -26,6 +26,10 @@ Trebuchet Dynamics under the MIT License.
   - `skills/grill-with-docs/`
   - `skills/prototype/`
   - `skills/zoom-out/`
+  - `skills/to-issues/`
+  - `skills/to-prd/`
+  - `skills/triage/`
+  - `skills/writing-shape/`
   - `skills/handoff/`
   - `skills/caveman/`
   - `skills/write-a-skill/`

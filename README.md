@@ -316,7 +316,7 @@ Example config:
   "adapter": "generic-git",
   "defaultTopic": "improve documentation with tests",
   "language": "English",
-  "skills": ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "verification-before-completion"],
+  "skills": ["improve-codebase-architecture", "grill-me", "caveman", "tdd", "write-a-skill"],
   "preflightCommands": ["git status --short --branch"],
   "validationCommands": ["npm test", "git diff --check"],
   "stopConditions": ["validation fails twice with the same blocker"],
@@ -345,6 +345,10 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `grill-with-docs` — plan interrogation tied to domain docs and ADRs.
 - `prototype` — throwaway prototypes for design uncertainty.
 - `zoom-out` — source-backed broader codebase understanding.
+- `to-prd` — turn current conversation context into a PRD.
+- `to-issues` — break plans/specs into independently grabbable implementation issues.
+- `triage` — issue intake and issue workflow state management.
+- `writing-shape` — shape notes, fragments, or rough drafts into publishable docs/articles.
 - `handoff` — continuation handoff for future sessions.
 - `lgtm` — treats approvals like “lgtm” or “go ahead” as permission to continue the most recent recommendation.
 - `caveman` — ultra-compressed status communication.
