@@ -73,7 +73,7 @@ const guardedPrompt = promptsMod.buildIterationPrompt(promptState, {
   ...resolved,
   config: { ...resolved.config, allowScopeExpansion: false, requireReviewOnEmptyQueue: true },
 }, promptRoot);
-assert.match(guardedPrompt, /Scope expansion policy:/);
+assert.match(guardedPrompt, /Scope expansion:/);
 assert.match(guardedPrompt, /Do not invent more work when the discovered queue is empty/);
 assert.match(guardedPrompt, /DEV_GOAL_DECISION: stop/);
 

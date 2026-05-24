@@ -1236,20 +1236,22 @@ async function testExtensionLoadsAndRegistersCommands() {
     tokenBudget: 98500,
   };
   const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
-  assert.match(extractedPrompt, /Start with improve-codebase-architecture, then use grill-me in self-answer-first mode, then use the project instructions and matching skills now\. Development goal iteration 2\/3/);
+  assert.match(extractedPrompt, /Development Goal iteration 2\/3: Start with improve-codebase-architecture/);
+  assert.match(extractedPrompt, /grill-me self-answer-first/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
-  assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
-  assert.match(extractedPrompt, /soft budget; elapsed time and token budget are advisory/);
-  assert.match(extractedPrompt, /Task discovery cues for broad objectives:/);
+  assert.match(extractedPrompt, /Budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
+  assert.match(extractedPrompt, /Fast protocol:/);
+  assert.match(extractedPrompt, /For broad work, inspect:/);
   assert.match(extractedPrompt, /lightweight architecture scout/i);
-  assert.match(extractedPrompt, /Do not write .*architecture-review.*\.html/i);
-  assert.match(extractedPrompt, /Do not spend time on weak tests/i);
-  assert.match(extractedPrompt, /Topology check for non-trivial work:[\s\S]*State ownership[\s\S]*Feedback\/validation[\s\S]*Blast radius[\s\S]*Timing\/ordering/);
-  assert.ok(extractedPrompt.length <= 10000, `iteration prompt should stay compact; got ${extractedPrompt.length} chars`);
-  assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development goal iteration 2\/3/);
-  assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development goal iteration 2\/3/);
-  assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development goal iteration 2\/3/);
+  assert.doesNotMatch(extractedPrompt, /Canonical final-report template/);
+  assert.doesNotMatch(extractedPrompt, /End report anti-patterns to avoid/);
+  assert.match(extractedPrompt, /avoid weak tests/i);
+  assert.match(extractedPrompt, /state ownership, feedback\/validation, blast radius, and ordering/);
+  assert.ok(extractedPrompt.length <= 6000, `iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
+  assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
+  assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
+  assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
   assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
@@ -1585,54 +1587,22 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(sent.length, 1);
     const blockedPush = await handlers.get("tool_call")({ toolName: "bash", input: { command: "git push origin main" } }, ctx);
     assert.deepEqual(blockedPush, { block: true, reason: "Active development goal blocks git push because push delivery is not enabled for this run." });
-    assert.match(sent[0].content, /Development goal iteration 1\/2/);
+    assert.match(sent[0].content, /Development Goal iteration 1\/2/);
     assert.match(sent[0].content, /Run id: dl-[0-9a-z]+-[0-9a-f]{6}/);
-    assert.match(sent[0].content, /Run budget: elapsed .*; iterations 1\/2; remaining 1; token budget 98\.5K/);
+    assert.match(sent[0].content, /Budget: elapsed .*; iterations 1\/2; remaining 1; token budget 98\.5K/);
+    assert.match(sent[0].content, /Fast protocol/);
     assert.match(sent[0].content, /DEV_GOAL_DECISION/);
-    assert.match(sent[0].content, /DEV_GOAL_REPORT/);
-    assert.match(sent[0].content, /Canonical final-report template/);
-    assert.match(sent[0].content, /Changed files: \/absolute\/project\/path\/src\/file.ts/);
-    assert.match(sent[0].content, /Blocked Work: none \|/);
-    assert.match(sent[0].content, /Pivoted Work Completed: none \|/);
-    assert.match(sent[0].content, /"summary":"brief result"/);
-    assert.match(sent[0].content, /"blockedWork":"none"/);
-    assert.match(sent[0].content, /"pivotedWorkCompleted":"none"/);
-    assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
-    assert.match(sent[0].content, /"blockerState":"why blocked"/);
-    assert.match(sent[0].content, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done\+actionable next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
-    assert.match(sent[0].content, /one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report/);
-    assert.match(sent[0].content, /Repair retries forbid code edits, scope changes, new task discovery, and validation reruns/);
+    assert.match(sent[0].content, /DEV_GOAL_REPORT JSON/);
+    assert.match(sent[0].content, /Human lines required: Scope; Selected slice; Changed files with absolute paths/);
+    assert.match(sent[0].content, /Blocked Work; Pivoted Work Completed/);
+    assert.match(sent[0].content, /Decision rules: yes only after validation evidence/);
+    assert.match(sent[0].content, /done = objective complete and every explicit requirement maps to evidence/);
+    assert.match(sent[0].content, /Report quality: include Blocked Work and Pivoted Work Completed/);
+    assert.match(sent[0].content, /one repair-only final-report retry/);
+    assert.doesNotMatch(sent[0].content, /Canonical final-report template/);
+    assert.doesNotMatch(sent[0].content, /End report anti-patterns to avoid/);
     assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
-    assert.doesNotMatch(sent[0].content, /Example partial validation end report/);
-    assert.match(sent[0].content, /Decision guide for final markers/);
-    assert.match(sent[0].content, /continue: use when validation passed and the full goal is not proven complete yet/);
-    assert.match(sent[0].content, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
-    assert.match(sent[0].content, /stop: use for clean handoff or review before more automation/);
-    assert.match(sent[0].content, /done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains/);
-    assert.match(sent[0].content, /Completion audit before DEV_GOAL_DECISION: done/);
-    assert.match(sent[0].content, /Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected/);
-    assert.match(sent[0].content, /If anything is missing, weakly verified, or uncertain, do not use done/);
-    assert.match(sent[0].content, /End report quality checklist/);
-    assert.match(sent[0].content, /Scope and slice: exact absolute project path, adapter, and selected slice/);
-    assert.match(sent[0].content, /Paths: use absolute paths for scope and human-readable changed-file evidence/);
-    assert.match(sent[0].content, /Blocked Work and Pivoted Work Completed: include both sections/);
-    assert.match(sent[0].content, /Changes: exact files plus what changed and why/);
-    assert.match(sent[0].content, /Validation: each command with pass, fail, or not-run reason/);
-    assert.match(sent[0].content, /Delivery: commit hash and push status, or why delivery was skipped/);
-    assert.match(sent[0].content, /Next step: one concrete action matched to continue, blocked, stop, or done/);
-    assert.match(sent[0].content, /End report anti-patterns to avoid/);
-    assert.match(sent[0].content, /Do not write vague summaries like "fixed stuff" or "all good"/);
-    assert.match(sent[0].content, /Do not claim tests pass without naming the exact commands and outcomes/);
-    assert.match(sent[0].content, /Do not choose continue when validation is red or required evidence is missing/);
-    assert.match(sent[0].content, /Do not omit why commit or push was skipped/);
-    assert.match(sent[0].content, /Human-readable end report/);
-    assert.match(sent[0].content, /What changed and why/);
-    assert.match(sent[0].content, /Possible next steps/);
-    assert.match(sent[0].content, /For continue: name the next largest safe useful package/);
-    assert.match(sent[0].content, /For blocked: name concrete unblocking actions/);
-    assert.match(sent[0].content, /For stop: name handoff or cleanup actions/);
-    assert.match(sent[0].content, /Keep the machine-readable DEV_GOAL_REPORT and final markers last/);
-    assert.match(sent[0].content, /Task discovery cues/);
+    assert.match(sent[0].content, /For broad work, inspect:/);
     assert.match(sent[0].content, /TODO\.md/);
     assert.match(sent[0].content, /progress\.json/);
     assert.match(sent[0].content, /repo-local skills/);
@@ -1642,20 +1612,19 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /write-a-skill for creating or updating skills/);
     assert.match(sent[0].content, /tdd for code changes/);
     assert.doesNotMatch(sent[0].content, /test-driven-development for code changes/);
-    assert.doesNotMatch(sent[0].content, /writing-skills for creating or updating skills/);
     assert.match(sent[0].content, /caveman/);
     assert.match(sent[0].content, /grill-me/);
-    assert.match(sent[0].content, /self-answer-first mode/i);
-    assert.match(sent[0].content, /only ask hard owner-decision or pivot questions/i);
-    assert.match(sent[0].content, /If no hard question remains, proceed without asking the user/i);
+    assert.match(sent[0].content, /self-answer-first/i);
+    assert.match(sent[0].content, /only hard owner-decision or pivot questions/i);
+    assert.match(sent[0].content, /if none remain, proceed/i);
     assert.match(sent[0].content, /improve-codebase-architecture/);
     assert.match(sent[0].content, /lightweight architecture scout/i);
-    assert.match(sent[0].content, /Do not write .*architecture-review.*\.html/i);
-    assert.match(sent[0].content, /Do not spend time on weak tests/i);
-    assert.match(sent[0].content, /tests that would fail on the real requirement/i);
+    assert.match(sent[0].content, /avoid weak tests/i);
+    assert.match(sent[0].content, /real interface/i);
     assert.match(sent[0].content, /Preferred language: English/);
-    assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
-    assert.match(sent[0].content, /Do not trigger Greptile/);
+    assert.match(sent[0].content, /Greptile/);
+    assert.match(sent[0].content, /do not trigger reviews/);
+    assert.ok(sent[0].content.length <= 6500, `sent development-goal prompt should stay token-efficient; got ${sent[0].content.length}`);
     assert.equal(entries.at(-1).customType, "development-goal-state");
     assert.equal(entries.at(-1).data.phase, "running");
     const firstRunId = entries.at(-1).data.runId;
@@ -1691,7 +1660,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     const sentBeforeResume = sent.length;
     await command.handler("resume", ctx);
     assert.equal(sent.length, sentBeforeResume + 1, "resuming should queue/send the paused iteration prompt");
-    assert.match(sent.at(-1).content, /Development goal iteration 1\/2/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 1\/2/);
     assert.equal(entries.at(-1).data.active, true);
     assert.equal(entries.at(-1).data.phase, "running");
 
@@ -1704,7 +1673,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await new Promise((resolve) => setTimeout(resolve, 80));
     assert.equal(sent.length, sentBeforeEmptyRetry + 1, "empty provider-error turns should automatically retry the current iteration if no compaction arrives");
     assert.match(sent.at(-1).content, /Retry development goal iteration after empty provider response/);
-    assert.match(sent.at(-1).content, /Development goal iteration 1\/2/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 1\/2/);
     assert.equal(entries.at(-1).data.lastReason, "retrying_after_empty_provider_response");
 
     const sentBeforeSecondEmptyRetry = sent.length;
@@ -1716,7 +1685,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await new Promise((resolve) => setTimeout(resolve, 80));
     assert.equal(sent.length, sentBeforeSecondEmptyRetry + 1, "second empty provider-error turns should get one more automatic retry");
     assert.match(sent.at(-1).content, /Retry development goal iteration after empty provider response/);
-    assert.match(sent.at(-1).content, /Development goal iteration 1\/2/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 1\/2/);
     assert.equal(entries.at(-1).data.lastReason, "retrying_after_empty_provider_response");
 
     await handlers.get("session_before_compact")({
@@ -1733,7 +1702,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, ctx);
     assert.equal(sent.length, sentBeforeCompactResume + 1, "active goal should resume after compaction");
     assert.match(sent.at(-1).content, /Continue development goal after compaction/);
-    assert.match(sent.at(-1).content, /Development goal iteration 1\/2/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 1\/2/);
     assert.match(sent.at(-1).content, /DEV_GOAL_DECISION/);
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.lastReason, "resumed_after_compaction");
@@ -1804,7 +1773,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.deepEqual(iterationResultWithEvidence.nextSteps, ["Add structured nextSteps to status output", "Show recent loop summaries in analyze-logs"]);
     assert.equal(iterationResultWithEvidence.reportQualityWarnings, undefined);
     assert.equal(sent.length, sentBeforeContinue + 1);
-    assert.match(sent.at(-1).content, /Development goal iteration 2\/2/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 2\/2/);
     assert.equal(sent.at(-1).options, undefined, "automatic loop continuation should start directly instead of waiting as a visible follow-up");
 
     await handlers.get("agent_end")({
@@ -1992,7 +1961,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     await handlers.get("session_compact")({ compactionEntry: { tokensBefore: 272879 } }, ctx);
     assert.equal(sent.length, sentBeforeContextOverflowResume + 1, "context-overflow provider errors should resume after compaction");
     assert.match(sent.at(-1).content, /Continue development goal after compaction/);
-    assert.match(sent.at(-1).content, /Development goal iteration 1\/1/);
+    assert.match(sent.at(-1).content, /Development Goal iteration 1\/1/);
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.lastReason, "resumed_after_compaction");
 
@@ -2213,7 +2182,7 @@ async function testExtensionLoadsAndRegistersCommands() {
 
       await handlers.get("session_compact")({ compactionEntry: { tokensBefore: 300000 } }, proactiveCtx);
       assert.equal(sent.length, sentBeforeProactiveContinue + 1, "queued loop should continue after compaction");
-      assert.match(sent.at(-1).content, /Development goal iteration 2\/2/);
+      assert.match(sent.at(-1).content, /Development Goal iteration 2\/2/);
     } finally {
       fs.rmSync(proactiveRoot, { recursive: true, force: true });
     }

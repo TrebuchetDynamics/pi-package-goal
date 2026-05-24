@@ -72,7 +72,13 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
     ? "A legacy iteration cap is configured; continue until the goal is achieved or the cap is reached."
     : "No max-iteration stop is configured; continue automatically until the goal is achieved, blocked, paused, or stopped.";
 
-  return `Start with improve-codebase-architecture, then use grill-me in self-answer-first mode, then use the project instructions and matching skills now. Development goal iteration ${iterationLabel}.
+  const skillsText = skills.length ? skills.map((skill) => `- ${skill}`).join("\n") : "- project-matching skill set";
+  const preflightText = preflightCommands.map((command) => `- ${command}`).join("\n");
+  const validationText = validationCommands.map((command) => `- ${command}`).join("\n");
+  const stopText = stopConditions.map((condition) => `- ${condition}`).join("\n");
+  const pushSafetyLine = pushSafetyPolicy ? `\n- ${pushSafetyPolicy}` : "";
+
+  return `Development Goal iteration ${iterationLabel}: Start with improve-codebase-architecture as a lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision or pivot questions; if none remain, proceed.
 
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
@@ -80,96 +86,35 @@ Run id: ${s.runId || "legacy"}
 Topic/objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 Objective intake: ${objectiveIntakeSummary(s.topic, PROMPT_OBJECTIVE_MAX)}
 Preferred language: ${language}
-Config source: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}
-Goal log path: ${relativeToCwd(cwd, s.logPath)}
-Run budget: ${loopBudgetSummary(s)} (soft budget; elapsed time and token budget are advisory. ${capNote})
+Config: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}; log: ${relativeToCwd(cwd, s.logPath)}
+Budget: ${loopBudgetSummary(s)}; ${capNote}
 
-Suggested skills/adapters for this project:
-${skills.map((skill) => `- ${skill}`).join("\n") || "- Use the project-matching skill set."}
+Skills to consider:
+${skillsText}
 
-${requiredSkillGuidance}${commandIntentGuidance}Task discovery cues for broad objectives:
-${TASK_DISCOVERY_CUES.map((cue) => `- ${cue}`).join("\n")}
+${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
+1. Scope lock: ${cwd} with adapter ${adapter.name}; read AGENTS/CONTEXT and relevant repo-local skills.
+2. Preflight before edits:
+${preflightText}
+3. Choose the largest safe useful slice using Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.
+4. Test through the real interface when practical; avoid weak tests. For non-trivial work check state ownership, feedback/validation, blast radius, and ordering.
+5. Validation required before DEV_GOAL_VALIDATED: yes:
+${validationText}
+6. Delivery: ${commitPolicy}${pushSafetyLine}\n- ${worktreeScopePolicy}
+7. Stop/block when:
+${stopText}
 
-Scope expansion policy:
-- ${scopeExpansionGuidance}
+Scope expansion: ${scopeExpansionGuidance}
+Review/Greptile: only when explicitly requested with review context and gh/glab/p4 + Greptile auth; do not trigger reviews/comments/resolution/push/reshelve unless delivery policy allows; block with missing prerequisite if unavailable.
 
-Review guidance:
-${REVIEW_GUIDANCE.map((cue) => `- ${cue}`).join("\n")}
-
-GoalBuddy-inspired goal guidance:
-${GOALBUDDY_INSPIRED_GUIDANCE.map((cue) => `- ${cue}`).join("\n")}
-
-Preflight commands to run before edits:
-${preflightCommands.map((command) => `- ${command}`).join("\n")}
-
-Validation commands required before DEV_GOAL_VALIDATED: yes:
-${validationCommands.map((command) => `- ${command}`).join("\n")}
-
-Commit/push policy:
-- ${commitPolicy}
-${pushSafetyPolicy ? `- ${pushSafetyPolicy}\n` : ""}- ${worktreeScopePolicy}
-
-Stop conditions:
-${stopConditions.map((condition) => `- ${condition}`).join("\n")}
-
-Topology check for non-trivial work:
-- State ownership clear?
-- Feedback/validation clear?
-- Blast radius/deletion impact known?
-- Timing/ordering safe?
-For trivial low-risk edits, do not over-process; inspect scope, edit, validate.
-
-Run one complete vertical development iteration:
-1. State scope lock with exact absolute project path and adapter.
-2. Use improve-codebase-architecture as a lightweight architecture scout: map friction and safe direction; Do not write /tmp/architecture-review*.html or open a browser unless explicitly requested.
-3. Use grill-me self-answer-first: answer source-backed gaps yourself; only ask hard owner-decision or pivot questions; If no hard question remains, proceed without asking the user.
-4. Read project instructions and matching repo-local skills, inspect dirty state, preserve unrelated work.
-5. Define the goal oracle, choose the largest safe useful work package, and prefer test-first changes.
-6. Do not spend time on weak tests; add tests that would fail on the real requirement or defect through public behavior, or state the validation limit.
-7. Run validation commands; if not applicable, give exact evidence and the closest substitute. If validation fails twice with the same cause, stop and report the first failing stderr line.
-8. Apply commit/push policy, then end with the canonical final-report template. Fill every section; write \`none\` when empty.
-
-Canonical final-report template:
-Scope: /absolute/project/path with adapter generic-git.
-Selected slice: one largest safe useful package.
-Changed files: /absolute/project/path/src/file.ts — what changed and why.
-Validation evidence: npm test (pass); git diff --check (pass).
-Commit/push evidence: abc1234 pushed | not attempted because <reason>.
-Blocker state: none | <specific missing prerequisite or unsafe condition>.
-Blocked Work: none | <work not completed because of blocker>.
-Pivoted Work Completed: none | <safe alternate work completed while blocked>.
-Possible next steps: next safe action matched to the decision.
-DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result","blockerState":"why blocked","blockedWork":"none","pivotedWorkCompleted":"none","nextSteps":["next safe step"],"changedFiles":["/absolute/project/path/src/file.ts"],"validationCommands":["command"],"commitHash":"hash","pushStatus":"pushed"}
+Final report contract (keep last):
+Human lines required: Scope; Selected slice; Changed files with absolute paths and why; Validation evidence; Commit/push evidence; Blocker state; Blocked Work; Pivoted Work Completed; Possible next steps.
+DEV_GOAL_REPORT JSON: include validated, decision, summary, blockerState, blockedWork, pivotedWorkCompleted, nextSteps, changedFiles (absolute paths), validationCommands, commitHash and pushStatus when available.
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
+Decision rules: yes only after validation evidence. continue = validated and more objective work remains. blocked = validation red, evidence missing, unsafe scope, missing prereq, or unsafe delivery. stop = clean handoff/review. done = objective complete and every explicit requirement maps to evidence; done nextSteps may only be optional review/PR/handoff.
+Report quality: include Blocked Work and Pivoted Work Completed (write none), use absolute human changed-file paths, avoid vague changedFiles/summary, and keep DEV_GOAL_REPORT plus markers last. Malformed reports get one repair-only final-report retry; repair retries must not edit code, change scope, discover tasks, or rerun validation.`;
 
-Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done+actionable next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries.
-Malformed final report policy: one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report. Repair retries forbid code edits, scope changes, new task discovery, and validation reruns; only rewrite the final report.
-Blocked DEV_GOAL_REPORT objects should include blockerState, blockedWork, and nextSteps.
-
-Decision guide for final markers:
-- continue: use when validation passed and the full goal is not proven complete yet.
-- blocked: use when validation is red, required evidence is missing, or delivery is unsafe.
-- stop: use for clean handoff or review before more automation.
-- done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains.
-
-Completion audit before DEV_GOAL_DECISION: done: restate deliverables, then Map every explicit requirement to evidence from files, command output, tests, git state, logs, or external docs inspected. If anything is missing, weakly verified, or uncertain, do not use done; choose continue or blocked with concrete nextSteps instead.
-
-End report quality checklist:
-- Scope and slice: exact absolute project path, adapter, and selected slice.
-- Paths: use absolute paths for scope and human-readable changed-file evidence.
-- Blocked Work and Pivoted Work Completed: include both sections; write \`none\` when no blocker or pivot exists.
-- Changes: exact files plus what changed and why.
-- Validation: each command with pass, fail, or not-run reason.
-- Delivery: commit hash and push status, or why delivery was skipped.
-- Blocker state: none, or the specific missing prerequisite or unsafe condition.
-- Next step: one concrete action matched to continue, blocked, stop, or done.
-
-End report anti-patterns to avoid: Do not write vague summaries like "fixed stuff" or "all good". Do not claim tests pass without naming the exact commands and outcomes. Do not choose continue when validation is red or required evidence is missing. Do not omit why commit or push was skipped.
-
-Human-readable end report requirements, before DEV_GOAL_REPORT: Scope and selected slice; What changed and why with exact absolute file paths; Blocked Work and Pivoted Work Completed using \`none\`; validation evidence, commit/push evidence, blocker state; Possible next steps. For continue: name the next largest safe useful package. For done: only optional review/PR/handoff; if another goal slice remains, choose continue. For blocked: name concrete unblocking actions, missing prerequisites, or credentials. For stop: name handoff or cleanup actions so the user can resume safely. Keep the machine-readable DEV_GOAL_REPORT and final markers last so the goal runner can parse them.
-
-Omit unavailable DEV_GOAL_REPORT fields. Use false and blocked when validation is red. Only use DEV_GOAL_VALIDATED: yes after validation evidence exists. Use DEV_GOAL_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
 }
 
 export function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
