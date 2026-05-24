@@ -683,6 +683,9 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(commandMod.completeCommandArgs("git"), [
     { value: "git-commit-push", label: "git-commit-push" },
   ]);
+  assert.deepEqual(commandMod.completeCommandArgs("grill"), [
+    { value: "grill-me", label: "grill-me" },
+  ]);
   assert.deepEqual(commandMod.parseArgs("git-commit-push release cleanup"), {
     command: "git-commit-push",
     topic: "release cleanup",
@@ -694,6 +697,14 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual(commandMod.parseArgs("improve-codebase-architecture root package layout"), {
     command: "improve-codebase-architecture",
     topic: "root package layout",
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseArgs("grill-me release hardening"), {
+    command: "grill-me",
+    topic: "release hardening",
     validationCommands: [],
     preflightCommands: [],
     skills: [],
@@ -909,6 +920,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
   assert.match(promptsMod.buildDevelopmentGoalCompactionInstructions(promptState, resolvedAdapter, adapterTemp), /Current development goal state:[\s\S]*- Git delivery: push/);
   assert.match(promptsMod.buildSteeringPrompt(promptState, resolvedAdapter, adapterTemp, "focus release hygiene"), /User steering request: focus release hygiene/);
+  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /Use the grill-me skill in English/);
+  assert.match(promptsMod.buildGrillGoalPrompt(promptState, resolvedAdapter, adapterTemp, "release hardening"), /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
 
   const toolSafetyMod = await jiti.import(path.join(root, "extensions", "development-goal-tool-safety.ts"));
   assert.deepEqual(toolSafetyMod.evaluateActiveGoalToolCallSafety({ active: false, push: false }, "bash", { command: "git push origin main" }), { action: "allow" });
@@ -1178,6 +1191,23 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Make required local validation\/CI green/);
     assert.match(sent[0].content, /Push the current branch after validation is green/);
     assert.match(sent[0].content, /The user explicitly put all current worktree changes in scope for git delivery/);
+    await command.handler("stop", architectureCtx);
+    sent.length = 0;
+    entries.length = 0;
+
+    fs.writeFileSync(path.join(architectureRoot, ".pi", "development-goal.json"), JSON.stringify({ language: "Spanish", defaultTopic: "from config", push: false }), "utf8");
+    await command.handler("grill-me release hardening", architectureCtx);
+    assert.equal(sent.length, 1);
+    assert.equal(entries.at(-1).customType, "development-goal-grill-state");
+    assert.equal(entries.at(-1).data.language, "Spanish");
+    assert.match(sent[0].content, /Use the grill-me skill in Spanish/);
+    assert.match(sent[0].content, /Seed objective: release hardening/);
+    assert.match(sent[0].content, /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
+    await handlers.get("agent_end")({ messages: [{ role: "assistant", content: "Objetivo listo.\nDEV_GOAL_NEXT_TOPIC: tighten skill prompt budgets" }] }, architectureCtx);
+    assert.equal(sent.length, 2);
+    assert.equal(entries.at(-1).customType, "development-goal-state");
+    assert.equal(entries.at(-1).data.topic, "tighten skill prompt budgets");
+    assert.match(sent.at(-1).content, /Topic\/objective: tighten skill prompt budgets/);
     await command.handler("stop", architectureCtx);
     sent.length = 0;
     entries.length = 0;

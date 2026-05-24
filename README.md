@@ -82,6 +82,7 @@ Useful commands:
 /development-goal init --yes --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-goal providers
 /development-goal improve-codebase-architecture
+/development-goal grill-me release planning
 /development-goal git-commit-push release cleanup
 /development-goal --tokens 250K --commit --push fix flaky tests
 /development-goal status
@@ -101,6 +102,7 @@ Tips:
 
 - Goals continue automatically until the goal is achieved, blocked, paused, or stopped; `--iterations` is only an optional legacy safety cap.
 - `/development-goal init` opens an interactive setup wizard in the Pi TUI for objective, preferred language, git delivery, validation, skills, stop conditions, and log path.
+- `/development-goal grill-me [seed]` runs a grill-me planning turn in the configured language; when the assistant emits `DEV_GOAL_NEXT_TOPIC: ...`, the extension starts `/development-goal` for that objective automatically.
 - Use `--yes` (`-y` or `--defaults`) for scripted/non-interactive init that accepts generated defaults and any provided flags without prompts.
 - Existing `.pi/development-goal.json` files are protected by default; use `--force` only when you intentionally want an atomic replacement.
 - Broad objectives inspect repo-local skills plus TODO.md, progress.json, plans, roadmaps, and similar task files.

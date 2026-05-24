@@ -239,6 +239,31 @@ In the compaction summary, include:
 5. The requirement that the next assistant response ends with DEV_GOAL_VALIDATED and DEV_GOAL_DECISION markers.`;
 }
 
+export function buildGrillGoalPrompt(_s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, seedTopic: string): string {
+  const language = resolved.config.language || DEFAULT_LANGUAGE;
+  const seed = seedTopic.trim() || resolved.config.defaultTopic || resolved.adapter.defaultTopic;
+  return `Use the grill-me skill in ${language} to define the next Development Goal objective.
+
+Project root: ${cwd}
+Adapter: ${resolved.adapter.name} — ${resolved.adapter.description}
+Preferred language: ${language}
+Seed objective: ${seed}
+
+Use grill-me self-answer-first mode:
+- Answer easy/source-backed gaps yourself from repo instructions, docs, git state, and current context.
+- Ask the user only for hard owner-decision, risk-acceptance, or pivot questions.
+- Ask one question at a time, in ${language}, with your recommended answer and consequence.
+- If no hard question remains, do not ask; choose the next clear Development Goal objective.
+
+When the next goal is clear, end with exactly this marker line:
+DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>
+
+If the next goal cannot be selected safely, end with exactly this marker line:
+DEV_GOAL_NEXT_BLOCKED: <specific blocker>
+
+After DEV_GOAL_NEXT_TOPIC appears, the extension will start /development-goal automatically for that objective. Do not edit files, commit, push, deploy, or run validation during this planning turn unless source inspection is necessary to answer an easy gap.`;
+}
+
 export function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, steeringText: string): string {
   const adapter = resolved.adapter;
   return `Development goal steering request for the active task.

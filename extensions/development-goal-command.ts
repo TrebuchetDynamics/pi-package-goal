@@ -1,6 +1,6 @@
 import { parseTokenBudget } from "./development-goal-budget.ts";
 
-export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
+export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "grill-me" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
 
 export type SinceFilter = {
   cutoffMs: number;
@@ -32,8 +32,8 @@ export type ParsedCommand = {
   stopConditions: string[];
 };
 
-const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "improve-codebase-architecture", "git-commit-push", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
-const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "improve-codebase-architecture", "git-commit-push", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
+const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
+const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "improve-codebase-architecture", "git-commit-push", "grill-me", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
 const DEFAULT_ADAPTER_NAMES = ["generic-git"];
 
 export function completeCommandArgs(prefix: string) {

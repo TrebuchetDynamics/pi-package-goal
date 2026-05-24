@@ -38,6 +38,7 @@ import {
   buildCompactionResumePrompt,
   buildDevelopmentGoalCompactionInstructions,
   buildEmptyResponseRetryPrompt,
+  buildGrillGoalPrompt,
   buildIterationPrompt,
   buildMissingMarkerRecoveryPrompt,
   buildReportRepairPrompt,
@@ -364,6 +365,7 @@ const AUTO_CONTINUATION_MAX_ATTEMPTS = 20;
 const EMPTY_RESPONSE_RETRY_MS = 50;
 const EMPTY_RESPONSE_MAX_RETRIES = 2;
 const MISSING_MARKER_RECOVERY_MAX_RETRIES = 1;
+const GRILL_STATE_TYPE = "development-goal-grill-state";
 const COMMON_LANGUAGE_CHOICES = [
   "English",
   "Spanish",
@@ -386,11 +388,23 @@ const COMMON_LANGUAGE_CHOICES = [
   "Ukrainian",
   "Swahili",
 ];
+
+type GrillGoalState = {
+  active: boolean;
+  seedTopic: string;
+  language: string;
+  adapterName: string;
+  startedAt: string;
+};
+
 let state: LoopState = inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
+let pendingGrillGoal: GrillGoalState | undefined;
 
 export default function developmentLoopExtension(pi: ExtensionAPI) {
   async function onSessionStart(_event: unknown, ctx: ExtensionContext) {
-    state = restoreState(ctx.sessionManager.getEntries()) ?? inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
+    const entries = ctx.sessionManager.getEntries();
+    state = restoreState(entries) ?? inactiveState(DEFAULT_LOG_RELATIVE, DEFAULT_ITERATIONS);
+    pendingGrillGoal = restoreGrillGoalState(entries);
     refreshUi(ctx);
     if (state.active && state.phase === "running" && state.lastReason === "empty_agent_response_waiting_for_compaction") {
       const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
@@ -411,11 +425,13 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
   }
 
   async function onAgentEnd(event: { messages?: Array<{ role?: string; content?: unknown; stopReason?: string }> }, ctx: ExtensionContext) {
-    if (!state.active) return;
-    if (state.phase !== "running") return;
-
     const messages = event.messages ?? [];
     const assistantText = lastAssistantText(messages);
+
+    if (pendingGrillGoal?.active && await handleGrillGoalAssistantText(pi, ctx, assistantText)) return;
+
+    if (!state.active) return;
+    if (state.phase !== "running") return;
     const finalReportGate = evaluateFinalReportGate(assistantText, { usedReportRepairRetry: state.usedReportRepairRetry });
     const finalReport = "report" in finalReportGate ? finalReportGate.report : undefined;
     const decision = finalReport?.decision;
@@ -646,6 +662,9 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
     case "git-commit-push":
       await startLoop(pi, ctx, gitCommitPushCommand(parsed), false);
       return;
+    case "grill-me":
+      await startGrillGoal(pi, ctx, parsed);
+      return;
     case "restart":
       await startLoop(pi, ctx, parsed, true);
       return;
@@ -684,6 +703,71 @@ function gitCommitPushCommand(parsed: ParsedCommand): ParsedCommand {
     commandIntent: intent,
     topic: parsed.topic ? `${baseTopic}: ${parsed.topic}` : baseTopic,
   };
+}
+
+async function startGrillGoal(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand) {
+  if (state.active) {
+    notify(ctx, `${statusLine(state)}\nStop or finish the active development goal before starting /development-goal grill-me.`);
+    return;
+  }
+
+  const cwd = contextCwd(ctx);
+  const resolved = resolveProjectAdapter(cwd, parsed.adapter);
+  const seedTopic = parsed.topic || resolved.config.defaultTopic || resolved.adapter.defaultTopic;
+  const language = resolved.config.language || DEFAULT_LANGUAGE;
+  pendingGrillGoal = {
+    active: true,
+    seedTopic,
+    language,
+    adapterName: resolved.adapter.name,
+    startedAt: new Date().toISOString(),
+  };
+  pi.appendEntry(GRILL_STATE_TYPE, pendingGrillGoal);
+  notify(ctx, `Starting development-goal grill-me planning in ${language}.`);
+  sendLoopPrompt(pi, ctx, buildGrillGoalPrompt(state, resolved, cwd, seedTopic));
+}
+
+async function handleGrillGoalAssistantText(pi: ExtensionAPI, ctx: UiLikeContext, assistantText: string): Promise<boolean> {
+  const nextTopic = parseGrillGoalNextTopic(assistantText);
+  if (nextTopic) {
+    pendingGrillGoal = pendingGrillGoal ? { ...pendingGrillGoal, active: false } : undefined;
+    if (pendingGrillGoal) pi.appendEntry(GRILL_STATE_TYPE, pendingGrillGoal);
+    notify(ctx, `Development-goal grill-me selected next goal: ${nextTopic}`);
+    await startLoop(pi, ctx, {
+      command: "start",
+      topic: nextTopic,
+      validationCommands: [],
+      preflightCommands: [],
+      skills: [],
+      stopConditions: [],
+    }, false);
+    return true;
+  }
+
+  const blocked = parseGrillGoalBlocked(assistantText);
+  if (blocked) {
+    pendingGrillGoal = pendingGrillGoal ? { ...pendingGrillGoal, active: false } : undefined;
+    if (pendingGrillGoal) pi.appendEntry(GRILL_STATE_TYPE, pendingGrillGoal);
+    notify(ctx, `Development-goal grill-me blocked: ${blocked}`, "warning");
+    return true;
+  }
+
+  return false;
+}
+
+function parseGrillGoalNextTopic(text: string): string | undefined {
+  return markerValue(text, "DEV_GOAL_NEXT_TOPIC");
+}
+
+function parseGrillGoalBlocked(text: string): string | undefined {
+  return markerValue(text, "DEV_GOAL_NEXT_BLOCKED");
+}
+
+function markerValue(text: string, marker: string): string | undefined {
+  const pattern = new RegExp(`^${marker}:\\s*(.+?)\\s*$`, "im");
+  const value = text.match(pattern)?.[1]?.trim();
+  if (!value || /^<.*>$/.test(value)) return undefined;
+  return value;
 }
 
 function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
@@ -1087,6 +1171,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "- /development-goal [options] <topic> — start a goal",
     "- /development-goal improve-codebase-architecture [focus] — start an architecture-improvement goal",
     "- /development-goal git-commit-push [focus] — validate, split all current changes into coherent commits, and push the current branch",
+    "- /development-goal grill-me [seed] — use grill-me in the configured language to choose the next goal, then start it",
     "- /development-goal restart [options] <topic> — replace the active goal",
     "- /development-goal pause — pause automatic continuation without clearing goal state",
     "- /development-goal resume — resume a paused goal at the current iteration",
@@ -2325,6 +2410,24 @@ function recordSelfImprovementAction(record: Record<string, unknown>): string | 
     || stringOrUndefined(record.next_action)
     || stringOrUndefined(record.nextSafeAction)
     || stringOrUndefined(record.action);
+}
+
+function restoreGrillGoalState(entries: Array<{ type?: string; customType?: string; data?: unknown }>): GrillGoalState | undefined {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const entry = entries[i];
+    if (entry.type === "custom" && entry.customType === GRILL_STATE_TYPE && isGrillGoalState(entry.data)) return entry.data;
+  }
+  return undefined;
+}
+
+function isGrillGoalState(value: unknown): value is GrillGoalState {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<GrillGoalState>;
+  return typeof item.active === "boolean" &&
+    typeof item.seedTopic === "string" &&
+    typeof item.language === "string" &&
+    typeof item.adapterName === "string" &&
+    typeof item.startedAt === "string";
 }
 
 function parseLoopDecision(text: string): LoopDecision | undefined {
