@@ -740,7 +740,7 @@ async function handleGrillGoalAssistantText(pi: ExtensionAPI, ctx: UiLikeContext
       preflightCommands: [],
       skills: [],
       stopConditions: [],
-    }, false);
+    }, false, { deferFirstPromptUntilIdle: true });
     return true;
   }
 
@@ -801,7 +801,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   sendIterationPrompt(pi, ctx, resolved);
 }
 
-async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed: ParsedCommand, replaceActive: boolean) {
+async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCommand, replaceActive: boolean, options: { deferFirstPromptUntilIdle?: boolean } = {}) {
   if (state.active && !replaceActive) {
     notify(ctx, `${statusLine(state)}\nNo user input is needed; queued goal iterations start automatically. Use /development-goal restart to replace it or /development-goal stop to stop it.`);
     refreshUi(ctx);
@@ -850,6 +850,14 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
   notify(ctx, `Starting development goal: ${adapter.name} ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
+  if (options.deferFirstPromptUntilIdle) {
+    state = { ...state, phase: "queued" };
+    appendLoopLog("iteration_queued", { reason: "deferred_first_prompt_until_idle" });
+    pi.appendEntry(CUSTOM_STATE_TYPE, state);
+    refreshUi(ctx);
+    scheduleAutomaticIteration(pi, ctx, resolved, state.iteration);
+    return;
+  }
   sendIterationPrompt(pi, ctx, resolved);
 }
 

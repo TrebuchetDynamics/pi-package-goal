@@ -1178,12 +1178,13 @@ async function testExtensionLoadsAndRegistersCommands() {
   const architectureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-architecture-command-"));
   try {
     fs.mkdirSync(path.join(architectureRoot, ".git"));
+    let architectureIdle = true;
     const architectureCtx = {
       cwd: architectureRoot,
       hasUI: false,
       ui: { notify() {}, setStatus() {}, setWidget() {} },
       sessionManager: { getCwd: () => architectureRoot, getEntries: () => [] },
-      isIdle: () => true,
+      isIdle: () => architectureIdle,
     };
     await command.handler("improve-codebase-architecture root package layout", architectureCtx);
     assert.equal(sent.length, 1);
@@ -1219,10 +1220,16 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Use the grill-me skill in Spanish/);
     assert.match(sent[0].content, /Seed objective: release hardening/);
     assert.match(sent[0].content, /DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>/);
+    architectureIdle = false;
     await handlers.get("agent_end")({ messages: [{ role: "assistant", content: "Objetivo listo.\nDEV_GOAL_NEXT_TOPIC: tighten skill prompt budgets" }] }, architectureCtx);
-    assert.equal(sent.length, 2);
+    assert.equal(sent.length, 1, "grill-me handoff must wait for idle instead of queueing a followUp that can stall");
     assert.equal(entries.at(-1).customType, "development-goal-state");
     assert.equal(entries.at(-1).data.topic, "tighten skill prompt budgets");
+    assert.equal(entries.at(-1).data.phase, "queued");
+    architectureIdle = true;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(sent.length, 2);
+    assert.equal(sent.at(-1).options, undefined, "idle handoff prompt should send as a normal user message, not a followUp");
     assert.match(sent.at(-1).content, /Topic\/objective: tighten skill prompt budgets/);
     await command.handler("stop", architectureCtx);
     sent.length = 0;
