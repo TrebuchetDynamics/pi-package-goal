@@ -1,6 +1,6 @@
 import { parseTokenBudget } from "./development-goal-budget.ts";
 
-export type DevelopmentLoopCommand = "start" | "restart" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
+export type DevelopmentLoopCommand = "start" | "restart" | "improve-codebase-architecture" | "git-commit-push" | "pause" | "resume" | "stop" | "status" | "init" | "adapters" | "analyze-logs" | "help";
 
 export type SinceFilter = {
   cutoffMs: number;
@@ -23,14 +23,17 @@ export type ParsedCommand = {
   json?: boolean;
   since?: string;
   logPath?: string;
+  requiredSkill?: string;
+  commandIntent?: string;
+  allWorktreeChangesInScope?: boolean;
   validationCommands: string[];
   preflightCommands: string[];
   skills: string[];
   stopConditions: string[];
 };
 
-const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
-const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
+const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "improve-codebase-architecture", "git-commit-push", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
+const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "improve-codebase-architecture", "git-commit-push", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
 const DEFAULT_ADAPTER_NAMES = ["generic-git"];
 
 export function completeCommandArgs(prefix: string) {
@@ -41,8 +44,9 @@ export function completeCommandArgs(prefix: string) {
 
 export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFAULT_ADAPTER_NAMES): ParsedCommand {
   const tokens = tokenizeArgs(raw || "");
-  const commandToken = tokens[0] as DevelopmentLoopCommand | undefined;
-  const command = commandToken && COMMANDS.has(commandToken) ? tokens.shift() as DevelopmentLoopCommand : "start";
+  const commandToken = tokens[0];
+  const parsedCommand = commandToken ? commandFromToken(commandToken) : undefined;
+  const command = parsedCommand ? (tokens.shift(), parsedCommand) : "start";
   const parsed: ParsedCommand = {
     command,
     validationCommands: [],
@@ -233,6 +237,10 @@ export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFA
     parsed.topic = positional.join(" ").trim();
   }
   return parsed;
+}
+
+function commandFromToken(token: string): DevelopmentLoopCommand | undefined {
+  return COMMANDS.has(token as DevelopmentLoopCommand) ? token as DevelopmentLoopCommand : undefined;
 }
 
 export function parseSinceFilter(value: string, nowMs = Date.now()): SinceFilter | undefined {

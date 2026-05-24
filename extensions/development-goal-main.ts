@@ -629,6 +629,12 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
     case "init":
       await initConfig(parsed, ctx);
       return;
+    case "improve-codebase-architecture":
+      await startLoop(pi, ctx, improveCodebaseArchitectureCommand(parsed), false);
+      return;
+    case "git-commit-push":
+      await startLoop(pi, ctx, gitCommitPushCommand(parsed), false);
+      return;
     case "restart":
       await startLoop(pi, ctx, parsed, true);
       return;
@@ -637,6 +643,36 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       await startLoop(pi, ctx, parsed, false);
       return;
   }
+}
+
+function improveCodebaseArchitectureCommand(parsed: ParsedCommand): ParsedCommand {
+  const baseTopic = "Improve codebase architecture";
+  return {
+    ...parsed,
+    command: "start",
+    requiredSkill: "improve-codebase-architecture",
+    skills: ["improve-codebase-architecture", ...parsed.skills.filter((skill) => skill !== "improve-codebase-architecture")],
+    topic: parsed.topic ? `${baseTopic}: ${parsed.topic}` : baseTopic,
+  };
+}
+
+function gitCommitPushCommand(parsed: ParsedCommand): ParsedCommand {
+  const baseTopic = "Commit and push all current worktree changes";
+  const intent = [
+    "all current tracked, modified, deleted, and untracked worktree changes are in scope unless they are secrets, generated caches, vendored dependency folders, or otherwise unsafe to commit",
+    "inspect git status and diffs before staging; group changes into coherent commits instead of one dump commit when there are separable concerns",
+    "Make required local validation/CI green before each commit or push; if validation fails, fix code and rerun until green or blocked by an external prerequisite",
+    "Push the current branch after validation is green; never force push, and block with fetch/rebase/merge next steps if the branch is behind or diverged",
+  ].map((line) => `- ${line}`).join("\n");
+  return {
+    ...parsed,
+    command: "start",
+    commit: true,
+    push: true,
+    allWorktreeChangesInScope: true,
+    commandIntent: intent,
+    topic: parsed.topic ? `${baseTopic}: ${parsed.topic}` : baseTopic,
+  };
 }
 
 function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
@@ -703,6 +739,9 @@ async function startLoop(pi: ExtensionAPI, ctx: ExtensionCommandContext, parsed:
     startedAt,
     logPath,
     ...(parsed.tokenBudget ? { tokenBudget: parsed.tokenBudget } : {}),
+    ...(parsed.requiredSkill ? { requiredSkill: parsed.requiredSkill } : {}),
+    ...(parsed.commandIntent ? { commandIntent: parsed.commandIntent } : {}),
+    ...(parsed.allWorktreeChangesInScope ? { allWorktreeChangesInScope: true } : {}),
     phase: "started",
     commit,
     push,
@@ -1035,6 +1074,8 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = [
     "Development-goal commands:",
     "- /development-goal [options] <topic> — start a goal",
+    "- /development-goal improve-codebase-architecture [focus] — start an architecture-improvement goal",
+    "- /development-goal git-commit-push [focus] — validate, split all current changes into coherent commits, and push the current branch",
     "- /development-goal restart [options] <topic> — replace the active goal",
     "- /development-goal pause — pause automatic continuation without clearing goal state",
     "- /development-goal resume — resume a paused goal at the current iteration",

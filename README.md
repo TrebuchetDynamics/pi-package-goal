@@ -81,6 +81,8 @@ Useful commands:
 /development-goal init --yes --dry-run --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-goal init --yes --push --validation "npm test" --validation "git diff --check" --skill=grill-me release checks
 /development-goal providers
+/development-goal improve-codebase-architecture
+/development-goal git-commit-push release cleanup
 /development-goal --tokens 250K --commit --push fix flaky tests
 /development-goal status
 /development-goal pause

@@ -146,6 +146,9 @@ function collectPiCoreDependencyIssues(baseDir, pkg) {
     if (pkg.peerDependencies?.[packageName] !== "*") {
       issues.push(`peerDependencies: ${packageName} must be "*"`);
     }
+    if (pkg.peerDependenciesMeta?.[packageName]?.optional !== true) {
+      issues.push(`peerDependencies: ${packageName} must be marked optional in peerDependenciesMeta`);
+    }
   }
 
   const runtimeCorePackages = Object.keys(pkg.dependencies ?? {})
@@ -334,6 +337,9 @@ async function testPackageManifest() {
   assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
+  for (const packageName of Object.keys(pkg.peerDependencies)) {
+    assert.equal(pkg.peerDependenciesMeta?.[packageName]?.optional, true, `${packageName} peer dependency must be optional so package installs do not auto-install Pi core dependency trees`);
+  }
 }
 
 async function testPackageManifestPaths() {
@@ -379,7 +385,10 @@ async function testPiCoreDependencies() {
     });
     assert.deepEqual(issues, [
       "peerDependencies: @earendil-works/pi-coding-agent must be \"*\"",
+      "peerDependencies: @earendil-works/pi-coding-agent must be marked optional in peerDependenciesMeta",
+      "peerDependencies: @earendil-works/pi-tui must be marked optional in peerDependenciesMeta",
       "peerDependencies: typebox must be \"*\"",
+      "peerDependencies: typebox must be marked optional in peerDependenciesMeta",
       "dependencies: typebox must be a peerDependency, not a runtime dependency",
     ]);
   } finally {
@@ -640,7 +649,33 @@ async function testExtensionLoadsAndRegistersCommands() {
     { value: "status", label: "status" },
     { value: "stop", label: "stop" },
   ]);
+  assert.deepEqual(commandMod.completeCommandArgs("improve"), [
+    { value: "improve-codebase-architecture", label: "improve-codebase-architecture" },
+  ]);
+  assert.deepEqual(commandMod.completeCommandArgs("git"), [
+    { value: "git-commit-push", label: "git-commit-push" },
+  ]);
+  assert.deepEqual(commandMod.parseArgs("git-commit-push release cleanup"), {
+    command: "git-commit-push",
+    topic: "release cleanup",
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  assert.deepEqual(commandMod.parseArgs("improve-codebase-architecture root package layout"), {
+    command: "improve-codebase-architecture",
+    topic: "root package layout",
+    validationCommands: [],
+    preflightCommands: [],
+    skills: [],
+    stopConditions: [],
+  });
+  const misspelledArchitectureCommand = ["improve-codebase-achi", "tecture"].join("");
+  assert.equal(read("extensions/development-goal-command.ts").includes(misspelledArchitectureCommand), false);
   assert.doesNotMatch(read("README.md"), /\/development-goal start/);
+  assert.match(read("README.md"), /\/development-goal git-commit-push/);
+  assert.match(read("README.md"), /\/development-goal improve-codebase-architecture/);
   assert.deepEqual(commandMod.parseArgs("init generic-git --yes --no-push"), {
     command: "init",
     adapter: "generic-git",
@@ -1063,6 +1098,45 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.ok(handlers.has("session_compact"));
 
   const command = commands.get("development-goal");
+  const architectureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-architecture-command-"));
+  try {
+    fs.mkdirSync(path.join(architectureRoot, ".git"));
+    const architectureCtx = {
+      cwd: architectureRoot,
+      hasUI: false,
+      ui: { notify() {}, setStatus() {}, setWidget() {} },
+      sessionManager: { getCwd: () => architectureRoot, getEntries: () => [] },
+      isIdle: () => true,
+    };
+    await command.handler("improve-codebase-architecture root package layout", architectureCtx);
+    assert.equal(sent.length, 1);
+    assert.equal(entries.at(-1).data.requiredSkill, "improve-codebase-architecture");
+    assert.match(sent[0].content, /Topic\/objective: Improve codebase architecture: root package layout/);
+    assert.match(sent[0].content, /Direct skill command: improve-codebase-architecture/);
+    assert.match(sent[0].content, /Invoke the improve-codebase-architecture skill as the primary architecture workflow before selecting or editing code/);
+    assert.match(sent[0].content, /Start with improve-codebase-architecture/);
+    await command.handler("stop", architectureCtx);
+    sent.length = 0;
+    entries.length = 0;
+
+    await command.handler("git-commit-push release cleanup", architectureCtx);
+    assert.equal(sent.length, 1);
+    assert.equal(entries.at(-1).data.commit, true);
+    assert.equal(entries.at(-1).data.push, true);
+    assert.equal(entries.at(-1).data.allWorktreeChangesInScope, true);
+    assert.match(sent[0].content, /Topic\/objective: Commit and push all current worktree changes: release cleanup/);
+    assert.match(sent[0].content, /Direct command intent:[\s\S]*all current tracked, modified, deleted, and untracked worktree changes are in scope/);
+    assert.match(sent[0].content, /group changes into coherent commits/);
+    assert.match(sent[0].content, /Make required local validation\/CI green/);
+    assert.match(sent[0].content, /Push the current branch after validation is green/);
+    assert.match(sent[0].content, /The user explicitly put all current worktree changes in scope for git delivery/);
+    await command.handler("stop", architectureCtx);
+    sent.length = 0;
+    entries.length = 0;
+  } finally {
+    fs.rmSync(architectureRoot, { recursive: true, force: true });
+  }
+
   const e2eRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-e2e-"));
   fs.mkdirSync(path.join(e2eRoot, ".git"));
   try {

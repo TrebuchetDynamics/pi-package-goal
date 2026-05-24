@@ -76,7 +76,7 @@ The popover must cover the whole viewport so its `::backdrop` dims the entire pa
   overflow: visible;
 }
 
-/* Style the popover's ::backdrop to achive the overlay effect and
+/* Style the popover's ::backdrop to achieve the overlay effect and
    provide visual affordances indicating that the rest of the page is inert */
 .Drawer::backdrop {
   background: #000;

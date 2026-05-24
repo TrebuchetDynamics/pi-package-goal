@@ -59,7 +59,14 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const pushSafetyPolicy = s.push
     ? "Before pushing, inspect `git status --short --branch` for ahead/behind/diverged state. If the branch is behind or diverged, do not force-push or repair history without explicit approval; report DEV_GOAL_DECISION: blocked with blockerState mentioning git_push_fetch_first and nextSteps for fetch/rebase/merge, validation, then push."
     : undefined;
+  const worktreeScopePolicy = s.allWorktreeChangesInScope
+    ? "The user explicitly put all current worktree changes in scope for git delivery. Still inspect for secrets, generated caches, vendored dependency folders, and unsafe artifacts before staging; block with exact paths if any should not be committed."
+    : "Preserve unrelated dirty work. Stage only files that belong to this iteration.";
 
+  const commandIntentGuidance = s.commandIntent ? `Direct command intent:\n${s.commandIntent}\n` : "";
+  const requiredSkillGuidance = s.requiredSkill
+    ? `Direct skill command: ${s.requiredSkill}\nInvoke the ${s.requiredSkill} skill as the primary architecture workflow before selecting or editing code. Treat this as required command intent, not a generic suggestion.\n`
+    : "";
   const iterationLabel = iterationProgress(s);
   const capNote = hasIterationCap(s)
     ? "A legacy iteration cap is configured; continue until the goal is achieved or the cap is reached."
@@ -80,7 +87,7 @@ Run budget: ${loopBudgetSummary(s)} (soft budget; elapsed time and token budget 
 Suggested skills/adapters for this project:
 ${skills.map((skill) => `- ${skill}`).join("\n") || "- Use the project-matching skill set."}
 
-Task discovery cues for broad objectives:
+${requiredSkillGuidance}${commandIntentGuidance}Task discovery cues for broad objectives:
 ${TASK_DISCOVERY_CUES.map((cue) => `- ${cue}`).join("\n")}
 
 Scope expansion policy:
@@ -100,7 +107,7 @@ ${validationCommands.map((command) => `- ${command}`).join("\n")}
 
 Commit/push policy:
 - ${commitPolicy}
-${pushSafetyPolicy ? `- ${pushSafetyPolicy}\n` : ""}- Preserve unrelated dirty work. Stage only files that belong to this iteration.
+${pushSafetyPolicy ? `- ${pushSafetyPolicy}\n` : ""}- ${worktreeScopePolicy}
 
 Stop conditions:
 ${stopConditions.map((condition) => `- ${condition}`).join("\n")}

@@ -48,6 +48,20 @@
     "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-ai": {
+      "optional": true
+    },
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@earendil-works/pi-tui": {
+      "optional": true
+    },
+    "typebox": {
+      "optional": true
+    }
+  },
   "scripts": {
     "test": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
     "validate": "node tests/validate-package.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-scope-expansion.test.mjs && node tests/development-goal-lib-architecture.test.mjs"

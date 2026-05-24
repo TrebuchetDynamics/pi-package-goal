@@ -31,6 +31,9 @@ export type DevelopmentLoopRun = {
   startedAt: string;
   logPath: string;
   tokenBudget?: number;
+  requiredSkill?: string;
+  commandIntent?: string;
+  allWorktreeChangesInScope?: boolean;
   phase: LoopPhase;
   lastDecision?: LoopDecision | string;
   lastReason?: string;
