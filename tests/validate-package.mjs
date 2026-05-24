@@ -817,6 +817,9 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
   assert.match(extractedPrompt, /soft budget; elapsed time and token budget are advisory/);
   assert.match(extractedPrompt, /Task discovery cues for broad objectives:/);
+  assert.match(extractedPrompt, /lightweight architecture scout/i);
+  assert.match(extractedPrompt, /Do not write .*architecture-review.*\.html/i);
+  assert.match(extractedPrompt, /Do not spend time on weak tests/i);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development goal iteration 2\/3/);
   assert.match(promptsMod.buildMissingMarkerRecoveryPrompt(promptState), /Return only the development goal final markers for iteration 2\/3/);
@@ -1125,6 +1128,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /only ask hard owner-decision or pivot questions/i);
     assert.match(sent[0].content, /If no hard question remains, proceed without asking the user/i);
     assert.match(sent[0].content, /improve-codebase-architecture/);
+    assert.match(sent[0].content, /lightweight architecture scout/i);
+    assert.match(sent[0].content, /Do not write .*architecture-review.*\.html/i);
+    assert.match(sent[0].content, /Do not spend time on weak tests/i);
+    assert.match(sent[0].content, /tests that would fail on the real requirement/i);
     assert.match(sent[0].content, /Preferred language: English/);
     assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
     assert.match(sent[0].content, /Do not trigger Greptile/);
@@ -3041,6 +3048,10 @@ async function testNoticesAndDocs() {
   assert.match(readme, /only asks hard owner-decision or pivot questions/i);
   assert.match(readme, /if no hard question remains, proceeds without interrupting the user/i);
   assert.match(readme, /improve-codebase-architecture/);
+  assert.match(readme, /lightweight architecture scout/i);
+  assert.match(readme, /Do not write .*architecture-review.*\.html/i);
+  assert.match(readme, /weak tests/i);
+  assert.match(readme, /tests that would fail on the real requirement/i);
   assert.match(readme, /## Update or remove/);
   assert.match(readme, /### Status bar integration/);
   assert.match(readme, /pi-powerline-footer/);

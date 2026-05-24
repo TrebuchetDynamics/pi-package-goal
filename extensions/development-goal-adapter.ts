@@ -42,7 +42,7 @@ export const BUILT_IN_ADAPTERS: LoopAdapter[] = [
     description: "Conservative generic git-project development goal",
     defaultTopic: "discover and complete the largest safe useful project goal package with validation",
     skills: [
-      "improve-codebase-architecture",
+      "improve-codebase-architecture as a lightweight architecture scout; do not write /tmp/architecture-review*.html unless explicitly requested",
       "grill-me in self-answer-first mode; only ask hard owner-decision or pivot questions, and proceed without asking when no hard question remains",
       "caveman",
       "repo-local skills that match the detected task before package defaults",
@@ -51,7 +51,7 @@ export const BUILT_IN_ADAPTERS: LoopAdapter[] = [
       "writing-plans for multi-step plans when available",
       "writing-shape for docs, articles, READMEs, and narrative docs",
       "writing-skills for creating or updating skills",
-      "test-driven-development for code changes",
+      "test-driven-development for code changes; avoid weak tests that do not fail on the real requirement or defect",
       "verification-before-completion before reporting done",
     ],
     preflightCommands: COMMON_PREFLIGHT,

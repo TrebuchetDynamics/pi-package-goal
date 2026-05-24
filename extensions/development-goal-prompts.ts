@@ -29,7 +29,9 @@ export const REVIEW_GUIDANCE = [
 export const GOALBUDDY_INSPIRED_GUIDANCE = [
   "Use the GoalBuddy-style invariant: Intent -> Oracle -> Surface -> Work package -> Proof.",
   "Identify the goal oracle early: the observable test, demo, artifact, metric, source-backed answer, review, or owner decision that proves the original outcome.",
+  "Use improve-codebase-architecture as a lightweight architecture scout during startup: Do not write /tmp/architecture-review*.html or open a browser unless the objective explicitly asks for a full architecture report.",
   "Start every development-goal run by using improve-codebase-architecture, then grill-me in self-answer-first mode before selecting the first work package; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.",
+  "Do not spend time on weak tests: add tests that would fail on the real requirement or defect and exercise behavior through public interfaces; otherwise name the validation limit instead.",
   "Choose the largest safe useful slice, not the tiniest possible helper. Safe means bounded, explicit, verified, reversible, and respectful of unrelated dirty work.",
   "A blocked slice does not automatically stop the goal. If safe local follow-up work exists, record the blocker in DEV_GOAL_REPORT nextSteps and continue with that safe work.",
   "Only use done after a final audit maps the original request to current receipts, validation evidence, delivery evidence, and the goal oracle.",
@@ -105,12 +107,12 @@ ${stopConditions.map((condition) => `- ${condition}`).join("\n")}
 
 Run one complete vertical development iteration:
 1. State scope lock with exact absolute project path and adapter.
-2. Start with improve-codebase-architecture: use it to map architectural friction, repo vocabulary, and the safest high-leverage direction before selecting work.
+2. Start with improve-codebase-architecture as a lightweight architecture scout: map architectural friction, repo vocabulary, and the safest high-leverage direction, but Do not write /tmp/architecture-review*.html or open a browser unless the objective explicitly asks for a full architecture report.
 3. Use grill-me to identify missing decisions; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.
 4. Read project instructions and use matching repo-local skills before risky work.
 5. Inspect current dirty state and preserve unrelated work.
 6. Define the goal oracle and choose the largest safe useful work package from the user topic, repo-local skills, or task discovery cues above.
-7. Prefer test-first changes when editing code.
+7. Prefer test-first changes when editing code, but Do not spend time on weak tests; add tests that would fail on the real requirement or defect and exercise behavior through public interfaces.
 8. Run the validation commands above. If a command is not applicable, explain exact evidence and substitute the closest project-appropriate check.
 9. If validation fails twice with the same cause, stop and report the first failing stderr line.
 10. Apply the commit/push policy above.

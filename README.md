@@ -307,7 +307,7 @@ Create `.pi/development-goal.json` when a repo needs its own default objective, 
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
-Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `grill-me` in self-answer-first mode so it answers easy/source-backed gaps itself, only asks hard owner-decision or pivot questions, and if no hard question remains, proceeds without interrupting the user.
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `improve-codebase-architecture` as a lightweight architecture scout. Do not write /tmp/architecture-review*.html unless a full architecture report is explicitly requested. Startup prompts also tell agents to use `grill-me` in self-answer-first mode so it answers easy/source-backed gaps itself, only asks hard owner-decision or pivot questions, and if no hard question remains, proceeds without interrupting the user. Do not spend time on weak tests; add tests that would fail on the real requirement or defect and exercise public behavior, or name the validation limit instead.
 
 Example config:
 
@@ -340,7 +340,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 
 - `tdd` — red-green-refactor delivery.
 - `diagnose` — disciplined bug and performance diagnosis.
-- `improve-codebase-architecture` — architecture deepening review.
+- `improve-codebase-architecture` — architecture deepening review; Development Goal startup uses it only as a lightweight architecture scout unless a full report is explicitly requested.
 - `grill-me` — self-answer-first plan-gap interrogation; Development Goal startup uses it to answer easy/source-backed gaps itself and only ask hard owner-decision or pivot questions.
 - `grill-with-docs` — plan interrogation tied to domain docs and ADRs.
 - `prototype` — throwaway prototypes for design uncertainty.
