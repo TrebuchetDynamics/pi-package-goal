@@ -39,6 +39,13 @@ Optional context stewardship (can bootstrap projects that have neither `CONTEXT.
 /context-goal apply
 ```
 
+Optional ship-readiness check:
+
+```text
+/ship-goal audit
+/ship-goal run
+```
+
 ### Step 3: Start `/development-goal`
 
 From the project you want to improve:
@@ -345,6 +352,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `/e2e-goal` — real-usage E2E test goal that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists goal state and logs progress to `.pi/e2e-goal/logs.jsonl` by default.
 - `/e2e` — short alias for the E2E goal extension.
 - `/context-goal` — context stewardship for `CONTEXT.md` and guarded `MEMORY.md`: audits recent goal logs and project files, works when both files are absent, proposes vocabulary/ADR follow-ups, and creates baseline files or applies safe context term additions only after explicit approval or `--yes`.
+- `/ship-goal` — shipping-readiness audit for completed work: inspects git state, infers or accepts validation commands, runs validation on request, flags risky files, and reports `SHIP_GOAL_VALIDATED` / `SHIP_GOAL_DECISION` evidence. It does not commit, push, deploy, or publish.
 
 ## Included skills
 
@@ -389,7 +397,7 @@ The validation script checks:
 - Pi package manifest shape, referenced bundle paths, and Pi glob/exclusion entries.
 - Pi core imports are peerDependencies with "*".
 - Extension load via Pi-bundled `jiti`.
-- `/development-goal`, `/e2e-goal`, `/e2e`, and `/context-goal` command registration.
+- `/development-goal`, `/e2e-goal`, `/e2e`, `/context-goal`, and `/ship-goal` command registration.
 - E2E smoke coverage for starting and completing one development-goal extension run.
 - E2E-goal smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-goal/logs.jsonl` progress logging.
 - Skill frontmatter and exact expected bundle contents.

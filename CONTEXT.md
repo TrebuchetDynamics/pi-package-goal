@@ -13,7 +13,7 @@ One active execution of a Development Goal in a project workspace. A Goal Run ha
 _Avoid_: Loop run, iteration batch
 
 **Goal Family**:
-The set of Pi workflows whose commands follow the `*-goal` pattern and share lifecycle concepts while specializing their purpose. Development Goal, E2E Goal, Architecture Goal, View Goal, Debug Goal, and Research Goal are members of the Goal Family.
+The set of Pi workflows whose commands follow the `*-goal` pattern and share lifecycle concepts while specializing their purpose. Development Goal, E2E Goal, Context Goal, Ship Goal, Architecture Goal, View Goal, Debug Goal, and Research Goal are members of the Goal Family.
 _Avoid_: Unrelated loop extensions, one-off command clones
 
 **Goal Identity**:
@@ -43,6 +43,10 @@ _Avoid_: Silent memory writes, unreviewed context edits, dumping session notes i
 **Final Report Gate**:
 A Development Goal module that evaluates a parsed final report before Goal Run state transitions. The Final Report Gate decides whether to accept, request one repair-only report retry, or block malformed final reports.
 _Avoid_: Inline final-report checks, scattered malformed-report branches, accepting low-quality terminal markers
+
+**Ship Goal**:
+A Pi extension that audits shipping readiness after implementation work appears complete. Ship Goal inspects git state, infers or accepts validation commands, runs validation on request, flags risky files, and emits `SHIP_GOAL_VALIDATED` / `SHIP_GOAL_DECISION` evidence without committing, pushing, deploying, or publishing.
+_Avoid_: Auto-shipping, hidden commit/push side effects, replacing project validation with assistant prose
 
 **Migration Policy**:
 The explicit rule for how a Development Goal handles old public names, old persisted paths, old status keys, and old final markers after an identity change. The current Development Goal Migration Policy is a hard break: old names, paths, markers, and aliases are removed rather than redirected.

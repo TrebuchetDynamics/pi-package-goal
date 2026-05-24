@@ -379,7 +379,7 @@ async function testPackageManifest() {
   assert.match(pkg.description, /development-goal/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("development-goal"));
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts", "./extensions/context-goal.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts", "./extensions/context-goal.ts", "./extensions/ship-goal.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
   const gitignore = read(".gitignore");
@@ -451,7 +451,7 @@ async function testExtensionFolderArchitecture() {
   const rootModules = fs.readdirSync(extensionRoot)
     .filter((name) => name.endsWith(".ts"))
     .sort();
-  assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts"], "extension root must contain only public goal entrypoints");
+  assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts", "ship-goal.ts"], "extension root must contain only public goal entrypoints");
 
   const expectedPrivateModules = [
     "adapter.ts",
@@ -494,6 +494,9 @@ async function testExtensionFolderArchitecture() {
     assert.ok(exists(path.join("extensions", "e2e-goal", file)), `missing E2E Goal private module ${file}`);
   }
   assert.ok(exists(path.join("extensions", "context-goal", "main.ts")), "missing Context Goal private module main.ts");
+  for (const file of ["identity.ts", "main.ts"]) {
+    assert.ok(exists(path.join("extensions", "ship-goal", file)), `missing Ship Goal private module ${file}`);
+  }
 }
 
 async function testContextGoalExtensionLoadsAndRegistersCommands() {
@@ -571,6 +574,74 @@ async function testContextGoalExtensionLoadsAndRegistersCommands() {
     }
   } finally {
     fs.rmSync(contextRoot, { recursive: true, force: true });
+  }
+}
+
+async function testShipGoalExtensionLoadsAndRegistersCommands() {
+  assert.ok(exists("extensions/ship-goal.ts"), "ship-goal extension missing");
+  const { createJiti } = require(jitiEntry);
+  const jiti = createJiti(import.meta.url, { interopDefault: true });
+  const mod = await jiti.import(path.join(root, "extensions", "ship-goal.ts"));
+  const identityMod = await jiti.import(path.join(root, "extensions", "ship-goal", "identity.ts"));
+  assert.equal(identityMod.SHIP_GOAL_IDENTITY.markers.validated, "SHIP_GOAL_VALIDATED");
+  assert.equal(typeof mod.default, "function");
+  assert.equal(typeof mod.__test__.auditShipping, "function");
+  assert.deepEqual(mod.__test__.parseArgs("run --validation \"npm test\" --validation=\"git diff --check\""), {
+    command: "run",
+    validations: ["npm test", "git diff --check"],
+  });
+
+  const commands = new Map();
+  const messages = [];
+  const notifications = [];
+  const execCalls = [];
+  const pi = {
+    registerCommand(name, command) { commands.set(name, command); },
+    sendMessage(message) { messages.push(message); },
+    async exec(command, args) {
+      const shell = args.join(" ");
+      execCalls.push([command, ...args].join(" "));
+      if (shell.includes("git status --short --branch")) {
+        return { code: 0, stdout: "## main...origin/main\n M README.md\n?? src/new.ts\n", stderr: "" };
+      }
+      if (shell.includes("npm test")) return { code: 0, stdout: "tests passed\n", stderr: "" };
+      if (shell.includes("git diff --check")) return { code: 0, stdout: "", stderr: "" };
+      return { code: 1, stdout: "", stderr: "unexpected command" };
+    },
+  };
+  mod.default(pi);
+  assert.ok(commands.has("ship-goal"));
+
+  const shipRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-ship-goal-"));
+  try {
+    fs.writeFileSync(path.join(shipRoot, "package.json"), JSON.stringify({ scripts: { test: "node test.js" } }) + "\n");
+    const ctx = {
+      cwd: shipRoot,
+      ui: { notify(message, level) { notifications.push({ message, level }); } },
+      sessionManager: { getCwd: () => shipRoot },
+    };
+
+    await commands.get("ship-goal").handler("status", ctx);
+    assert.match(messages.at(-1).content, /not run yet for this project/);
+
+    await commands.get("ship-goal").handler("audit", ctx);
+    assert.match(messages.at(-1).content, /Ship Goal audit/);
+    assert.match(messages.at(-1).content, /decision: review_needed/);
+    assert.match(messages.at(-1).content, /npm test: not run/);
+    assert.match(messages.at(-1).content, /SHIP_GOAL_VALIDATED: no/);
+
+    await commands.get("ship-goal").handler("run", ctx);
+    assert.match(messages.at(-1).content, /decision: ready/);
+    assert.match(messages.at(-1).content, /npm test: pass/);
+    assert.match(messages.at(-1).content, /git diff --check: pass/);
+    assert.match(messages.at(-1).content, /SHIP_GOAL_VALIDATED: yes/);
+    assert.ok(execCalls.some((call) => call.includes("git status --short --branch")));
+    assert.ok(execCalls.some((call) => call.includes("npm test")));
+
+    await commands.get("ship-goal").handler("help", ctx);
+    assert.match(messages.at(-1).content, /does not commit, push, deploy, or publish/);
+  } finally {
+    fs.rmSync(shipRoot, { recursive: true, force: true });
   }
 }
 
@@ -3586,7 +3657,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
   assert.match(readme, /E2E smoke coverage for starting and completing one development-goal extension run/);
-  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, `\/e2e`, and `\/context-goal` command registration/);
+  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, `\/e2e`, `\/context-goal`, and `\/ship-goal` command registration/);
   assert.match(readme, /Skill frontmatter and exact expected bundle contents/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
   assert.match(readme, /Third-party notices, local notice paths, and license copies/);
@@ -3621,6 +3692,7 @@ await testPackageManifestPaths();
 await testPiCoreDependencies();
 await testExtensionFolderArchitecture();
 await testContextGoalExtensionLoadsAndRegistersCommands();
+await testShipGoalExtensionLoadsAndRegistersCommands();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();
