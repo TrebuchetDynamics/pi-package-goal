@@ -186,3 +186,38 @@ assert.deepEqual(parseOk([
     ],
   },
 });
+
+const doneWithActionableNextStep = [
+  "Scope: /repo with adapter generic-git.",
+  "Changed files:",
+  "- /repo/progress.json — queued the next row.",
+  "Validation evidence: npm test (pass).",
+  "Blocked Work: none.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: done",
+].join("\n");
+
+const actionableDoneMessage = 'done decision includes actionable goal next step "Build row: Internal session search tool package rehome"; use continue for remaining goal work or make done nextSteps optional/handoff-only';
+const doneWithActionableReport = parseOk(doneWithActionableNextStep);
+assert.equal(doneWithActionableReport.quality.valid, false);
+assert.deepEqual(doneWithActionableReport.quality.issues, [
+  { code: "done_with_actionable_next_step", message: actionableDoneMessage, value: "Build row: Internal session search tool package rehome" },
+]);
+assert.deepEqual(doneWithActionableReport.deliveryEvidence.reportQualityWarnings, [actionableDoneMessage]);
+
+const doneWithOptionalPrNextStep = [
+  "Scope: /repo with adapter generic-git.",
+  "Changed files:",
+  "- /repo/progress.json — published final progress.",
+  "Validation evidence: npm test (pass).",
+  "Blocked Work: none.",
+  "Pivoted Work Completed: none.",
+  "Possible next steps: Optional: open or update a pull request from development to main.",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Published final progress","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Optional: open or update a pull request from development to main."]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: done",
+].join("\n");
+
+assert.equal(parseOk(doneWithOptionalPrNextStep).quality.valid, true);

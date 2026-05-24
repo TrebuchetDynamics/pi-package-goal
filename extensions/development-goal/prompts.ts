@@ -143,7 +143,7 @@ DEV_GOAL_REPORT: {"validated":true,"decision":"continue","summary":"brief result
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 
-Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries.
+Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done+actionable next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries.
 Malformed final report policy: one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report. Repair retries forbid code edits, scope changes, new task discovery, and validation reruns; only rewrite the final report.
 Blocked DEV_GOAL_REPORT objects should include blockerState, blockedWork, and nextSteps.
 
@@ -167,7 +167,7 @@ End report quality checklist:
 
 End report anti-patterns to avoid: Do not write vague summaries like "fixed stuff" or "all good". Do not claim tests pass without naming the exact commands and outcomes. Do not choose continue when validation is red or required evidence is missing. Do not omit why commit or push was skipped.
 
-Human-readable end report requirements, before DEV_GOAL_REPORT: Scope and selected slice; What changed and why with exact absolute file paths; Blocked Work and Pivoted Work Completed using \`none\`; validation evidence, commit/push evidence, blocker state; Possible next steps. For continue: name the next largest safe useful package. For blocked: name concrete unblocking actions, missing prerequisites, or credentials. For stop: name handoff or cleanup actions so the user can resume safely. Keep the machine-readable DEV_GOAL_REPORT and final markers last so the goal runner can parse them.
+Human-readable end report requirements, before DEV_GOAL_REPORT: Scope and selected slice; What changed and why with exact absolute file paths; Blocked Work and Pivoted Work Completed using \`none\`; validation evidence, commit/push evidence, blocker state; Possible next steps. For continue: name the next largest safe useful package. For done: only optional review/PR/handoff; if another goal slice remains, choose continue. For blocked: name concrete unblocking actions, missing prerequisites, or credentials. For stop: name handoff or cleanup actions so the user can resume safely. Keep the machine-readable DEV_GOAL_REPORT and final markers last so the goal runner can parse them.
 
 Omit unavailable DEV_GOAL_REPORT fields. Use false and blocked when validation is red. Only use DEV_GOAL_VALIDATED: yes after validation evidence exists. Use DEV_GOAL_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
 }
@@ -208,6 +208,7 @@ DEV_GOAL_DECISION: continue|stop|blocked|done`;
 
 export function buildReportRepairPrompt(s: LoopState, issues: Array<{ code: string; message: string; value?: string }>): string {
   const issueLines = issues.map((issue) => `- ${issue.code}: ${issue.message}${issue.value ? ` (value: ${issue.value})` : ""}`).join("\n");
+  const remediationLines = reportRepairRemediationLines(issues).join("\n");
   return `Repair only the development goal final report for iteration ${iterationProgress(s)}.
 
 The previous final report was malformed. Do not edit code. Do not change scope. Do not run task discovery. Do not run validation commands. Only rewrite the final report and final markers.
@@ -215,7 +216,21 @@ The previous final report was malformed. Do not edit code. Do not change scope. 
 You must address these exact issue codes:
 ${issueLines || "- unknown_report_quality_issue: report quality validation failed"}
 
+Repair guidance:
+${remediationLines || "- Keep the original evidence, but rewrite it into the canonical final-report shape."}
+
 Return the corrected human-readable final report, DEV_GOAL_REPORT, DEV_GOAL_VALIDATED, and DEV_GOAL_DECISION. Keep the original work, validation evidence, decision intent, and changed-file evidence unless one of the issue codes requires correcting that evidence.`;
+}
+
+function reportRepairRemediationLines(issues: Array<{ code: string; message: string; value?: string }>): string[] {
+  const codes = new Set(issues.map((issue) => issue.code));
+  const lines: string[] = [];
+  if (codes.has("missing_blocked_work")) lines.push("- missing_blocked_work: add `Blocked Work: none` unless specific blocked work exists.");
+  if (codes.has("missing_pivoted_work_completed")) lines.push("- missing_pivoted_work_completed: add `Pivoted Work Completed: none` unless a safe pivot was completed.");
+  if (codes.has("relative_human_changed_file")) lines.push("- relative_human_changed_file: rewrite each human-readable Changed files entry with an absolute path rooted at the Scope path.");
+  if (codes.has("vague_typed_changed_file")) lines.push("- vague_typed_changed_file: replace vague DEV_GOAL_REPORT.changedFiles entries with exact absolute file paths, or omit changedFiles when no files changed.");
+  if (codes.has("done_with_actionable_next_step")) lines.push("- done_with_actionable_next_step: if more goal work remains, change DEV_GOAL_REPORT.decision and DEV_GOAL_DECISION to continue; keep done only for optional review/PR/handoff next steps.");
+  return lines;
 }
 
 export function buildDevelopmentGoalCompactionInstructions(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {

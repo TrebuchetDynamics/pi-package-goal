@@ -382,6 +382,9 @@ async function testPackageManifest() {
   assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
+  const gitignore = read(".gitignore");
+  assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
+  assert.match(gitignore, /\*\*\/\.pi\/\*\/logs\.jsonl/);
   for (const packageName of Object.keys(pkg.peerDependencies)) {
     assert.equal(pkg.peerDependenciesMeta?.[packageName]?.optional, true, `${packageName} peer dependency must be optional so package installs do not auto-install Pi core dependency trees`);
   }
@@ -1331,7 +1334,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /"pivotedWorkCompleted":"none"/);
     assert.match(sent[0].content, /"nextSteps":\["next safe step"\]/);
     assert.match(sent[0].content, /"blockerState":"why blocked"/);
-    assert.match(sent[0].content, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+    assert.match(sent[0].content, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done\+actionable next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
     assert.match(sent[0].content, /one repair-only final-report retry, with exact issue codes, then blocks as malformed_final_report/);
     assert.match(sent[0].content, /Repair retries forbid code edits, scope changes, new task discovery, and validation reruns/);
     assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
@@ -1667,6 +1670,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent.at(-1).content, /missing_pivoted_work_completed/);
     assert.match(sent.at(-1).content, /relative_human_changed_file/);
     assert.match(sent.at(-1).content, /vague_typed_changed_file/);
+    assert.match(sent.at(-1).content, /missing_blocked_work: add `Blocked Work: none`/);
+    assert.match(sent.at(-1).content, /missing_pivoted_work_completed: add `Pivoted Work Completed: none`/);
+    assert.match(sent.at(-1).content, /relative_human_changed_file: rewrite each human-readable Changed files entry with an absolute path rooted at the Scope path/);
+    assert.match(sent.at(-1).content, /vague_typed_changed_file: replace vague DEV_GOAL_REPORT\.changedFiles entries with exact absolute file paths/);
     assert.equal(entries.at(-1).data.active, true);
     assert.equal(entries.at(-1).data.phase, "running");
     assert.equal(entries.at(-1).data.usedReportRepairRetry, true);
@@ -3404,8 +3411,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pivoted Work Completed: none \|/);
   assert.match(readme, /"blockedWork":"none"/);
   assert.match(readme, /"pivotedWorkCompleted":"none"/);
-  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
-  assert.match(readme, /one informational repair-only retry with exact issue codes, then blocks as `malformed_final_report`/);
+  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+  assert.match(readme, /one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report`/);
   assert.doesNotMatch(readme, /Example interrupted resume end report/);
   assert.doesNotMatch(readme, /Example partial validation end report/);
   assert.match(readme, /DEV_GOAL_DECISION: done/);

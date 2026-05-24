@@ -23,6 +23,9 @@ dist/
 # Pi local runtime logs; project configs such as .pi/development-goal.json stay trackable.
 .pi/*/logs.jsonl
 .pi/*/logs-*.jsonl
+# Smoke tests can accidentally run from subdirectories such as extensions/.
+**/.pi/*/logs.jsonl
+**/.pi/*/logs-*.jsonl
 
 # OS/editor noise
 .DS_Store

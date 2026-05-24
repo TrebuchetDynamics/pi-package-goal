@@ -12,6 +12,7 @@ export type FinalStatus =
 export type ReportQualityIssueCode =
   | "missing_blocked_work"
   | "missing_pivoted_work_completed"
+  | "done_with_actionable_next_step"
   | "relative_human_changed_file"
   | "vague_typed_changed_file";
 
@@ -73,7 +74,7 @@ export function parseFinalReport(text: string): FinalReportParseResult {
 
   const typedReport = parseTypedReport(text, markerBlock.index);
   const finalStatus = typedReport?.finalStatus || defaultFinalStatus(markerBlock.decision);
-  const quality = reportQualityFromIssues(validateReportQualityIssues(text, markerBlock.index, typedReport?.deliveryEvidence || {}));
+  const quality = reportQualityFromIssues(validateReportQualityIssues(text, markerBlock.index, typedReport?.deliveryEvidence || {}, markerBlock.decision));
   return {
     ok: true,
     report: {
@@ -206,7 +207,7 @@ export function parseLoopDeliveryEvidence(text: string): DeliveryEvidence {
     ...(commitHash ? { commitHash } : {}),
     ...(pushStatus ? { pushStatus } : {}),
   };
-  const reportQualityWarnings = validateReportQuality(text, markerBlock?.index, deliveryEvidence);
+  const reportQualityWarnings = validateReportQuality(text, markerBlock?.index, deliveryEvidence, markerBlock?.decision);
   return {
     ...deliveryEvidence,
     ...(reportQualityWarnings.length ? { reportQualityWarnings } : {}),
@@ -254,7 +255,7 @@ function parseTypedReport(text: string, markerIndex?: number): (LoopReport & { f
     ...(commitHash ? { commitHash } : {}),
     ...(pushStatus ? { pushStatus } : {}),
   };
-  const reportQualityWarnings = validateReportQuality(reportText, undefined, deliveryEvidence);
+  const reportQualityWarnings = validateReportQuality(reportText, undefined, deliveryEvidence, decision);
 
   return {
     ...(decision ? { decision } : {}),
@@ -276,11 +277,11 @@ function parseJsonRecord(value: string): Record<string, unknown> | undefined {
   }
 }
 
-export function validateReportQuality(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}): string[] {
-  return validateReportQualityIssues(text, markerIndex, deliveryEvidence).map((issue) => issue.message);
+export function validateReportQuality(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}, decision?: GoalDecision): string[] {
+  return validateReportQualityIssues(text, markerIndex, deliveryEvidence, decision).map((issue) => issue.message);
 }
 
-export function validateReportQualityIssues(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}): ReportQualityIssue[] {
+export function validateReportQualityIssues(text: string, markerIndex?: number, deliveryEvidence: Partial<DeliveryEvidence> = {}, decision?: GoalDecision): ReportQualityIssue[] {
   const reportText = reportBodyText(text, markerIndex);
   const surface = reportQualitySurface(reportText);
   const issues: ReportQualityIssue[] = [];
@@ -289,6 +290,17 @@ export function validateReportQualityIssues(text: string, markerIndex?: number, 
 
   if (!surface.hasBlockedWorkSection && !blockedWork) issues.push({ code: "missing_blocked_work", message: "missing Blocked Work section" });
   if (!surface.hasPivotedWorkCompletedSection && !pivotedWorkCompleted) issues.push({ code: "missing_pivoted_work_completed", message: "missing Pivoted Work Completed section" });
+
+  const decisionForQuality = decision || parseFinalMarkerBlock(text)?.decision;
+  const nextSteps = mergeNextSteps(stringArrayOrUndefined(deliveryEvidence.nextSteps), surface.nextSteps);
+  const actionableDoneNextStep = decisionForQuality === "done" ? findActionableDoneNextStep(nextSteps) : undefined;
+  if (actionableDoneNextStep) {
+    issues.push({
+      code: "done_with_actionable_next_step",
+      message: `done decision includes actionable goal next step "${actionableDoneNextStep}"; use continue for remaining goal work or make done nextSteps optional/handoff-only`,
+      value: actionableDoneNextStep,
+    });
+  }
 
   for (const changedFile of surface.humanChangedFiles) {
     if (isNoChangedFilesEvidence(changedFile)) continue;
@@ -314,15 +326,17 @@ type ReportQualitySurface = {
   pivotedWorkCompleted?: string;
   humanChangedFiles: string[];
   typedChangedFiles: string[];
+  nextSteps: string[];
 };
 
 function reportQualitySurface(reportText: string): ReportQualitySurface {
   const blockedWorkLines: string[] = [];
   const pivotedWorkCompletedLines: string[] = [];
   const humanChangedFiles: string[] = [];
+  const nextSteps: string[] = [];
   let hasBlockedWorkSection = false;
   let hasPivotedWorkCompletedSection = false;
-  let section: "changed" | "blockedWork" | "pivotedWorkCompleted" | undefined;
+  let section: "changed" | "blockedWork" | "pivotedWorkCompleted" | "nextSteps" | undefined;
 
   for (const line of reportText.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -354,6 +368,13 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
       continue;
     }
 
+    const nextStepsHeader = trimmed.match(/^(?:Possible next steps|Next steps|Follow-up actions|Follow up actions)(?:\s+[^:]*)?:\s*(.*)$/i);
+    if (nextStepsHeader) {
+      section = "nextSteps";
+      addInlineListItems(nextSteps, nextStepsHeader[1], cleanReportText);
+      continue;
+    }
+
     if (looksLikeReportQualityResetHeader(trimmed) || looksLikeSectionHeader(trimmed)) {
       section = undefined;
       continue;
@@ -364,6 +385,7 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
     if (section === "changed") addUnique(humanChangedFiles, cleanChangedFileEvidence(bullet[1]));
     if (section === "blockedWork") addUnique(blockedWorkLines, cleanReportText(bullet[1]));
     if (section === "pivotedWorkCompleted") addUnique(pivotedWorkCompletedLines, cleanReportText(bullet[1]));
+    if (section === "nextSteps") addUnique(nextSteps, cleanReportText(bullet[1]));
   }
 
   const rawReport = parseTypedReportRecord(reportText);
@@ -378,7 +400,40 @@ function reportQualitySurface(reportText: string): ReportQualitySurface {
     pivotedWorkCompleted: pivotedWorkCompletedLines.join("; ") || undefined,
     humanChangedFiles,
     typedChangedFiles,
+    nextSteps,
   };
+}
+
+function mergeNextSteps(...groups: Array<string[] | undefined>): string[] {
+  const merged: string[] = [];
+  for (const group of groups) {
+    for (const step of group ?? []) addUnique(merged, step);
+  }
+  return merged;
+}
+
+function findActionableDoneNextStep(nextSteps: string[]): string | undefined {
+  for (const rawStep of nextSteps) {
+    const step = cleanReportText(rawStep) || "";
+    if (!step || isNoNextStepEvidence(step)) continue;
+    const normalized = step.toLowerCase().replace(/\s+/g, " ").trim();
+    if (isClearlyTerminalHandoffStep(normalized)) continue;
+    if (looksLikeGoalWorkNextStep(normalized)) return step;
+  }
+  return undefined;
+}
+
+function isNoNextStepEvidence(value: string): boolean {
+  return /^(?:none|no next steps?|n\/a|not applicable)\b/i.test(value.trim());
+}
+
+function isClearlyTerminalHandoffStep(value: string): boolean {
+  if (looksLikeGoalWorkNextStep(value)) return false;
+  return /\b(?:pull request|\bpr\b|human review|review|handoff|hand off|issue|ticket|merge|ci|release|deploy|backlog|optional cleanup)\b/i.test(value);
+}
+
+function looksLikeGoalWorkNextStep(value: string): boolean {
+  return /\b(?:builder-ready|build (?:row|the new|next|feature|slice)|next (?:row|slice|package|work)|continue(?: with)?|keep going|implement|add tests?|fix|move|rehome|refactor|wire|activate|tdd|run the row)\b/i.test(value);
 }
 
 function parseTypedReportRecord(reportText: string): Record<string, unknown> | undefined {

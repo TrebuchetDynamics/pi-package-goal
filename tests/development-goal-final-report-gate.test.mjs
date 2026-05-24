@@ -103,6 +103,22 @@ assert.equal(accepted.report.quality.valid, true);
 assert.deepEqual(accepted.issueCodes, []);
 assert.deepEqual(accepted.deliveryEvidence.changedFiles, ["/repo/README.md"]);
 
+const doneWithActionableNextStep = [
+  "Scope: /repo with adapter generic-git.",
+  "Changed files:",
+  "- `/repo/progress.json` — queued the next row.",
+  "Validation evidence: npm test (pass).",
+  "Blocked Work: none",
+  "Pivoted Work Completed: none",
+  'DEV_GOAL_REPORT: {"validated":true,"decision":"done","summary":"Queued next row","blockedWork":"none","pivotedWorkCompleted":"none","changedFiles":["/repo/progress.json"],"validationCommands":["npm test"],"nextSteps":["Build row: Internal session search tool package rehome"]}',
+  "DEV_GOAL_VALIDATED: yes",
+  "DEV_GOAL_DECISION: done",
+].join("\n");
+
+const actionableDone = gateMod.evaluateFinalReportGate(doneWithActionableNextStep, { usedReportRepairRetry: false });
+assert.equal(actionableDone.action, "repair");
+assert.deepEqual(actionableDone.issueCodes, ["done_with_actionable_next_step"]);
+
 assert.deepEqual(gateMod.evaluateFinalReportGate("No markers", { usedReportRepairRetry: false }), {
   action: "parse_error",
   error: {
