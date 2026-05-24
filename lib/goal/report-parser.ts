@@ -555,7 +555,7 @@ function isClearlyTerminalHandoffStep(value: string): boolean {
 }
 
 function looksLikeGoalWorkNextStep(value: string): boolean {
-  return /\b(?:builder-ready|build (?:row|the new|next|feature|slice)|next (?:row|slice|package|work)|continue(?: with)?|keep going|implement|add tests?|fix|debug|diagnose|inspect|verify|instrument|trace|probe|move|rehome|refactor|wire|activate|tdd|run the row)\b/i.test(value);
+  return /\b(?:builder-ready|build (?:row|the new|next|feature|slice)|next (?:row|slice|package|work)|continue(?: with)?|keep going|implement|add tests?|fix|debug|diagnose|inspect|verify|prove|isolate|instrument|trace|probe|move|rehome|refactor|wire|activate|tdd|run the row)\b/i.test(value);
 }
 
 function parseTypedReportRecord(reportText: string): Record<string, unknown> | undefined {

@@ -250,3 +250,22 @@ const blockedOnCredential = [
   "DEV_GOAL_DECISION: blocked",
 ].join("\n");
 assert.equal(parseOk(blockedOnCredential).quality.valid, true);
+
+const blockedWithProveAndIsolateNextSteps = [
+  "Scope: /repo with adapter generic-git.",
+  "Validation evidence: selected shell view test (fail: expected detail route, got /monitoreo).",
+  "Blocked Work: RN->Flutter parity selected-unit detail navigation proof.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Focused route test still fails.","goalAchieved":false,"goalEvidence":"Objective not achieved; focused widget test still fails expected /unidades/detail/42 actual /monitoreo.","blockerState":"Focused test fails same route no-op after one repair attempt.","blockedWork":"RN->Flutter parity selected-unit detail navigation proof.","pivotedWorkCompleted":"none","validationCommands":["flutter test selected shell view (fail)","git diff --check (pass)"],"nextSteps":["Prove router.push(\'/unidades/detail/42\') works in same test harness.","Then isolate why VehicleStatusCard callback/context does not navigate."]}',
+  "DEV_GOAL_VALIDATED: no",
+  "DEV_GOAL_DECISION: blocked",
+].join("\n");
+const proveAndIsolateReport = parseOk(blockedWithProveAndIsolateNextSteps);
+assert.equal(proveAndIsolateReport.quality.valid, false);
+assert.deepEqual(proveAndIsolateReport.quality.issues, [
+  {
+    code: "blocked_with_actionable_next_step",
+    message: 'blocked decision includes local actionable goal next step "Prove router.push(\'/unidades/detail/42\') works in same test harness."; use continue while safe local diagnosis or repair remains',
+    value: "Prove router.push('/unidades/detail/42') works in same test harness.",
+  },
+]);
