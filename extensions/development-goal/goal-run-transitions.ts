@@ -135,3 +135,105 @@ export function transitionAutoContinueLimited(s: LoopState): LoopState {
     usedReportRepairRetry: false,
   };
 }
+
+export function transitionRetryCounterRestored(s: LoopState, retryNumber: number): LoopState {
+  return { ...s, emptyResponseRetries: retryNumber };
+}
+
+export function transitionContextOverflowWaiting(s: LoopState): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "context_overflow_waiting_for_compaction",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
+  };
+}
+
+export function transitionProviderTransportWaiting(s: LoopState, transportRetries: number): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "provider_transport_error_waiting_for_retry",
+    emptyResponseRetries: transportRetries,
+    markerRecoveryRetries: 0,
+  };
+}
+
+export function transitionEmptyResponseWaiting(s: LoopState, emptyResponseRetries: number): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "empty_agent_response_waiting_for_compaction",
+    emptyResponseRetries,
+    markerRecoveryRetries: 0,
+  };
+}
+
+export function transitionResponseRetryCountersCleared(s: LoopState): LoopState {
+  return { ...s, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+}
+
+export function transitionReportRepairRetryCleared(s: LoopState): LoopState {
+  return { ...s, usedReportRepairRetry: false };
+}
+
+export function transitionPreparingForCompaction(s: LoopState): LoopState {
+  return { ...s, lastReason: "preparing_for_compaction" };
+}
+
+export function transitionUserSteering(s: LoopState, topic: string): LoopState {
+  return { ...s, topic, lastReason: "user_steering" };
+}
+
+export function transitionStoppedByUser(s: LoopState): LoopState {
+  return { ...s, active: false, phase: "idle", lastDecision: "stopped_by_user" };
+}
+
+export function transitionLastReason(s: LoopState, lastReason: string): LoopState {
+  return { ...s, lastReason };
+}
+
+export function transitionCompactionResumeQueued(s: LoopState): LoopState {
+  return { ...s, phase: "queued", lastReason: "resuming_after_compaction" };
+}
+
+export function transitionCompactionResumeSent(s: LoopState): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "resumed_after_compaction",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
+    usedReportRepairRetry: false,
+  };
+}
+
+export function transitionReportRepairRequested(s: LoopState): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "malformed_final_report_repair_requested",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: 0,
+    usedReportRepairRetry: true,
+  };
+}
+
+export function transitionMissingMarkerRecoveryRequested(s: LoopState, retryNumber: number): LoopState {
+  return {
+    ...s,
+    phase: "running",
+    lastReason: "missing_final_marker_recovery_requested",
+    emptyResponseRetries: 0,
+    markerRecoveryRetries: retryNumber,
+  };
+}
+
+export function transitionRetryingAfterEmptyProviderResponse(s: LoopState): LoopState {
+  return { ...s, lastReason: "retrying_after_empty_provider_response" };
+}
+
+export function transitionRetryingAfterProviderTransport(s: LoopState): LoopState {
+  return { ...s, lastReason: "retrying_after_provider_transport_error" };
+}

@@ -94,13 +94,29 @@ import {
   startGoalRun,
   transitionAutoContinueLimited,
   transitionBlocked,
+  transitionCompactionResumeQueued,
+  transitionCompactionResumeSent,
+  transitionContextOverflowWaiting,
+  transitionEmptyResponseWaiting,
   transitionIterationReported,
+  transitionLastReason,
   transitionMaxIterationsReached,
+  transitionMissingMarkerRecoveryRequested,
   transitionPaused,
+  transitionPreparingForCompaction,
   transitionPromptNowRunning,
   transitionPromptSent,
+  transitionProviderTransportWaiting,
+  transitionReportRepairRequested,
+  transitionReportRepairRetryCleared,
+  transitionResponseRetryCountersCleared,
   transitionResumed,
+  transitionRetryCounterRestored,
+  transitionRetryingAfterEmptyProviderResponse,
+  transitionRetryingAfterProviderTransport,
+  transitionStoppedByUser,
   transitionTerminalDecision,
+  transitionUserSteering,
 } from "./goal-run-transitions.ts";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 
@@ -188,7 +204,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (state.active && state.phase === "running" && state.lastReason === "empty_agent_response_waiting_for_compaction") {
       const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
       if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
-        state = { ...state, emptyResponseRetries: retryNumber };
+        state = transitionRetryCounterRestored(state, retryNumber);
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         scheduleEmptyResponseRetry(pi, ctx, state.iteration, retryNumber);
       }
@@ -196,7 +212,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (state.active && state.phase === "running" && state.lastReason === "provider_transport_error_waiting_for_retry") {
       const retryNumber = Math.max(1, state.emptyResponseRetries ?? 0);
       if (retryNumber <= EMPTY_RESPONSE_MAX_RETRIES) {
-        state = { ...state, emptyResponseRetries: retryNumber };
+        state = transitionRetryCounterRestored(state, retryNumber);
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         scheduleTransportErrorRetry(pi, ctx, state.iteration, retryNumber);
       }
@@ -220,7 +236,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (!decision) {
       if (hasContextOverflowProviderError(messages)) {
         const alreadyWaitingForContextOverflowCompaction = state.lastReason === "context_overflow_waiting_for_compaction";
-        state = { ...state, phase: "running", lastReason: "context_overflow_waiting_for_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+        state = transitionContextOverflowWaiting(state);
         appendLoopLog("context_overflow_waiting_for_compaction", { reason: "provider_context_length_exceeded" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
@@ -234,7 +250,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
           blockLoop(pi, ctx, "provider transport error retry limit reached", "blocked", { blockerKind: "provider_transport_error", blockerState: "provider transport error retry limit reached" });
           return;
         }
-        state = { ...state, phase: "running", lastReason: "provider_transport_error_waiting_for_retry", emptyResponseRetries: transportRetries, markerRecoveryRetries: 0 };
+        state = transitionProviderTransportWaiting(state, transportRetries);
         appendLoopLog("provider_transport_error_waiting_for_retry", { reason: "provider_transport_error", providerError: "transport" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
@@ -248,7 +264,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
           blockLoop(pi, ctx, "empty provider response retry limit reached");
           return;
         }
-        state = { ...state, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction", emptyResponseRetries, markerRecoveryRetries: 0 };
+        state = transitionEmptyResponseWaiting(state, emptyResponseRetries);
         appendLoopLog("empty_agent_response_waiting_for_compaction", { reason: "missing_assistant_text" });
         pi.appendEntry(CUSTOM_STATE_TYPE, state);
         refreshUi(ctx);
@@ -265,7 +281,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (state.emptyResponseRetries || state.markerRecoveryRetries) {
-      state = { ...state, emptyResponseRetries: 0, markerRecoveryRetries: 0 };
+      state = transitionResponseRetryCountersCleared(state);
     }
 
     if (finalReportGate.action === "repair") {
@@ -279,7 +295,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     }
 
     if (state.usedReportRepairRetry) {
-      state = { ...state, usedReportRepairRetry: false };
+      state = transitionReportRepairRetryCleared(state);
     }
 
     if (requiresValidation(decision) && validated !== true) {
@@ -329,7 +345,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   async function onSessionBeforeCompact(event: { preparation?: { tokensBefore?: number } }, ctx: ExtensionContext) {
     if (!state.active) return;
-    state = { ...state, lastReason: "preparing_for_compaction" };
+    state = transitionPreparingForCompaction(state);
     appendLoopLog("compaction_started", { reason: compactionReason(event.preparation?.tokensBefore) });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -356,11 +372,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
     const cwd = contextCwd(ctx);
     const resolved = resolveDevelopmentGoalSettings(cwd);
-    state = {
-      ...state,
-      topic: mergeSteeringTopic(state.topic, steeringText),
-      lastReason: "user_steering",
-    };
+    state = transitionUserSteering(state, mergeSteeringTopic(state.topic, steeringText));
     appendLoopLog("user_steering", { reason: steeringText });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -411,7 +423,7 @@ async function runCommand(pi: ExtensionAPI, args: string, ctx: ExtensionCommandC
       resumeLoop(pi, ctx);
       return;
     case "stop":
-      state = { ...state, active: false, phase: "idle", lastDecision: "stopped_by_user" };
+      state = transitionStoppedByUser(state);
       appendLoopLog("loop_stopped", { reason: "stopped_by_user" });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
@@ -648,7 +660,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
     customInstructions: buildDevelopmentGoalCompactionInstructions(state, resolved, cwd),
     onComplete: () => notify(ctx, "Development goal compaction completed; continuing automatically."),
     onError: (error) => {
-      state = { ...state, lastReason: "compaction_failed_before_next_iteration" };
+      state = transitionLastReason(state, "compaction_failed_before_next_iteration");
       appendLoopLog("compaction_failed_before_next_iteration", { reason: error.message });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
@@ -667,7 +679,7 @@ function requestContextOverflowCompaction(pi: ExtensionAPI, ctx: ExtensionContex
     customInstructions: `The provider reported a context-overflow error before DEV_GOAL markers were emitted. Compact the conversation, preserve the current development-goal state, and continue the same iteration after compaction.\n\n${buildDevelopmentGoalCompactionInstructions(state, resolved, cwd)}`,
     onComplete: () => notify(ctx, "Development goal context-overflow compaction completed; continuing automatically."),
     onError: (error) => {
-      state = { ...state, lastReason: "context_overflow_compaction_failed" };
+      state = transitionLastReason(state, "context_overflow_compaction_failed");
       appendLoopLog("context_overflow_compaction_failed", { reason: error.message });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
@@ -680,11 +692,11 @@ function resumeCurrentIterationAfterCompaction(pi: ExtensionAPI, ctx: ExtensionC
   const cwd = contextCwd(ctx);
   const resolved = resolveDevelopmentGoalSettings(cwd);
   const prompt = buildCompactionResumePrompt(state, resolved, cwd);
-  state = { ...state, phase: "queued", lastReason: "resuming_after_compaction" };
+  state = transitionCompactionResumeQueued(state);
   appendLoopLog("compaction_resume_queued");
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt);
-  state = { ...state, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
+  state = transitionCompactionResumeSent(state);
   appendLoopLog("compaction_resume_sent");
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -726,14 +738,7 @@ function requestReportRepair(
   report: FinalReport,
   logEvent: { event: string; reason: string; blockerKind: string; reportQualityIssueCodes: string[] },
 ) {
-  state = {
-    ...state,
-    phase: "running",
-    lastReason: "malformed_final_report_repair_requested",
-    emptyResponseRetries: 0,
-    markerRecoveryRetries: 0,
-    usedReportRepairRetry: true,
-  };
+  state = transitionReportRepairRequested(state);
   const { event, ...logExtra } = logEvent;
   appendLoopLog(event, logExtra);
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
@@ -744,13 +749,7 @@ function requestReportRepair(
 
 function requestMissingMarkerRecovery(pi: ExtensionAPI, ctx: UiLikeContext) {
   const retryNumber = (state.markerRecoveryRetries ?? 0) + 1;
-  state = {
-    ...state,
-    phase: "running",
-    lastReason: "missing_final_marker_recovery_requested",
-    emptyResponseRetries: 0,
-    markerRecoveryRetries: retryNumber,
-  };
+  state = transitionMissingMarkerRecoveryRequested(state, retryNumber);
   appendLoopLog("missing_final_marker_recovery_requested", { reason: "missing DEV_GOAL_DECISION final marker" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -767,7 +766,7 @@ function scheduleEmptyResponseRetry(pi: ExtensionAPI, ctx: UiLikeContext, target
     const cwd = contextCwd(ctx);
     const resolved = resolveDevelopmentGoalSettings(cwd);
     const prompt = buildEmptyResponseRetryPrompt(state, resolved, cwd);
-    state = { ...state, lastReason: "retrying_after_empty_provider_response" };
+    state = transitionRetryingAfterEmptyProviderResponse(state);
     appendLoopLog("empty_provider_response_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}` });
     refreshUi(ctx);
     sendLoopPrompt(pi, ctx, prompt);
@@ -785,7 +784,7 @@ function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targe
     const cwd = contextCwd(ctx);
     const resolved = resolveDevelopmentGoalSettings(cwd);
     const prompt = buildTransportErrorRetryPrompt(state, resolved, cwd);
-    state = { ...state, lastReason: "retrying_after_provider_transport_error" };
+    state = transitionRetryingAfterProviderTransport(state);
     appendLoopLog("provider_transport_error_retry_sent", { reason: `retry ${retryNumber}/${EMPTY_RESPONSE_MAX_RETRIES}`, providerError: "transport" });
     refreshUi(ctx);
     sendLoopPrompt(pi, ctx, prompt);

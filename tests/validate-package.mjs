@@ -933,6 +933,10 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.deepEqual({ active: startedRun.active, adapterName: startedRun.adapterName, phase: startedRun.phase, iteration: startedRun.iteration, autoContinueCount: startedRun.autoContinueCount }, { active: true, adapterName: "generic-git", phase: "started", iteration: 1, autoContinueCount: 0 });
   assert.deepEqual(transitionsMod.queueNextIterationState({ ...validLoopState, emptyResponseRetries: 1, markerRecoveryRetries: 1, usedReportRepairRetry: true }), { ...validLoopState, iteration: 3, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false });
   assert.deepEqual(transitionsMod.transitionTerminalDecision(validLoopState, "done"), { ...validLoopState, active: false, phase: "done", lastDecision: "done" });
+  assert.deepEqual(transitionsMod.transitionProviderTransportWaiting({ ...validLoopState, markerRecoveryRetries: 1 }, 2), { ...validLoopState, phase: "running", lastReason: "provider_transport_error_waiting_for_retry", emptyResponseRetries: 2, markerRecoveryRetries: 0 });
+  assert.deepEqual(transitionsMod.transitionEmptyResponseWaiting({ ...validLoopState, markerRecoveryRetries: 1 }, 2), { ...validLoopState, phase: "running", lastReason: "empty_agent_response_waiting_for_compaction", emptyResponseRetries: 2, markerRecoveryRetries: 0 });
+  assert.deepEqual(transitionsMod.transitionCompactionResumeSent({ ...validLoopState, emptyResponseRetries: 1, markerRecoveryRetries: 1, usedReportRepairRetry: true }), { ...validLoopState, phase: "running", lastReason: "resumed_after_compaction", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false });
+  assert.deepEqual(transitionsMod.transitionMissingMarkerRecoveryRequested({ ...validLoopState, emptyResponseRetries: 1 }, 1), { ...validLoopState, phase: "running", lastReason: "missing_final_marker_recovery_requested", emptyResponseRetries: 0, markerRecoveryRetries: 1 });
 
   const fileMod = await jiti.import(path.join(root, "extensions", "development-goal", "files.ts"));
   const fileTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-files-"));
