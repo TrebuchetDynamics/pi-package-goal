@@ -502,9 +502,13 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.equal(statusMod.statusLine({ ...statusState, active: false, phase: "done", lastDecision: "done", lastReason: "preparing_for_compaction" }), "✓ done · goal · generic-git · git:push");
   const extractedStatus = statusMod.statusReport(statusState, statusTemp);
   assert.match(extractedStatus, /budget: elapsed .*; iterations 2\/3; remaining 1/);
-  assert.match(extractedStatus, /Last event: loop_finished; at 2026-05-22T20:05:00.000Z; iteration 2; decision done; blocker none/);
-  assert.match(extractedStatus, /Recent report context:\n- i2 · done · blocker none\n- i1 · continue · summary first slice · next 1 ship second slice/);
+  assert.match(extractedStatus, /Last event:\n  event: loop_finished\n  at: 2026-05-22T20:05:00.000Z\n  iteration: 2\n  decision: done\n  blocker: none/);
+  assert.match(extractedStatus, /Recent report context:\n  1\. i2 · done\n     blocker: none\n  2\. i1 · continue\n     summary: first slice\n     next 1: ship second slice/);
   assert.match(extractedStatus, /log: \.pi\/development-goal\/logs\.jsonl/);
+  const idleStatus = statusMod.statusReport({ active: false, adapterName: "none", topic: "", iteration: 1, maxIterations: Number.MAX_SAFE_INTEGER, phase: "idle", logPath: statusLogPath, commit: false, push: false }, statusTemp);
+  assert.doesNotMatch(idleStatus, /adapter: none/);
+  assert.doesNotMatch(idleStatus, /^topic:/m);
+  assert.match(idleStatus, /Commands:\n  start: \/development-goal <topic>\n  inspect: \/development-goal status \| \/development-goal analyze-logs\n  configure: \/development-goal init \| \/development-goal adapters \| \/development-goal help/);
   assert.equal(statusMod.readLastLoopRecord(statusLogPath).event, "loop_finished");
   assert.deepEqual(statusMod.readRecentReportRecords(statusLogPath).map((record) => record.iteration), [2, 1]);
   assert.deepEqual(statusMod.statusWidgetLines(statusState, statusTemp), ["last loop_finished · 20:05:00 · i2 · blocker none · log .pi/development-goal/logs.jsonl"]);
@@ -632,6 +636,11 @@ async function testExtensionLoadsAndRegistersCommands() {
 
   const commandMod = await jiti.import(path.join(root, "extensions", "development-goal-command.ts"));
   assert.deepEqual(commandMod.tokenizeArgs("restart --validation 'npm test' topic words"), ["restart", "--validation", "npm test", "topic", "words"]);
+  assert.deepEqual(commandMod.completeCommandArgs("st"), [
+    { value: "status", label: "status" },
+    { value: "stop", label: "stop" },
+  ]);
+  assert.doesNotMatch(read("README.md"), /\/development-goal start/);
   assert.deepEqual(commandMod.parseArgs("init generic-git --yes --no-push"), {
     command: "init",
     adapter: "generic-git",
@@ -1376,11 +1385,11 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(typedReportFinished.pivotedWorkCompleted, "none");
     assert.deepEqual(typedReportFinished.nextSteps, ["Exercise real profile apply command", "Add profile selection tests"]);
     const typedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
-    assert.match(typedStatus, /summary Profile Control Center TUI shell and draft apply flow/);
-    assert.match(typedStatus, /next 1 Exercise real profile apply command/);
-    assert.match(typedStatus, /next 2 Add profile selection tests/);
+    assert.match(typedStatus, /summary: Profile Control Center TUI shell and draft apply flow/);
+    assert.match(typedStatus, /next 1: Exercise real profile apply command/);
+    assert.match(typedStatus, /next 2: Add profile selection tests/);
     assert.match(typedStatus, /Recent report context:/);
-    assert.match(typedStatus, /- i1 · done · summary Profile Control Center TUI shell and draft apply flow/);
+    assert.match(typedStatus, /1\. i1 · done\n     summary: Profile Control Center TUI shell and draft apply flow/);
     assert.match(widgetUpdates.at(-1).value[0], /summary Profile Control Center TUI shell and draft apply flow/);
     assert.match(widgetUpdates.at(-1).value[0], /next Exercise real profile apply command/);
     assert.match(widgetUpdates.at(-1).value[0], /\+1 more/);
@@ -1406,8 +1415,8 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.equal(typedBlockedFinished.blockedWork, "GORMES_PROFILE_TOKEN credential");
     assert.equal(typedBlockedFinished.pivotedWorkCompleted, "none");
     const typedBlockedStatus = mod.__test__.statusReport(entries.at(-1).data, e2eRoot);
-    assert.match(typedBlockedStatus, /blocker Missing GORMES_PROFILE_TOKEN credential for integration validation/);
-    assert.match(typedBlockedStatus, /next 1 Provide GORMES_PROFILE_TOKEN/);
+    assert.match(typedBlockedStatus, /blocker: Missing GORMES_PROFILE_TOKEN credential for integration validation/);
+    assert.match(typedBlockedStatus, /next 1: Provide GORMES_PROFILE_TOKEN/);
 
     await command.handler("start --iterations=2 malformed final report", ctx);
     const malformedRunId = entries.at(-1).data.runId;
@@ -1751,6 +1760,11 @@ async function testExtensionLoadsAndRegistersCommands() {
       assert.equal(messages.length, analysisMessagesBefore + 1);
       assert.equal(messages.at(-1).customType, "development-goal-log-analysis");
       assert.match(messages.at(-1).content, /Development goal log analysis:/);
+      assert.match(messages.at(-1).content, /Health: attention needed/);
+      assert.match(messages.at(-1).content, /Outcome: 3 started · 1 finished · 1 blocked · 0 unresolved/);
+      assert.match(messages.at(-1).content, /Top issues:\n- Blocked loops: 1 · reason missing_final_markers/);
+      assert.match(messages.at(-1).content, /Most useful next action: /);
+      assert.match(messages.at(-1).content, /Detailed counters:/);
       assert.match(messages.at(-1).content, /Records: 20/);
       assert.match(messages.at(-1).content, /Loops started: 3/);
       assert.match(messages.at(-1).content, /Finished loops: 1/);
@@ -3220,7 +3234,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /pi remove git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.doesNotMatch(readme, /works across Gormes, Navivox, and generic Git projects/);
   assert.match(readme, /pi install git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
-  assert.match(readme, /\/development-goal start/);
+  assert.doesNotMatch(readme, /\/development-goal start/);
   assert.match(readme, /\/development-goal help/);
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);

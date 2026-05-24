@@ -39,14 +39,14 @@ export function statusReport(s: LoopStatusState, cwd = process.cwd()): string {
   const last = readLastLoopRecord(logPath);
   return [
     statusLine(s),
-    `adapter: ${s.adapterName}`,
-    `topic: ${objectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}`,
+    ...(s.adapterName && s.adapterName !== "none" ? [`adapter: ${s.adapterName}`] : []),
+    ...(s.topic ? [`topic: ${objectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}`] : []),
     `state: ${stateExplanation(s, last)}`,
     ...(s.active ? [`budget: ${loopBudgetSummary(s)}`] : []),
     summarizeLastLoopRecord(last),
     ...summarizeRecentReportContext(readRecentReportRecords(logPath)),
     `log: ${relativeToCwd(cwd, logPath)}`,
-    "Commands: /development-goal status | /development-goal pause | /development-goal resume | /development-goal analyze-logs | /development-goal stop | /development-goal restart <topic> | /development-goal init",
+    ...statusCommandHints(s),
   ].join("\n");
 }
 
@@ -177,19 +177,21 @@ function stateExplanation(s: LoopStatusState, last?: Record<string, unknown>): s
 }
 
 function summarizeLastLoopRecord(record?: Record<string, unknown>): string {
-  if (!record) return "Last event: none recorded yet";
-  const parts = [`Last event: ${recordEvent(record) ?? "unknown"}`];
+  if (!record) return "Last event:\n  none recorded yet";
+  const lines = [`Last event:`, `  event: ${recordEvent(record) ?? "unknown"}`];
   const at = recordTimestamp(record);
-  if (at) parts.push(`at ${at}`);
-  if (record.iteration !== undefined) parts.push(`iteration ${String(record.iteration)}`);
-  if (typeof record.decision === "string") parts.push(`decision ${record.decision}`);
-  if (typeof record.reason === "string") parts.push(`reason ${record.reason}`);
+  if (at) lines.push(`  at: ${at}`);
+  if (record.iteration !== undefined) lines.push(`  iteration: ${String(record.iteration)}`);
+  if (typeof record.decision === "string") lines.push(`  decision: ${record.decision}`);
+  if (typeof record.reason === "string") lines.push(`  reason: ${record.reason}`);
   const reportSummary = recordReportSummary(record);
-  if (reportSummary) parts.push(`summary ${reportSummary}`);
+  if (reportSummary) lines.push(`  summary: ${reportSummary}`);
   const blockerState = recordBlockerState(record);
-  if (blockerState) parts.push(`blocker ${blockerState}`);
-  parts.push(...reportNextStepSummaryParts(recordReportNextSteps(record)));
-  return parts.join("; ");
+  if (blockerState) lines.push(`  blocker: ${blockerState}`);
+  const nextSteps = recordReportNextSteps(record);
+  for (const [index, step] of nextSteps.slice(0, 3).entries()) lines.push(`  next ${index + 1}: ${step}`);
+  if (nextSteps.length > 3) lines.push(`  next: +${nextSteps.length - 3} more`);
+  return lines.join("\n");
 }
 
 function reportNextStepSummaryParts(nextSteps: string[], limit = 3): string[] {
@@ -203,20 +205,48 @@ function summarizeRecentReportContext(records: Record<string, unknown>[]): strin
   if (!records.length) return [];
   return [
     "Recent report context:",
-    ...records.map((record) => `- ${formatRecentReportRecord(record)}`),
+    ...records.flatMap((record, index) => formatRecentReportRecord(record, index + 1)),
   ];
 }
 
-function formatRecentReportRecord(record: Record<string, unknown>): string {
+function formatRecentReportRecord(record: Record<string, unknown>, index: number): string[] {
   const summary = recordReportSummary(record);
   const blockerState = recordBlockerState(record);
-  return compactJoin([
+  const header = compactJoin([
     typeof record.iteration === "number" ? `i${record.iteration}` : undefined,
     typeof record.decision === "string" ? record.decision : undefined,
-    summary ? `summary ${compactStatusText(summary)}` : undefined,
-    blockerState ? `blocker ${compactStatusText(blockerState)}` : undefined,
-    ...reportNextStepSummaryParts(recordReportNextSteps(record)).map(compactStatusText),
-  ]);
+  ]) || "record";
+  const nextSteps = recordReportNextSteps(record);
+  return [
+    `  ${index}. ${header}`,
+    summary ? `     summary: ${compactStatusText(summary)}` : undefined,
+    blockerState ? `     blocker: ${compactStatusText(blockerState)}` : undefined,
+    ...nextSteps.slice(0, 3).map((step, stepIndex) => `     next ${stepIndex + 1}: ${compactStatusText(step)}`),
+    nextSteps.length > 3 ? `     next: +${nextSteps.length - 3} more` : undefined,
+  ].filter((line): line is string => Boolean(line));
+}
+
+function statusCommandHints(s: LoopStatusState): string[] {
+  if (s.active && s.phase === "paused") {
+    return [
+      "Commands:",
+      "  control: /development-goal resume | /development-goal stop",
+      "  inspect: /development-goal status | /development-goal analyze-logs",
+    ];
+  }
+  if (s.active) {
+    return [
+      "Commands:",
+      "  control: /development-goal pause | /development-goal stop",
+      "  inspect: /development-goal status | /development-goal analyze-logs",
+    ];
+  }
+  return [
+    "Commands:",
+    "  start: /development-goal <topic>",
+    "  inspect: /development-goal status | /development-goal analyze-logs",
+    "  configure: /development-goal init | /development-goal adapters | /development-goal help",
+  ];
 }
 
 function widgetNextStepsSummary(nextSteps: string[]): string | undefined {

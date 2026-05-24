@@ -30,7 +30,14 @@ export type ParsedCommand = {
 };
 
 const COMMANDS = new Set<DevelopmentLoopCommand>(["start", "restart", "pause", "resume", "stop", "status", "init", "adapters", "analyze-logs", "help"]);
+const COMMAND_COMPLETIONS: DevelopmentLoopCommand[] = ["restart", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"];
 const DEFAULT_ADAPTER_NAMES = ["generic-git"];
+
+export function completeCommandArgs(prefix: string) {
+  return COMMAND_COMPLETIONS
+    .filter((value) => value.startsWith(prefix))
+    .map((value) => ({ value, label: value }));
+}
 
 export function parseArgs(raw: string | undefined, adapterNames: string[] = DEFAULT_ADAPTER_NAMES): ParsedCommand {
   const tokens = tokenizeArgs(raw || "");

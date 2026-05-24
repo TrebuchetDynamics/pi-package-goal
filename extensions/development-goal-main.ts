@@ -20,6 +20,7 @@ import {
 } from "./development-goal-files.ts";
 import { likelyBlockerCause, nextSafeBlockerAction } from "./development-goal-blocker.ts";
 import {
+  completeCommandArgs,
   parseArgs,
   parseSinceFilter,
   tokenizeArgs,
@@ -590,9 +591,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
 
   const command = {
     description: "Run an adapter-aware project development goal",
-    getArgumentCompletions: (prefix: string) => ["start", "restart", "pause", "resume", "status", "stop", "init", "adapters", "analyze-logs", "help"]
-      .filter((value) => value.startsWith(prefix))
-      .map((value) => ({ value, label: value })),
+    getArgumentCompletions: completeCommandArgs,
     handler: async (args: string, ctx: ExtensionCommandContext) => runCommand(pi, args, ctx),
   };
 
@@ -1035,7 +1034,7 @@ function publishStatus(pi: ExtensionAPI, ctx: UiLikeContext) {
 function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
   const text = [
     "Development-goal commands:",
-    "- /development-goal start [options] <topic> — start a goal",
+    "- /development-goal [options] <topic> — start a goal",
     "- /development-goal restart [options] <topic> — replace the active goal",
     "- /development-goal pause — pause automatic continuation without clearing goal state",
     "- /development-goal resume — resume a paused goal at the current iteration",
@@ -2096,15 +2095,67 @@ function formatLoopLogAnalysisJson(analysis: LoopLogAnalysis, cwd: string, logPa
   }, null, 2);
 }
 
+function formatLoopLogOverview(analysis: LoopLogAnalysis, cwd: string): string[] {
+  const issues = topLoopLogIssues(analysis, cwd);
+  const health = analysis.readError ? "unavailable" : issues.length ? "attention needed" : "healthy";
+  return [
+    `Health: ${health}`,
+    `Outcome: ${analysis.loopsStarted} started · ${analysis.finishedLoops} finished · ${analysis.blockedLoops} blocked · ${analysis.unresolvedLoopStarts} unresolved`,
+    `Lifecycle: ${analysis.iterationPromptSentRecords} prompts · ${analysis.iterationResultRecords} results · ${promptResultImbalanceText(analysis)}`,
+    `Evidence: ${analysis.deliveryEvidenceRecords} delivery · ${analysis.validationEvidenceRecords} validation · ${analysis.changedFileEvidenceRecords} changed-file`,
+    `Most useful next action: ${mostUsefulLoopLogAction(analysis)}`,
+    "Top issues:",
+    ...(issues.length ? issues.map((issue) => `- ${issue}`) : ["- none"]),
+  ];
+}
+
+function mostUsefulLoopLogAction(analysis: LoopLogAnalysis): string {
+  if (analysis.topNextSafeAction) return analysis.topNextSafeAction;
+  if (analysis.recommendations[0]) return analysis.recommendations[0];
+  return "No immediate action; continue monitoring the next goal run.";
+}
+
+function topLoopLogIssues(analysis: LoopLogAnalysis, cwd: string): string[] {
+  const issues: string[] = [];
+  if (analysis.blockedLoops > 0) {
+    issues.push(compactLoopLogIssue([
+      `Blocked loops: ${analysis.blockedLoops}`,
+      analysis.topBlockerKind ? `kind ${analysis.topBlockerKind}` : undefined,
+      analysis.topBlockReason ? `reason ${analysis.topBlockReason}` : undefined,
+      analysis.topBlockedSource ? `source ${relativeToCwd(cwd, analysis.topBlockedSource)}` : undefined,
+    ]));
+  }
+  if (analysis.unresolvedLoopStarts > 0) issues.push(compactLoopLogIssue([`Unresolved starts: ${analysis.unresolvedLoopStarts}`, analysis.topUnresolvedSource ? `source ${relativeToCwd(cwd, analysis.topUnresolvedSource)}` : undefined]));
+  if (hasPromptResultImbalance(analysis)) issues.push(compactLoopLogIssue([`Prompt/result imbalance: ${promptResultImbalanceText(analysis)}`, analysis.topPromptResultImbalanceSource ? `source ${relativeToCwd(cwd, analysis.topPromptResultImbalanceSource)}` : undefined]));
+  if (analysis.providerErrorRecords > 0) issues.push(compactLoopLogIssue([`Provider errors: ${analysis.providerErrorRecords}`, analysis.topProviderErrorCategory ? `category ${analysis.topProviderErrorCategory}` : undefined, analysis.topProviderErrorCode ? `code ${analysis.topProviderErrorCode}` : undefined]));
+  if (analysis.emptyProviderResponses > 0) issues.push(`Empty provider responses: ${analysis.emptyProviderResponses}`);
+  if (analysis.compactionFailureRecords > 0) issues.push(compactLoopLogIssue([`Compaction failures: ${analysis.compactionFailureRecords}`, analysis.topCompactionFailureReason ? `reason ${analysis.topCompactionFailureReason}` : undefined]));
+  if (analysis.reportQualityWarningRecords > 0) issues.push(compactLoopLogIssue([`Report quality warnings: ${analysis.reportQualityWarningRecords}`, analysis.topReportQualityWarning ? `top ${analysis.topReportQualityWarning}` : undefined]));
+  if (analysis.iterationResultWithoutValidationRecords > 0) issues.push(`Iteration results without validation: ${analysis.iterationResultWithoutValidationRecords}`);
+  if (analysis.finishedWithoutValidationRecords > 0) issues.push(`Finished without validation: ${analysis.finishedWithoutValidationRecords}`);
+  if (analysis.finishedWithoutDeliveryRecords > 0) issues.push(`Finished without delivery evidence: ${analysis.finishedWithoutDeliveryRecords}`);
+  if (analysis.commitWithoutPushRecords > 0) issues.push(`Commit without push status: ${analysis.commitWithoutPushRecords}`);
+  if (analysis.ciRedRecords > 0) issues.push(`CI red records: ${analysis.ciRedRecords}`);
+  if (analysis.ciGateMissingRecords > 0) issues.push(`CI gate missing: ${analysis.ciGateMissingRecords}`);
+  if (analysis.oversizedTopicRecords > 0) issues.push(`Oversized topics: ${analysis.oversizedTopicRecords}${analysis.mostRepeatedOversizedTopicRecords > 1 ? ` · repeated ${analysis.mostRepeatedOversizedTopicRecords} times` : ""}`);
+  return issues.slice(0, 8);
+}
+
+function compactLoopLogIssue(parts: Array<string | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part && part.trim())).join(" · ");
+}
+
 function formatLoopLogAnalysis(analysis: LoopLogAnalysis, cwd: string, logPath: string): string {
   const source = relativeToCwd(cwd, logPath);
   const sourceLabel = analysis.logFiles > 1 ? `${source} (${analysis.logFiles} log files)` : source;
   return [
     `Development goal log analysis: ${sourceLabel}`,
+    ...formatLoopLogOverview(analysis, cwd),
     analysis.readError ? `Error: ${analysis.readError}` : undefined,
     analysis.sinceCutoffIso ? `Since: ${analysis.sinceCutoffIso}` : undefined,
     analysis.sinceFilterLabel && analysis.sinceFilterLabel !== analysis.sinceCutoffIso ? `Since window: ${analysis.sinceFilterLabel}` : undefined,
     analysis.sinceCutoffIso ? `Since-filtered records: ${analysis.sinceFilteredRecords}` : undefined,
+    "Detailed counters:",
     `Records: ${analysis.records}${analysis.invalidRecords ? ` (${analysis.invalidRecords} invalid)` : ""}`,
     `Loops started: ${analysis.loopsStarted}`,
     `Finished loops: ${analysis.finishedLoops}`,
