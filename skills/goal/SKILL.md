@@ -21,11 +21,31 @@ Treat these as intent even if the user writes `/goal ...`, `/skill:goal ...`, or
 
 - `goal <objective>` — start or replace the active objective after confirming replacement if one is active.
 - `goal --tokens 250K <objective>` — record a soft token budget.
-- `goal` or `goal status` — show current Goal state.
+- `goal` — if no objective is active, auto-discover a useful objective and start working; if an objective is active, show current Goal state.
+- `goal status` — show current Goal state without starting new work.
 - `goal pause` — pause continuation.
 - `goal resume` — resume the paused objective.
 - `goal clear` — clear the objective.
 - `goal complete` — complete only after the completion audit passes.
+
+## Auto-discovered objectives
+
+When the user invokes `goal` with no objective and no objective is active, do not stop at `status: cleared`. Find a useful objective and start it.
+
+Discovery order:
+
+1. Inspect explicit task sources: `TODO.md`, `TASKS.md`, `ROADMAP.md`, unchecked markdown tasks, nearby issue/plan docs, or comments that clearly name pending work.
+2. Inspect repo/package signals: failing tests, obvious validation gaps, stale docs against manifests, dirty worktree changes, or package resources missing from docs.
+3. If an Understand agent map exists (`codebase-map-understand.md`), use it to identify high-signal seams before scanning broadly.
+4. Self-grill the top 2–3 candidates: choose a task that is valuable, safe, bounded, and verifiable in this session.
+5. Start the best candidate as the active objective and immediately take the first concrete action.
+
+Auto-discovery guardrails:
+
+- Prefer tasks already documented by the repo over invented improvements.
+- Do not choose destructive, publishing, credential, deploy, or history-rewriting work.
+- If every candidate requires an owner decision, set `status: blocked` and ask one decision question.
+- Record the discovery evidence in Goal state.
 
 ## Goal state template
 

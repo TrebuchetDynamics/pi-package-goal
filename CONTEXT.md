@@ -33,8 +33,8 @@ A small standard shape for skill-to-skill transfers: trigger, artifact, next ski
 _Avoid_: freeform vague handoffs, heavyweight forms, claims without a concrete artifact or success signal
 
 **Goal Skill**:
-An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation and requires a completion audit before done.
-_Avoid_: invented persistent state, hook installation, filesystem state writes
+An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation, auto-discovers a bounded objective when invoked with no active goal, and requires a completion audit before done.
+_Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
 **Git Commit Push Skill**:
 A delivery skill that audits git state, reviews changed files for safety, runs validation, commits safe in-scope work, pushes to the current upstream, and reports `GIT_COMMIT_PUSH_*` markers.

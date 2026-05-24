@@ -347,6 +347,10 @@ async function testSkills() {
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
 
+  const goal = read("skills/goal/SKILL.md");
+  assert.match(goal, /Auto-discovered objectives/);
+  assert.match(goal, /goal status` — show current Goal state without starting new work/);
+
   const gitCommitPush = read("skills/git-commit-push/SKILL.md");
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
