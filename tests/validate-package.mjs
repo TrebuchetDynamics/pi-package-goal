@@ -811,7 +811,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     tokenBudget: 98500,
   };
   const extractedPrompt = promptsMod.buildIterationPrompt(promptState, resolvedAdapter, adapterTemp);
-  assert.match(extractedPrompt, /Start with improve-codebase-architecture, then use grill-me to fill plan gaps, then use the project instructions and matching skills now\. Development goal iteration 2\/3/);
+  assert.match(extractedPrompt, /Start with improve-codebase-architecture, then use grill-me in self-answer-first mode, then use the project instructions and matching skills now\. Development goal iteration 2\/3/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
   assert.match(extractedPrompt, /Run budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
@@ -1121,7 +1121,9 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /repo-local skills/);
     assert.match(sent[0].content, /caveman/);
     assert.match(sent[0].content, /grill-me/);
-    assert.match(sent[0].content, /easy questions.*answered by the agent itself/i);
+    assert.match(sent[0].content, /self-answer-first mode/i);
+    assert.match(sent[0].content, /only ask hard owner-decision or pivot questions/i);
+    assert.match(sent[0].content, /If no hard question remains, proceed without asking the user/i);
     assert.match(sent[0].content, /improve-codebase-architecture/);
     assert.match(sent[0].content, /Preferred language: English/);
     assert.match(sent[0].content, /greploop for PR\/MR\/CL review cleanup/);
@@ -3035,7 +3037,9 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Preferred language/);
   assert.match(readme, /caveman/);
   assert.match(readme, /grill-me/);
-  assert.match(readme, /easy questions.*answered by the agent itself/i);
+  assert.match(readme, /self-answer-first mode/i);
+  assert.match(readme, /only asks hard owner-decision or pivot questions/i);
+  assert.match(readme, /if no hard question remains, proceeds without interrupting the user/i);
   assert.match(readme, /improve-codebase-architecture/);
   assert.match(readme, /## Update or remove/);
   assert.match(readme, /### Status bar integration/);
@@ -3140,6 +3144,11 @@ async function testNoticesAndDocs() {
   assert.match(readme, /rm -f ~\/\.codex\/state_\*\.sqlite/);
   assert.match(readme, /\/development-goal status/);
   assert.match(readme, /`grill-me`/);
+  const grillMeSkill = read("skills/grill-me/SKILL.md");
+  assert.match(grillMeSkill, /self-answer-first/i);
+  assert.match(grillMeSkill, /Only ask the user when the remaining question is hard/i);
+  assert.match(grillMeSkill, /If no hard question remains, proceed/i);
+  assert.match(grillMeSkill, /pivot/i);
   assert.match(readme, /`greploop`/);
   assert.match(readme, /Greptile review goal/);
   assert.match(readme, /`lgtm`/);

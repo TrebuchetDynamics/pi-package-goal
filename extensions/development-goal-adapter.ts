@@ -43,7 +43,7 @@ export const BUILT_IN_ADAPTERS: LoopAdapter[] = [
     defaultTopic: "discover and complete the largest safe useful project goal package with validation",
     skills: [
       "improve-codebase-architecture",
-      "grill-me for plan-gap interrogation; easy questions and source-answerable questions must be answered by the agent itself before asking the user",
+      "grill-me in self-answer-first mode; only ask hard owner-decision or pivot questions, and proceed without asking when no hard question remains",
       "caveman",
       "repo-local skills that match the detected task before package defaults",
       "greploop for PR/MR/CL review cleanup when Greptile is installed and external review actions are explicitly allowed",

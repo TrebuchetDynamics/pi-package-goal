@@ -29,7 +29,7 @@ export const REVIEW_GUIDANCE = [
 export const GOALBUDDY_INSPIRED_GUIDANCE = [
   "Use the GoalBuddy-style invariant: Intent -> Oracle -> Surface -> Work package -> Proof.",
   "Identify the goal oracle early: the observable test, demo, artifact, metric, source-backed answer, review, or owner decision that proves the original outcome.",
-  "Start every development-goal run by using improve-codebase-architecture, then grill-me to fill plan gaps before selecting the first work package; easy questions and source-answerable questions must be answered by the agent itself from repo evidence before asking the user.",
+  "Start every development-goal run by using improve-codebase-architecture, then grill-me in self-answer-first mode before selecting the first work package; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.",
   "Choose the largest safe useful slice, not the tiniest possible helper. Safe means bounded, explicit, verified, reversible, and respectful of unrelated dirty work.",
   "A blocked slice does not automatically stop the goal. If safe local follow-up work exists, record the blocker in DEV_GOAL_REPORT nextSteps and continue with that safe work.",
   "Only use done after a final audit maps the original request to current receipts, validation evidence, delivery evidence, and the goal oracle.",
@@ -63,7 +63,7 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
     ? "A legacy iteration cap is configured; continue until the goal is achieved or the cap is reached."
     : "No max-iteration stop is configured; continue automatically until the goal is achieved, blocked, paused, or stopped.";
 
-  return `Start with improve-codebase-architecture, then use grill-me to fill plan gaps, then use the project instructions and matching skills now. Development goal iteration ${iterationLabel}.
+  return `Start with improve-codebase-architecture, then use grill-me in self-answer-first mode, then use the project instructions and matching skills now. Development goal iteration ${iterationLabel}.
 
 Project root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
@@ -106,7 +106,7 @@ ${stopConditions.map((condition) => `- ${condition}`).join("\n")}
 Run one complete vertical development iteration:
 1. State scope lock with exact absolute project path and adapter.
 2. Start with improve-codebase-architecture: use it to map architectural friction, repo vocabulary, and the safest high-leverage direction before selecting work.
-3. Use grill-me to identify missing decisions; answer easy questions and source-answerable questions yourself from repo evidence before asking the user.
+3. Use grill-me to identify missing decisions; answer easy/source-backed gaps yourself, only ask hard owner-decision or pivot questions, and if no hard question remains, proceed without asking the user.
 4. Read project instructions and use matching repo-local skills before risky work.
 5. Inspect current dirty state and preserve unrelated work.
 6. Define the goal oracle and choose the largest safe useful work package from the user topic, repo-local skills, or task discovery cues above.

@@ -307,7 +307,7 @@ Create `.pi/development-goal.json` when a repo needs its own default objective, 
 - `--force` to replace an existing config atomically
 - `--yes` / `-y` / `--defaults` to accept generated values without the interactive wizard
 
-Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `grill-me` to fill requirement gaps while easy questions and source-answerable questions are answered by the agent itself from repo evidence.
+Interactive init asks for Preferred language from 20 common languages. Non-interactive init defaults to English. The goal always includes `improve-codebase-architecture`, `grill-me`, and `caveman` in its skill list, even when custom skills are configured; startup prompts tell agents to use `grill-me` in self-answer-first mode so it answers easy/source-backed gaps itself, only asks hard owner-decision or pivot questions, and if no hard question remains, proceeds without interrupting the user.
 
 Example config:
 
@@ -341,7 +341,7 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `tdd` — red-green-refactor delivery.
 - `diagnose` — disciplined bug and performance diagnosis.
 - `improve-codebase-architecture` — architecture deepening review.
-- `grill-me` — relentless plan-gap interrogation; Development Goal startup uses it while answering easy/source-backed questions itself.
+- `grill-me` — self-answer-first plan-gap interrogation; Development Goal startup uses it to answer easy/source-backed gaps itself and only ask hard owner-decision or pivot questions.
 - `grill-with-docs` — plan interrogation tied to domain docs and ADRs.
 - `prototype` — throwaway prototypes for design uncertainty.
 - `zoom-out` — source-backed broader codebase understanding.
