@@ -379,7 +379,7 @@ async function testPackageManifest() {
   assert.match(pkg.description, /development-goal/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("development-goal"));
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts", "./extensions/context-goal.ts", "./extensions/ship-goal.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/development-goal.ts", "./extensions/e2e-goal.ts", "./extensions/context-goal.ts", "./extensions/git-commit-push.ts", "./extensions/understand.ts"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.peerDependencies["@earendil-works/pi-coding-agent"], "*");
   const gitignore = read(".gitignore");
@@ -451,7 +451,7 @@ async function testExtensionFolderArchitecture() {
   const rootModules = fs.readdirSync(extensionRoot)
     .filter((name) => name.endsWith(".ts"))
     .sort();
-  assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts", "ship-goal.ts"], "extension root must contain only public goal entrypoints");
+  assert.deepEqual(rootModules, ["context-goal.ts", "development-goal.ts", "e2e-goal.ts", "git-commit-push.ts", "understand.ts"], "extension root must contain only public extension entrypoints");
 
   const expectedPrivateModules = [
     "adapter.ts",
@@ -495,8 +495,9 @@ async function testExtensionFolderArchitecture() {
   }
   assert.ok(exists(path.join("extensions", "context-goal", "main.ts")), "missing Context Goal private module main.ts");
   for (const file of ["identity.ts", "main.ts"]) {
-    assert.ok(exists(path.join("extensions", "ship-goal", file)), `missing Ship Goal private module ${file}`);
+    assert.ok(exists(path.join("extensions", "git-commit-push", file)), `missing Git Commit Push private module ${file}`);
   }
+  assert.ok(exists(path.join("extensions", "understand", "main.ts")), "missing Understand private module main.ts");
 }
 
 async function testContextGoalExtensionLoadsAndRegistersCommands() {
@@ -532,17 +533,21 @@ async function testContextGoalExtensionLoadsAndRegistersCommands() {
     await commands.get("context-goal").handler("audit", ctx);
     assert.match(messages.at(-1).content, /Context Goal audit/);
     assert.match(messages.at(-1).content, /Add Final Report Gate to CONTEXT.md/);
-    assert.match(messages.at(-1).content, /Create MEMORY.md/);
-    assert.match(messages.at(-1).content, /MEMORY.md: absent; approval can create guarded template/);
+    assert.doesNotMatch(messages.at(-1).content, /Create MEMORY.md/);
+    assert.match(messages.at(-1).content, /MEMORY.md: absent; no action needed unless durable operational facts have no better home/);
 
     await commands.get("context-goal").handler("apply --yes", ctx);
     assert.match(fs.readFileSync(path.join(contextRoot, "CONTEXT.md"), "utf8"), /\*\*Final Report Gate\*\*/);
     assert.doesNotMatch(fs.readFileSync(path.join(contextRoot, "CONTEXT.md"), "utf8"), /\*\*Context Goal\*\*/);
-    assert.match(fs.readFileSync(path.join(contextRoot, "MEMORY.md"), "utf8"), /Durable operational memory/);
-    assert.match(messages.at(-1).content, /Context Goal applied 2 approved patches/);
+    assert.equal(fs.existsSync(path.join(contextRoot, "MEMORY.md")), false, "Context Goal must not create MEMORY.md just because CONTEXT.md exists");
+    assert.match(messages.at(-1).content, /Context Goal applied 1 approved patch/);
+
+    fs.writeFileSync(path.join(contextRoot, "MEMORY.md"), "# Project Memory\n\n## Durable facts\n\n- Keep this reviewed fact.\n");
+    await commands.get("context-goal").handler("audit", ctx);
+    assert.match(messages.at(-1).content, /Review MEMORY.md/);
 
     await commands.get("context-goal").handler("help", ctx);
-    assert.match(messages.at(-1).content, /can create baseline CONTEXT.md and guarded MEMORY.md/);
+    assert.match(messages.at(-1).content, /guarded MEMORY.md template for fresh projects/);
 
     const missingArtifactRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-context-goal-empty-"));
     try {
@@ -569,6 +574,8 @@ async function testContextGoalExtensionLoadsAndRegistersCommands() {
       await commands.get("context-goal").handler("apply --yes", emptyCtx);
       assert.match(fs.readFileSync(path.join(missingArtifactRoot, "CONTEXT.md"), "utf8"), /\*\*Project Context\*\*/);
       assert.match(fs.readFileSync(path.join(missingArtifactRoot, "MEMORY.md"), "utf8"), /Durable operational memory/);
+      assert.match(messages.at(-1).content, /MEMORY.md: present; guarded template only/);
+      assert.doesNotMatch(messages.at(-1).content, /Review MEMORY.md/);
     } finally {
       fs.rmSync(missingArtifactRoot, { recursive: true, force: true });
     }
@@ -577,27 +584,39 @@ async function testContextGoalExtensionLoadsAndRegistersCommands() {
   }
 }
 
-async function testShipGoalExtensionLoadsAndRegistersCommands() {
-  assert.ok(exists("extensions/ship-goal.ts"), "ship-goal extension missing");
+async function testGitCommitPushExtensionLoadsAndRegistersCommands() {
+  assert.ok(exists("extensions/git-commit-push.ts"), "git-commit-push extension missing");
   const { createJiti } = require(jitiEntry);
   const jiti = createJiti(import.meta.url, { interopDefault: true });
-  const mod = await jiti.import(path.join(root, "extensions", "ship-goal.ts"));
-  const identityMod = await jiti.import(path.join(root, "extensions", "ship-goal", "identity.ts"));
-  assert.equal(identityMod.SHIP_GOAL_IDENTITY.markers.validated, "SHIP_GOAL_VALIDATED");
+  const mod = await jiti.import(path.join(root, "extensions", "git-commit-push.ts"));
+  const identityMod = await jiti.import(path.join(root, "extensions", "git-commit-push", "identity.ts"));
+  assert.equal(identityMod.GIT_COMMIT_PUSH_IDENTITY.markers.validated, "GIT_COMMIT_PUSH_VALIDATED");
   assert.equal(typeof mod.default, "function");
-  assert.equal(typeof mod.__test__.auditShipping, "function");
+  assert.equal(typeof mod.__test__.auditGitCommitPush, "function");
+  assert.deepEqual(mod.__test__.parseArgs(""), {
+    command: "run",
+    validations: [],
+  });
   assert.deepEqual(mod.__test__.parseArgs("run --validation \"npm test\" --validation=\"git diff --check\""), {
     command: "run",
     validations: ["npm test", "git diff --check"],
+  });
+  assert.deepEqual(mod.__test__.parseArgs("run --no-delivery --no-push"), {
+    command: "run",
+    validations: [],
+    delivery: false,
+    push: false,
   });
 
   const commands = new Map();
   const messages = [];
   const notifications = [];
   const execCalls = [];
+  const sentUserMessages = [];
   const pi = {
     registerCommand(name, command) { commands.set(name, command); },
     sendMessage(message) { messages.push(message); },
+    sendUserMessage(content, options) { sentUserMessages.push({ content, options }); },
     async exec(command, args) {
       const shell = args.join(" ");
       execCalls.push([command, ...args].join(" "));
@@ -610,38 +629,132 @@ async function testShipGoalExtensionLoadsAndRegistersCommands() {
     },
   };
   mod.default(pi);
-  assert.ok(commands.has("ship-goal"));
+  assert.ok(commands.has("git-commit-push"));
 
-  const shipRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-ship-goal-"));
+  const gitCommitPushRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-git-commit-push-"));
   try {
-    fs.writeFileSync(path.join(shipRoot, "package.json"), JSON.stringify({ scripts: { test: "node test.js" } }) + "\n");
+    fs.writeFileSync(path.join(gitCommitPushRoot, "package.json"), JSON.stringify({ scripts: { test: "node test.js" } }) + "\n");
     const ctx = {
-      cwd: shipRoot,
+      cwd: gitCommitPushRoot,
       ui: { notify(message, level) { notifications.push({ message, level }); } },
-      sessionManager: { getCwd: () => shipRoot },
+      sessionManager: { getCwd: () => gitCommitPushRoot },
     };
 
-    await commands.get("ship-goal").handler("status", ctx);
+    await commands.get("git-commit-push").handler("status", ctx);
     assert.match(messages.at(-1).content, /not run yet for this project/);
 
-    await commands.get("ship-goal").handler("audit", ctx);
-    assert.match(messages.at(-1).content, /Ship Goal audit/);
+    await commands.get("git-commit-push").handler("audit", ctx);
+    assert.match(messages.at(-1).content, /Git Commit Push audit/);
     assert.match(messages.at(-1).content, /decision: review_needed/);
     assert.match(messages.at(-1).content, /npm test: not run/);
-    assert.match(messages.at(-1).content, /SHIP_GOAL_VALIDATED: no/);
+    assert.match(messages.at(-1).content, /GIT_COMMIT_PUSH_VALIDATED: no/);
 
-    await commands.get("ship-goal").handler("run", ctx);
+    await commands.get("git-commit-push").handler("run", ctx);
     assert.match(messages.at(-1).content, /decision: ready/);
     assert.match(messages.at(-1).content, /npm test: pass/);
     assert.match(messages.at(-1).content, /git diff --check: pass/);
-    assert.match(messages.at(-1).content, /SHIP_GOAL_VALIDATED: yes/);
+    assert.match(messages.at(-1).content, /Delivery: queued commit\/push handoff to agent/);
+    assert.match(messages.at(-1).content, /GIT_COMMIT_PUSH_VALIDATED: yes/);
     assert.ok(execCalls.some((call) => call.includes("git status --short --branch")));
     assert.ok(execCalls.some((call) => call.includes("npm test")));
+    assert.equal(sentUserMessages.length, 1);
+    assert.match(sentUserMessages.at(-1).content, /Git Commit Push delivery handoff/);
+    assert.match(sentUserMessages.at(-1).content, /Commit and push all current safe worktree changes/);
+    assert.match(sentUserMessages.at(-1).content, /Split changes into coherent commits/);
+    assert.match(sentUserMessages.at(-1).content, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
 
-    await commands.get("ship-goal").handler("help", ctx);
-    assert.match(messages.at(-1).content, /does not commit, push, deploy, or publish/);
+    await commands.get("git-commit-push").handler("run --no-delivery", ctx);
+    assert.match(messages.at(-1).content, /Delivery: commit\/push handoff disabled by flag/);
+    assert.equal(sentUserMessages.length, 1);
+
+    await commands.get("git-commit-push").handler("help", ctx);
+    assert.match(messages.at(-1).content, /replaces \/development-goal git-commit-push/);
   } finally {
-    fs.rmSync(shipRoot, { recursive: true, force: true });
+    fs.rmSync(gitCommitPushRoot, { recursive: true, force: true });
+  }
+}
+
+async function testUnderstandExtensionLoadsAndRegistersCommands() {
+  assert.ok(exists("extensions/understand.ts"), "understand extension missing");
+  const { createJiti } = require(jitiEntry);
+  const jiti = createJiti(import.meta.url, { interopDefault: true });
+  const mod = await jiti.import(path.join(root, "extensions", "understand.ts"));
+  assert.equal(typeof mod.default, "function");
+  assert.equal(typeof mod.__test__.ensureUnderstandAnything, "function");
+  assert.deepEqual(mod.__test__.parseArgs("src --language zh"), {
+    command: "run",
+    argumentsText: "src --language zh",
+  });
+  assert.deepEqual(mod.__test__.parseArgs("install"), {
+    command: "install",
+    argumentsText: "",
+  });
+
+  const commands = new Map();
+  const messages = [];
+  const sentUserMessages = [];
+  const execCalls = [];
+  const understandRoot = fs.mkdtempSync(path.join(os.tmpdir(), "pi-understand-"));
+  const repoDir = path.join(understandRoot, "repo");
+  const skillsDir = path.join(understandRoot, "skills");
+  const pluginLink = path.join(understandRoot, "plugin-link");
+  const oldEnv = {
+    UA_DIR: process.env.UA_DIR,
+    UA_SKILLS_DIR: process.env.UA_SKILLS_DIR,
+    UA_PLUGIN_LINK: process.env.UA_PLUGIN_LINK,
+  };
+  process.env.UA_DIR = repoDir;
+  process.env.UA_SKILLS_DIR = skillsDir;
+  process.env.UA_PLUGIN_LINK = pluginLink;
+  try {
+    const pi = {
+      registerCommand(name, command) { commands.set(name, command); },
+      sendMessage(message) { messages.push(message); },
+      sendUserMessage(content, options) { sentUserMessages.push({ content, options }); },
+      async exec(command, args) {
+        execCalls.push([command, ...args].join(" "));
+        if (command === "git" && args[0] === "clone") {
+          fs.mkdirSync(path.join(repoDir, ".git"), { recursive: true });
+          fs.mkdirSync(path.join(repoDir, "understand-anything-plugin", "skills", "understand"), { recursive: true });
+          fs.mkdirSync(path.join(repoDir, "understand-anything-plugin", "skills", "understand-chat"), { recursive: true });
+          fs.writeFileSync(path.join(repoDir, "understand-anything-plugin", "package.json"), "{}\n");
+          fs.writeFileSync(path.join(repoDir, "understand-anything-plugin", "pnpm-workspace.yaml"), "packages: []\n");
+          fs.writeFileSync(path.join(repoDir, "understand-anything-plugin", "skills", "understand", "SKILL.md"), "# /understand\n");
+          fs.writeFileSync(path.join(repoDir, "understand-anything-plugin", "skills", "understand-chat", "SKILL.md"), "# /understand-chat\n");
+          return { code: 0, stdout: "cloned\n", stderr: "" };
+        }
+        if (command === "git" && args.includes("pull")) return { code: 0, stdout: "up to date\n", stderr: "" };
+        return { code: 1, stdout: "", stderr: "unexpected command" };
+      },
+    };
+    mod.default(pi);
+    assert.ok(commands.has("understand"));
+
+    const ctx = {
+      cwd: understandRoot,
+      ui: { notify() {} },
+      sessionManager: { getCwd: () => understandRoot },
+      isIdle: () => true,
+    };
+    await commands.get("understand").handler("src --language zh", ctx);
+    assert.ok(execCalls.some((call) => call.includes("git clone https://github.com/Lum1104/Understand-Anything.git")));
+    assert.equal(fs.lstatSync(path.join(skillsDir, "understand")).isSymbolicLink(), true);
+    assert.equal(fs.lstatSync(pluginLink).isSymbolicLink(), true);
+    assert.match(messages.at(-1).content, /Understand-Anything cloned/);
+    assert.equal(sentUserMessages.length, 1);
+    assert.match(sentUserMessages.at(-1).content, /Skill file to read completely:/);
+    assert.match(sentUserMessages.at(-1).content, /Treat \$ARGUMENTS for that skill as: src --language zh/);
+
+    await commands.get("understand").handler("status", ctx);
+    assert.match(messages.at(-1).content, /Understand-Anything status/);
+  } finally {
+    if (oldEnv.UA_DIR === undefined) delete process.env.UA_DIR;
+    else process.env.UA_DIR = oldEnv.UA_DIR;
+    if (oldEnv.UA_SKILLS_DIR === undefined) delete process.env.UA_SKILLS_DIR;
+    else process.env.UA_SKILLS_DIR = oldEnv.UA_SKILLS_DIR;
+    if (oldEnv.UA_PLUGIN_LINK === undefined) delete process.env.UA_PLUGIN_LINK;
+    else process.env.UA_PLUGIN_LINK = oldEnv.UA_PLUGIN_LINK;
+    fs.rmSync(understandRoot, { recursive: true, force: true });
   }
 }
 
@@ -932,7 +1045,8 @@ async function testExtensionLoadsAndRegistersCommands() {
   const misspelledArchitectureCommand = ["improve-codebase-achi", "tecture"].join("");
   assert.equal(read("extensions/development-goal/command.ts").includes(misspelledArchitectureCommand), false);
   assert.doesNotMatch(read("README.md"), /\/development-goal start/);
-  assert.match(read("README.md"), /\/development-goal git-commit-push/);
+  assert.match(read("README.md"), /\/git-commit-push/);
+  assert.match(read("README.md"), /replaces `\/development-goal git-commit-push`/);
   assert.match(read("README.md"), /\/development-goal improve-codebase-architecture/);
   assert.deepEqual(commandMod.parseArgs("init generic-git --yes --no-push"), {
     command: "init",
@@ -3657,7 +3771,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pi package manifest shape, referenced bundle paths, and Pi glob\/exclusion entries/);
   assert.match(readme, /Pi core imports are peerDependencies with \"\*\"/);
   assert.match(readme, /E2E smoke coverage for starting and completing one development-goal extension run/);
-  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, `\/e2e`, `\/context-goal`, and `\/ship-goal` command registration/);
+  assert.match(readme, /`\/development-goal`, `\/e2e-goal`, `\/e2e`, `\/context-goal`, `\/git-commit-push`, and `\/understand` command registration/);
   assert.match(readme, /Skill frontmatter and exact expected bundle contents/);
   assert.match(readme, /Markdown relative links outside code-fence templates/);
   assert.match(readme, /Third-party notices, local notice paths, and license copies/);
@@ -3692,7 +3806,8 @@ await testPackageManifestPaths();
 await testPiCoreDependencies();
 await testExtensionFolderArchitecture();
 await testContextGoalExtensionLoadsAndRegistersCommands();
-await testShipGoalExtensionLoadsAndRegistersCommands();
+await testGitCommitPushExtensionLoadsAndRegistersCommands();
+await testUnderstandExtensionLoadsAndRegistersCommands();
 await testExtensionLoadsAndRegistersCommands();
 await testE2ELoopExtensionLoadsAndRegistersCommands();
 await testSkills();

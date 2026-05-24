@@ -27,6 +27,8 @@ type ContextProposal = {
   avoid?: string;
 };
 
+type MemoryStatus = "absent" | "guarded-template" | "custom-content";
+
 type ContextAudit = {
   cwd: string;
   checkedAt: string;
@@ -34,6 +36,7 @@ type ContextAudit = {
   memoryPath: string;
   hasContext: boolean;
   hasMemory: boolean;
+  memoryStatus: MemoryStatus;
   logFiles: string[];
   proposals: ContextProposal[];
 };
@@ -52,7 +55,7 @@ const TERM_RULES: TermRule[] = [
   {
     term: "Context Goal",
     triggers: [/context-goal/i, /context steward/i],
-    definition: "A Pi extension that audits project understanding artifacts, works when both CONTEXT.md and MEMORY.md are absent, proposes baseline file creation, and applies only explicitly approved context/memory patches. A Context Goal keeps project vocabulary useful without turning MEMORY.md into a junk drawer.",
+    definition: "A Pi extension that audits project understanding artifacts, works when both CONTEXT.md and MEMORY.md are absent, proposes baseline fresh-project file creation, and applies only explicitly approved context/memory patches. A Context Goal keeps project vocabulary useful without turning MEMORY.md into a junk drawer, so it does not create MEMORY.md just because CONTEXT.md already exists.",
     avoid: "Silent memory writes, unreviewed context edits, dumping session notes into MEMORY.md, unstructured memory junk drawers",
   },
   {
@@ -113,6 +116,8 @@ function auditContext(cwd: string, now = new Date().toISOString()): ContextAudit
   const hasContextFile = fs.existsSync(contextPath);
   const hasMemoryFile = fs.existsSync(memoryPath);
   const contextText = readTextIfExists(contextPath);
+  const memoryText = readTextIfExists(memoryPath);
+  const memoryStatus = classifyMemoryFile(hasMemoryFile, memoryText);
   const logFiles = discoverGoalLogs(path.join(cwd, ".pi"));
   const evidenceText = [
     listProjectFiles(cwd).join("\n"),
@@ -132,18 +137,18 @@ function auditContext(cwd: string, now = new Date().toISOString()): ContextAudit
     });
   }
 
-  if (!hasMemoryFile) {
+  if (!hasMemoryFile && !hasContextFile) {
     proposals.push({
       id: "create-memory",
       title: `Create ${MEMORY_FILE}`,
-      reason: "No MEMORY.md exists. Approve a guarded durable-memory template so agents know what belongs there and what does not.",
+      reason: "No MEMORY.md exists. Approve a guarded durable-memory template only as part of a fresh context bootstrap.",
       action: "create-memory-file",
     });
-  } else {
+  } else if (memoryStatus === "custom-content") {
     proposals.push({
       id: "review-memory",
       title: `Review ${MEMORY_FILE}`,
-      reason: "MEMORY.md exists; Context Goal should keep durable vocabulary in CONTEXT.md or ADRs instead of unstructured memory.",
+      reason: "MEMORY.md contains custom durable facts; prefer CONTEXT.md for vocabulary and ADRs for decisions before keeping memory content.",
       action: "manual-review",
     });
   }
@@ -169,6 +174,7 @@ function auditContext(cwd: string, now = new Date().toISOString()): ContextAudit
     memoryPath,
     hasContext: hasContextFile,
     hasMemory: hasMemoryFile,
+    memoryStatus,
     logFiles,
     proposals: dedupeProposals(proposals),
   };
@@ -262,7 +268,7 @@ function formatAudit(audit: ContextAudit): string {
   return [
     `Context Goal audit: ${audit.cwd}`,
     `CONTEXT.md: ${audit.hasContext ? "present" : "absent; approval can create it"}`,
-    `MEMORY.md: ${audit.hasMemory ? "present; review before keeping" : "absent; approval can create guarded template"}`,
+    `MEMORY.md: ${formatMemoryStatus(audit)}`,
     `Goal logs checked: ${audit.logFiles.length}`,
     `Approvable patches available: ${approvable}`,
     "Proposals:",
@@ -272,10 +278,15 @@ function formatAudit(audit: ContextAudit): string {
 }
 
 function formatApplyPreview(audit: ContextAudit, proposals: ContextProposal[]): string {
+  const createsMemory = proposals.some((proposal) => proposal.action === "create-memory-file");
   return [
     `Context Goal apply preview: ${audit.cwd}`,
     audit.hasContext ? "Existing CONTEXT.md will be updated if context terms are approved." : "No CONTEXT.md exists; approval will create it.",
-    audit.hasMemory ? "Existing MEMORY.md will not be overwritten." : "No MEMORY.md exists; approval will create a guarded template.",
+    audit.hasMemory
+      ? "Existing MEMORY.md will not be overwritten."
+      : createsMemory
+        ? "No MEMORY.md exists; approval will create a guarded template."
+        : "No MEMORY.md exists; Context Goal will leave it absent.",
     ...proposals.map(formatProposalPreview),
   ].join("\n");
 }
@@ -295,12 +306,12 @@ function helpText(): string {
   return [
     "Context Goal commands:",
     "- /context-goal audit — inspect CONTEXT.md, MEMORY.md, and recent goal logs for context proposals",
-    "- /context-goal apply — ask for approval, then apply safe CONTEXT.md term additions",
-    "- /context-goal apply --yes — apply safe CONTEXT.md term additions non-interactively",
+    "- /context-goal apply — ask for approval, then apply safe CONTEXT.md term additions or fresh-project bootstrap files",
+    "- /context-goal apply --yes — apply safe CONTEXT.md term additions or fresh-project bootstrap files non-interactively",
     "- /context-goal status — show the last audit result",
     "- /context-goal help — show this help",
     "",
-    "Context Goal works when both CONTEXT.md and MEMORY.md are absent. It can create baseline CONTEXT.md and guarded MEMORY.md files, but never applies proposals without explicit approval or --yes.",
+    "Context Goal works when both CONTEXT.md and MEMORY.md are absent. It can create baseline CONTEXT.md and a guarded MEMORY.md template for fresh projects, but it does not create MEMORY.md just because it is absent when CONTEXT.md already exists. It never applies proposals without explicit approval or --yes.",
   ].join("\n");
 }
 
@@ -337,6 +348,37 @@ function readTextIfExists(file: string): string {
   } catch {
     return "";
   }
+}
+
+function classifyMemoryFile(hasMemoryFile: boolean, text: string): MemoryStatus {
+  if (!hasMemoryFile) return "absent";
+  return isGuardedMemoryTemplate(text) ? "guarded-template" : "custom-content";
+}
+
+function isGuardedMemoryTemplate(text: string): boolean {
+  const normalized = text.replace(/\r\n/g, "\n").trim();
+  if (!normalized.includes("# Project Memory")) return false;
+  if (!normalized.includes("## Rules")) return false;
+  if (!normalized.includes("## Durable facts")) return false;
+
+  const requiredRules = [
+    "Add facts only after explicit user or project approval.",
+    "Prefer CONTEXT.md for project vocabulary and ADRs for decisions.",
+    "Do not store session transcripts, temporary todos, guesses, or implementation notes.",
+  ];
+  if (!requiredRules.every((rule) => normalized.includes(rule))) return false;
+
+  const factsSection = normalized.split(/\n## Durable facts\b/).slice(1).join("\n## Durable facts");
+  const factsWithoutComments = factsSection.replace(/<!--[\s\S]*?-->/g, "").trim();
+  return factsWithoutComments.length === 0;
+}
+
+function formatMemoryStatus(audit: ContextAudit): string {
+  if (audit.memoryStatus === "guarded-template") return "present; guarded template only";
+  if (audit.memoryStatus === "custom-content") return "present; review before keeping";
+  return audit.hasContext
+    ? "absent; no action needed unless durable operational facts have no better home"
+    : "absent; approval can create guarded template";
 }
 
 function discoverGoalLogs(piDir: string): string[] {
@@ -405,6 +447,7 @@ function slug(value: string): string {
 export const __test__ = {
   applyContextTerms,
   auditContext,
+  classifyMemoryFile,
   formatAudit,
   parseArgs,
 };

@@ -32,18 +32,24 @@ After installing or updating, run this inside Pi:
 /reload
 ```
 
-Optional context stewardship (can bootstrap projects that have neither `CONTEXT.md` nor `MEMORY.md`):
+Optional context stewardship (can bootstrap fresh projects that have neither `CONTEXT.md` nor `MEMORY.md`):
 
 ```text
 /context-goal audit
 /context-goal apply
 ```
 
-Optional ship-readiness check:
+Optional git commit/push delivery check:
 
 ```text
-/ship-goal audit
-/ship-goal run
+/git-commit-push audit
+/git-commit-push
+```
+
+Optional codebase knowledge graph:
+
+```text
+/understand
 ```
 
 ### Step 3: Start `/development-goal`
@@ -97,7 +103,7 @@ Useful commands:
 /development-goal providers
 /development-goal improve-codebase-architecture
 /development-goal grill-me release planning
-/development-goal git-commit-push release cleanup
+/git-commit-push
 /development-goal --tokens 250K --commit --push fix flaky tests
 /development-goal status
 /development-goal pause
@@ -351,8 +357,9 @@ Run `/development-goal adapters` to confirm the `generic-git` adapter and config
 - `/development-goal` — visible `generic-git` project goal for iterative work in any codebase, with built-in defaults and project-local configuration.
 - `/e2e-goal` — real-usage E2E test goal that asks the agent to classify the app, build a feature inventory/coverage matrix, and add or run durable coverage: Playwright plus screenshots for web UI, Maestro or platform harnesses plus screenshots for mobile UI, public endpoint contract tests for APIs, and TUI transcript/terminal checks for TUI/CLI apps. It persists goal state and logs progress to `.pi/e2e-goal/logs.jsonl` by default.
 - `/e2e` — short alias for the E2E goal extension.
-- `/context-goal` — context stewardship for `CONTEXT.md` and guarded `MEMORY.md`: audits recent goal logs and project files, works when both files are absent, proposes vocabulary/ADR follow-ups, and creates baseline files or applies safe context term additions only after explicit approval or `--yes`.
-- `/ship-goal` — shipping-readiness audit for completed work: inspects git state, infers or accepts validation commands, runs validation on request, flags risky files, and reports `SHIP_GOAL_VALIDATED` / `SHIP_GOAL_DECISION` evidence. It does not commit, push, deploy, or publish.
+- `/context-goal` — context stewardship for `CONTEXT.md` and guarded `MEMORY.md`: audits recent goal logs and project files, works when both files are absent, proposes vocabulary/ADR follow-ups, and creates baseline fresh-project files or applies safe context term additions only after explicit approval or `--yes`; it does not create `MEMORY.md` just because `CONTEXT.md` already exists.
+- `/git-commit-push` — git delivery gate for completed work: inspects git state, infers or accepts validation commands, runs validation, flags risky files, and when ready queues an agent handoff to commit and push safe in-scope changes. It reports `GIT_COMMIT_PUSH_VALIDATED` / `GIT_COMMIT_PUSH_DECISION` evidence and replaces `/development-goal git-commit-push`; it still does not deploy or publish packages.
+- `/understand` — installer/runner for Lum1104/Understand-Anything: clones or updates the upstream repository, links its skills, then queues the installed `understand` skill to build a codebase knowledge graph.
 
 ## Included skills
 
@@ -397,7 +404,7 @@ The validation script checks:
 - Pi package manifest shape, referenced bundle paths, and Pi glob/exclusion entries.
 - Pi core imports are peerDependencies with "*".
 - Extension load via Pi-bundled `jiti`.
-- `/development-goal`, `/e2e-goal`, `/e2e`, `/context-goal`, and `/ship-goal` command registration.
+- `/development-goal`, `/e2e-goal`, `/e2e`, `/context-goal`, `/git-commit-push`, and `/understand` command registration.
 - E2E smoke coverage for starting and completing one development-goal extension run.
 - E2E-goal smoke coverage for prompting feature inventory/coverage-matrix work, Playwright/Maestro screenshot evidence, public endpoint API contracts, TUI transcript coverage, session state, and `.pi/e2e-goal/logs.jsonl` progress logging.
 - Skill frontmatter and exact expected bundle contents.

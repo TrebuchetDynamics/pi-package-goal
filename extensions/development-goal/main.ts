@@ -943,7 +943,7 @@ function publishHelp(pi: ExtensionAPI, ctx: UiLikeContext) {
     "Development-goal commands:",
     "- /development-goal [options] <topic> — start a goal",
     "- /development-goal improve-codebase-architecture [focus] — start an architecture-improvement goal",
-    "- /development-goal git-commit-push [focus] — validate, split all current changes into coherent commits, and push the current branch",
+    "- /development-goal git-commit-push [focus] — legacy delivery command; prefer /git-commit-push to validate, commit, and push current changes",
     "- /development-goal grill-me [seed] — use grill-me in the configured language to choose the next goal, then start it",
     "- /development-goal restart [options] <topic> — replace the active goal",
     "- /development-goal pause — pause automatic continuation without clearing goal state",
