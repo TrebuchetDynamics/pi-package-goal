@@ -33,6 +33,7 @@ export type LoopReport = {
 
 export type DevelopmentLoopRun = {
   active: boolean;
+  /** Legacy audit field kept for persisted state/log compatibility; equals current Development Goal Defaults name. */
   adapterName: string;
   runId?: string;
   topic: string;
@@ -59,6 +60,7 @@ export type DevelopmentLoopRun = {
 export type LoopEvent = {
   at: string;
   event: string;
+  /** Legacy audit field kept for existing log analyzers; equals current Development Goal Defaults name. */
   adapterName: string;
   runId?: string;
   topic: string;

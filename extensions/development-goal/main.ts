@@ -60,7 +60,6 @@ import {
   hasTransportProviderError,
 } from "./provider-error.ts";
 import { parseLoopDeliveryEvidence, parseLoopReport, type FinalReport } from "./report-parser.ts";
-import type { BroadScoutCache, DeliveryEvidence } from "./domain.ts";
 import { terminalAuditEvent } from "./terminal-audit.ts";
 import { evaluateFinalReportGate } from "./final-report-gate.ts";
 import { autoContinueLimitFromEnv, shouldPauseForAutoContinueLimit } from "./runaway.ts";
@@ -89,6 +88,20 @@ import {
   restoreState,
   type LoopState,
 } from "./state.ts";
+import {
+  deferFirstPromptState,
+  queueNextIterationState,
+  startGoalRun,
+  transitionAutoContinueLimited,
+  transitionBlocked,
+  transitionIterationReported,
+  transitionMaxIterationsReached,
+  transitionPaused,
+  transitionPromptNowRunning,
+  transitionPromptSent,
+  transitionResumed,
+  transitionTerminalDecision,
+} from "./goal-run-transitions.ts";
 type LoopDecision = "continue" | "stop" | "blocked" | "done";
 
 type UiThemeLike = {
@@ -277,13 +290,7 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
     if (decision === "blocked" || decision === "stop" || decision === "done") {
       const audit = finalReport ? terminalAuditEvent({ report: finalReport }) : undefined;
       const finalStatus = audit?.finalStatus;
-      state = {
-        ...state,
-        active: false,
-        phase: decision === "done" ? "done" : decision === "blocked" ? "blocked" : "idle",
-        lastDecision: decision,
-        ...(finalStatus ? { lastReason: finalStatus } : {}),
-      };
+      state = transitionTerminalDecision(state, decision, finalStatus);
       const logExtra = { decision, reason: audit?.reason || decision, ...deliveryEvidence, ...(finalStatus ? { finalStatus } : {}) };
       appendLoopLog(audit?.event || "loop_finished", logExtra);
       if (audit?.event === "loop_blocked") {
@@ -302,13 +309,13 @@ export default function developmentLoopExtension(pi: ExtensionAPI) {
       return;
     }
 
-    state = { ...state, phase: "reported", lastDecision: decision, ...broadScoutStateUpdate(deliveryEvidence) };
+    state = transitionIterationReported(state, decision, deliveryEvidence);
     appendLoopLog("iteration_result", { decision, ...deliveryEvidence });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
 
     if (hasIterationCap(state) && state.iteration >= state.maxIterations) {
-      state = { ...state, active: false, phase: "done", lastDecision: "done", lastReason: "max_iterations_reached" };
+      state = transitionMaxIterationsReached(state);
       appendLoopLog("loop_finished", { decision: "done", reason: "max_iterations_reached", ...deliveryEvidence });
       pi.appendEntry(CUSTOM_STATE_TYPE, state);
       refreshUi(ctx);
@@ -542,7 +549,7 @@ function pauseLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
     notify(ctx, "Development goal already paused.");
     return;
   }
-  state = { ...state, phase: "paused", lastReason: "paused_by_user" };
+  state = transitionPaused(state, "paused_by_user");
   appendLoopLog("loop_paused", { reason: "paused_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -556,7 +563,7 @@ function resumeLoop(pi: ExtensionAPI, ctx: UiLikeContext) {
   }
   const cwd = contextCwd(ctx);
   const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = { ...state, phase: "queued", lastReason: "resumed_by_user", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false, autoContinueCount: 0 };
+  state = transitionResumed(state);
   appendLoopLog("loop_resumed", { reason: "resumed_by_user" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -587,34 +594,27 @@ async function startLoop(pi: ExtensionAPI, ctx: UiLikeContext, parsed: ParsedCom
   const startedAt = new Date().toISOString();
   const runId = createRunId(startedAt);
 
-  state = {
-    active: true,
-    adapterName: defaults.name,
+  state = startGoalRun({
+    defaultsName: defaults.name,
     runId,
     topic,
-    iteration: 1,
     maxIterations,
     startedAt,
     logPath,
-    ...(parsed.tokenBudget ? { tokenBudget: parsed.tokenBudget } : {}),
-    ...(parsed.requiredSkill ? { requiredSkill: parsed.requiredSkill } : {}),
-    ...(parsed.commandIntent ? { commandIntent: parsed.commandIntent } : {}),
-    ...(parsed.allWorktreeChangesInScope ? { allWorktreeChangesInScope: true } : {}),
-    phase: "started",
+    tokenBudget: parsed.tokenBudget,
+    requiredSkill: parsed.requiredSkill,
+    commandIntent: parsed.commandIntent,
+    allWorktreeChangesInScope: parsed.allWorktreeChangesInScope,
     commit,
     push,
-    emptyResponseRetries: 0,
-    markerRecoveryRetries: 0,
-    usedReportRepairRetry: false,
-    autoContinueCount: 0,
-  };
+  });
 
   appendLoopLog("loop_started", { reason: resolved.configLoaded ? "config_loaded" : "built_in_defaults" });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
   notify(ctx, `Starting development goal ${iterationProgress(state)}; log: ${relativeToCwd(cwd, logPath)}`);
   if (options.deferFirstPromptUntilIdle) {
-    state = { ...state, phase: "queued" };
+    state = deferFirstPromptState(state);
     appendLoopLog("iteration_queued", { reason: "deferred_first_prompt_until_idle" });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -628,7 +628,7 @@ function queueNextIteration(pi: ExtensionAPI, ctx: ExtensionContext) {
   if (!state.active) return;
   const cwd = contextCwd(ctx);
   const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = { ...state, iteration: state.iteration + 1, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
+  state = queueNextIterationState(state);
   appendLoopLog("iteration_queued");
   refreshUi(ctx);
   notify(ctx, `Queued development goal iteration ${iterationProgress(state)}; it will start automatically when the current turn is idle.`);
@@ -639,15 +639,7 @@ function compactBeforeNextIteration(pi: ExtensionAPI, ctx: ExtensionContext): bo
   if (!state.active || !shouldCompactBeforeNextIteration(ctx) || typeof ctx.compact !== "function") return false;
   const cwd = contextCwd(ctx);
   const resolved = resolveDevelopmentGoalSettings(cwd);
-  state = {
-    ...state,
-    iteration: state.iteration + 1,
-    phase: "queued",
-    lastReason: "compaction_before_next_iteration",
-    emptyResponseRetries: 0,
-    markerRecoveryRetries: 0,
-    usedReportRepairRetry: false,
-  };
+  state = queueNextIterationState(state, "compaction_before_next_iteration");
   appendLoopLog("compaction_before_next_iteration", { reason: contextUsageReason(ctx) });
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
@@ -805,7 +797,7 @@ function scheduleTransportErrorRetry(pi: ExtensionAPI, ctx: UiLikeContext, targe
 function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: ResolvedDevelopmentGoalSettings, asFollowUp = false) {
   const autoContinueLimit = autoContinueLimitFromEnv();
   if (shouldPauseForAutoContinueLimit(state.autoContinueCount, autoContinueLimit)) {
-    state = { ...state, phase: "paused", lastReason: "auto_continue_limit_reached", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
+    state = transitionAutoContinueLimited(state);
     appendLoopLog("loop_auto_continue_limited", { reason: `max_auto_continues=${autoContinueLimit}` });
     pi.appendEntry(CUSTOM_STATE_TYPE, state);
     refreshUi(ctx);
@@ -813,11 +805,11 @@ function sendIterationPrompt(pi: ExtensionAPI, ctx: UiLikeContext, resolved: Res
     return;
   }
   const prompt = buildIterationPrompt(state, resolved, contextCwd(ctx));
-  state = { ...state, phase: asFollowUp ? "queued" : "running", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false, autoContinueCount: (state.autoContinueCount ?? 0) + 1 };
+  state = transitionPromptSent(state, asFollowUp);
   appendLoopLog(asFollowUp ? "iteration_prompt_queued" : "iteration_prompt_sent", { reason: `auto_continue ${state.autoContinueCount}/${autoContinueLimit}` });
   refreshUi(ctx);
   sendLoopPrompt(pi, ctx, prompt, asFollowUp);
-  state = { ...state, phase: "running" };
+  state = transitionPromptNowRunning(state);
   pi.appendEntry(CUSTOM_STATE_TYPE, state);
   refreshUi(ctx);
 }
@@ -832,7 +824,7 @@ function sendLoopPrompt(pi: ExtensionAPI, ctx: UiLikeContext, prompt: string, as
 }
 
 function blockLoop(pi: ExtensionAPI, ctx: ExtensionContext, reason: string, decision?: string, extra: Partial<LoopLogRecord> = {}) {
-  state = { ...state, active: false, phase: "blocked", lastDecision: decision ?? "blocked", lastReason: reason, emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false };
+  state = transitionBlocked(state, reason, decision ?? "blocked");
   appendLoopLog("loop_blocked", { decision, reason, ...extra });
   appendLoopLog("loop_postmortem", {
     decision: decision ?? "blocked",
@@ -1023,10 +1015,6 @@ function parseValidated(text: string): boolean | undefined {
 
 function requiresValidation(decision: LoopDecision): boolean {
   return decision === "continue" || decision === "done";
-}
-
-function broadScoutStateUpdate(deliveryEvidence: DeliveryEvidence): { broadScoutCache?: BroadScoutCache } {
-  return deliveryEvidence.broadScoutCache ? { broadScoutCache: deliveryEvidence.broadScoutCache } : {};
 }
 
 function notify(ctx: UiLikeContext, message: string, level: "info" | "warning" | "error" = "info") {

@@ -928,6 +928,12 @@ async function testExtensionLoadsAndRegistersCommands() {
     { type: "custom", customType: "development-goal-state", data: validLoopState },
   ]), validLoopState);
 
+  const transitionsMod = await jiti.import(path.join(root, "extensions", "development-goal", "goal-run-transitions.ts"));
+  const startedRun = transitionsMod.startGoalRun({ defaultsName: "generic-git", runId: "dl-state", topic: "ship", maxIterations: 3, startedAt: new Date(0).toISOString(), logPath: "custom/logs.jsonl", commit: true, push: false });
+  assert.deepEqual({ active: startedRun.active, adapterName: startedRun.adapterName, phase: startedRun.phase, iteration: startedRun.iteration, autoContinueCount: startedRun.autoContinueCount }, { active: true, adapterName: "generic-git", phase: "started", iteration: 1, autoContinueCount: 0 });
+  assert.deepEqual(transitionsMod.queueNextIterationState({ ...validLoopState, emptyResponseRetries: 1, markerRecoveryRetries: 1, usedReportRepairRetry: true }), { ...validLoopState, iteration: 3, phase: "queued", emptyResponseRetries: 0, markerRecoveryRetries: 0, usedReportRepairRetry: false });
+  assert.deepEqual(transitionsMod.transitionTerminalDecision(validLoopState, "done"), { ...validLoopState, active: false, phase: "done", lastDecision: "done" });
+
   const fileMod = await jiti.import(path.join(root, "extensions", "development-goal", "files.ts"));
   const fileTemp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-dev-goal-files-"));
   const nestedJsonPath = path.join(fileTemp, "nested", "state.json");
@@ -1243,6 +1249,11 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.doesNotMatch(extractedPrompt, /Start with improve-codebase-architecture/);
   assert.doesNotMatch(extractedPrompt, /grill-me self-answer-first/);
   assert.doesNotMatch(extractedPrompt, /For broad work, inspect:/);
+  assert.match(extractedPrompt, /Skill rule: names ≠ activation; read only matching skills/);
+  assert.doesNotMatch(extractedPrompt, /greploop only explicit authenticated review cleanup/);
+  assert.doesNotMatch(extractedPrompt, /zoom-out source map/);
+  assert.doesNotMatch(extractedPrompt, /to-prd/);
+  assert.doesNotMatch(extractedPrompt, /to-issues/);
   assert.match(extractedPrompt, /Topic\/objective: ship prompt helpers/);
   assert.match(extractedPrompt, /Before pushing, inspect `git status --short --branch`/);
   assert.match(extractedPrompt, /Budget: elapsed .*; iterations 2\/3; remaining 1; token budget 98\.5K/);
@@ -1644,10 +1655,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.doesNotMatch(sent[0].content, /TODO\/PLAN\/ROADMAP/);
     assert.doesNotMatch(sent[0].content, /progress\/status\/backlog/);
     assert.match(sent[0].content, /repo-local skills/);
-    assert.match(sent[0].content, /to-prd for PRDs/);
-    assert.match(sent[0].content, /to-issues for tracer-bullet issues/);
-    assert.match(sent[0].content, /triage for issue workflow/);
-    assert.match(sent[0].content, /write-a-skill for skills/);
+    assert.doesNotMatch(sent[0].content, /to-prd for PRDs/);
+    assert.doesNotMatch(sent[0].content, /to-issues for tracer-bullet issues/);
+    assert.doesNotMatch(sent[0].content, /triage for issue workflow/);
+    assert.doesNotMatch(sent[0].content, /write-a-skill for skills/);
     assert.match(sent[0].content, /tdd for code/);
     assert.doesNotMatch(sent[0].content, /test-driven-development for code changes/);
     assert.match(sent[0].content, /caveman/);

@@ -90,7 +90,7 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedDevelopment
   const protocolStep3 = broadScout
     ? `Broad path: ${lane === "broad-first-pass" ? "scout once, include broadScoutCache in DEV_GOAL_REPORT, then execute one row" : "reuse cached scout notes; do not rediscover"}. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.${cachedScoutText ? `\nCached scout: ${cachedScoutText}` : ""}`
     : "Direct path: scalpel mode. Task, constraints, validation, final JSON. Inspect only needed files/tests; no TODO/roadmap unless needed.";
-  const promptSkills = broadScout ? skills : skills.filter((skill) => !/^improve-codebase-architecture\b|^grill-me\b/i.test(skill));
+  const promptSkills = skillsForPrompt(skills, lane, s.topic);
   const skillsText = promptSkills.length ? promptSkills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
   const preflightText = preflightCommands.join("; ");
   const validationText = validationCommands.join("; ");
@@ -108,6 +108,7 @@ Config/log: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : 
 Budget: ${loopBudgetSummary(s)}; ${capNote}
 
 Skills: ${skillsText}
+Skill rule: names ≠ activation; read only matching skills; no broadening tiny objectives.
 
 ${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
 1. Scope lock: ${cwd}; read AGENTS/CONTEXT and relevant repo-local skills.
@@ -163,6 +164,19 @@ function compactPreviousReportJson(report: { decision?: string; validated?: bool
     validated: report.validated,
     decision: report.decision,
     ...deliveryEvidence,
+  });
+}
+
+function skillsForPrompt(skills: string[], lane: PromptLane, topic: string): string[] {
+  if (lane !== "direct") return skills;
+  const diagnoseCue = /\b(bug|fix|debug|diagnos|perf|regression|fail|broken|throw)\b/i.test(topic);
+  return skills.filter((skill) => {
+    if (/^caveman\b/i.test(skill)) return true;
+    if (/^goal\b/i.test(skill)) return true;
+    if (/repo-local skills/i.test(skill)) return true;
+    if (/tdd|test-driven-development|fresh validation|verification-before-completion/i.test(skill)) return true;
+    if (diagnoseCue && /diagnose/i.test(skill)) return true;
+    return false;
   });
 }
 
