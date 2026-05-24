@@ -126,7 +126,7 @@ Final contract (JSON-only preferred; keep last):
 DEV_GOAL_REPORT: {"validated":true|false,"decision":"continue|stop|blocked|done","summary":"brief outcome","goalAchieved":true|false,"goalEvidence":"how objective is or is not satisfied; for done map request -> behavior/artifact -> validation receipts","blockerState":"none|specific","blockedWork":"none|specific","pivotedWorkCompleted":"none|specific","nextSteps":["safe next"],"changedFiles":["/abs/path"],"validationCommands":["cmd (pass|fail)"],"commitHash":"hash|none","pushStatus":"pushed|not_attempted|blocked","broadScoutCache":{"repoMap":"compact map","riskAreas":["risk"],"testCommands":["cmd"],"architectureNotes":["note"]}}
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
-Rules: yes only after validation evidence. continue=green one row + more queued work. blocked=red/evidence missing/unsafe/prereq. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Every report states goalAchieved. done requires goalAchieved=true and goalEvidence explaining exactly how the original objective was achieved, with validation receipts. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
+Rules: yes only after validation evidence. continue=green row or red validation with safe local diagnosis/repair still available. blocked=external prereq, unsafe delivery, missing evidence, or no safe local next step. stop=handoff/review. done=objective fully proven; nextSteps optional review/PR/handoff only. Every report states goalAchieved. done requires goalAchieved=true and goalEvidence explaining exactly how the original objective was achieved, with validation receipts. Include blockedWork+pivotedWorkCompleted in JSON (write none). Absolute changedFiles only. One repair-only retry; no edits/discovery/validation rerun.`;
 
 }
 
@@ -257,6 +257,7 @@ function reportRepairRemediationLines(issues: Array<{ code: string; message: str
   if (codes.has("missing_goal_evidence")) lines.push("- missing_goal_evidence: add concrete request->result->validation proof.");
   if (codes.has("vague_goal_evidence")) lines.push("- vague_goal_evidence: make proof concrete.");
   if (codes.has("done_with_actionable_next_step")) lines.push("- done_with_actionable_next_step: remaining goal work means continue, not done.");
+  if (codes.has("blocked_with_actionable_next_step")) lines.push("- blocked_with_actionable_next_step: safe local diagnosis/repair remains, so use continue.");
   return lines;
 }
 

@@ -17,6 +17,7 @@ export type ReportQualityIssueCode =
   | "missing_goal_evidence"
   | "vague_goal_evidence"
   | "done_with_actionable_next_step"
+  | "blocked_with_actionable_next_step"
   | "relative_human_changed_file"
   | "vague_typed_changed_file";
 
@@ -360,6 +361,15 @@ export function validateReportQualityIssues(text: string, markerIndex?: number, 
   }
 
   const nextSteps = mergeNextSteps(stringArrayOrUndefined(deliveryEvidence.nextSteps), surface.nextSteps);
+  const actionableBlockedNextStep = decisionForQuality === "blocked" ? findActionableBlockedNextStep(nextSteps, [deliveryEvidence.blockerState, blockedWork]) : undefined;
+  if (actionableBlockedNextStep) {
+    issues.push({
+      code: "blocked_with_actionable_next_step",
+      message: `blocked decision includes local actionable goal next step "${actionableBlockedNextStep}"; use continue while safe local diagnosis or repair remains`,
+      value: actionableBlockedNextStep,
+    });
+  }
+
   const actionableDoneNextStep = decisionForQuality === "done" ? findActionableDoneNextStep(nextSteps) : undefined;
   if (actionableDoneNextStep) {
     issues.push({
@@ -512,6 +522,24 @@ function findActionableDoneNextStep(nextSteps: string[]): string | undefined {
   return undefined;
 }
 
+function findActionableBlockedNextStep(nextSteps: string[], blockerTexts: Array<string | undefined>): string | undefined {
+  if (hasHardBlockerEvidence(blockerTexts)) return undefined;
+  for (const rawStep of nextSteps) {
+    const step = cleanReportText(rawStep) || "";
+    if (!step || isNoNextStepEvidence(step)) continue;
+    const normalized = step.toLowerCase().replace(/\s+/g, " ").trim();
+    if (isClearlyTerminalHandoffStep(normalized)) continue;
+    if (looksLikeGoalWorkNextStep(normalized)) return step;
+  }
+  return undefined;
+}
+
+function hasHardBlockerEvidence(values: Array<string | undefined>): boolean {
+  const text = values.filter(Boolean).join(" ").toLowerCase();
+  if (!text) return false;
+  return /\b(?:credential|credentials|token|api key|secret|permission|approval|approve|human|owner decision|external|unavailable|missing prereq|missing prerequisite|unsafe|unrelated dirty|fetch-first|non[-\s]?fast[-\s]?forward|rejected|diverged|behind|blocked by user)\b/i.test(text);
+}
+
 function isVagueGoalEvidence(value: string): boolean {
   const normalized = value.trim().toLowerCase().replace(/[.!]+$/g, "").replace(/\s+/g, " ");
   return /^(?:done|complete|completed|fixed|works|it works|tests pass(?:ed)?|all tests pass(?:ed)?|validated|shipped|achieved|yes|no|none|n\/a)$/.test(normalized);
@@ -527,7 +555,7 @@ function isClearlyTerminalHandoffStep(value: string): boolean {
 }
 
 function looksLikeGoalWorkNextStep(value: string): boolean {
-  return /\b(?:builder-ready|build (?:row|the new|next|feature|slice)|next (?:row|slice|package|work)|continue(?: with)?|keep going|implement|add tests?|fix|move|rehome|refactor|wire|activate|tdd|run the row)\b/i.test(value);
+  return /\b(?:builder-ready|build (?:row|the new|next|feature|slice)|next (?:row|slice|package|work)|continue(?: with)?|keep going|implement|add tests?|fix|debug|diagnose|inspect|verify|instrument|trace|probe|move|rehome|refactor|wire|activate|tdd|run the row)\b/i.test(value);
 }
 
 function parseTypedReportRecord(reportText: string): Record<string, unknown> | undefined {

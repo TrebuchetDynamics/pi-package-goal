@@ -3723,7 +3723,7 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Possible next steps/);
   assert.match(readme, /decision-specific next steps/);
   assert.match(readme, /continue should name the next largest safe useful package/);
-  assert.match(readme, /blocked should name concrete unblocking actions/);
+  assert.match(readme, /blocked should name concrete external unblocking actions/);
   assert.match(readme, /blocked typed reports should include `blockerState`/);
   assert.match(readme, /Canonical final-report template/);
   assert.match(readme, /Changed files: \/absolute\/project\/path\/src\/file.ts/);
@@ -3731,14 +3731,14 @@ async function testNoticesAndDocs() {
   assert.match(readme, /Pivoted Work Completed: none \|/);
   assert.match(readme, /"blockedWork":"none"/);
   assert.match(readme, /"pivotedWorkCompleted":"none"/);
-  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports without `goalAchieved:true`, done reports missing concrete `goalEvidence`, done reports with actionable goal next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
+  assert.match(readme, /Report quality validator flags missing Blocked Work, missing Pivoted Work Completed, done reports without `goalAchieved:true`, done reports missing concrete `goalEvidence`, done reports with actionable goal next steps, blocked reports that still have safe local diagnosis\/repair next steps, relative human-readable changed files, and vague DEV_GOAL_REPORT.changedFiles entries/);
   assert.match(readme, /one informational repair-only retry with exact issue codes and code-specific repair guidance, then blocks as `malformed_final_report`/);
   assert.doesNotMatch(readme, /Example interrupted resume end report/);
   assert.doesNotMatch(readme, /Example partial validation end report/);
   assert.match(readme, /DEV_GOAL_DECISION: done/);
   assert.match(readme, /Decision guide for final markers/);
   assert.match(readme, /continue: use when validation passed and the full goal is not proven complete yet/);
-  assert.match(readme, /blocked: use when validation is red, required evidence is missing, or delivery is unsafe/);
+  assert.match(readme, /blocked: use when external prerequisites, unsafe delivery, missing evidence, or no safe local next step prevents progress/);
   assert.match(readme, /stop: use for clean handoff or review before more automation/);
   assert.match(readme, /done: use when the objective is complete, the goal oracle is satisfied, and no follow-up goal work remains/);
   assert.match(readme, /Completion audit before `DEV_GOAL_DECISION: done`/);
@@ -3755,7 +3755,8 @@ async function testNoticesAndDocs() {
   assert.match(readme, /End report anti-patterns to avoid/);
   assert.match(readme, /Do not write vague summaries like "fixed stuff" or "all good"/);
   assert.match(readme, /Do not claim tests pass without naming the exact commands and outcomes/);
-  assert.match(readme, /Do not choose continue when validation is red or required evidence is missing/);
+  assert.match(readme, /Do not choose `blocked` while a safe local debugging or repair step remains/);
+  assert.match(readme, /Do not choose continue when required evidence is missing, delivery is unsafe, or no local repair path remains/);
   assert.match(readme, /Do not omit why commit or push was skipped/);
   assert.match(readme, /Keep the machine-readable DEV_GOAL_REPORT and final markers last/);
   assert.match(readme, /continues automatically after compaction/);

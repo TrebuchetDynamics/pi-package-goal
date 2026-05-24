@@ -223,3 +223,30 @@ const doneWithOptionalPrNextStep = [
 ].join("\n");
 
 assert.equal(parseOk(doneWithOptionalPrNextStep).quality.valid, true);
+
+const blockedWithLocalRepairNextStep = [
+  "Scope: /repo with adapter generic-git.",
+  "Validation evidence: flutter test selected unit card (fail: expected detail route, got /monitoreo).",
+  "Blocked Work: selected-unit detail navigation proof remains incomplete.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Route assertion still fails.","goalAchieved":false,"goalEvidence":"Not achieved; router stayed on /monitoreo instead of /unidades/detail/42.","blockerState":"Same local validation blocker after one repair.","blockedWork":"selected-unit detail navigation proof remains incomplete","pivotedWorkCompleted":"none","validationCommands":["flutter test selected unit card (fail)"],"nextSteps":["Inspect callback/router context boundary in MonitoreoScreen selected VehicleStatusCard action.","Verify callback fires, then fix route push seam."]}',
+  "DEV_GOAL_VALIDATED: no",
+  "DEV_GOAL_DECISION: blocked",
+].join("\n");
+const actionableBlockedMessage = 'blocked decision includes local actionable goal next step "Inspect callback/router context boundary in MonitoreoScreen selected VehicleStatusCard action."; use continue while safe local diagnosis or repair remains';
+const blockedWithLocalRepairReport = parseOk(blockedWithLocalRepairNextStep);
+assert.equal(blockedWithLocalRepairReport.quality.valid, false);
+assert.deepEqual(blockedWithLocalRepairReport.quality.issues, [
+  { code: "blocked_with_actionable_next_step", message: actionableBlockedMessage, value: "Inspect callback/router context boundary in MonitoreoScreen selected VehicleStatusCard action." },
+]);
+
+const blockedOnCredential = [
+  "Scope: /repo with adapter generic-git.",
+  "Validation evidence: integration test not run (missing TEST_TOKEN).",
+  "Blocked Work: integration validation.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Missing credential.","goalAchieved":false,"goalEvidence":"Not achieved; integration validation needs TEST_TOKEN.","blockerState":"Missing TEST_TOKEN credential.","blockedWork":"integration validation","pivotedWorkCompleted":"none","nextSteps":["Add TEST_TOKEN credential, then run integration validation."]}',
+  "DEV_GOAL_VALIDATED: no",
+  "DEV_GOAL_DECISION: blocked",
+].join("\n");
+assert.equal(parseOk(blockedOnCredential).quality.valid, true);

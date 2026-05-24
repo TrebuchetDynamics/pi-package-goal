@@ -132,6 +132,19 @@ const missingGoalProof = gateMod.evaluateFinalReportGate(doneMissingGoalProof, {
 assert.equal(missingGoalProof.action, "repair");
 assert.deepEqual(missingGoalProof.issueCodes, ["missing_goal_achieved", "missing_goal_evidence"]);
 
+const blockedWithLocalRepairNextStep = [
+  "Scope: /repo with adapter generic-git.",
+  "Validation evidence: flutter test selected unit card (fail: expected detail route, got /monitoreo).",
+  "Blocked Work: selected-unit detail navigation proof remains incomplete.",
+  "Pivoted Work Completed: none.",
+  'DEV_GOAL_REPORT: {"validated":false,"decision":"blocked","summary":"Route assertion still fails.","goalAchieved":false,"goalEvidence":"Not achieved; router stayed on /monitoreo instead of /unidades/detail/42.","blockerState":"Same local validation blocker after one repair.","blockedWork":"selected-unit detail navigation proof remains incomplete","pivotedWorkCompleted":"none","validationCommands":["flutter test selected unit card (fail)"],"nextSteps":["Inspect callback/router context boundary in MonitoreoScreen selected VehicleStatusCard action.","Verify callback fires, then fix route push seam."]}',
+  "DEV_GOAL_VALIDATED: no",
+  "DEV_GOAL_DECISION: blocked",
+].join("\n");
+const actionableBlocked = gateMod.evaluateFinalReportGate(blockedWithLocalRepairNextStep, { usedReportRepairRetry: false });
+assert.equal(actionableBlocked.action, "repair");
+assert.deepEqual(actionableBlocked.issueCodes, ["blocked_with_actionable_next_step"]);
+
 assert.deepEqual(gateMod.evaluateFinalReportGate("No markers", { usedReportRepairRetry: false }), {
   action: "parse_error",
   error: {
