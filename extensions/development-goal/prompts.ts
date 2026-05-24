@@ -10,14 +10,14 @@ import { iterationProgress, hasIterationCap, type LoopState } from "./state.ts";
 import { resolveScopeExpansionPolicy } from "./scope-expansion.ts";
 import { objectiveIntakeSummary, promptObjectiveText } from "./topic.ts";
 
-export const PROMPT_OBJECTIVE_MAX = 600;
+export const PROMPT_OBJECTIVE_MAX = 360;
 
 export const TASK_DISCOVERY_CUES = [
-  "repo-local skills matching the work (*-git, *-release, *-e2e, *-playwright, *-maestro-flutter)",
-  "TODO.md, TODOS.md, TODO.txt, PLAN.md, PLANS.md, ROADMAP.md, and similar plans",
-  "progress.json, progress/*.json, status.json, backlog files, and task trackers",
-  "PR/MR/CL or Greptile review state only when greploop or git delivery is in scope",
-  "docs/plans, docs/adr, docs/roadmap, issues, and project progress notes",
+  "repo-local skills matching work",
+  "TODO/PLAN/ROADMAP files",
+  "progress/status/backlog/task trackers",
+  "PR/MR/CL or Greptile only when in scope",
+  "docs/plans, docs/adr, docs/roadmap, issues",
 ];
 
 export const REVIEW_GUIDANCE = [
@@ -47,21 +47,21 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
   const stopConditions = nonEmpty(config.stopConditions) ? config.stopConditions! : adapter.stopConditions;
   const scopeExpansionPolicy = resolveScopeExpansionPolicy(config);
   const scopeExpansionGuidance = scopeExpansionPolicy.allowScopeExpansion
-    ? "Explicit scope expansion is allowed; after the known queue is empty, you may run a bounded discovery pass and select one safe new slice."
+    ? "Explicit scope expansion is allowed; after known queue empty, run bounded discovery."
     : scopeExpansionPolicy.requireReviewOnEmptyQueue
       ? "Do not invent more work when the discovered queue is empty; stop with DEV_GOAL_DECISION: stop and final_status review_needed."
-      : "Scope expansion is not explicitly allowed, but review on empty queue is disabled; prefer stopping unless the next slice is already source-backed.";
+      : "Scope expansion not explicit; prefer stopping unless next slice is source-backed.";
   const commitPolicy = s.commit
     ? s.push
-      ? "Commit each validated coherent slice and push to the current branch only when the worktree is safe."
-      : "Commit each validated coherent slice when the worktree is safe; do not push."
-    : "Do not commit or push unless the user explicitly asks later.";
+      ? "Commit validated coherent slice, then push current branch when worktree safe."
+      : "Commit validated coherent slice when worktree safe; do not push."
+    : "Do not commit/push unless user asks later.";
   const pushSafetyPolicy = s.push
-    ? "Before pushing, inspect `git status --short --branch` for ahead/behind/diverged state. If the branch is behind or diverged, do not force-push or repair history without explicit approval; report DEV_GOAL_DECISION: blocked with blockerState mentioning git_push_fetch_first and nextSteps for fetch/rebase/merge, validation, then push."
+    ? "Before pushing, inspect `git status --short --branch` for ahead/behind/diverged state. If behind/diverged, do not force-push or repair history without explicit approval; block with blockerState mentioning git_push_fetch_first and nextSteps: fetch/rebase/merge, validation, push."
     : undefined;
   const worktreeScopePolicy = s.allWorktreeChangesInScope
-    ? "The user explicitly put all current worktree changes in scope for git delivery. Still inspect for secrets, generated caches, vendored dependency folders, and unsafe artifacts before staging; block with exact paths if any should not be committed."
-    : "Preserve unrelated dirty work. Stage only files that belong to this iteration.";
+    ? "All current worktree changes in scope for git delivery; still reject secrets/caches/vendors/unsafe artifacts with exact paths."
+    : "Preserve unrelated dirty work. Stage only files in this iteration.";
 
   const commandIntentGuidance = s.commandIntent ? `Direct command intent:\n${s.commandIntent}\n` : "";
   const requiredSkillGuidance = s.requiredSkill
@@ -69,52 +69,70 @@ export function buildIterationPrompt(s: LoopState, resolved: ResolvedProjectAdap
     : "";
   const iterationLabel = iterationProgress(s);
   const capNote = hasIterationCap(s)
-    ? "A legacy iteration cap is configured; continue until the goal is achieved or the cap is reached."
-    : "No max-iteration stop is configured; continue automatically until the goal is achieved, blocked, paused, or stopped.";
+    ? "Legacy cap active; continue until done or cap."
+    : "No max-iteration stop; continue until done/blocked/paused/stopped.";
 
-  const skillsText = skills.length ? skills.map((skill) => `- ${skill}`).join("\n") : "- project-matching skill set";
-  const preflightText = preflightCommands.map((command) => `- ${command}`).join("\n");
-  const validationText = validationCommands.map((command) => `- ${command}`).join("\n");
-  const stopText = stopConditions.map((condition) => `- ${condition}`).join("\n");
+  const skillsText = skills.length ? skills.map(compactSkillPrompt).join("; ") : "project-matching skill set";
+  const preflightText = preflightCommands.join("; ");
+  const validationText = validationCommands.join("; ");
+  const stopText = stopConditions.map(compactStopCondition).join("; ");
   const pushSafetyLine = pushSafetyPolicy ? `\n- ${pushSafetyPolicy}` : "";
 
-  return `Development Goal iteration ${iterationLabel}: Start with improve-codebase-architecture as a lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision or pivot questions; if none remain, proceed.
+  return `Development Goal iteration ${iterationLabel}: Start with improve-codebase-architecture as a lightweight architecture scout, then grill-me self-answer-first. Ask only hard owner-decision or pivot questions; if none remain, proceed. Caveman mode: always on; terse, no filler.
 
-Project root: ${cwd}
+Root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
 Run id: ${s.runId || "legacy"}
 Topic/objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 Objective intake: ${objectiveIntakeSummary(s.topic, PROMPT_OBJECTIVE_MAX)}
-Preferred language: ${language}
-Config: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}; log: ${relativeToCwd(cwd, s.logPath)}
+Language: ${language}
+Config/log: ${resolved.configLoaded ? relativeToCwd(cwd, resolved.configPath) : "built-in adapter defaults"}; ${relativeToCwd(cwd, s.logPath)}
 Budget: ${loopBudgetSummary(s)}; ${capNote}
 
-Skills to consider:
-${skillsText}
+Skills: ${skillsText}
 
 ${requiredSkillGuidance}${commandIntentGuidance}Fast protocol:
 1. Scope lock: ${cwd} with adapter ${adapter.name}; read AGENTS/CONTEXT and relevant repo-local skills.
-2. Preflight before edits:
-${preflightText}
-3. Choose the largest safe useful slice using Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.
-4. Test through the real interface when practical; avoid weak tests. For non-trivial work check state ownership, feedback/validation, blast radius, and ordering.
-5. Validation required before DEV_GOAL_VALIDATED: yes:
-${validationText}
+2. Preflight before edits: ${preflightText}
+3. Fast path: if objective or known queue gives a concrete slice, skip broad scouting and inspect only needed surfaces. Otherwise choose largest safe useful slice via Intent -> Oracle -> Surface -> Work package -> Proof. For broad work, inspect: ${TASK_DISCOVERY_CUES.join("; ")}.
+4. Proof: use real interface when practical; avoid weak tests. For non-trivial work check state ownership, feedback/validation, blast radius, and ordering.
+5. Validation before DEV_GOAL_VALIDATED: yes: ${validationText}
 6. Delivery: ${commitPolicy}${pushSafetyLine}\n- ${worktreeScopePolicy}
-7. Stop/block when:
-${stopText}
+7. Stop/block: ${stopText}
 
 Scope expansion: ${scopeExpansionGuidance}
-Review/Greptile: only when explicitly requested with review context and gh/glab/p4 + Greptile auth; do not trigger reviews/comments/resolution/push/reshelve unless delivery policy allows; block with missing prerequisite if unavailable.
+Greptile/review: explicit review context + gh/glab/p4 + auth only; else block with missing prereq. No comments/resolution/push/reshelve unless delivery policy allows.
 
 Final report contract (keep last):
 Human lines required: Scope; Selected slice; Changed files with absolute paths and why; Validation evidence; Commit/push evidence; Blocker state; Blocked Work; Pivoted Work Completed; Possible next steps.
-DEV_GOAL_REPORT JSON: include validated, decision, summary, blockerState, blockedWork, pivotedWorkCompleted, nextSteps, changedFiles (absolute paths), validationCommands, commitHash and pushStatus when available.
+DEV_GOAL_REPORT JSON fields: validated, decision, summary, blockerState, blockedWork, pivotedWorkCompleted, nextSteps, changedFiles (absolute), validationCommands, commitHash, pushStatus.
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
-Decision rules: yes only after validation evidence. continue = validated and more objective work remains. blocked = validation red, evidence missing, unsafe scope, missing prereq, or unsafe delivery. stop = clean handoff/review. done = objective complete and every explicit requirement maps to evidence; done nextSteps may only be optional review/PR/handoff.
-Report quality: include Blocked Work and Pivoted Work Completed (write none), use absolute human changed-file paths, avoid vague changedFiles/summary, and keep DEV_GOAL_REPORT plus markers last. Malformed reports get one repair-only final-report retry; repair retries must not edit code, change scope, discover tasks, or rerun validation.`;
+Decision rules: yes only after validation evidence. continue=green slice + more goal work. blocked=red/evidence missing/unsafe/missing prereq. stop=handoff/review. done=objective mapped to evidence; nextSteps optional review/PR/handoff only.
+Quality: Blocked Work + Pivoted Work Completed required (write none); absolute human paths; no vague changedFiles/summary; DEV_GOAL_REPORT + markers last. One repair-only retry; no edits/discovery/validation rerun.`;
 
+}
+
+function compactSkillPrompt(skill: string): string {
+  return skill
+    .replace(/repo-local skills that match the detected task before package defaults/i, "repo-local skills first")
+    .replace(/greploop for PR\/MR\/CL review cleanup when Greptile is installed and external review actions are explicitly allowed/i, "greploop only explicit authenticated review cleanup")
+    .replace(/zoom-out for source-backed project understanding/i, "zoom-out source map")
+    .replace(/writing-plans for multi-step plans when available/i, "writing-plans")
+    .replace(/writing-shape for docs, articles, READMEs, and narrative docs/i, "writing-shape docs")
+    .replace(/writing-skills for creating or updating skills/i, "writing-skills")
+    .replace(/test-driven-development for code changes/i, "tdd for code")
+    .replace(/verification-before-completion before reporting done/i, "verify before done");
+}
+
+function compactStopCondition(condition: string): string {
+  return condition
+    .replace(/project instructions are missing or conflict with the requested work/i, "project instructions missing/conflict")
+    .replace(/no task can be selected after inspecting TODO\.md, progress\.json, planning files, and repo-local guidance/i, "no task after TODO/progress/plans/repo guidance")
+    .replace(/no relevant test\/build command can be identified/i, "no relevant test/build command")
+    .replace(/Greptile, gh\/glab\/p4, credentials, or PR\/MR\/CL context are required for greploop and unavailable/i, "greploop prereq unavailable")
+    .replace(/validation fails twice with the same blocker/i, "validation fails twice same blocker")
+    .replace(/commit or push would include unrelated dirty work/i, "commit/push would include unrelated dirty work");
 }
 
 export function buildCompactionResumePrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string): string {
@@ -202,43 +220,39 @@ In the compaction summary, include:
 export function buildGrillGoalPrompt(_s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, seedTopic: string): string {
   const language = resolved.config.language || DEFAULT_LANGUAGE;
   const seed = seedTopic.trim() || resolved.config.defaultTopic || resolved.adapter.defaultTopic;
-  return `Use the grill-me skill in ${language} to define the next Development Goal objective.
+  return `Use the grill-me skill in ${language} to define the next Development Goal objective. Caveman mode: always on; terse, no filler.
 
-Project root: ${cwd}
+Root: ${cwd}
 Adapter: ${resolved.adapter.name} — ${resolved.adapter.description}
-Preferred language: ${language}
+Language: ${language}
 Seed objective: ${seed}
 
-Use grill-me self-answer-first mode:
-- Answer easy/source-backed gaps yourself from repo instructions, docs, git state, and current context.
-- Ask the user only for hard owner-decision, risk-acceptance, or pivot questions.
-- Ask one question at a time, in ${language}, with your recommended answer and consequence.
-- If no hard question remains, do not ask; choose the next clear Development Goal objective.
+Self-answer easy/source-backed gaps from repo instructions, docs, git state, context. Ask only hard owner-decision, risk-acceptance, or pivot questions; one at a time with recommended answer + consequence. If none remain, choose next clear Development Goal objective.
 
-When the next goal is clear, end with exactly this marker line:
+When clear, end exactly:
 DEV_GOAL_NEXT_TOPIC: <one concise Development Goal objective>
 
-If the next goal cannot be selected safely, end with exactly this marker line:
+If unsafe/blocked, end exactly:
 DEV_GOAL_NEXT_BLOCKED: <specific blocker>
 
-After DEV_GOAL_NEXT_TOPIC appears, the extension will start /development-goal automatically for that objective. Do not edit files, commit, push, deploy, or run validation during this planning turn unless source inspection is necessary to answer an easy gap.`;
+After DEV_GOAL_NEXT_TOPIC, extension starts /development-goal automatically. Do not edit, commit, push, deploy, or validate unless source inspection is needed to answer easy gap.`;
 }
 
 export function buildSteeringPrompt(s: LoopState, resolved: ResolvedProjectAdapter, cwd: string, steeringText: string): string {
   const adapter = resolved.adapter;
-  return `Development goal steering request for the active task.
+  return `Development goal steering request. Caveman mode: always on; terse, no filler.
 
-Project root: ${cwd}
+Root: ${cwd}
 Adapter: ${adapter.name} — ${adapter.description}
-Current goal iteration: ${iterationProgress(s)}
+Iteration: ${iterationProgress(s)}
 Current objective: ${promptObjectiveText(s.topic, PROMPT_OBJECTIVE_MAX)}
 User steering request: ${steeringText}
 
-Incorporate this steering into the current or next safe work package. Preserve unrelated dirty work. Keep using the configured validation commands before any continue/done decision.
+Fold steering into current/next safe work package. Preserve unrelated dirty work. Run configured validation before continue/done.
 
-End with these exact marker lines:
+End exactly:
 DEV_GOAL_VALIDATED: yes|no
 DEV_GOAL_DECISION: continue|stop|blocked|done
 
-Only use DEV_GOAL_VALIDATED: yes after validation evidence exists. Use DEV_GOAL_DECISION: blocked when validation is red, evidence is missing, scope is unsafe, or credentials/external services are required.`;
+DEV_GOAL_VALIDATED: yes only with validation evidence. Use blocked for red validation, missing evidence, unsafe scope, or missing credentials/external service.`;
 }

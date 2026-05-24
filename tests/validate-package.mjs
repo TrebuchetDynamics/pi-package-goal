@@ -1218,7 +1218,7 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.match(initSummary, /Validation: npm test/);
 
   const promptsMod = await jiti.import(path.join(root, "extensions", "development-goal", "prompts.ts"));
-  assert.equal(promptsMod.PROMPT_OBJECTIVE_MAX, 600);
+  assert.equal(promptsMod.PROMPT_OBJECTIVE_MAX, 360);
   assert.ok(promptsMod.TASK_DISCOVERY_CUES.some((cue) => cue.includes("repo-local skills")));
   assert.ok(promptsMod.REVIEW_GUIDANCE.some((cue) => cue.includes("Greptile")));
   const promptState = {
@@ -1248,7 +1248,9 @@ async function testExtensionLoadsAndRegistersCommands() {
   assert.doesNotMatch(extractedPrompt, /End report anti-patterns to avoid/);
   assert.match(extractedPrompt, /avoid weak tests/i);
   assert.match(extractedPrompt, /state ownership, feedback\/validation, blast radius, and ordering/);
-  assert.ok(extractedPrompt.length <= 6000, `iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
+  assert.match(extractedPrompt, /Caveman mode: always on/);
+  assert.match(extractedPrompt, /Fast path: if objective or known queue gives a concrete slice/);
+  assert.ok(extractedPrompt.length <= 4500, `iteration prompt should stay token-efficient; got ${extractedPrompt.length} chars`);
   assert.match(promptsMod.buildCompactionResumePrompt(promptState, resolvedAdapter, adapterTemp), /Continue development goal after compaction[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildEmptyResponseRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after empty provider response[\s\S]*Development Goal iteration 2\/3/);
   assert.match(promptsMod.buildTransportErrorRetryPrompt(promptState, resolvedAdapter, adapterTemp), /Retry development goal iteration after provider transport error[\s\S]*Development Goal iteration 2\/3/);
@@ -1428,7 +1430,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     }, resolved, promptRoot);
     const objectiveLine = longPrompt.split("\n").find((line) => line.startsWith("Topic/objective: "));
     assert.ok(objectiveLine, "iteration prompt should include an objective line");
-    assert.ok(objectiveLine.length <= "Topic/objective: ".length + 600, "iteration prompt objective should be capped before it can bloat provider context");
+    assert.ok(objectiveLine.length <= "Topic/objective: ".length + 360, "iteration prompt objective should be capped before it can bloat provider context");
     assert.match(objectiveLine, /…$/);
     const objectiveIntakeLine = longPrompt.split("\n").find((line) => line.startsWith("Objective intake: "));
     assert.match(objectiveIntakeLine ?? "", /Objective intake: oversized objective · length \d+ · hash [0-9a-f]{12}/);
@@ -1526,7 +1528,7 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /group changes into coherent commits/);
     assert.match(sent[0].content, /Make required local validation\/CI green/);
     assert.match(sent[0].content, /Push the current branch after validation is green/);
-    assert.match(sent[0].content, /The user explicitly put all current worktree changes in scope for git delivery/);
+    assert.match(sent[0].content, /All current worktree changes in scope for git delivery/);
     await command.handler("stop", architectureCtx);
     sent.length = 0;
     entries.length = 0;
@@ -1596,21 +1598,21 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /Human lines required: Scope; Selected slice; Changed files with absolute paths/);
     assert.match(sent[0].content, /Blocked Work; Pivoted Work Completed/);
     assert.match(sent[0].content, /Decision rules: yes only after validation evidence/);
-    assert.match(sent[0].content, /done = objective complete and every explicit requirement maps to evidence/);
-    assert.match(sent[0].content, /Report quality: include Blocked Work and Pivoted Work Completed/);
-    assert.match(sent[0].content, /one repair-only final-report retry/);
+    assert.match(sent[0].content, /done=objective mapped to evidence/);
+    assert.match(sent[0].content, /Quality: Blocked Work \+ Pivoted Work Completed required/);
+    assert.match(sent[0].content, /One repair-only retry/);
     assert.doesNotMatch(sent[0].content, /Canonical final-report template/);
     assert.doesNotMatch(sent[0].content, /End report anti-patterns to avoid/);
     assert.doesNotMatch(sent[0].content, /Example interrupted resume end report/);
     assert.match(sent[0].content, /For broad work, inspect:/);
-    assert.match(sent[0].content, /TODO\.md/);
-    assert.match(sent[0].content, /progress\.json/);
+    assert.match(sent[0].content, /TODO\/PLAN\/ROADMAP/);
+    assert.match(sent[0].content, /progress\/status\/backlog/);
     assert.match(sent[0].content, /repo-local skills/);
-    assert.match(sent[0].content, /to-prd for turning current context into PRDs/);
-    assert.match(sent[0].content, /to-issues for breaking plans\/specs into independently grabbable issues/);
-    assert.match(sent[0].content, /triage for issue intake and issue workflow management/);
-    assert.match(sent[0].content, /write-a-skill for creating or updating skills/);
-    assert.match(sent[0].content, /tdd for code changes/);
+    assert.match(sent[0].content, /to-prd for PRDs/);
+    assert.match(sent[0].content, /to-issues for tracer-bullet issues/);
+    assert.match(sent[0].content, /triage for issue workflow/);
+    assert.match(sent[0].content, /write-a-skill for skills/);
+    assert.match(sent[0].content, /tdd for code/);
     assert.doesNotMatch(sent[0].content, /test-driven-development for code changes/);
     assert.match(sent[0].content, /caveman/);
     assert.match(sent[0].content, /grill-me/);
@@ -1621,10 +1623,10 @@ async function testExtensionLoadsAndRegistersCommands() {
     assert.match(sent[0].content, /lightweight architecture scout/i);
     assert.match(sent[0].content, /avoid weak tests/i);
     assert.match(sent[0].content, /real interface/i);
-    assert.match(sent[0].content, /Preferred language: English/);
+    assert.match(sent[0].content, /Language: English/);
     assert.match(sent[0].content, /Greptile/);
-    assert.match(sent[0].content, /do not trigger reviews/);
-    assert.ok(sent[0].content.length <= 6500, `sent development-goal prompt should stay token-efficient; got ${sent[0].content.length}`);
+    assert.match(sent[0].content, /No comments\/resolution\/push\/reshelve/);
+    assert.ok(sent[0].content.length <= 4500, `sent development-goal prompt should stay token-efficient; got ${sent[0].content.length}`);
     assert.equal(entries.at(-1).customType, "development-goal-state");
     assert.equal(entries.at(-1).data.phase, "running");
     const firstRunId = entries.at(-1).data.runId;
