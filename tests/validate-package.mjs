@@ -355,9 +355,15 @@ async function testSkills() {
   assert.match(goal, /goal status` — show current Goal state without starting new work/);
   assert.match(goal, /status is `complete`\/`cleared`, auto-discover/);
   assert.match(goal, /dirty worktree changes as evidence, not permission/);
+  assert.match(goal, /Slice continuation/);
+  assert.match(goal, /do not stop after one validated slice/);
+  assert.match(goal, /continue_next_slice/);
   assert.match(goal, /skill creation or skill improvement → `write-a-skill`/);
   assert.match(goal, /Pi extension or package resource work → `pi-extensions-helper`/);
-  assert.match(read("skills/goal/references/operating-contract.md"), /No-arg status semantics/);
+  const goalContract = read("skills/goal/references/operating-contract.md");
+  assert.match(goalContract, /No-arg status semantics/);
+  assert.match(goalContract, /Multi-slice continuation/);
+  assert.match(goalContract, /DEV_GOAL_DECISION: continue_next_slice/);
 
   const architecture = read("skills/improve-codebase-architecture/SKILL.md");
   assert.match(architecture, /repo study/);

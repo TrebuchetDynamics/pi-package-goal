@@ -50,6 +50,22 @@ Ask before replacing an existing objective only when current status is `active`,
 
 Do not ask replacement confirmation when status is `complete` or `cleared`; starting new work is safe because there is no live objective to interrupt.
 
+## Multi-slice continuation
+
+Broad objectives such as ports, migrations, parity work, audits, or module-by-module improvements should progress through repeated bounded slices.
+
+After each slice:
+
+1. record the artifact changed or produced;
+2. run the focused validation for that slice;
+3. update Goal state evidence with the validation receipt;
+4. inspect repo evidence for the next smallest safe slice;
+5. continue immediately if the objective remains active and no stop condition applies.
+
+Good next-slice evidence includes unchecked TODO/parity items, failing or missing focused tests, module lists from the source app, `codebase-map-understand.md` seams verified against live files, and explicit continuation markers like `DEV_GOAL_DECISION: continue_next_slice`.
+
+Do not stop at a status-only report when the next safe slice is known. A status reply is enough only for `goal status`, user-requested pause, blocked work, failed validation, soft-budget/context limits, or a completed objective.
+
 ## Skill routing details
 
 Goal is an orchestrator. It should load the next specialist only at a real seam:
