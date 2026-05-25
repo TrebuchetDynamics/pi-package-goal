@@ -1,6 +1,6 @@
 import { constants as fsConstants } from "node:fs";
-import { access, lstat, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { access, lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
 import { homedir } from "node:os";
 
 const DEFAULT_REPO_URL = "https://github.com/Lum1104/Understand-Anything.git";
@@ -25,8 +25,11 @@ const SUBCOMMAND_TO_SKILL = new Map([
   ["knowledge", "understand-knowledge"],
 ]);
 
-const META_COMMANDS = new Set(["help", "install", "status", "update", "agent", "compare"]);
-const DIRECT_META_COMMANDS = new Set(["understand-compare"]);
+const META_COMMANDS = new Set(["help", "install", "status", "update", "agent", "compare", "refactor"]);
+const DIRECT_META_COMMANDS = new Map([
+  ["understand-compare", "compare"],
+  ["understand-refactor", "refactor"],
+]);
 
 export function getUnderstandPaths(env = process.env, home = homedir()) {
   const repoDir = env.UA_DIR?.trim() || join(home, ".understand-anything", "repo");
@@ -45,7 +48,8 @@ export function splitFirstArg(args = "") {
 }
 
 export function parseUnderstandCommand(commandName, args = "") {
-  if (DIRECT_META_COMMANDS.has(commandName)) return { type: "compare", args: args.trim() };
+  const directMetaCommand = DIRECT_META_COMMANDS.get(commandName);
+  if (directMetaCommand) return { type: directMetaCommand, args: args.trim() };
 
   if (commandName !== "understand") {
     if (!SKILL_NAMES.has(commandName)) throw new Error(`Unknown understand command: ${commandName}`);
@@ -93,6 +97,15 @@ export function parseCompareArgs(args = "") {
     folderA,
     folderB,
     output: output || `${folderBasename(folderA)}-vs-${folderBasename(folderB)}-understand-compare.md`,
+  };
+}
+
+export function parseRefactorArgs(args = "") {
+  const tokens = splitArgs(args);
+  const outputToken = tokens.length && /\.md$/i.test(tokens.at(-1)) ? tokens.pop() : undefined;
+  return {
+    focus: tokens.join(" ").trim(),
+    output: outputToken || "refactor-plan-understand-refactor.md",
   };
 }
 
@@ -309,6 +322,240 @@ function formatPatternCandidates(nodes, max = 12) {
   return formatNodeList(candidates, process.cwd(), max);
 }
 
+function nodeDegree(edges, nodeId) {
+  return edges.filter((edge) => edge.source === nodeId || edge.target === nodeId).length;
+}
+
+function nodeTangleScore(node, edges) {
+  const complexityScore = { complex: 8, moderate: 4, simple: 1 }[node.complexity] ?? 2;
+  const typeScore = { file: 3, module: 3, concept: 2, function: 1 }[node.type] ?? 1;
+  const degree = nodeDegree(edges, node.id);
+  return complexityScore + typeScore + degree * 2;
+}
+
+function nodeMatchesFocus(node, terms) {
+  if (!terms.length) return true;
+  const haystack = [node.name, node.filePath, node.summary, ...(node.tags ?? [])].join(" ").toLowerCase();
+  return terms.every((term) => haystack.includes(term));
+}
+
+function formatCandidateTable(candidates, edges, cwd, max = 10, liveEvidence = {}) {
+  if (!candidates.length) return "- No refactor candidates found in the graph.";
+  const rows = [
+    tableRow(["Candidate", "Type", "Score", "Confidence", "Evidence"]),
+    tableRow(["---", "---", "---:", "---", "---"]),
+  ];
+  for (const node of candidates.slice(0, max)) {
+    const live = liveEvidence[node.id];
+    const location = node.filePath ? `\`${node.lineRange ? `${node.filePath}:${node.lineRange[0]}-${node.lineRange[1]}` : node.filePath}\`` : "graph node";
+    const liveParts = live?.exists
+      ? [`${live.nonEmptyLines} live LOC`, `${live.branchCount} branches`, `${live.importCount} imports`, `${live.testPaths?.length ?? 0} related tests`]
+      : [live?.reason ? `live file not confirmed: ${live.reason}` : "live file not inspected"];
+    const evidence = `${node.complexity ?? "unknown"} graph complexity, ${nodeDegree(edges, node.id)} relationships, ${location}; ${liveParts.join(", ")}`;
+    rows.push(tableRow([node.name ?? node.id, node.type ?? "node", node.__totalScore ?? candidateScore(node, live), confidenceForCandidate(node, live), evidence]));
+  }
+  return rows.join("\n");
+}
+
+function relatedEdgesForNode(edges, nodeId, max = 8) {
+  return edges
+    .filter((edge) => edge.source === nodeId || edge.target === nodeId)
+    .sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0))
+    .slice(0, max);
+}
+
+function refactorCandidateNodes(nodes, edges, focus = "") {
+  const terms = focus.toLowerCase().split(/\s+/).filter(Boolean);
+  const scoped = nodes.filter((node) => nodeMatchesFocus(node, terms));
+  const pool = scoped.length ? scoped : nodes;
+  return [...pool]
+    .filter((node) => node.type === "file" || node.type === "module" || node.type === "concept" || node.complexity === "complex")
+    .map((node) => ({ ...node, __score: nodeTangleScore(node, edges) }))
+    .sort((a, b) => b.__score - a.__score || String(a.name ?? a.id).localeCompare(String(b.name ?? b.id)));
+}
+
+function stripExtension(path) {
+  return basename(path, extname(path)).toLowerCase().replace(/\.(test|spec)$/i, "");
+}
+
+function isLikelyTestPath(path) {
+  return /(^|[/\\])(__tests__|test|tests|spec)([/\\]|$)|[._-](test|spec)\.[a-z0-9]+$/i.test(path);
+}
+
+function analyzeSourceText(text = "") {
+  const lines = text.split(/\r?\n/);
+  const nonEmptyLines = lines.filter((line) => line.trim()).length;
+  const branchCount = (text.match(/\b(if|else if|switch|case|catch|for|while|try)\b|&&|\|\||\?/g) ?? []).length;
+  const importCount = (text.match(/^\s*(import\b|from\s+['"]|const\s+\w+\s*=\s*require\(|require\()/gm) ?? []).length;
+  const publicSurfaceCount = (text.match(/^\s*(export\b|class\s+\w+|function\s+\w+|[A-Za-z_$][\w$]*\s*\([^)]*\)\s*[{=>])/gm) ?? []).length;
+  return { lineCount: lines.length, nonEmptyLines, branchCount, importCount, publicSurfaceCount };
+}
+
+function liveEvidenceScore(evidence) {
+  if (!evidence?.exists) return 0;
+  const testPenalty = evidence.testPaths?.length ? 0 : 3;
+  return Math.min(12, Math.floor((evidence.nonEmptyLines ?? 0) / 80) + (evidence.branchCount ?? 0) + Math.min(4, evidence.importCount ?? 0) + testPenalty);
+}
+
+function confidenceForCandidate(node, evidence) {
+  if (!evidence?.exists) return "graph-only";
+  if ((evidence.testPaths?.length ?? 0) > 0 && nodeDegree(evidence.edges ?? [], node.id) >= 2) return "strong";
+  if ((evidence.branchCount ?? 0) >= 3 || (evidence.importCount ?? 0) >= 3 || (evidence.testPaths?.length ?? 0) > 0) return "needs-review";
+  return "thin";
+}
+
+async function listRepoFiles(dir, { root = dir, limit = 2500 } = {}) {
+  const out = [];
+  const skip = new Set([".git", ".pi", ".understand-anything", "node_modules", "build", "dist", "coverage", ".dart_tool", ".next"]);
+  async function walk(current) {
+    if (out.length >= limit) return;
+    let entries;
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (out.length >= limit) return;
+      if (entry.isDirectory() && skip.has(entry.name)) continue;
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) {
+        await walk(full);
+      } else if (entry.isFile()) {
+        out.push(relative(root, full).split("\\").join("/"));
+      }
+    }
+  }
+  await walk(dir);
+  return out;
+}
+
+function relatedTestPaths(candidatePath, repoFiles) {
+  if (!candidatePath) return [];
+  const stem = stripExtension(candidatePath);
+  const leaf = basename(stem).replace(/[_-]?(screen|page|view|component|service|controller|manager|helper|util)$/i, "");
+  return repoFiles
+    .filter((file) => isLikelyTestPath(file))
+    .filter((file) => {
+      const testStem = stripExtension(file);
+      return testStem.includes(stem) || (!!leaf && leaf.length > 2 && testStem.includes(leaf.toLowerCase()));
+    })
+    .slice(0, 8);
+}
+
+export async function collectLiveRefactorEvidence(graph, { cwd = process.cwd(), focus = "", maxCandidates = 12 } = {}) {
+  const { nodes, edges } = graphParts(graph);
+  const candidates = refactorCandidateNodes(nodes, edges, focus).slice(0, maxCandidates);
+  const repoFiles = await listRepoFiles(cwd);
+  const evidence = {};
+
+  for (const node of candidates) {
+    const candidatePath = node.filePath;
+    if (!candidatePath) {
+      evidence[node.id] = { exists: false, reason: "No filePath in graph", edges };
+      continue;
+    }
+    const fullPath = resolve(cwd, candidatePath);
+    try {
+      const text = await readFile(fullPath, "utf8");
+      evidence[node.id] = {
+        exists: true,
+        filePath: candidatePath,
+        ...analyzeSourceText(text),
+        testPaths: relatedTestPaths(candidatePath, repoFiles),
+        edges,
+      };
+    } catch (error) {
+      evidence[node.id] = { exists: false, filePath: candidatePath, reason: error?.code ?? "read failed", edges };
+    }
+  }
+
+  return evidence;
+}
+
+function candidateScore(node, liveEvidence = {}) {
+  return (node.__score ?? nodeTangleScore(node, liveEvidence.edges ?? [])) + liveEvidenceScore(liveEvidence);
+}
+
+export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath = ".understand-anything/knowledge-graph.json", outputPath = "refactor-plan-understand-refactor.md", focus = "", liveEvidence = {} } = {}) {
+  const { nodes, edges, layers, project } = graphParts(graph);
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const candidates = refactorCandidateNodes(nodes, edges, focus)
+    .map((node) => ({ ...node, __totalScore: candidateScore(node, liveEvidence[node.id]) }))
+    .sort((a, b) => b.__totalScore - a.__totalScore || String(a.name ?? a.id).localeCompare(String(b.name ?? b.id)));
+  const top = candidates[0];
+  const graphRel = isAbsolute(graphPath) ? relative(cwd, graphPath) || graphPath : graphPath;
+  const outputRel = isAbsolute(outputPath) ? relative(cwd, outputPath) || outputPath : outputPath;
+  const focusText = focus?.trim() || "whole graph";
+  const topRelationships = top ? relatedEdgesForNode(edges, top.id).map((edge) => edgeLine(edge, byId)).join("\n") : "- None";
+  const topLocation = top?.filePath ? `\`${top.lineRange ? `${top.filePath}:${top.lineRange[0]}-${top.lineRange[1]}` : top.filePath}\`` : "No top candidate found.";
+  const topLive = top ? liveEvidence[top.id] : undefined;
+  const topTests = topLive?.testPaths?.length ? topLive.testPaths.map((file) => `- \`${file}\``).join("\n") : "- No related tests found by deterministic scan; add/locate tests before refactoring.";
+  const liveEvidenceWasCollected = Object.keys(liveEvidence).length > 0;
+  const chatPrompt = `Based on ${outputRel}, the current Understand graph, and the live file/test evidence in the plan, identify the most tangled part of this project and turn it into a safe, testable refactor plan. Prioritize small slices with validation commands. Focus: ${focusText}.`;
+
+  const lines = [
+    "# Understand-Anything Refactor Plan",
+    "",
+    "This deterministic plan is generated from an existing Understand-Anything knowledge graph plus live repo checks when the command runs inside a checkout. It does not run an LLM. Use the follow-up prompt when you want model reasoning over this file.",
+    "",
+    "## Inputs",
+    "",
+    `- **Project:** ${project.name ?? "Unknown"}`,
+    `- **Focus:** ${focusText}`,
+    `- **Graph source:** \`${graphRel}\``,
+    `- **This file:** \`${outputRel}\``,
+    `- **Analyzed at:** ${formatAnalyzedAt(project.analyzedAt)}`,
+    `- **Git commit:** ${project.gitCommitHash ?? "unknown"}`,
+    `- **Live repo evidence:** ${liveEvidenceWasCollected ? "collected from current files/tests" : "not collected; graph-only output"}`,
+    "",
+    "## Likely tangled hotspots",
+    "",
+    formatCandidateTable(candidates, edges, cwd, 12, liveEvidence),
+    "",
+    "## Top recommendation",
+    "",
+    top
+      ? `Start with **${top.name ?? top.id}** at ${topLocation}. It has combined score ${top.__totalScore ?? candidateScore(top, topLive)}, ${top.complexity ?? "unknown"} graph complexity, ${nodeDegree(edges, top.id)} graph relationships, and confidence **${confidenceForCandidate(top, topLive)}**.`
+      : "No top recommendation could be derived from the graph.",
+    "",
+    "### Live file/test evidence",
+    "",
+    topLive?.exists
+      ? `- Live file confirmed: \`${topLive.filePath}\` (${topLive.nonEmptyLines} non-empty LOC, ${topLive.branchCount} branch points, ${topLive.importCount} imports, ${topLive.publicSurfaceCount} public-surface hints).`
+      : `- Live file not confirmed: ${topLive?.reason ?? "not inspected"}. Verify the graph against current code before refactoring.`,
+    "",
+    "Related tests to inspect or create:",
+    "",
+    topTests,
+    "",
+    "### Relationship evidence",
+    "",
+    topRelationships,
+    "",
+    "## Refactor slices",
+    "",
+    "1. **Characterize the seam** — read the candidate, graph relationships, live file stats, callers, and related tests; confirm the graph is current against live files.",
+    "2. **Add or tighten behavior tests** — lock observable behavior through the public interface before moving code; create a focused test if no related test was found.",
+    "3. **Deepen the module** — move repeated orchestration or branching behind one smaller interface; avoid new pass-through wrappers.",
+    "4. **Delete replaced shallow paths** — remove tests or modules that only exercise implementation details after the deeper interface is covered.",
+    "5. **Run focused validation** — run the smallest relevant test command, then broader validation if the seam crosses modules.",
+    "",
+    "## Architecture layers to inspect",
+    "",
+    layers.length ? layers.map((layer) => `- **${layer.name ?? layer.id}** (${layer.nodeIds?.length ?? 0} nodes): ${truncateText(layer.description, 220)}`).join("\n") : "- No layers found in the graph.",
+    "",
+    "## Follow-up LLM prompt",
+    "",
+    "```text",
+    `/understand-chat ${chatPrompt}`,
+    "```",
+    "",
+  ];
+
+  return `${lines.join("\n").replace(/\n{3,}/g, "\n\n")}\n`;
+}
+
 export function generateCompareMarkdown(graphA, graphB, { cwd = process.cwd(), folderA = "project-a", folderB = "project-b", outputPath = "understand-compare.md" } = {}) {
   const a = graphParts(graphA);
   const b = graphParts(graphB);
@@ -506,11 +753,12 @@ function helpText(paths = getUnderstandPaths()) {
     `  /understand diff                  Analyze current changes\n` +
     `  /understand agent [output.md]     Write an agent-readable Markdown map\n` +
     `  /understand compare <a> <b> [out] Compare two folders with existing graphs\n` +
+    `  /understand refactor [focus] [out] Generate a graph-based refactor plan\n` +
     `  /understand explain <target>      Explain a file/function\n` +
     `  /understand onboard               Generate onboarding guide\n` +
     `  /understand domain                Extract business domain graph\n` +
     `  /understand knowledge <wiki>      Analyze a knowledge base\n\n` +
-    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-compare.\n\n` +
+    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-compare, /understand-refactor.\n\n` +
     `Management:\n` +
     `  /understand install               Clone upstream Understand-Anything\n` +
     `  /understand update                git pull --ff-only upstream checkout\n` +
@@ -568,6 +816,38 @@ async function readGraphForFolder(folderPath) {
   return { graphPath, graph: JSON.parse(await readFile(graphPath, "utf8")) };
 }
 
+async function writeRefactorPlan(ctx, args) {
+  const graphPath = resolve(ctx.cwd, ".understand-anything", "knowledge-graph.json");
+  const parsed = parseRefactorArgs(args);
+  const outputPath = isAbsolute(parsed.output) ? parsed.output : resolve(ctx.cwd, parsed.output);
+
+  let graph;
+  try {
+    graph = JSON.parse(await readFile(graphPath, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return {
+        written: false,
+        message: `No Understand-Anything graph found at ${graphPath}. Run /understand first, then /understand refactor.`,
+      };
+    }
+    throw error;
+  }
+
+  const liveEvidence = await collectLiveRefactorEvidence(graph, { cwd: ctx.cwd, focus: parsed.focus });
+  const markdown = generateRefactorMarkdown(graph, { cwd: ctx.cwd, graphPath, outputPath, focus: parsed.focus, liveEvidence });
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, markdown, "utf8");
+  return {
+    written: true,
+    outputPath,
+    graphPath,
+    focus: parsed.focus,
+    liveEvidenceCount: Object.keys(liveEvidence).length,
+    message: `Wrote Understand-Anything refactor plan to ${outputPath}`,
+  };
+}
+
 async function writeCompareMap(ctx, args) {
   const parsed = parseCompareArgs(args);
   if (!parsed.ok) return { written: false, message: parsed.message };
@@ -609,7 +889,9 @@ function registerUnderstandCommand(pi, name, paths) {
     ? "Run Understand-Anything analysis and related graph workflows"
     : name === "understand-compare"
       ? "Compare two folders with existing Understand-Anything graphs"
-      : `Run the upstream ${name} Understand-Anything workflow`;
+      : name === "understand-refactor"
+        ? "Generate a deterministic refactor plan from the current Understand-Anything graph"
+        : `Run the upstream ${name} Understand-Anything workflow`;
 
   pi.registerCommand(name, {
     description,
@@ -650,6 +932,12 @@ function registerUnderstandCommand(pi, name, paths) {
         return;
       }
 
+      if (parsed.type === "refactor") {
+        const result = await writeRefactorPlan(ctx, parsed.args);
+        await postMessage(pi, result.message, result);
+        return;
+      }
+
       await sendSkillInvocation(pi, ctx, paths, parsed.skillName, parsed.args);
     },
   });
@@ -665,6 +953,7 @@ export default function understandAnythingExtension(pi) {
 
   registerUnderstandCommand(pi, "understand", paths);
   registerUnderstandCommand(pi, "understand-compare", paths);
+  registerUnderstandCommand(pi, "understand-refactor", paths);
   for (const name of SKILL_NAMES) {
     if (name !== "understand") registerUnderstandCommand(pi, name, paths);
   }

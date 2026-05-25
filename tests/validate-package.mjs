@@ -334,6 +334,9 @@ async function testPackageManifestPaths() {
 async function testUnderstandExtension() {
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
+  assert.match(extension, /registerUnderstandCommand\(pi, "understand-refactor", paths\)/);
+  assert.match(extension, /generateRefactorMarkdown/);
+  assert.match(extension, /collectLiveRefactorEvidence/);
   assert.match(extension, /https:\/\/github\.com\/Lum1104\/Understand-Anything\.git/);
   assert.match(extension, /resources_discover/);
 }
@@ -407,6 +410,8 @@ async function testDocsAndNotices() {
   assert.match(readme, /git-commit-push/);
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /## Included extension/);
+  assert.match(readme, /\/understand-refactor/);
+  assert.match(readme, /live file checks and related-test discovery/);
   assert.match(readme, /pi\.extensions/);
 }
 

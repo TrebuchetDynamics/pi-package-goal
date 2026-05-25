@@ -19,6 +19,7 @@ dist/
 .understand-anything/
 *-codebase-map-understand.md
 *-understand-compare.md
+*-understand-refactor.md
 codebase-map-understand.md
 
 # Local environment and secrets

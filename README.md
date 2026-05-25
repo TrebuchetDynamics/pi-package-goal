@@ -19,7 +19,7 @@ Use it when you want Pi to:
 | Engineering loops | Debug, test-drive, prototype, review, or improve architecture. | `diagnose`, `tdd`, `prototype` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
-| Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps. | `/understand` |
+| Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 
 ## Install
 
@@ -78,6 +78,8 @@ Common commands:
 | `/understand agent` | Write `codebase-map-understand.md` for future agents. |
 | `/understand agent @frontend` | Write `frontend-codebase-map-understand.md`. |
 | `/understand compare ../project-a ../project-b` | Compare two existing graphs and write a deterministic compare map. |
+| `/understand refactor "auth flow"` | Generate a deterministic refactor plan from the current graph. |
+| `/understand-refactor "most tangled part"` | Direct alias for graph-based refactor planning. |
 | `/understand explain src/auth/login.ts` | Explain one file or path. |
 | `/understand onboard` | Generate onboarding guidance from the graph. |
 | `/understand domain` | Extract domain concepts. |
@@ -95,13 +97,16 @@ Direct aliases are also registered:
 /understand-domain
 /understand-knowledge
 /understand-compare
+/understand-refactor
 ```
 
 Notes:
 
 - `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default.
 - `/understand compare <folder-a> <folder-b>` requires both folders to already contain `.understand-anything/knowledge-graph.json`.
-- Compare mode only generates a deterministic Markdown file. Ask the LLM to reason over that file when you want analysis.
+- `/understand refactor [focus] [output.md]` requires the current repo graph and writes `refactor-plan-understand-refactor.md` by default.
+- Refactor mode combines graph hotspots with live file checks and related-test discovery, then includes a follow-up `/understand-chat` prompt for deeper reasoning.
+- Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
 ## Included skills
 

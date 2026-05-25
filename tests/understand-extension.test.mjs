@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   buildSkillInvocation,
+  collectLiveRefactorEvidence,
   generateAgentMapMarkdown,
   generateCompareMarkdown,
+  generateRefactorMarkdown,
   getUnderstandPaths,
   normalizeAgentOutputArg,
   parseCompareArgs,
+  parseRefactorArgs,
   parseUnderstandCommand,
   splitArgs,
   splitFirstArg,
@@ -54,12 +60,31 @@ assert.deepEqual(parseUnderstandCommand("understand-compare", "@project-a @proje
   args: "@project-a @project-b",
 });
 
+assert.deepEqual(parseUnderstandCommand("understand", "refactor auth flow"), {
+  type: "refactor",
+  args: "auth flow",
+});
+
+assert.deepEqual(parseUnderstandCommand("understand-refactor", "auth flow plan.md"), {
+  type: "refactor",
+  args: "auth flow plan.md",
+});
+
 assert.deepEqual(splitArgs("'project a' \"project b\" out.md"), ["project a", "project b", "out.md"]);
 assert.deepEqual(parseCompareArgs("@project-a @project-b"), {
   ok: true,
   folderA: "@project-a",
   folderB: "@project-b",
   output: "project-a-vs-project-b-understand-compare.md",
+});
+
+assert.deepEqual(parseRefactorArgs("auth flow plan.md"), {
+  focus: "auth flow",
+  output: "plan.md",
+});
+assert.deepEqual(parseRefactorArgs("most tangled part"), {
+  focus: "most tangled part",
+  output: "refactor-plan-understand-refactor.md",
 });
 
 assert.equal(normalizeAgentOutputArg("@frontend"), "frontend-codebase-map-understand.md");
@@ -137,5 +162,39 @@ const compareMarkdown = generateCompareMarkdown({
 assert.match(compareMarkdown, /Understand-Anything Compare: Source vs Target/);
 assert.match(compareMarkdown, /Patterns to borrow from Source/);
 assert.match(compareMarkdown, /source-vs-target-understand-compare\.md/);
+
+const refactorGraph = {
+  project: {
+    name: "Refactor Demo",
+    description: "Demo project",
+    analyzedAt: "2026-05-24T00:00:00.000Z",
+    gitCommitHash: "abc123",
+  },
+  nodes: [
+    { id: "file:src/auth.ts", type: "file", name: "src/auth.ts", filePath: "src/auth.ts", summary: "Auth orchestration with several branches", tags: ["auth"], complexity: "complex" },
+    { id: "file:src/session.ts", type: "file", name: "src/session.ts", filePath: "src/session.ts", summary: "Session helper", tags: [], complexity: "moderate" },
+  ],
+  edges: [
+    { source: "file:src/auth.ts", target: "file:src/session.ts", type: "depends_on", weight: 0.9 },
+    { source: "file:src/session.ts", target: "file:src/auth.ts", type: "calls", weight: 0.7 },
+  ],
+  layers: [{ id: "auth", name: "Auth", description: "Authentication layer", nodeIds: ["file:src/auth.ts"] }],
+  tour: [],
+};
+const fixtureRoot = await mkdtemp(join(tmpdir(), "understand-refactor-"));
+await mkdir(join(fixtureRoot, "src"), { recursive: true });
+await mkdir(join(fixtureRoot, "test"), { recursive: true });
+await writeFile(join(fixtureRoot, "src", "auth.ts"), "import { session } from './session';\nexport function auth(input) {\n if (!input) return false;\n if (input.admin) return true;\n return session(input);\n}\n");
+await writeFile(join(fixtureRoot, "test", "auth.test.ts"), "import { auth } from '../src/auth';\n");
+const liveEvidence = await collectLiveRefactorEvidence(refactorGraph, { cwd: fixtureRoot, focus: "auth" });
+assert.equal(liveEvidence["file:src/auth.ts"].exists, true);
+assert.deepEqual(liveEvidence["file:src/auth.ts"].testPaths, ["test/auth.test.ts"]);
+const refactorMarkdown = generateRefactorMarkdown(refactorGraph, { cwd: fixtureRoot, graphPath: join(fixtureRoot, ".understand-anything", "knowledge-graph.json"), outputPath: join(fixtureRoot, "refactor-plan-understand-refactor.md"), focus: "auth", liveEvidence });
+assert.match(refactorMarkdown, /# Understand-Anything Refactor Plan/);
+assert.match(refactorMarkdown, /Likely tangled hotspots/);
+assert.match(refactorMarkdown, /src\/auth\.ts/);
+assert.match(refactorMarkdown, /Live file confirmed/);
+assert.match(refactorMarkdown, /test\/auth\.test\.ts/);
+assert.match(refactorMarkdown, /\/understand-chat Based on refactor-plan-understand-refactor\.md/);
 
 console.log("understand-extension ok");

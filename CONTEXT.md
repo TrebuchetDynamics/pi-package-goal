@@ -20,6 +20,10 @@ _Avoid_: committing generated graph snapshots by default, treating stale maps as
 A deterministic file-generation workflow that compares two existing Understand graphs for porting, rewrites, and pattern borrowing. It writes a Markdown compare map and does not auto-trigger follow-up LLM reasoning.
 _Avoid_: hidden model calls, expensive automatic analysis after file generation, requiring compare to run `/understand` itself
 
+**Understand Refactor**:
+A deterministic file-generation workflow that reads the current repo's existing Understand graph, verifies hotspot files against the live checkout, discovers related tests, and writes a refactor plan with bounded slices plus a follow-up `/understand-chat` prompt.
+_Avoid_: hidden model calls, treating graph heuristics as final architectural judgment, editing production code during plan generation, requiring refactor to run `/understand` itself, recommending graph-only hotspots without live-code confidence labels
+
 **Skill Bundle**:
 The curated set of bundled skills under `skills/`. Skills load on demand through Pi's skill discovery.
 _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource paths
