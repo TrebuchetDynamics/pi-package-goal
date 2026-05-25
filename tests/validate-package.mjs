@@ -348,8 +348,44 @@ async function testSkills() {
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
 
   const goal = read("skills/goal/SKILL.md");
+  const goalLines = goal.trimEnd().split(/\r?\n/).length;
+  assert.ok(goalLines <= 100, `goal SKILL.md should stay compact; got ${goalLines} lines`);
+  assert.match(goal, /auto-discovered useful repo work/);
   assert.match(goal, /Auto-discovered objectives/);
   assert.match(goal, /goal status` — show current Goal state without starting new work/);
+  assert.match(goal, /status is `complete`\/`cleared`, auto-discover/);
+  assert.match(goal, /dirty worktree changes as evidence, not permission/);
+  assert.match(goal, /skill creation or skill improvement → `write-a-skill`/);
+  assert.match(goal, /Pi extension or package resource work → `pi-extensions-helper`/);
+  assert.match(read("skills/goal/references/operating-contract.md"), /No-arg status semantics/);
+
+  const architecture = read("skills/improve-codebase-architecture/SKILL.md");
+  assert.match(architecture, /repo study/);
+  assert.match(architecture, /git status --short --branch/);
+  assert.match(architecture, /codebase-map-understand\.md/);
+  assert.match(architecture, /Study evidence/);
+  assert.match(architecture, /Study quality gate/);
+  assert.match(architecture, /Architecture review generated: <absolute html path>/);
+  assert.doesNotMatch(architecture, /subagent_type=Explore/);
+  const repoStudy = read("skills/improve-codebase-architecture/REPO-STUDY.md");
+  assert.match(repoStudy, /Candidate evidence requirements/);
+  assert.match(repoStudy, /Generated map discipline/);
+  assert.match(repoStudy, /Review quality gate/);
+  assert.match(read("skills/improve-codebase-architecture/HTML-REPORT.md"), /Evidence base/);
+  assert.match(read("skills/improve-codebase-architecture/INTERFACE-DESIGN.md"), /If parallel sub-agents are available/);
+
+  const tdd = read("skills/tdd/SKILL.md");
+  assert.match(tdd, /Repo study before RED/);
+  assert.match(tdd, /git status --short --branch/);
+  assert.match(read("skills/prototype/SKILL.md"), /Repo study before building/);
+  assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);
+  assert.match(read("skills/grill-with-docs/SKILL.md"), /codebase-map-understand\.md when present/);
+  assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
+  assert.match(read("skills/to-issues/SKILL.md"), /codebase-map-understand\.md/);
+  assert.match(read("skills/triage/SKILL.md"), /codebase-map-understand\.md/);
+  for (const file of listSkillFiles(root)) {
+    assert.doesNotMatch(read(file), /setup-matt-pocock-skills/, `${file} should not reference upstream setup skill`);
+  }
 
   const gitCommitPush = read("skills/git-commit-push/SKILL.md");
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);

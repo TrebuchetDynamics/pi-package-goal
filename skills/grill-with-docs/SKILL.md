@@ -9,7 +9,7 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 
 Ask the questions one at a time, waiting for feedback on each question before continuing.
 
-If a question can be answered by exploring the codebase, explore the codebase instead.
+If a question can be answered by exploring the codebase, explore the codebase instead. Start by inspecting repo instructions, git state, CONTEXT.md/CONTEXT-MAP.md, ADRs, relevant tests/manifests, and codebase-map-understand.md when present.
 
 </what-to-do>
 

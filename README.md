@@ -122,7 +122,7 @@ Notes:
 | `tdd` | Add behavior test-first with a red-green-refactor loop. |
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
-| `improve-codebase-architecture` | Find and execute deeper refactors for seams, testability, and AI navigation. |
+| `improve-codebase-architecture` | Produce evidence-backed HTML architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs and record decisions. |
 | `zoom-out` | Step back from the local task and reassess direction. |

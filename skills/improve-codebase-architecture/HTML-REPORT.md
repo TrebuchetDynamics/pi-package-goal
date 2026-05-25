@@ -35,7 +35,7 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. No introduction paragraph — straight into the candidates.
+Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, and commands inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `npm test`). No introduction paragraph — straight into the candidates.
 
 ## Candidate card
 
@@ -46,13 +46,14 @@ Each candidate is one `<article>`:
 - **Title** — short, names the deepening (e.g. "Collapse the Order intake pipeline").
 - **Badge row** — recommendation strength (`Strong` = emerald, `Worth exploring` = amber, `Speculative` = slate), plus a tag for the dependency category (`in-process`, `local-substitutable`, `ports & adapters`, `mock`).
 - **Files** — monospaced list, `font-mono text-sm`.
+- **Study evidence** — 2-4 compact receipts from repo study: docs/ADRs, caller path, test/validation path, deletion-test result.
 - **Before / After diagram** — the centrepiece. Two columns, side by side. See patterns below.
 - **Problem** — one sentence. What hurts.
 - **Solution** — one sentence. What changes.
 - **Wins** — bullets, ≤6 words each. e.g. "Tests hit one interface", "Pricing logic stops leaking", "Delete 4 shallow wrappers".
 - **ADR callout** (if applicable) — one line in an amber-tinted box.
 
-No paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram.
+No paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram. If a candidate lacks caller evidence, validation evidence, or a deletion-test result, mark it `Speculative` or cut it. Never include filler candidates just to reach a count.
 
 ## Diagram patterns
 
@@ -101,7 +102,7 @@ Before: a tree of function calls rendered as nested boxes. After: the same tree 
 
 ## Top recommendation section
 
-One larger card. Candidate name, one sentence on why, anchor link to its card. That's it.
+One larger card. Candidate name, one sentence on why, anchor link to its card, and the decisive evidence receipt. Choose by locality/leverage proof, not by diff size. That's it.
 
 ## Tone
 

@@ -17,7 +17,7 @@ Work from whatever is already in the conversation context. If the user passes an
 
 ### 2. Explore the codebase (optional)
 
-If you have not already explored the codebase, do so to understand the current state of the code. Issue titles and descriptions should use the project's domain glossary vocabulary, and respect ADRs in the area you're touching.
+If you have not already explored the codebase, inspect `git status --short --branch`, repo instructions, `README.md`, `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, relevant manifests/tests, and `codebase-map-understand.md` when present. Issue titles and descriptions should use the project's domain glossary vocabulary and respect ADRs in the area you're touching.
 
 ### 3. Draft vertical slices
 

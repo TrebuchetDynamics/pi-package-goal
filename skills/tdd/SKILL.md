@@ -42,6 +42,10 @@ RIGHT (vertical):
 
 ## Workflow
 
+### Repo study before RED
+
+Before writing the first test, inspect `git status --short --branch`, repo instructions, nearby domain docs/ADRs, existing tests, the public interface callers use, and the likely validation command. Answer easy scope/test questions from repo evidence; ask the user only for owner priorities or behavior choices that remain unclear.
+
 ### Skill handoffs
 
 - Start from `diagnose` output when fixing a bug: the minimized repro artifact becomes the first RED test and the success signal is a passing regression plus original repro.

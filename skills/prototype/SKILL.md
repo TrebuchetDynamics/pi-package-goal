@@ -7,6 +7,10 @@ description: Build throwaway prototypes to answer design questions before commit
 
 A prototype is **throwaway code that answers a question**. The question decides the shape.
 
+## Repo study before building
+
+Before creating prototype files, inspect `git status --short --branch`, repo instructions, local run scripts, nearby domain docs/ADRs, and existing UI/routing or module conventions. Do not touch unrelated dirty work. State the prototype question and the evidence that made the chosen branch appropriate.
+
 ## Pick a branch
 
 Identify which question is being answered — from the user's prompt, the surrounding code, or by asking if the user is around:
