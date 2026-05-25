@@ -477,7 +477,40 @@ function candidateScore(node, liveEvidence = {}) {
   return (node.__score ?? nodeTangleScore(node, liveEvidence.edges ?? [])) + liveEvidenceScore(liveEvidence);
 }
 
-export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath = ".understand-anything/knowledge-graph.json", outputPath = "refactor-plan-understand-refactor.md", focus = "", liveEvidence = {} } = {}) {
+function sectionAfterHeading(markdown, heading, maxLength = 700) {
+  const lines = String(markdown ?? "").split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trim() === heading);
+  if (start === -1) return undefined;
+  const collected = [];
+  for (const line of lines.slice(start + 1)) {
+    if (line.startsWith("## ")) break;
+    if (line.trim()) collected.push(line);
+    if (collected.join("\n").length >= maxLength) break;
+  }
+  return truncateText(collected.join(" "), maxLength);
+}
+
+export function summarizePreviousRefactorPlan(previousPlan) {
+  const trimmed = String(previousPlan ?? "").trim();
+  if (!trimmed) return "- No previous refactor plan found at the output path.";
+
+  const topRecommendation = sectionAfterHeading(trimmed, "## Top recommendation");
+  const refactorSlices = sectionAfterHeading(trimmed, "## Refactor slices");
+  const decisionLines = trimmed
+    .split(/\r?\n/)
+    .filter((line) => /\b(accepted|rejected|blocked|done|todo|decision|ignore|next)\b|^- \[[ xX]\]/i.test(line))
+    .slice(0, 8)
+    .map((line) => `  - ${truncateText(line, 180)}`);
+
+  return [
+    "- Previous refactor plan was read before regenerating; use it as continuity context, not source of truth.",
+    topRecommendation ? `- Previous top recommendation: ${topRecommendation}` : "- Previous top recommendation: not found.",
+    refactorSlices ? `- Previous slice outline: ${refactorSlices}` : "- Previous slice outline: not found.",
+    decisionLines.length ? ["- Previous notes/decisions detected:", ...decisionLines].join("\n") : "- Previous notes/decisions detected: none.",
+  ].join("\n");
+}
+
+export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath = ".understand-anything/knowledge-graph.json", outputPath = "refactor-plan-understand-refactor.md", focus = "", liveEvidence = {}, previousPlan = "" } = {}) {
   const { nodes, edges, layers, project } = graphParts(graph);
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const candidates = refactorCandidateNodes(nodes, edges, focus)
@@ -492,7 +525,9 @@ export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath
   const topLive = top ? liveEvidence[top.id] : undefined;
   const topTests = topLive?.testPaths?.length ? topLive.testPaths.map((file) => `- \`${file}\``).join("\n") : "- No related tests found by deterministic scan; add/locate tests before refactoring.";
   const liveEvidenceWasCollected = Object.keys(liveEvidence).length > 0;
-  const chatPrompt = `Based on ${outputRel}, the current Understand graph, and the live file/test evidence in the plan, identify the most tangled part of this project and turn it into a safe, testable refactor plan. Prioritize small slices with validation commands. Focus: ${focusText}.`;
+  const previousPlanSummary = summarizePreviousRefactorPlan(previousPlan);
+  const previousPlanWasRead = Boolean(String(previousPlan ?? "").trim());
+  const chatPrompt = `Based on ${outputRel}, the current Understand graph, the previous-plan continuity section, and the live file/test evidence in the plan, identify the most tangled part of this project and turn it into a safe, testable refactor plan. Prioritize small slices with validation commands. Focus: ${focusText}.`;
 
   const lines = [
     "# Understand-Anything Refactor Plan",
@@ -508,6 +543,11 @@ export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath
     `- **Analyzed at:** ${formatAnalyzedAt(project.analyzedAt)}`,
     `- **Git commit:** ${project.gitCommitHash ?? "unknown"}`,
     `- **Live repo evidence:** ${liveEvidenceWasCollected ? "collected from current files/tests" : "not collected; graph-only output"}`,
+    `- **Previous plan:** ${previousPlanWasRead ? "read from existing output before regeneration" : "none found at output path"}`,
+    "",
+    "## Previous plan continuity",
+    "",
+    previousPlanSummary,
     "",
     "## Likely tangled hotspots",
     "",
@@ -744,6 +784,20 @@ async function postMessage(pi, content, details = {}) {
   pi.sendMessage({ customType: "understand", content, display: true, details });
 }
 
+export function formatRefactorCommandMessage(result) {
+  if (!result?.written) return result?.message ?? "No refactor plan was generated.";
+  return [
+    result.message,
+    "",
+    result.markdown?.trimEnd() ?? "_No refactor plan content available._",
+    "",
+    "---",
+    "",
+    "What do you want to do next? Pick a candidate from the plan, or say which one to ignore.",
+    "Suggested next step: `/skill:grill-with-docs <candidate>` to stress-test the chosen refactor against project terms, tests, and durable decisions before editing code.",
+  ].join("\n");
+}
+
 function helpText(paths = getUnderstandPaths()) {
   return `Understand-Anything bridge\n\n` +
     `Slash commands:\n` +
@@ -834,8 +888,15 @@ async function writeRefactorPlan(ctx, args) {
     throw error;
   }
 
+  let previousPlan = "";
+  try {
+    previousPlan = await readFile(outputPath, "utf8");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+
   const liveEvidence = await collectLiveRefactorEvidence(graph, { cwd: ctx.cwd, focus: parsed.focus });
-  const markdown = generateRefactorMarkdown(graph, { cwd: ctx.cwd, graphPath, outputPath, focus: parsed.focus, liveEvidence });
+  const markdown = generateRefactorMarkdown(graph, { cwd: ctx.cwd, graphPath, outputPath, focus: parsed.focus, liveEvidence, previousPlan });
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, markdown, "utf8");
   return {
@@ -844,6 +905,8 @@ async function writeRefactorPlan(ctx, args) {
     graphPath,
     focus: parsed.focus,
     liveEvidenceCount: Object.keys(liveEvidence).length,
+    previousPlanRead: Boolean(previousPlan.trim()),
+    markdown,
     message: `Wrote Understand-Anything refactor plan to ${outputPath}`,
   };
 }
@@ -934,7 +997,7 @@ function registerUnderstandCommand(pi, name, paths) {
 
       if (parsed.type === "refactor") {
         const result = await writeRefactorPlan(ctx, parsed.args);
-        await postMessage(pi, result.message, result);
+        await postMessage(pi, formatRefactorCommandMessage(result), result);
         return;
       }
 

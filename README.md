@@ -105,7 +105,7 @@ Notes:
 - `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default.
 - `/understand compare <folder-a> <folder-b>` requires both folders to already contain `.understand-anything/knowledge-graph.json`.
 - `/understand refactor [focus] [output.md]` requires the current repo graph and writes `refactor-plan-understand-refactor.md` by default.
-- Refactor mode combines graph hotspots with live file checks and related-test discovery, then includes a follow-up `/understand-chat` prompt for deeper reasoning.
+- Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, and related-test discovery, displays the generated plan inline, then asks which candidate to explore with `grill-with-docs`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
 ## Included skills

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   buildSkillInvocation,
   collectLiveRefactorEvidence,
+  formatRefactorCommandMessage,
   generateAgentMapMarkdown,
   generateCompareMarkdown,
   generateRefactorMarkdown,
@@ -15,6 +16,7 @@ import {
   parseUnderstandCommand,
   splitArgs,
   splitFirstArg,
+  summarizePreviousRefactorPlan,
 } from "../extensions/understand.js";
 
 assert.deepEqual(splitFirstArg(" chat how does auth work? "), {
@@ -189,12 +191,25 @@ await writeFile(join(fixtureRoot, "test", "auth.test.ts"), "import { auth } from
 const liveEvidence = await collectLiveRefactorEvidence(refactorGraph, { cwd: fixtureRoot, focus: "auth" });
 assert.equal(liveEvidence["file:src/auth.ts"].exists, true);
 assert.deepEqual(liveEvidence["file:src/auth.ts"].testPaths, ["test/auth.test.ts"]);
-const refactorMarkdown = generateRefactorMarkdown(refactorGraph, { cwd: fixtureRoot, graphPath: join(fixtureRoot, ".understand-anything", "knowledge-graph.json"), outputPath: join(fixtureRoot, "refactor-plan-understand-refactor.md"), focus: "auth", liveEvidence });
+const previousPlan = "## Top recommendation\n\nStart with **old-auth** first.\n\n## Refactor slices\n\n1. Keep the auth seam.\n\n- [x] decision: ignore stale helper\n";
+assert.match(summarizePreviousRefactorPlan(previousPlan), /Previous top recommendation: Start with \*\*old-auth\*\*/);
+const refactorMarkdown = generateRefactorMarkdown(refactorGraph, { cwd: fixtureRoot, graphPath: join(fixtureRoot, ".understand-anything", "knowledge-graph.json"), outputPath: join(fixtureRoot, "refactor-plan-understand-refactor.md"), focus: "auth", liveEvidence, previousPlan });
 assert.match(refactorMarkdown, /# Understand-Anything Refactor Plan/);
 assert.match(refactorMarkdown, /Likely tangled hotspots/);
 assert.match(refactorMarkdown, /src\/auth\.ts/);
+assert.match(refactorMarkdown, /Previous plan continuity/);
+assert.match(refactorMarkdown, /old-auth/);
 assert.match(refactorMarkdown, /Live file confirmed/);
 assert.match(refactorMarkdown, /test\/auth\.test\.ts/);
 assert.match(refactorMarkdown, /\/understand-chat Based on refactor-plan-understand-refactor\.md/);
+
+const refactorCommandMessage = formatRefactorCommandMessage({
+  written: true,
+  message: "Wrote Understand-Anything refactor plan to /tmp/refactor-plan-understand-refactor.md",
+  markdown: refactorMarkdown,
+});
+assert.match(refactorCommandMessage, /# Understand-Anything Refactor Plan/);
+assert.match(refactorCommandMessage, /What do you want to do next\?/);
+assert.match(refactorCommandMessage, /\/skill:grill-with-docs <candidate>/);
 
 console.log("understand-extension ok");

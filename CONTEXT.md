@@ -21,8 +21,8 @@ A deterministic file-generation workflow that compares two existing Understand g
 _Avoid_: hidden model calls, expensive automatic analysis after file generation, requiring compare to run `/understand` itself
 
 **Understand Refactor**:
-A deterministic file-generation workflow that reads the current repo's existing Understand graph, verifies hotspot files against the live checkout, discovers related tests, and writes a refactor plan with bounded slices plus a follow-up `/understand-chat` prompt.
-_Avoid_: hidden model calls, treating graph heuristics as final architectural judgment, editing production code during plan generation, requiring refactor to run `/understand` itself, recommending graph-only hotspots without live-code confidence labels
+A deterministic file-generation workflow that reads the current repo's existing Understand graph, reads any previous output plan for continuity before overwriting it, verifies hotspot files against the live checkout, discovers related tests, writes and displays a refactor plan with bounded slices, then asks which candidate to explore with `grill-with-docs`.
+_Avoid_: hidden model calls, treating graph heuristics as final architectural judgment, editing production code during plan generation, requiring refactor to run `/understand` itself, recommending graph-only hotspots without live-code confidence labels, ending with only a file path and no decision prompt, losing prior refactor decisions when regenerating the same output file
 
 **Skill Bundle**:
 The curated set of bundled skills under `skills/`. Skills load on demand through Pi's skill discovery.
