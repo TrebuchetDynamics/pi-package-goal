@@ -1,105 +1,160 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills for goal discipline, safe git delivery, engineering workflows, Pi ecosystem work, and modern web guidance, plus a `/understand` bridge extension for [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
+A Pi package that bundles curated agent skills and one `/understand` extension.
 
-## Quick start
+Use it when you want Pi to:
 
-### Step 1: Install Pi
+- keep a clear objective in view while it works;
+- use safer commit/push discipline;
+- switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
+- build or review Pi package resources; and
+- map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
 
-Install Pi from [pi.dev](https://pi.dev), then confirm the `pi` command works:
+## What you get
+
+| Area | What it helps with | Start with |
+| --- | --- | --- |
+| Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
+| Safe delivery | Audit changed files, run validation, commit only safe work, and push. | `git-commit-push` |
+| Engineering loops | Debug, test-drive, prototype, review, or improve architecture. | `diagnose`, `tdd`, `prototype` |
+| Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
+| Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
+| Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps. | `/understand` |
+
+## Install
+
+Install Pi from [pi.dev](https://pi.dev), then check that the command works:
 
 ```bash
 pi --version
 ```
 
-### Step 2: Install this package
-
-Global install:
+Install this package globally:
 
 ```bash
 pi install git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
-Project-local install, for a team repo:
+Or install it only for the current project/team repo:
 
 ```bash
 pi install -l git:github.com/TrebuchetDynamics/pi-package-goal
 ```
 
-After installing or updating, run this inside Pi:
+After installing or updating, reload your open Pi session:
 
 ```text
 /reload
 ```
 
-### Step 3: Use the bundled skills and extension
+## First commands to try
 
-Pi loads skills on demand. You can invoke them naturally or with `/skill:<name>` when skill commands are enabled.
-
-Examples:
+Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled.
 
 ```text
-/skill:goal keep working until the README install flow is clear
+/skill:goal improve the README until a new user can install and choose a skill
 /skill:git-commit-push audit
-/skill:git-commit-push commit and push the current safe changes
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
+/understand
+/understand agent
 ```
 
-The package also registers `/understand`. On first use it prompts to clone `Lum1104/Understand-Anything` into `~/.understand-anything/repo`, then loads the upstream Understand-Anything skills under the hood.
+## Included extension: `/understand`
+
+`/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.
+
+On first use it prompts to clone Understand-Anything into `~/.understand-anything/repo`, then dispatches to the upstream workflows. It honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults.
+
+Common commands:
+
+| Command | Use it for |
+| --- | --- |
+| `/understand` | Build or refresh the current repo's knowledge graph. |
+| `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
+| `/understand dashboard` | Open the upstream dashboard workflow. |
+| `/understand chat How does auth work?` | Ask about the generated graph. |
+| `/understand diff` | Summarize recent graph/code changes. |
+| `/understand agent` | Write `codebase-map-understand.md` for future agents. |
+| `/understand agent @frontend` | Write `frontend-codebase-map-understand.md`. |
+| `/understand compare ../project-a ../project-b` | Compare two existing graphs and write a deterministic compare map. |
+| `/understand explain src/auth/login.ts` | Explain one file or path. |
+| `/understand onboard` | Generate onboarding guidance from the graph. |
+| `/understand domain` | Extract domain concepts. |
+| `/understand knowledge ~/path/to/wiki` | Add external knowledge. |
+| `/understand update` | Update the upstream checkout. |
+
+Direct aliases are also registered:
 
 ```text
-/understand
-/understand src/frontend --language zh
-/understand dashboard
-/understand chat How does the payment flow work?
-/understand diff
-/understand agent
-/understand agent codebase-map-understand.md
-/understand agent @frontend
-/understand compare ../project-a ../project-b
-/understand-compare @project-a @project-b
-/understand explain src/auth/login.ts
-/understand onboard
-/understand domain
-/understand knowledge ~/path/to/wiki
-/understand update
+/understand-dashboard
+/understand-chat
+/understand-diff
+/understand-explain
+/understand-onboard
+/understand-domain
+/understand-knowledge
+/understand-compare
 ```
 
-## Included extension
+Notes:
 
-- `/understand` — bridge command that installs/updates the upstream Understand-Anything checkout and dispatches to its real skill workflows.
-- Direct aliases: `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`, `/understand-compare`.
-
-The extension honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults. `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default for future LLM agents. `/understand agent @frontend` writes `frontend-codebase-map-understand.md`. `/understand compare <folder-a> <folder-b>` requires both folders to already have `.understand-anything/knowledge-graph.json`, then writes `<folder-a>-vs-<folder-b>-understand-compare.md` for porting or pattern borrowing. Compare is deterministic file generation only; ask the LLM to reason over the generated file when you want analysis.
+- `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default.
+- `/understand compare <folder-a> <folder-b>` requires both folders to already contain `.understand-anything/knowledge-graph.json`.
+- Compare mode only generates a deterministic Markdown file. Ask the LLM to reason over that file when you want analysis.
 
 ## Included skills
 
-Delivery and goal discipline:
+### Goal and delivery
 
-- `goal` — in-conversation objective tracking with completion audit.
-- `git-commit-push` — audits worktree changes, runs validation, commits safe in-scope work, and pushes only after evidence is green.
-- `autoreview` — structured closeout review using an available external helper.
-- `lgtm` and `caveman` — approval handling and terse communication modes.
+| Skill | When to use it |
+| --- | --- |
+| `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
+| `git-commit-push` | Ship completed work with worktree audit, validation, intentional staging, commit, and push. |
+| `autoreview` | Run a structured closeout review before shipping. |
+| `lgtm` | Continue after you approve the agent's latest plan or recommendation. |
+| `caveman` | Switch to terse, low-token communication. |
 
-Engineering workflows:
+### Engineering workflows
 
-- `tdd`, `diagnose`, `improve-codebase-architecture`, `prototype`, `grill-me`, `grill-with-docs`.
-- `to-prd`, `to-issues`, `triage`, `handoff`, `writing-shape`, `zoom-out`.
+| Skill | When to use it |
+| --- | --- |
+| `tdd` | Add behavior test-first with a red-green-refactor loop. |
+| `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
+| `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
+| `improve-codebase-architecture` | Find and execute deeper refactors for seams, testability, and AI navigation. |
+| `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
+| `grill-with-docs` | Stress-test a plan against project docs and record decisions. |
+| `zoom-out` | Step back from the local task and reassess direction. |
 
-Pi and web ecosystem:
+### Planning, triage, and writing
 
-- `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill`.
-- `modern-web-guidance`, `chrome-extensions`.
-- `greploop` for explicit Greptile-driven review cleanup.
+| Skill | When to use it |
+| --- | --- |
+| `to-prd` | Turn current context into a product requirements document. |
+| `to-issues` | Break a plan into independently grabbable implementation issues. |
+| `triage` | Create, classify, and prepare issues for workflow. |
+| `handoff` | Summarize current context for another agent or later session. |
+| `writing-shape` | Shape rough notes or drafts into a publishable article. |
 
-## Git Commit Push skill
+### Pi, browser, and review ecosystem
+
+| Skill | When to use it |
+| --- | --- |
+| `pi-ecosystem-scout` | Look for existing Pi packages, extensions, skills, prompts, and patterns before building. |
+| `pi-extensions-helper` | Build, debug, package, or review Pi extensions and package resources. |
+| `write-a-skill` | Create a new agent skill with the expected structure. |
+| `modern-web-guidance` | Check current web-platform guidance before browser UI or frontend work. |
+| `chrome-extensions` | Build, debug, review, or publish Chrome extensions. |
+| `greploop` | Use Greptile-driven PR/MR/CL cleanup when explicitly requested and available. |
+
+## Safe delivery with `git-commit-push`
 
 Use `git-commit-push` when implementation work appears complete and you want delivery guarded by real git and validation evidence.
 
 The skill:
 
-1. inspects repo instructions and git state;
+1. reads repo instructions and git state;
 2. reviews changed/untracked files for secrets, local state, generated junk, and unrelated work;
 3. runs requested or inferred validation, including `git diff --check`;
 4. commits only safe in-scope changes;
@@ -115,9 +170,7 @@ It does not deploy, publish, force-push, rewrite history, rebase, or merge remot
 
 ## Package shape
 
-This package ships curated skills and one Pi extension.
-
-Package resources are declared in `package.json` with both `pi.extensions` and `pi.skills`:
+This package ships curated skills and one Pi extension. Package resources are declared in `package.json` with both `pi.extensions` and `pi.skills`:
 
 ```json
 {
@@ -127,6 +180,8 @@ Package resources are declared in `package.json` with both `pi.extensions` and `
   }
 }
 ```
+
+Package resources live under `extensions/`, `skills/`, `prompts/`, or `themes/`.
 
 ## Update or remove
 
