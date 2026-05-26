@@ -891,7 +891,7 @@ export function buildRefactorGrillPrompt({ candidate, outputPath = "refactor-pla
     "Next skill: `grill-with-docs`",
     "Success signal: a docs-backed, testable refactor slice with bug-search checkpoints or an explicit decision to ignore this candidate.",
     "",
-    `Use \`${outputRel}\`, the current repository docs, tests, and live code to stress-test candidate \`${candidate}\` before editing code. Explicitly search for bugs before, during, and after the refactor. Ask one question at a time and provide your recommended answer for each question.`,
+    `Use \`${outputRel}\`, the current repository docs, tests, and live code to start the refactor workflow for candidate \`${candidate}\` now. Explicitly search for bugs before, during, and after the refactor. If an owner decision, missing requirement, or steer-direction gap blocks safe progress, ask one question at a time and provide your recommended answer. If there is no blocker, choose the first safe validation-backed slice and begin it.`,
   ].join("\n");
 }
 
@@ -914,12 +914,12 @@ function formatRefactorNextActions(markdown) {
     ].join("\n");
   }
 
-  const numbered = choices.map((choice, index) => `${index + 1}. \`${choice}\` — reply \`grill ${index + 1}\` to start \`grill-with-docs\`, or \`ignore ${index + 1}\` to skip it.`);
+  const numbered = choices.map((choice, index) => `${index + 1}. \`${choice}\` — ${index === 0 ? "starting automatically with `grill-with-docs`; " : ""}reply \`grill ${index + 1}\` to switch/start here, or \`ignore ${index + 1}\` to skip it.`);
   return [
-    "What do you want to do next?",
+    "Starting candidate 1 automatically with `grill-with-docs` so the refactor workflow can begin immediately.",
     ...numbered,
     "Reply `regenerate with focus <area>` to narrow the plan.",
-    "If you reply `grill N`, I will use `grill-with-docs` on that candidate with this plan as evidence before editing code.",
+    "Use steering replies to redirect the active `grill-with-docs` refactor run if it chooses the wrong slice or needs owner input.",
   ].join("\n");
 }
 
@@ -1164,6 +1164,14 @@ export async function handleRefactorCommand(pi, ctx, paths, args = "") {
   if (result.needsGraphRefresh) {
     await sendSkillInvocation(pi, ctx, paths, "understand", result.understandArgs ?? "");
     return { ...result, dispatchedUnderstand: true };
+  }
+  if (result.written) {
+    const [candidate] = extractRefactorCandidateChoices(result.markdown, 1);
+    if (candidate) {
+      const prompt = buildRefactorGrillPrompt({ candidate, outputPath: result.outputPath, cwd: ctx.cwd });
+      const dispatched = await sendBundledSkillInvocation(pi, ctx, "grill-with-docs", prompt);
+      return { ...result, autoStartedRefactor: dispatched, autoStartedCandidate: candidate, autoStartPrompt: prompt };
+    }
   }
   return result;
 }

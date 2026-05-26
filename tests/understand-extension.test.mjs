@@ -244,7 +244,7 @@ const refactorCommandMessage = formatRefactorCommandMessage({
   markdown: refactorMarkdown,
 });
 assert.match(refactorCommandMessage, /# Understand-Anything Refactor Plan/);
-assert.match(refactorCommandMessage, /What do you want to do next\?/);
+assert.match(refactorCommandMessage, /Starting candidate 1 automatically with `grill-with-docs`/);
 assert.match(refactorCommandMessage, /reply `grill 1`/);
 assert.match(refactorCommandMessage, /`src\/auth\.ts`/);
 assert.match(refactorCommandMessage, /regenerate with focus <area>/);
@@ -252,7 +252,9 @@ assert.match(refactorCommandMessage, /regenerate with focus <area>/);
 const grillPrompt = buildRefactorGrillPrompt({ candidate: "src/auth.ts", outputPath: join(fixtureRoot, "refactor-plan-understand-refactor.md"), cwd: fixtureRoot });
 assert.match(grillPrompt, /Selected Understand Refactor candidate: `src\/auth\.ts`/);
 assert.match(grillPrompt, /Next skill: `grill-with-docs`/);
-assert.match(grillPrompt, /Ask one question at a time/);
+assert.match(grillPrompt, /start the refactor workflow/);
+assert.match(grillPrompt, /ask one question at a time/);
+assert.match(grillPrompt, /choose the first safe validation-backed slice and begin it/);
 assert.match(grillPrompt, /before, during, and after the refactor/);
 
 const ignoredPlan = appendRefactorIgnoreNote(refactorMarkdown, { index: 1, candidate: "src/auth.ts" });
@@ -282,6 +284,27 @@ function makePiRecorder() {
       sendUserMessage(content, options) { dispatchedUserMessages.push({ content, options }); },
     },
   };
+}
+
+{
+  await mkdir(join(fixtureRoot, ".understand-anything"), { recursive: true });
+  await writeFile(join(fixtureRoot, ".understand-anything", "knowledge-graph.json"), JSON.stringify(refactorGraph), "utf8");
+  const recorder = makePiRecorder();
+  const refactorResult = await handleRefactorCommand(
+    recorder.pi,
+    { cwd: fixtureRoot, isIdle: () => true, hasUI: false },
+    fakePaths,
+    "auth",
+  );
+  assert.equal(refactorResult.written, true);
+  assert.equal(refactorResult.autoStartedRefactor, true);
+  assert.equal(refactorResult.autoStartedCandidate, "src/auth.ts");
+  assert.equal(recorder.postedMessages.length, 1);
+  assert.match(recorder.postedMessages[0].content, /Starting candidate 1 automatically with `grill-with-docs`/);
+  assert.equal(recorder.dispatchedUserMessages.length, 1);
+  assert.match(recorder.dispatchedUserMessages[0].content, /<skill name="grill-with-docs"/);
+  assert.match(recorder.dispatchedUserMessages[0].content, /Selected Understand Refactor candidate: `src\/auth\.ts`/);
+  assert.match(recorder.dispatchedUserMessages[0].content, /start the refactor workflow/);
 }
 
 {
