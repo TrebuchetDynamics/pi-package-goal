@@ -60,6 +60,34 @@ Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill co
 /understand agent
 ```
 
+## Included tmux helpers
+
+This package also includes a portable tmux profile under `tmux/`:
+
+- `tmux/tmux.conf` — phone-friendly tmux config with a one-line status bar.
+- `tmux/tx` — installable tmux session launcher exposed as the package `tx` bin.
+- `tmux/install.sh` — copies the tmux config, helper scripts, and `tx` into the current user account.
+
+Install the profile from a checkout:
+
+```bash
+npm run tmux:install
+```
+
+Or, when `tx` is already on your `PATH` from an npm install/link, install the profile with:
+
+```bash
+tx install
+```
+
+The `tx` command is declared in `package.json` as:
+
+```json
+{ "bin": { "tx": "./tmux/tx" } }
+```
+
+Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
+
 ## Included extension: `/understand`
 
 `/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.
@@ -186,7 +214,7 @@ This package ships curated skills and one Pi extension. Package resources are de
 }
 ```
 
-Package resources live under `extensions/`, `skills/`, `prompts/`, or `themes/`.
+Package resources live under `extensions/`, `skills/`, `prompts/`, or `themes/`. Additional shell/tmux helper assets live under `tmux/` and are included in the package tarball through the `files` manifest.
 
 ## Update or remove
 

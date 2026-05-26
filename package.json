@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Pi package bundling high-signal engineering skills plus an Understand-Anything slash-command extension.",
   "type": "module",
+  "bin": {
+    "tx": "./tmux/tx"
+  },
   "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
@@ -31,6 +34,7 @@
     "extensions",
     "skills",
     "licenses",
+    "tmux",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
@@ -64,7 +68,8 @@
     }
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs"
+    "test": "node tests/validate-package.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "tmux:install": "sh tmux/install.sh"
   }
 }

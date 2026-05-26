@@ -306,10 +306,12 @@ async function testPackageManifest() {
   assert.match(pkg.description, /skills/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
+  assert.deepEqual(pkg.bin, { tx: "./tmux/tx" });
   assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include the understand extension");
   assert.equal(pkg.files.includes("skills"), true);
+  assert.equal(pkg.files.includes("tmux"), true, "package tarball must include tmux helpers and tx bin");
   const gitignore = read(".gitignore");
   assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
   assert.match(gitignore, /\*\*\/\.pi\/\*\/logs\.jsonl/);
