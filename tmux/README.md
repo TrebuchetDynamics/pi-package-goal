@@ -51,7 +51,7 @@ Reload tmux:
 tmux source-file ~/.tmux.conf
 ```
 
-Plugin support is optional. If TPM is missing, the config still loads and skips plugins. Install TPM with:
+Plugin support is optional. If TPM is missing, the config silently skips plugins so tmux startup and reload do not show config-error noise. Install TPM with:
 
 ```sh
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -66,6 +66,10 @@ The repository package declares:
 ```
 
 So `tx` is available when this package is installed or linked by npm. The tmux config and status helper scripts still require `tx install`, `./install.sh`, or manual copying.
+
+## Mouse selection
+
+Mouse mode stays on for pane focus and tmux scrollback. Drag, double-click, and triple-click select text only; mouse release does not copy or exit selection. Copy explicitly with `y` or `Enter` in copy mode.
 
 ## User-facing colors
 

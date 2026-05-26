@@ -126,6 +126,26 @@ async function testStatusHelpers() {
   }
 }
 
+async function testTmuxMouseSelectionDoesNotAutoCopy() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.doesNotMatch(config, /Mouse(?:DragEnd|DoubleClick|TripleClick)1Pane[^\n]*copy-pipe-and-cancel/);
+  assert.match(config, /unbind -T copy-mode-vi MouseDragEnd1Pane/);
+  assert.match(config, /unbind -T copy-mode MouseDragEnd1Pane/);
+  assert.match(config, /bind -T root DoubleClick1Pane[^\n]*select-word/);
+  assert.match(config, /bind -T root TripleClick1Pane[^\n]*select-line/);
+  assert.match(config, /bind -T copy-mode-vi DoubleClick1Pane[^\n]*select-word/);
+  assert.match(config, /bind -T copy-mode-vi TripleClick1Pane[^\n]*select-line/);
+  assert.match(config, /bind -T copy-mode DoubleClick1Pane[^\n]*select-word/);
+  assert.match(config, /bind -T copy-mode TripleClick1Pane[^\n]*select-line/);
+}
+
+async function testTmuxPluginsAreSilentWhenTpmIsMissing() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.doesNotMatch(config, /TPM not installed; plugins skipped/);
+  assert.doesNotMatch(config, /if-shell[^\n]*display-message/);
+  assert.match(config, /if-shell -b 'test -x ~\/\.tmux\/plugins\/tpm\/tpm' 'run ~\/\.tmux\/plugins\/tpm\/tpm'/);
+}
+
 async function testTmuxConfigParsesWhenTmuxExists() {
   if (!hasCommand("tmux")) return;
   run("tmux", ["source-file", "-n", "tmux/tmux.conf"]);
@@ -136,6 +156,8 @@ await testScriptSyntaxAndHelp();
 await testTxConfigLifecycleWithoutTmuxSessions();
 await testInstallScript();
 await testStatusHelpers();
+await testTmuxMouseSelectionDoesNotAutoCopy();
+await testTmuxPluginsAreSilentWhenTpmIsMissing();
 await testTmuxConfigParsesWhenTmuxExists();
 
 console.log("tmux-assets ok");
