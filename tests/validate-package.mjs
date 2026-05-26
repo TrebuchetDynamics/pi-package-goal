@@ -338,6 +338,9 @@ async function testUnderstandExtension() {
   assert.match(extension, /generateRefactorMarkdown/);
   assert.match(extension, /collectLiveRefactorEvidence/);
   assert.match(extension, /formatRefactorCommandMessage/);
+  assert.match(extension, /extractRefactorCandidateChoices/);
+  assert.match(extension, /parseRefactorInstruction/);
+  assert.match(extension, /buildRefactorGrillPrompt/);
   assert.match(extension, /summarizePreviousRefactorPlan/);
   assert.match(extension, /https:\/\/github\.com\/Lum1104\/Understand-Anything\.git/);
   assert.match(extension, /resources_discover/);
@@ -414,6 +417,7 @@ async function testDocsAndNotices() {
   assert.match(readme, /## Included extension/);
   assert.match(readme, /\/understand-refactor/);
   assert.match(readme, /reads an existing output plan before overwriting it/);
+  assert.match(readme, /\/understand-refactor grill N/);
   assert.match(readme, /pi\.extensions/);
 }
 

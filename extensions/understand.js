@@ -2,6 +2,7 @@ import { constants as fsConstants } from "node:fs";
 import { access, lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
 import { homedir } from "node:os";
+import { fileURLToPath } from "node:url";
 
 const DEFAULT_REPO_URL = "https://github.com/Lum1104/Understand-Anything.git";
 const SKILL_NAMES = new Set([
@@ -107,6 +108,26 @@ export function parseRefactorArgs(args = "") {
     focus: tokens.join(" ").trim(),
     output: outputToken || "refactor-plan-understand-refactor.md",
   };
+}
+
+export function parseRefactorInstruction(args = "") {
+  const tokens = splitArgs(args);
+  const first = tokens[0]?.toLowerCase();
+
+  if (first === "grill" || first === "ignore") {
+    const outputToken = tokens.length > 2 && /\.md$/i.test(tokens.at(-1)) ? tokens.at(-1) : undefined;
+    return {
+      type: first,
+      index: Number.parseInt(tokens[1] ?? "", 10),
+      output: outputToken || "refactor-plan-understand-refactor.md",
+    };
+  }
+
+  if (first === "regenerate" && tokens[1]?.toLowerCase() === "with" && tokens[2]?.toLowerCase() === "focus") {
+    return { type: "generate", args: tokens.slice(3).join(" ").trim() };
+  }
+
+  return { type: "generate", args: args.trim() };
 }
 
 export function buildSkillInvocation({ skillName, skillPath, skillContent, args = "" }) {
@@ -527,7 +548,7 @@ export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath
   const liveEvidenceWasCollected = Object.keys(liveEvidence).length > 0;
   const previousPlanSummary = summarizePreviousRefactorPlan(previousPlan);
   const previousPlanWasRead = Boolean(String(previousPlan ?? "").trim());
-  const chatPrompt = `Based on ${outputRel}, the current Understand graph, the previous-plan continuity section, and the live file/test evidence in the plan, identify the most tangled part of this project and turn it into a safe, testable refactor plan. Prioritize small slices with validation commands. Focus: ${focusText}.`;
+  const chatPrompt = `Use ${outputRel}, the previous-plan continuity section, the current Understand graph, and the live file/test evidence to grill the selected refactor candidate: <candidate>. Stress-test domain terms, tests, risks, and small validation-backed slices before editing code. Focus: ${focusText}.`;
 
   const lines = [
     "# Understand-Anything Refactor Plan",
@@ -784,6 +805,94 @@ async function postMessage(pi, content, details = {}) {
   pi.sendMessage({ customType: "understand", content, display: true, details });
 }
 
+async function sendBundledSkillInvocation(pi, ctx, skillName, args) {
+  const skillUrl = new URL(`../skills/${skillName}/SKILL.md`, import.meta.url);
+  const skillPath = fileURLToPath(skillUrl);
+  let skillContent;
+  try {
+    skillContent = await readFile(skillUrl, "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+  const message = buildSkillInvocation({ skillName, skillPath, skillContent, args });
+  if (ctx.isIdle()) {
+    pi.sendUserMessage(message);
+  } else {
+    pi.sendUserMessage(message, { deliverAs: "followUp" });
+  }
+  return true;
+}
+
+export function extractRefactorCandidateChoices(markdown, max = 5) {
+  const lines = String(markdown ?? "").split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trim() === "## Likely tangled hotspots");
+  if (start === -1) return [];
+  const choices = [];
+  for (const line of lines.slice(start + 1)) {
+    if (line.startsWith("## ")) break;
+    if (!line.startsWith("|")) continue;
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim());
+    const candidate = cells[0];
+    if (!candidate || candidate === "Candidate" || /^-+$/.test(candidate)) continue;
+    choices.push(candidate.replace(/^`|`$/g, ""));
+    if (choices.length >= max) break;
+  }
+  return choices;
+}
+
+function resolveRefactorChoice(markdown, index) {
+  const choices = extractRefactorCandidateChoices(markdown, 50);
+  if (!Number.isInteger(index) || index < 1) {
+    return { ok: false, message: "Usage: /understand-refactor grill <candidate-number> [plan.md]" };
+  }
+  const candidate = choices[index - 1];
+  if (!candidate) {
+    return { ok: false, message: `No refactor candidate ${index} found in the latest plan. Available candidates: ${choices.length || 0}.` };
+  }
+  return { ok: true, candidate, choices };
+}
+
+export function buildRefactorGrillPrompt({ candidate, outputPath = "refactor-plan-understand-refactor.md", cwd = process.cwd() } = {}) {
+  const outputRel = isAbsolute(outputPath) ? relative(cwd, outputPath) || outputPath : outputPath;
+  return [
+    `Selected Understand Refactor candidate: \`${candidate}\``,
+    `Artifact: \`${outputRel}\``,
+    "Next skill: `grill-with-docs`",
+    "Success signal: a docs-backed, testable refactor slice or an explicit decision to ignore this candidate.",
+    "",
+    `Use \`${outputRel}\`, the current repository docs, tests, and live code to stress-test candidate \`${candidate}\` before editing code. Ask one question at a time and provide your recommended answer for each question.`,
+  ].join("\n");
+}
+
+export function appendRefactorIgnoreNote(markdown, { index, candidate }) {
+  const trimmed = String(markdown ?? "").trimEnd();
+  const note = `- Ignored candidate ${index}: \`${candidate}\`.`;
+  if (trimmed.includes("\n## Operator notes\n")) {
+    return `${trimmed}\n${note}\n`;
+  }
+  return `${trimmed}\n\n## Operator notes\n\n${note}\n`;
+}
+
+function formatRefactorNextActions(markdown) {
+  const choices = extractRefactorCandidateChoices(markdown, 5);
+  if (!choices.length) {
+    return [
+      "What do you want to do next?",
+      "- Reply `regenerate with focus <area>` to narrow the graph scan.",
+      "- Or name a file/module and I will start `grill-with-docs` against the plan before editing code.",
+    ].join("\n");
+  }
+
+  const numbered = choices.map((choice, index) => `${index + 1}. \`${choice}\` — reply \`grill ${index + 1}\` to start \`grill-with-docs\`, or \`ignore ${index + 1}\` to skip it.`);
+  return [
+    "What do you want to do next?",
+    ...numbered,
+    "Reply `regenerate with focus <area>` to narrow the plan.",
+    "If you reply `grill N`, I will use `grill-with-docs` on that candidate with this plan as evidence before editing code.",
+  ].join("\n");
+}
+
 export function formatRefactorCommandMessage(result) {
   if (!result?.written) return result?.message ?? "No refactor plan was generated.";
   return [
@@ -793,8 +902,7 @@ export function formatRefactorCommandMessage(result) {
     "",
     "---",
     "",
-    "What do you want to do next? Pick a candidate from the plan, or say which one to ignore.",
-    "Suggested next step: `/skill:grill-with-docs <candidate>` to stress-test the chosen refactor against project terms, tests, and durable decisions before editing code.",
+    formatRefactorNextActions(result.markdown),
   ].join("\n");
 }
 
@@ -868,6 +976,57 @@ function resolveFolderArg(cwd, folder) {
 async function readGraphForFolder(folderPath) {
   const graphPath = resolve(folderPath, ".understand-anything", "knowledge-graph.json");
   return { graphPath, graph: JSON.parse(await readFile(graphPath, "utf8")) };
+}
+
+async function readRefactorPlan(ctx, output = "refactor-plan-understand-refactor.md") {
+  const outputPath = isAbsolute(output) ? output : resolve(ctx.cwd, output);
+  try {
+    return { ok: true, outputPath, markdown: await readFile(outputPath, "utf8") };
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return { ok: false, outputPath, message: `No Understand refactor plan found at ${outputPath}. Run /understand-refactor first, then /understand-refactor grill 1.` };
+    }
+    throw error;
+  }
+}
+
+async function grillRefactorCandidate(pi, ctx, instruction) {
+  const plan = await readRefactorPlan(ctx, instruction.output);
+  if (!plan.ok) return { action: "grill", dispatched: false, message: plan.message };
+
+  const resolved = resolveRefactorChoice(plan.markdown, instruction.index);
+  if (!resolved.ok) return { action: "grill", dispatched: false, outputPath: plan.outputPath, message: resolved.message };
+
+  const prompt = buildRefactorGrillPrompt({ candidate: resolved.candidate, outputPath: plan.outputPath, cwd: ctx.cwd });
+  const dispatched = await sendBundledSkillInvocation(pi, ctx, "grill-with-docs", prompt);
+  return {
+    action: "grill",
+    dispatched,
+    outputPath: plan.outputPath,
+    candidate: resolved.candidate,
+    prompt,
+    message: dispatched
+      ? `Starting grill-with-docs for candidate ${instruction.index}: ${resolved.candidate}`
+      : `grill-with-docs skill not found. Copy this prompt:\n\n${prompt}`,
+  };
+}
+
+async function ignoreRefactorCandidate(ctx, instruction) {
+  const plan = await readRefactorPlan(ctx, instruction.output);
+  if (!plan.ok) return { action: "ignore", written: false, message: plan.message };
+
+  const resolved = resolveRefactorChoice(plan.markdown, instruction.index);
+  if (!resolved.ok) return { action: "ignore", written: false, outputPath: plan.outputPath, message: resolved.message };
+
+  const markdown = appendRefactorIgnoreNote(plan.markdown, { index: instruction.index, candidate: resolved.candidate });
+  await writeFile(plan.outputPath, markdown, "utf8");
+  return {
+    action: "ignore",
+    written: true,
+    outputPath: plan.outputPath,
+    candidate: resolved.candidate,
+    message: `Marked refactor candidate ${instruction.index} as ignored in ${plan.outputPath}: ${resolved.candidate}`,
+  };
 }
 
 async function writeRefactorPlan(ctx, args) {
@@ -996,7 +1155,18 @@ function registerUnderstandCommand(pi, name, paths) {
       }
 
       if (parsed.type === "refactor") {
-        const result = await writeRefactorPlan(ctx, parsed.args);
+        const instruction = parseRefactorInstruction(parsed.args);
+        if (instruction.type === "grill") {
+          const result = await grillRefactorCandidate(pi, ctx, instruction);
+          await postMessage(pi, result.message, result);
+          return;
+        }
+        if (instruction.type === "ignore") {
+          const result = await ignoreRefactorCandidate(ctx, instruction);
+          await postMessage(pi, result.message, result);
+          return;
+        }
+        const result = await writeRefactorPlan(ctx, instruction.args);
         await postMessage(pi, formatRefactorCommandMessage(result), result);
         return;
       }

@@ -3,8 +3,11 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  appendRefactorIgnoreNote,
+  buildRefactorGrillPrompt,
   buildSkillInvocation,
   collectLiveRefactorEvidence,
+  extractRefactorCandidateChoices,
   formatRefactorCommandMessage,
   generateAgentMapMarkdown,
   generateCompareMarkdown,
@@ -13,6 +16,7 @@ import {
   normalizeAgentOutputArg,
   parseCompareArgs,
   parseRefactorArgs,
+  parseRefactorInstruction,
   parseUnderstandCommand,
   splitArgs,
   splitFirstArg,
@@ -87,6 +91,20 @@ assert.deepEqual(parseRefactorArgs("auth flow plan.md"), {
 assert.deepEqual(parseRefactorArgs("most tangled part"), {
   focus: "most tangled part",
   output: "refactor-plan-understand-refactor.md",
+});
+assert.deepEqual(parseRefactorInstruction("grill 2 custom-plan.md"), {
+  type: "grill",
+  index: 2,
+  output: "custom-plan.md",
+});
+assert.deepEqual(parseRefactorInstruction("ignore 3"), {
+  type: "ignore",
+  index: 3,
+  output: "refactor-plan-understand-refactor.md",
+});
+assert.deepEqual(parseRefactorInstruction("regenerate with focus services state"), {
+  type: "generate",
+  args: "services state",
 });
 
 assert.equal(normalizeAgentOutputArg("@frontend"), "frontend-codebase-map-understand.md");
@@ -201,7 +219,9 @@ assert.match(refactorMarkdown, /Previous plan continuity/);
 assert.match(refactorMarkdown, /old-auth/);
 assert.match(refactorMarkdown, /Live file confirmed/);
 assert.match(refactorMarkdown, /test\/auth\.test\.ts/);
-assert.match(refactorMarkdown, /\/understand-chat Based on refactor-plan-understand-refactor\.md/);
+assert.match(refactorMarkdown, /\/understand-chat Use refactor-plan-understand-refactor\.md/);
+assert.match(refactorMarkdown, /selected refactor candidate: <candidate>/);
+assert.deepEqual(extractRefactorCandidateChoices(refactorMarkdown, 2), ["src/auth.ts"]);
 
 const refactorCommandMessage = formatRefactorCommandMessage({
   written: true,
@@ -210,6 +230,17 @@ const refactorCommandMessage = formatRefactorCommandMessage({
 });
 assert.match(refactorCommandMessage, /# Understand-Anything Refactor Plan/);
 assert.match(refactorCommandMessage, /What do you want to do next\?/);
-assert.match(refactorCommandMessage, /\/skill:grill-with-docs <candidate>/);
+assert.match(refactorCommandMessage, /reply `grill 1`/);
+assert.match(refactorCommandMessage, /`src\/auth\.ts`/);
+assert.match(refactorCommandMessage, /regenerate with focus <area>/);
+
+const grillPrompt = buildRefactorGrillPrompt({ candidate: "src/auth.ts", outputPath: join(fixtureRoot, "refactor-plan-understand-refactor.md"), cwd: fixtureRoot });
+assert.match(grillPrompt, /Selected Understand Refactor candidate: `src\/auth\.ts`/);
+assert.match(grillPrompt, /Next skill: `grill-with-docs`/);
+assert.match(grillPrompt, /Ask one question at a time/);
+
+const ignoredPlan = appendRefactorIgnoreNote(refactorMarkdown, { index: 1, candidate: "src/auth.ts" });
+assert.match(ignoredPlan, /## Operator notes/);
+assert.match(ignoredPlan, /Ignored candidate 1: `src\/auth\.ts`/);
 
 console.log("understand-extension ok");
