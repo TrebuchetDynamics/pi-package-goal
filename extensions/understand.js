@@ -130,6 +130,16 @@ export function parseRefactorInstruction(args = "") {
   return { type: "generate", args: args.trim() };
 }
 
+export function buildRefactorMissingGraphMessage({ graphPath, refactorArgs = "" } = {}) {
+  const trimmedArgs = String(refactorArgs ?? "").trim();
+  const rerunCommand = trimmedArgs ? `/understand-refactor ${trimmedArgs}` : "/understand-refactor";
+  return [
+    `No Understand-Anything graph found at ${graphPath}.`,
+    "Starting /understand now to build the graph directly.",
+    `After /understand saves the graph, rerun \`${rerunCommand}\` to generate the refactor plan.`,
+  ].join(" ");
+}
+
 export function buildSkillInvocation({ skillName, skillPath, skillContent, args = "" }) {
   const skillDir = dirname(skillPath);
   const userArgs = args.trim();
@@ -1041,7 +1051,12 @@ async function writeRefactorPlan(ctx, args) {
     if (error?.code === "ENOENT") {
       return {
         written: false,
-        message: `No Understand-Anything graph found at ${graphPath}. Run /understand first, then /understand refactor.`,
+        needsGraphRefresh: true,
+        graphPath,
+        outputPath,
+        focus: parsed.focus,
+        refactorArgs: args.trim(),
+        message: buildRefactorMissingGraphMessage({ graphPath, refactorArgs: args }),
       };
     }
     throw error;
@@ -1106,6 +1121,27 @@ async function writeCompareMap(ctx, args) {
   };
 }
 
+export async function handleRefactorCommand(pi, ctx, paths, args = "") {
+  const instruction = parseRefactorInstruction(args);
+  if (instruction.type === "grill") {
+    const result = await grillRefactorCandidate(pi, ctx, instruction);
+    await postMessage(pi, result.message, result);
+    return result;
+  }
+  if (instruction.type === "ignore") {
+    const result = await ignoreRefactorCandidate(ctx, instruction);
+    await postMessage(pi, result.message, result);
+    return result;
+  }
+  const result = await writeRefactorPlan(ctx, instruction.args);
+  await postMessage(pi, formatRefactorCommandMessage(result), result);
+  if (result.needsGraphRefresh) {
+    await sendSkillInvocation(pi, ctx, paths, "understand", "");
+    return { ...result, dispatchedUnderstand: true };
+  }
+  return result;
+}
+
 function registerUnderstandCommand(pi, name, paths) {
   const description = name === "understand"
     ? "Run Understand-Anything analysis and related graph workflows"
@@ -1155,19 +1191,7 @@ function registerUnderstandCommand(pi, name, paths) {
       }
 
       if (parsed.type === "refactor") {
-        const instruction = parseRefactorInstruction(parsed.args);
-        if (instruction.type === "grill") {
-          const result = await grillRefactorCandidate(pi, ctx, instruction);
-          await postMessage(pi, result.message, result);
-          return;
-        }
-        if (instruction.type === "ignore") {
-          const result = await ignoreRefactorCandidate(ctx, instruction);
-          await postMessage(pi, result.message, result);
-          return;
-        }
-        const result = await writeRefactorPlan(ctx, instruction.args);
-        await postMessage(pi, formatRefactorCommandMessage(result), result);
+        await handleRefactorCommand(pi, ctx, paths, parsed.args);
         return;
       }
 

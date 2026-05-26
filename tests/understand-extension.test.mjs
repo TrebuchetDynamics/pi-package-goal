@@ -13,6 +13,7 @@ import {
   generateCompareMarkdown,
   generateRefactorMarkdown,
   getUnderstandPaths,
+  handleRefactorCommand,
   normalizeAgentOutputArg,
   parseCompareArgs,
   parseRefactorArgs,
@@ -242,5 +243,36 @@ assert.match(grillPrompt, /Ask one question at a time/);
 const ignoredPlan = appendRefactorIgnoreNote(refactorMarkdown, { index: 1, candidate: "src/auth.ts" });
 assert.match(ignoredPlan, /## Operator notes/);
 assert.match(ignoredPlan, /Ignored candidate 1: `src\/auth\.ts`/);
+
+const missingGraphRoot = await mkdtemp(join(tmpdir(), "understand-refactor-missing-"));
+const fakePluginDir = join(missingGraphRoot, "understand-anything-plugin");
+const fakeSkillsRoot = join(fakePluginDir, "skills");
+await mkdir(join(fakeSkillsRoot, "understand"), { recursive: true });
+await writeFile(join(fakeSkillsRoot, "understand", "SKILL.md"), "# Understand\n\nRun analysis.\n");
+const dispatchedUserMessages = [];
+const postedMessages = [];
+const refactorBootstrapResult = await handleRefactorCommand(
+  {
+    sendMessage(message) { postedMessages.push(message); },
+    sendUserMessage(content, options) { dispatchedUserMessages.push({ content, options }); },
+  },
+  { cwd: missingGraphRoot, isIdle: () => true, hasUI: false },
+  {
+    repoDir: missingGraphRoot,
+    repoUrl: "https://example.test/ua.git",
+    pluginDir: fakePluginDir,
+    skillsRoot: fakeSkillsRoot,
+    pluginLink: join(missingGraphRoot, "understand-plugin-link"),
+  },
+  "auth flow custom-plan.md",
+);
+assert.equal(refactorBootstrapResult.needsGraphRefresh, true);
+assert.equal(postedMessages.length, 1);
+assert.match(postedMessages[0].content, /Starting \/understand now/);
+assert.match(postedMessages[0].content, /\/understand-refactor auth flow custom-plan\.md/);
+assert.equal(dispatchedUserMessages.length, 1);
+assert.match(dispatchedUserMessages[0].content, /<skill name="understand"/);
+assert.match(dispatchedUserMessages[0].content, /Run analysis\./);
+assert.equal(dispatchedUserMessages[0].options, undefined);
 
 console.log("understand-extension ok");
