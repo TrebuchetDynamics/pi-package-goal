@@ -93,6 +93,16 @@ assert.deepEqual(parseRefactorArgs("most tangled part"), {
   focus: "most tangled part",
   output: "refactor-plan-understand-refactor.md",
 });
+assert.deepEqual(parseRefactorArgs("@internal/channels/telegram/."), {
+  focus: "",
+  output: "telegram-refactor-plan-understand-refactor.md",
+  targetPath: "internal/channels/telegram",
+});
+assert.deepEqual(parseRefactorArgs("@internal/channels/telegram/. auth flow custom-plan.md"), {
+  focus: "auth flow",
+  output: "custom-plan.md",
+  targetPath: "internal/channels/telegram",
+});
 assert.deepEqual(parseRefactorInstruction("grill 2 custom-plan.md"), {
   type: "grill",
   index: 2,
@@ -222,6 +232,10 @@ assert.match(refactorMarkdown, /Live file confirmed/);
 assert.match(refactorMarkdown, /test\/auth\.test\.ts/);
 assert.match(refactorMarkdown, /\/understand-chat Use refactor-plan-understand-refactor\.md/);
 assert.match(refactorMarkdown, /selected refactor candidate: <candidate>/);
+assert.match(refactorMarkdown, /## Bug search checkpoints/);
+assert.match(refactorMarkdown, /Before refactor/);
+assert.match(refactorMarkdown, /During refactor/);
+assert.match(refactorMarkdown, /After refactor/);
 assert.deepEqual(extractRefactorCandidateChoices(refactorMarkdown, 2), ["src/auth.ts"]);
 
 const refactorCommandMessage = formatRefactorCommandMessage({
@@ -239,6 +253,7 @@ const grillPrompt = buildRefactorGrillPrompt({ candidate: "src/auth.ts", outputP
 assert.match(grillPrompt, /Selected Understand Refactor candidate: `src\/auth\.ts`/);
 assert.match(grillPrompt, /Next skill: `grill-with-docs`/);
 assert.match(grillPrompt, /Ask one question at a time/);
+assert.match(grillPrompt, /before, during, and after the refactor/);
 
 const ignoredPlan = appendRefactorIgnoreNote(refactorMarkdown, { index: 1, candidate: "src/auth.ts" });
 assert.match(ignoredPlan, /## Operator notes/);
@@ -249,30 +264,62 @@ const fakePluginDir = join(missingGraphRoot, "understand-anything-plugin");
 const fakeSkillsRoot = join(fakePluginDir, "skills");
 await mkdir(join(fakeSkillsRoot, "understand"), { recursive: true });
 await writeFile(join(fakeSkillsRoot, "understand", "SKILL.md"), "# Understand\n\nRun analysis.\n");
-const dispatchedUserMessages = [];
-const postedMessages = [];
-const refactorBootstrapResult = await handleRefactorCommand(
-  {
-    sendMessage(message) { postedMessages.push(message); },
-    sendUserMessage(content, options) { dispatchedUserMessages.push({ content, options }); },
-  },
-  { cwd: missingGraphRoot, isIdle: () => true, hasUI: false },
-  {
-    repoDir: missingGraphRoot,
-    repoUrl: "https://example.test/ua.git",
-    pluginDir: fakePluginDir,
-    skillsRoot: fakeSkillsRoot,
-    pluginLink: join(missingGraphRoot, "understand-plugin-link"),
-  },
-  "auth flow custom-plan.md",
-);
-assert.equal(refactorBootstrapResult.needsGraphRefresh, true);
-assert.equal(postedMessages.length, 1);
-assert.match(postedMessages[0].content, /Starting \/understand now/);
-assert.match(postedMessages[0].content, /\/understand-refactor auth flow custom-plan\.md/);
-assert.equal(dispatchedUserMessages.length, 1);
-assert.match(dispatchedUserMessages[0].content, /<skill name="understand"/);
-assert.match(dispatchedUserMessages[0].content, /Run analysis\./);
-assert.equal(dispatchedUserMessages[0].options, undefined);
+const fakePaths = {
+  repoDir: missingGraphRoot,
+  repoUrl: "https://example.test/ua.git",
+  pluginDir: fakePluginDir,
+  skillsRoot: fakeSkillsRoot,
+  pluginLink: join(missingGraphRoot, "understand-plugin-link"),
+};
+function makePiRecorder() {
+  const dispatchedUserMessages = [];
+  const postedMessages = [];
+  return {
+    dispatchedUserMessages,
+    postedMessages,
+    pi: {
+      sendMessage(message) { postedMessages.push(message); },
+      sendUserMessage(content, options) { dispatchedUserMessages.push({ content, options }); },
+    },
+  };
+}
+
+{
+  const recorder = makePiRecorder();
+  const refactorBootstrapResult = await handleRefactorCommand(
+    recorder.pi,
+    { cwd: missingGraphRoot, isIdle: () => true, hasUI: false },
+    fakePaths,
+    "auth flow custom-plan.md",
+  );
+  assert.equal(refactorBootstrapResult.needsGraphRefresh, true);
+  assert.equal(refactorBootstrapResult.understandArgs, "");
+  assert.equal(recorder.postedMessages.length, 1);
+  assert.match(recorder.postedMessages[0].content, /Starting `\/understand` now/);
+  assert.match(recorder.postedMessages[0].content, /\/understand-refactor auth flow custom-plan\.md/);
+  assert.equal(recorder.dispatchedUserMessages.length, 1);
+  assert.match(recorder.dispatchedUserMessages[0].content, /<skill name="understand"/);
+  assert.match(recorder.dispatchedUserMessages[0].content, /Run analysis\./);
+  assert.equal(recorder.dispatchedUserMessages[0].options, undefined);
+}
+
+{
+  await mkdir(join(missingGraphRoot, "internal", "channels", "telegram"), { recursive: true });
+  const recorder = makePiRecorder();
+  const refactorBootstrapResult = await handleRefactorCommand(
+    recorder.pi,
+    { cwd: missingGraphRoot, isIdle: () => true, hasUI: false },
+    fakePaths,
+    "@internal/channels/telegram/. auth flow custom-plan.md",
+  );
+  assert.equal(refactorBootstrapResult.needsGraphRefresh, true);
+  assert.equal(refactorBootstrapResult.understandArgs, "internal/channels/telegram");
+  assert.equal(refactorBootstrapResult.graphPath, join(missingGraphRoot, "internal", "channels", "telegram", ".understand-anything", "knowledge-graph.json"));
+  assert.match(recorder.postedMessages[0].content, /Starting `\/understand internal\/channels\/telegram` now/);
+  assert.match(recorder.postedMessages[0].content, /folder-scoped graph/);
+  assert.match(recorder.postedMessages[0].content, /\/understand-refactor @internal\/channels\/telegram\/\. auth flow custom-plan\.md/);
+  assert.equal(recorder.dispatchedUserMessages.length, 1);
+  assert.match(recorder.dispatchedUserMessages[0].content, /User: internal\/channels\/telegram$/);
+}
 
 console.log("understand-extension ok");

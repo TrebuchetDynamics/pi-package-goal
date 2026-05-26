@@ -81,9 +81,15 @@ export function splitArgs(args = "") {
   return tokens;
 }
 
+function normalizeFolderToken(folder) {
+  const withoutAt = String(folder ?? "").replace(/^@/, "").trim();
+  const withoutDotSuffix = withoutAt.replace(/[\\/]\.$/, "");
+  const cleaned = withoutDotSuffix.replace(/[\\/]+$/, "");
+  return cleaned || withoutAt || "project";
+}
+
 function folderBasename(folder) {
-  const cleaned = folder.replace(/^@/, "").replace(/[\\/]+$/, "").trim();
-  return basename(cleaned) || "project";
+  return basename(normalizeFolderToken(folder)) || "project";
 }
 
 export function parseCompareArgs(args = "") {
@@ -104,10 +110,14 @@ export function parseCompareArgs(args = "") {
 export function parseRefactorArgs(args = "") {
   const tokens = splitArgs(args);
   const outputToken = tokens.length && /\.md$/i.test(tokens.at(-1)) ? tokens.pop() : undefined;
-  return {
+  const targetIndex = tokens.findIndex((token) => token.startsWith("@"));
+  const targetPath = targetIndex === -1 ? undefined : normalizeFolderToken(tokens.splice(targetIndex, 1)[0]);
+  const result = {
     focus: tokens.join(" ").trim(),
-    output: outputToken || "refactor-plan-understand-refactor.md",
+    output: outputToken || (targetPath ? `${folderBasename(targetPath)}-refactor-plan-understand-refactor.md` : "refactor-plan-understand-refactor.md"),
   };
+  if (targetPath) result.targetPath = targetPath;
+  return result;
 }
 
 export function parseRefactorInstruction(args = "") {
@@ -130,12 +140,14 @@ export function parseRefactorInstruction(args = "") {
   return { type: "generate", args: args.trim() };
 }
 
-export function buildRefactorMissingGraphMessage({ graphPath, refactorArgs = "" } = {}) {
+export function buildRefactorMissingGraphMessage({ graphPath, refactorArgs = "", understandArgs = "" } = {}) {
   const trimmedArgs = String(refactorArgs ?? "").trim();
+  const trimmedUnderstandArgs = String(understandArgs ?? "").trim();
+  const understandCommand = trimmedUnderstandArgs ? `/understand ${trimmedUnderstandArgs}` : "/understand";
   const rerunCommand = trimmedArgs ? `/understand-refactor ${trimmedArgs}` : "/understand-refactor";
   return [
     `No Understand-Anything graph found at ${graphPath}.`,
-    "Starting /understand now to build the graph directly.",
+    `Starting \`${understandCommand}\` now to build ${trimmedUnderstandArgs ? "the folder-scoped graph" : "the graph"} directly.`,
     `After /understand saves the graph, rerun \`${rerunCommand}\` to generate the refactor plan.`,
   ].join(" ");
 }
@@ -558,7 +570,7 @@ export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath
   const liveEvidenceWasCollected = Object.keys(liveEvidence).length > 0;
   const previousPlanSummary = summarizePreviousRefactorPlan(previousPlan);
   const previousPlanWasRead = Boolean(String(previousPlan ?? "").trim());
-  const chatPrompt = `Use ${outputRel}, the previous-plan continuity section, the current Understand graph, and the live file/test evidence to grill the selected refactor candidate: <candidate>. Stress-test domain terms, tests, risks, and small validation-backed slices before editing code. Focus: ${focusText}.`;
+  const chatPrompt = `Use ${outputRel}, the previous-plan continuity section, the current Understand graph, and the live file/test evidence to grill the selected refactor candidate: <candidate>. Stress-test domain terms, bug risks before/during/after the refactor, tests, and small validation-backed slices before editing code. Focus: ${focusText}.`;
 
   const lines = [
     "# Understand-Anything Refactor Plan",
@@ -607,10 +619,18 @@ export function generateRefactorMarkdown(graph, { cwd = process.cwd(), graphPath
     "## Refactor slices",
     "",
     "1. **Characterize the seam** — read the candidate, graph relationships, live file stats, callers, and related tests; confirm the graph is current against live files.",
-    "2. **Add or tighten behavior tests** — lock observable behavior through the public interface before moving code; create a focused test if no related test was found.",
-    "3. **Deepen the module** — move repeated orchestration or branching behind one smaller interface; avoid new pass-through wrappers.",
-    "4. **Delete replaced shallow paths** — remove tests or modules that only exercise implementation details after the deeper interface is covered.",
-    "5. **Run focused validation** — run the smallest relevant test command, then broader validation if the seam crosses modules.",
+    "2. **Pre-refactor bug search** — inspect existing behavior, TODO/FIXME/error paths, callers, and current tests for likely bugs before changing code; turn confirmed bugs into focused regression tests or explicit bug notes.",
+    "3. **Add or tighten behavior tests** — lock observable behavior through the public interface before moving code; create a focused test if no related test was found.",
+    "4. **Deepen the module** — move repeated orchestration or branching behind one smaller interface; avoid new pass-through wrappers.",
+    "5. **During-refactor bug search** — after each small move, compare behavior against the baseline, run focused validation, and stop to diagnose any new or suspicious failure before continuing.",
+    "6. **Delete replaced shallow paths** — remove tests or modules that only exercise implementation details after the deeper interface is covered.",
+    "7. **Post-refactor bug search** — rerun baseline and focused validation, inspect the diff for accidental behavior changes, and add regressions for any bug found before broad validation.",
+    "",
+    "## Bug search checkpoints",
+    "",
+    "- **Before refactor:** establish a baseline, inspect known-risk branches and error paths, search nearby TODO/FIXME notes, and document any suspected existing bugs separately from refactor intent.",
+    "- **During refactor:** keep changes small, run focused validation after each slice, compare outputs against baseline behavior, and diagnose suspicious failures immediately instead of batching them.",
+    "- **After refactor:** rerun the baseline plus focused/broad validation, review public behavior changes in the diff, and create regression tests or bug notes for anything discovered.",
     "",
     "## Architecture layers to inspect",
     "",
@@ -869,9 +889,9 @@ export function buildRefactorGrillPrompt({ candidate, outputPath = "refactor-pla
     `Selected Understand Refactor candidate: \`${candidate}\``,
     `Artifact: \`${outputRel}\``,
     "Next skill: `grill-with-docs`",
-    "Success signal: a docs-backed, testable refactor slice or an explicit decision to ignore this candidate.",
+    "Success signal: a docs-backed, testable refactor slice with bug-search checkpoints or an explicit decision to ignore this candidate.",
     "",
-    `Use \`${outputRel}\`, the current repository docs, tests, and live code to stress-test candidate \`${candidate}\` before editing code. Ask one question at a time and provide your recommended answer for each question.`,
+    `Use \`${outputRel}\`, the current repository docs, tests, and live code to stress-test candidate \`${candidate}\` before editing code. Explicitly search for bugs before, during, and after the refactor. Ask one question at a time and provide your recommended answer for each question.`,
   ].join("\n");
 }
 
@@ -925,7 +945,7 @@ function helpText(paths = getUnderstandPaths()) {
     `  /understand diff                  Analyze current changes\n` +
     `  /understand agent [output.md]     Write an agent-readable Markdown map\n` +
     `  /understand compare <a> <b> [out] Compare two folders with existing graphs\n` +
-    `  /understand refactor [focus] [out] Generate a graph-based refactor plan\n` +
+    `  /understand refactor [@folder] [focus] [out] Generate a graph-based refactor plan\n` +
     `  /understand explain <target>      Explain a file/function\n` +
     `  /understand onboard               Generate onboarding guide\n` +
     `  /understand domain                Extract business domain graph\n` +
@@ -1040,8 +1060,9 @@ async function ignoreRefactorCandidate(ctx, instruction) {
 }
 
 async function writeRefactorPlan(ctx, args) {
-  const graphPath = resolve(ctx.cwd, ".understand-anything", "knowledge-graph.json");
   const parsed = parseRefactorArgs(args);
+  const projectRoot = parsed.targetPath ? resolveFolderArg(ctx.cwd, parsed.targetPath) : ctx.cwd;
+  const graphPath = resolve(projectRoot, ".understand-anything", "knowledge-graph.json");
   const outputPath = isAbsolute(parsed.output) ? parsed.output : resolve(ctx.cwd, parsed.output);
 
   let graph;
@@ -1054,9 +1075,12 @@ async function writeRefactorPlan(ctx, args) {
         needsGraphRefresh: true,
         graphPath,
         outputPath,
+        projectRoot,
+        targetPath: parsed.targetPath,
         focus: parsed.focus,
         refactorArgs: args.trim(),
-        message: buildRefactorMissingGraphMessage({ graphPath, refactorArgs: args }),
+        understandArgs: parsed.targetPath ?? "",
+        message: buildRefactorMissingGraphMessage({ graphPath, refactorArgs: args, understandArgs: parsed.targetPath }),
       };
     }
     throw error;
@@ -1069,7 +1093,7 @@ async function writeRefactorPlan(ctx, args) {
     if (error?.code !== "ENOENT") throw error;
   }
 
-  const liveEvidence = await collectLiveRefactorEvidence(graph, { cwd: ctx.cwd, focus: parsed.focus });
+  const liveEvidence = await collectLiveRefactorEvidence(graph, { cwd: projectRoot, focus: parsed.focus });
   const markdown = generateRefactorMarkdown(graph, { cwd: ctx.cwd, graphPath, outputPath, focus: parsed.focus, liveEvidence, previousPlan });
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, markdown, "utf8");
@@ -1077,6 +1101,8 @@ async function writeRefactorPlan(ctx, args) {
     written: true,
     outputPath,
     graphPath,
+    projectRoot,
+    targetPath: parsed.targetPath,
     focus: parsed.focus,
     liveEvidenceCount: Object.keys(liveEvidence).length,
     previousPlanRead: Boolean(previousPlan.trim()),
@@ -1136,7 +1162,7 @@ export async function handleRefactorCommand(pi, ctx, paths, args = "") {
   const result = await writeRefactorPlan(ctx, instruction.args);
   await postMessage(pi, formatRefactorCommandMessage(result), result);
   if (result.needsGraphRefresh) {
-    await sendSkillInvocation(pi, ctx, paths, "understand", "");
+    await sendSkillInvocation(pi, ctx, paths, "understand", result.understandArgs ?? "");
     return { ...result, dispatchedUnderstand: true };
   }
   return result;

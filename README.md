@@ -107,6 +107,7 @@ Common commands:
 | `/understand agent @frontend` | Write `frontend-codebase-map-understand.md`. |
 | `/understand compare ../project-a ../project-b` | Compare two existing graphs and write a deterministic compare map. |
 | `/understand refactor "auth flow"` | Generate a deterministic refactor plan from the current graph. |
+| `/understand-refactor @internal/channels/telegram/.` | Generate/use a folder-only graph for refactor planning. |
 | `/understand-refactor "most tangled part"` | Direct alias for graph-based refactor planning. |
 | `/understand explain src/auth/login.ts` | Explain one file or path. |
 | `/understand onboard` | Generate onboarding guidance from the graph. |
@@ -132,8 +133,8 @@ Notes:
 
 - `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default.
 - `/understand compare <folder-a> <folder-b>` requires both folders to already contain `.understand-anything/knowledge-graph.json`.
-- `/understand refactor [focus] [output.md]` uses the current repo graph and writes `refactor-plan-understand-refactor.md` by default; if no graph exists, it starts `/understand` directly so the graph can be built first.
-- Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, and related-test discovery, displays the generated plan inline, then supports concrete follow-ups: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
+- `/understand refactor [@folder] [focus] [output.md]` uses the current repo graph by default; with `@folder`, it reads `folder/.understand-anything/knowledge-graph.json`, defaults the plan name from that folder, and if no graph exists, starts `/understand <folder>` directly to build a folder-only graph first.
+- Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then supports concrete follow-ups: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
 ## Included skills
