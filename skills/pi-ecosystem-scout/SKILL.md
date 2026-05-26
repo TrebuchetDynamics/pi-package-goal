@@ -47,7 +47,8 @@ High-value categories from that index:
    - `adapt`: borrow the pattern, keep local ownership clear.
    - `exclude`: existing tool is stale, unsafe, too broad, or conflicts with project constraints.
    - `build`: no suitable existing pattern found.
-5. If building, include package metadata, tests, and a short README from the start.
+5. For `adapt`, translate the external pattern into a local requirement before editing. Do not add source-specific files, notices, or references unless you copy code/text or bundle a resource.
+6. If building, include package metadata, tests, and a short README from the start.
 
 ## Report Format
 
@@ -66,5 +67,6 @@ Pi ecosystem scout:
 
 - Do not install third-party Pi packages without explicit user approval.
 - Review code before recommending install; Pi packages run with full system access.
-- Preserve licenses and attribution when copying or adapting code or skills.
+- Preserve licenses and attribution when copying code, text, or bundled resources; pattern-only inspiration belongs in the scout report, not package notices.
+- Prefer the smallest reversible, test-backed patch after a scout result; avoid broad harness adoption unless the user explicitly asks.
 - Do not treat awesome-pi-agent as authoritative API documentation; it is an index.

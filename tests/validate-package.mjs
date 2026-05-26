@@ -368,6 +368,7 @@ async function testSkills() {
   assert.match(goal, /continue_next_slice/);
   assert.match(goal, /skill creation or skill improvement → `write-a-skill`/);
   assert.match(goal, /Pi extension or package resource work → `pi-extensions-helper`/);
+  assert.match(goal, /Do not convert a learn, study, or scout request into repo edits/);
   const goalContract = read("skills/goal/references/operating-contract.md");
   assert.match(goalContract, /No-arg status semantics/);
   assert.match(goalContract, /Multi-slice continuation/);
@@ -400,6 +401,14 @@ async function testSkills() {
   for (const file of listSkillFiles(root)) {
     assert.doesNotMatch(read(file), /setup-matt-pocock-skills/, `${file} should not reference upstream setup skill`);
   }
+
+  const piEcosystemScout = read("skills/pi-ecosystem-scout/SKILL.md");
+  assert.match(piEcosystemScout, /translate the external pattern into a local requirement before editing/);
+  assert.match(piEcosystemScout, /pattern-only inspiration belongs in the scout report, not package notices/);
+  const piExtensionsHelper = read("skills/pi-extensions-helper/SKILL.md");
+  assert.match(piExtensionsHelper, /write the local design rule first/);
+  assert.match(piExtensionsHelper, /Keep guardrail logic in pure helpers with focused tests/);
+  assert.match(piExtensionsHelper, /Make safety gates fail closed/);
 
   const gitCommitPush = read("skills/git-commit-push/SKILL.md");
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);

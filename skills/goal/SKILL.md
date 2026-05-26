@@ -86,6 +86,7 @@ Before accepting `goal complete` or declaring completion: restate deliverables, 
 
 - Do not mark complete from memory alone.
 - Do not hide blockers.
+- Do not convert a learn, study, or scout request into repo edits unless the user asks to change the project.
 - Do not run destructive actions, publish, deploy, spend money, expose secrets, or rewrite Git history unless the user explicitly asks for that risky action.
 - Do not invent persistent state outside the conversation. If durable automation is needed, ask the user which project-specific runner they want to use.
 

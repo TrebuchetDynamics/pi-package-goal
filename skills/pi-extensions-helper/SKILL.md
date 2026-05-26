@@ -58,6 +58,8 @@ Use examples before inventing patterns:
 
 ## Implementation guardrails
 
+- For third-party pattern inspiration, write the local design rule first and keep source-specific references out of the package unless copying code/text or bundling a resource.
+- Start with the smallest reversible patch that proves the pattern; add broad harness behavior only after explicit user approval.
 - Export a default function receiving `ExtensionAPI`; async factory is OK for startup discovery.
 - Import Pi core packages as peer deps in packages: `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`.
 - Use `StringEnum` for string enum parameters; avoid `Type.Union([Type.Literal(...)])` for Google compatibility.
@@ -66,6 +68,8 @@ Use examples before inventing patterns:
 - Throw from `execute()` to mark tool errors; returning error-looking content does not set `isError`.
 - Honor `ctx.signal` for nested async work and check `ctx.hasUI` before interactive UI.
 - Store branch-sensitive state in tool result `details` or custom entries and reconstruct on `session_start` / tree changes.
+- Keep guardrail logic in pure helpers with focused tests; make the Pi adapter a thin event/tool/command wrapper.
+- Make safety gates fail closed and explain the blocked action plus the safer next tool or workflow.
 - Avoid stale `ctx`/`pi` objects after `newSession`, `switchSession`, `fork`, or `reload`; use replacement callback contexts.
 - In prompt guidelines, name the tool explicitly; do not write “use this tool”.
 
