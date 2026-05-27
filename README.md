@@ -66,7 +66,7 @@ This package also includes a portable tmux profile under `tmux/`:
 
 - `tmux/tmux.conf` — phone-friendly tmux config with a one-line status bar.
 - `tmux/tx` — installable tmux session launcher exposed as the package `tx` bin.
-- `tmux/install.sh` — copies the tmux config, helper scripts, generated status fragment, local style defaults, and `tx` into the current user account.
+- `tmux/install.sh` — copies the tmux config, status helper scripts, local style defaults, and `tx` into the current user account.
 
 Install the profile from a checkout:
 

@@ -133,11 +133,12 @@ async function testTmuxMouseSelectionDoesNotAutoCopy() {
   assert.doesNotMatch(config, /set -g mouse on/);
 }
 
-async function testTmuxConfigUsesSimpleInlineStatus() {
+async function testTmuxConfigShowsGitBranchStatus() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
+  assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
   assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
-  assert.doesNotMatch(config, /#\(~\/\.tmux\/(?:git-status|short-path)\.sh/);
+  assert.doesNotMatch(config, /#\(~\/\.tmux\/short-path\.sh/);
 }
 
 async function testTmuxUsesDefaultResizeBehavior() {
@@ -166,7 +167,7 @@ await testTxConfigLifecycleWithoutTmuxSessions();
 await testInstallScript();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
-await testTmuxConfigUsesSimpleInlineStatus();
+await testTmuxConfigShowsGitBranchStatus();
 await testTmuxUsesDefaultResizeBehavior();
 await testTmuxPluginsAreNotLoaded();
 await testTmuxConfigParsesWhenTmuxExists();

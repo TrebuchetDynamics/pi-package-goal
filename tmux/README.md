@@ -86,7 +86,7 @@ set -g @primary_color '#06d6a0'
 set -g @primary_text_color '#101820'
 ```
 
-The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect only the tmux session name and hostname.
+The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect only the tmux session name and hostname. The current git branch is shown by `~/.tmux/git-status.sh`: green when clean, red when changed or untracked.
 
 ## tx config
 
