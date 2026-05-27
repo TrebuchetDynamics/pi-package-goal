@@ -51,3 +51,11 @@ _Avoid_: assistant prose in place of command evidence
 **Third-Party Skill Notices**:
 License and attribution records in `THIRD_PARTY_NOTICES.md` and `licenses/` for bundled upstream-derived skills.
 _Avoid_: updating bundled skills without preserving license copies and source attribution
+
+**Tmux Profile**:
+Portable tmux helper assets under `tmux/`, including `tmux.conf`, `tx`, installer scripts, local style defaults, and status helper scripts. These are package helper assets rather than Pi package resources.
+_Avoid_: docs/install drift, hard-coded helper paths that contradict installer overrides, machine-local style choices committed as shared defaults
+
+**Tmux Status Profile**:
+The tmux status-bar interface assembled by `tmux/tmux.conf` from local style settings. The profile intentionally avoids resize overrides and complex status helper execution for SSH/mobile compatibility.
+_Avoid_: scattering status path/color/git knowledge across config, installer, docs, and tests; overriding tmux resize defaults; adding mobile-specific resize hooks

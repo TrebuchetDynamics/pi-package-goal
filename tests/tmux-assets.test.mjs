@@ -92,7 +92,8 @@ async function testInstallScript() {
   try {
     const home = path.join(tmp, "home");
     const bin = path.join(tmp, "bin");
-    const env = { HOME: home, TX_BIN_DIR: bin, TX_INSTALL_BACKUP: "0" };
+    const helperDir = path.join(tmp, "helpers");
+    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0" };
     const linkDir = path.join(tmp, "link-bin");
     fs.mkdirSync(linkDir, { recursive: true });
     const txLink = path.join(linkDir, "tx");
@@ -100,8 +101,8 @@ async function testInstallScript() {
     const output = run(txLink, ["install"], { env });
     assert.match(output, /installed: .*\.tmux\.conf/);
     assert.ok(fs.existsSync(path.join(home, ".tmux.conf")));
-    assert.ok(fs.existsSync(path.join(home, ".tmux", "git-status.sh")));
-    assert.ok(fs.existsSync(path.join(home, ".tmux", "short-path.sh")));
+    assert.ok(fs.existsSync(path.join(helperDir, "git-status.sh")));
+    assert.ok(fs.existsSync(path.join(helperDir, "short-path.sh")));
     assert.ok(fs.existsSync(path.join(bin, "tx")));
     assert.match(run(path.join(bin, "tx"), ["help"], { env }), /Usage:/);
   } finally {
@@ -129,21 +130,29 @@ async function testStatusHelpers() {
 async function testTmuxMouseSelectionDoesNotAutoCopy() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.doesNotMatch(config, /Mouse(?:DragEnd|DoubleClick|TripleClick)1Pane[^\n]*copy-pipe-and-cancel/);
-  assert.match(config, /unbind -T copy-mode-vi MouseDragEnd1Pane/);
-  assert.match(config, /unbind -T copy-mode MouseDragEnd1Pane/);
-  assert.match(config, /bind -T root DoubleClick1Pane[^\n]*select-word/);
-  assert.match(config, /bind -T root TripleClick1Pane[^\n]*select-line/);
-  assert.match(config, /bind -T copy-mode-vi DoubleClick1Pane[^\n]*select-word/);
-  assert.match(config, /bind -T copy-mode-vi TripleClick1Pane[^\n]*select-line/);
-  assert.match(config, /bind -T copy-mode DoubleClick1Pane[^\n]*select-word/);
-  assert.match(config, /bind -T copy-mode TripleClick1Pane[^\n]*select-line/);
+  assert.doesNotMatch(config, /set -g mouse on/);
 }
 
-async function testTmuxPluginsAreSilentWhenTpmIsMissing() {
+async function testTmuxConfigUsesSimpleInlineStatus() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
-  assert.doesNotMatch(config, /TPM not installed; plugins skipped/);
-  assert.doesNotMatch(config, /if-shell[^\n]*display-message/);
-  assert.match(config, /if-shell -b 'test -x ~\/\.tmux\/plugins\/tpm\/tpm' 'run ~\/\.tmux\/plugins\/tpm\/tpm'/);
+  assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
+  assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
+  assert.doesNotMatch(config, /#\(~\/\.tmux\/(?:git-status|short-path)\.sh/);
+}
+
+async function testTmuxUsesDefaultResizeBehavior() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.doesNotMatch(config, /set -g window-size/);
+  assert.doesNotMatch(config, /setw -g aggressive-resize/);
+  assert.doesNotMatch(config, /set-hook -g client-(?:resized|focus-in|attached).*resize-window -A/);
+  assert.doesNotMatch(config, /bind S if -F '#\{==:#\{window-size\},smallest\}'/);
+  assert.doesNotMatch(config, /bind F resize-window -A/);
+}
+
+async function testTmuxPluginsAreNotLoaded() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.doesNotMatch(config, /@plugin/);
+  assert.doesNotMatch(config, /tmux\/plugins\/tpm/);
 }
 
 async function testTmuxConfigParsesWhenTmuxExists() {
@@ -157,7 +166,9 @@ await testTxConfigLifecycleWithoutTmuxSessions();
 await testInstallScript();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
-await testTmuxPluginsAreSilentWhenTpmIsMissing();
+await testTmuxConfigUsesSimpleInlineStatus();
+await testTmuxUsesDefaultResizeBehavior();
+await testTmuxPluginsAreNotLoaded();
 await testTmuxConfigParsesWhenTmuxExists();
 
 console.log("tmux-assets ok");

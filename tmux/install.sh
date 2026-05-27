@@ -30,9 +30,22 @@ install_file() {
   printf 'installed: %s\n' "$dest"
 }
 
-mkdir -p "$(dirname "$TMUX_CONF_TARGET")" "$TMUX_HELPER_DIR" "$TX_BIN_DIR"
+install_file_if_missing() {
+  mode=$1
+  src=$2
+  dest=$3
+  if [ -e "$dest" ]; then
+    printf 'kept existing: %s\n' "$dest"
+    return 0
+  fi
+  install -m "$mode" "$src" "$dest"
+  printf 'installed: %s\n' "$dest"
+}
+
+mkdir -p "$(dirname "$TMUX_CONF_TARGET")" "$HOME/.tmux" "$TMUX_HELPER_DIR" "$TX_BIN_DIR"
 
 install_file 0644 "$script_dir/tmux.conf" "$TMUX_CONF_TARGET"
+install_file_if_missing 0644 "$script_dir/style.tmux" "$HOME/.tmux/style.tmux"
 install_file 0755 "$script_dir/git-status.sh" "$TMUX_HELPER_DIR/git-status.sh"
 install_file 0755 "$script_dir/short-path.sh" "$TMUX_HELPER_DIR/short-path.sh"
 install_file 0755 "$script_dir/tx" "$TX_BIN_DIR/$TX_BIN_NAME"
