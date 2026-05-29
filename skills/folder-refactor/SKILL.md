@@ -13,6 +13,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 2. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/exports, callers, related tests, package manifests, and language module boundaries.
 3. If no target is named and the user wants discovery, run `candidates-folder-refactor` first and use its top-five evidence to pick one bounded folder.
 4. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
+5. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff.
 
 ## Workflow
 
@@ -33,10 +34,16 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - Phase 3: clean up compatibility shims, dead code, and names only when callers and tests prove it is safe.
    - Preserve behavior before cleanup; do not combine moves, rewrites, and semantic changes in one opaque patch.
    - Delete duplicate code only after tests or direct diff evidence prove the shared implementation covers it.
-4. **Check diff budget before broadening**
+4. **Continue autonomously**
+   - Do not stop after moving one or two files if the target topology still has obvious remaining slices and validation is green.
+   - After each validated slice, update the remaining folder-refactor objective and pick the next safest slice in the same turn.
+   - Prefer finishing all move-only slices for the named folder before attempting extraction or cleanup slices.
+   - Stop automatic continuation only for failed validation, unclear ownership, public API/product behavior risk, generated-file risk, excessive diff size, context/budget pressure, or when the folder matches the planned topology.
+   - If forced to stop before completion, leave a concrete continuation plan naming the next files/subfolder to move and the validation command to rerun.
+5. **Check diff budget before broadening**
    - Pause for owner review if the patch unexpectedly changes public import paths, package exports, generated snapshots, migrations, data formats, or more than the target folder plus import-fix callers.
    - If the diff becomes mostly rewrites instead of moves/import updates, stop and split the work.
-5. **Verify and report**
+6. **Verify and report**
    - Run related tests/typechecks or explain the closest available validation.
    - Report old → new topology, reused/shared modules, public compatibility kept or intentionally changed, and remaining risks.
 
@@ -60,6 +67,9 @@ Before creating shared code, prove:
 - tests or direct checks cover both callers;
 - deletion of the duplicate happens only after the shared implementation validates.
 
+### Continuation gate
+A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, or cleanup slices. Continue automatically while validation is green and no red line is hit.
+
 ### Verification gate
 Before done, provide evidence from at least one of: related tests, typecheck/build, import graph/search checks, generated snapshot updates, or a blocker explaining why validation cannot run.
 
@@ -77,10 +87,12 @@ Suggested validation by ecosystem:
 ### Output contract
 Final response must include:
 - target folder;
+- planned topology and whether it is complete;
 - files/subfolders moved or created;
 - code reuse/extractions performed;
 - compatibility notes for callers/imports;
-- validation evidence and any follow-up risks.
+- validation evidence;
+- if incomplete, the exact next autonomous slice and what `lgtm` will continue.
 
 ## Shared contract
 

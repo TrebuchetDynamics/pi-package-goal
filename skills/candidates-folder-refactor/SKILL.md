@@ -31,9 +31,11 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 3. **Confirm top five**
    - Inspect names/tree/imports/tests around each result.
    - Drop false positives caused by generated code, vendored code, snapshots, fixtures, or a deliberately cohesive language/package boundary.
-   - For each surviving candidate, explain why `folder-refactor` would be the next skill and what boundary to give it.
+   - For each surviving candidate, include raw scanner metrics inline (`files/churn/callers/imports/tests/roles/duplicates`) before the judgment so evidence is easy to compare.
+   - Explain why `folder-refactor` would be the next skill and what boundary to give it.
 4. **Hand off**
    - If the owner picks a candidate, hand off to `folder-refactor` with the exact target folder, evidence from the scan, and validation hints found nearby.
+   - If the owner says `lgtm` after the candidate report, treat it as approving candidate #1 and immediately run `folder-refactor` on that exact folder with the candidate metrics and suggested boundary.
 
 ## Red lines
 
@@ -47,12 +49,12 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 ```text
 Candidates folder refactor: <repo-or-folder>
 Top candidates:
-1. <path> — <why noisy; suggested folder-refactor boundary>
+1. <path> — metrics: files <n>, churn <n>, callers <n>, imports-out <n>, tests <n>, roles <n>, duplicates <n>. <why noisy; suggested folder-refactor boundary>
 2. ...
 Validation/scout evidence:
 - scanner: <command>
 - inspected: <paths or searches>
-Next step: run folder-refactor on <best path> if owner approves
+Next step: say `lgtm` to run folder-refactor immediately on <best path>, or name another candidate.
 ```
 
 ## Shared contract
