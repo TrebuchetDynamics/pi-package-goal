@@ -15,6 +15,8 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 4. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
 5. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff.
 6. Keep the repo GREEN: existing relevant tests must pass after each slice; if no adequate behavior tests exist for the moved code, create focused public-interface tests before deeper extraction/cleanup.
+7. Do not call a partial slice "complete". Completion means the whole named folder matches the planned topology, not merely that the latest batch of files moved successfully.
+8. Make shared code a first-class outcome after move-only safety: actively look for duplicated helpers/types/test setup in the new subfolders and extract proven shared modules when tests protect the behavior.
 
 ## Workflow
 
@@ -33,15 +35,17 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - Phase 1 is move-only: move files, update imports/exports, and preserve behavior. Do not rename symbols, extract code, delete compatibility shims, or clean up logic in this phase.
    - Run the narrowest meaningful validation after Phase 1 before any extraction. If move-only validation fails, fix import/path breakage before continuing.
    - If no meaningful validation exists, create or extend behavior tests at the nearest public seam before continuing beyond move-only work.
-   - Phase 2: extract shared code only from proven duplicate call sites; run validation again.
+   - Phase 2: scan the moved subfolders for duplicate helpers, fixtures, constants, setup, adapters, validation, and value-object logic; extract shared code only from proven duplicate call sites; run validation again.
+   - Prefer local shared modules inside the target folder (for example `shared/`, `internal/`, `testutil/`, or language-idiomatic equivalents) over dumping unrelated code into global utilities.
    - Phase 3: clean up compatibility shims, dead code, and names only when callers and tests prove it is safe.
    - Preserve behavior before cleanup; do not combine moves, rewrites, and semantic changes in one opaque patch.
    - Delete duplicate code only after tests or direct diff evidence prove the shared implementation covers it.
 4. **Continue autonomously**
    - Do not stop after moving one or two files if the target topology still has obvious remaining slices and validation is green.
-   - After each validated slice, update the remaining folder-refactor objective and pick the next safest slice in the same turn.
+   - After each validated slice, re-list the target folder, compare remaining root files/subfolders against the planned topology, update the objective, and pick the next safest slice in the same turn.
    - Prefer finishing all move-only slices for the named folder before attempting extraction or cleanup slices.
-   - Stop automatic continuation only for failed validation, unclear ownership, public API/product behavior risk, generated-file risk, excessive diff size, context/budget pressure, or when the folder matches the planned topology.
+   - If many files still sit in the old/root location and their destination is obvious from the topology, continue moving the next batch instead of reporting success.
+   - Stop automatic continuation only for failed validation, unclear ownership, public API/product behavior risk, generated-file risk, excessive diff size, context/budget pressure, or when the whole folder matches the planned topology.
    - If forced to stop before completion, leave a concrete continuation plan naming the next files/subfolder to move and the validation command to rerun.
 5. **Check diff budget before broadening**
    - Pause for owner review if the patch unexpectedly changes public import paths, package exports, generated snapshots, migrations, data formats, or more than the target folder plus import-fix callers.
@@ -69,15 +73,31 @@ Before changing behavior-adjacent structure, prove at least one of:
 - a new focused behavior test was added using `tdd` discipline and passes before/after the refactor;
 - no correct test seam exists, in which case stop deeper cleanup/extraction and report the seam gap instead of pretending validation is adequate.
 
-### Extraction gate
-Before creating shared code, prove:
+### Shared-code gate
+Before declaring the refactor complete, perform a shared-code pass across the new subfolders and tests. Report either the shared modules extracted or why duplication intentionally remains.
+
+Extract shared code when:
 - at least two concrete call sites need the same behavior;
 - the behavior is identical, not just similarly shaped;
+- the shared location has a clear responsibility inside the target folder;
 - behavior tests or direct public-interface checks cover both callers;
 - deletion of the duplicate happens only after the shared implementation validates.
 
+Keep duplication when semantics differ, tests are missing, the shared name would be vague (`utils`, `common` without a specific responsibility), or extraction would broaden public API.
+
+### Extraction gate
+Before creating shared code, prove the shared-code gate is satisfied; otherwise document why extraction is intentionally skipped.
+
 ### Continuation gate
-A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, or cleanup slices. Continue automatically while validation is green and no red line is hit.
+A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, shared-code opportunities, or cleanup slices. Continue automatically while validation is green and no red line is hit.
+
+### Completion audit
+Before saying the topology is complete, re-read the target folder tree from disk and list remaining root files. For every remaining file, classify it as:
+- intentional root public facade/compatibility file;
+- intentionally out of scope for the chosen topology;
+- next move/extraction candidate.
+
+If any next move/extraction candidates remain and validation is green, continue instead of ending. Never write "complete for this slice" as the final state; report either "complete for target folder" or "incomplete, continuing/blocked".
 
 ### Verification gate
 Before done, related tests must pass. If no related tests existed, include the new behavior test(s) created or a blocker explaining why no correct public seam exists. Typecheck/build, import graph/search checks, and generated snapshot updates are supporting evidence, not substitutes for available behavior tests.
@@ -96,11 +116,12 @@ Suggested validation by ecosystem:
 ### Output contract
 Final response must include:
 - target folder;
-- planned topology and whether it is complete;
+- planned topology and whether it is complete for the target folder, not just the latest slice;
 - files/subfolders moved or created;
-- code reuse/extractions performed;
+- shared-code opportunities found, extractions performed, and duplication intentionally left;
 - compatibility notes for callers/imports;
 - validation evidence, including related tests passed or new behavior tests created;
+- remaining root files classified as facade/out-of-scope/next candidate;
 - if incomplete, the exact next autonomous slice and what `lgtm` will continue.
 
 ## Shared contract
