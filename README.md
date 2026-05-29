@@ -157,6 +157,7 @@ Notes:
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
 | `folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
+| `candidates-folder-refactor` | Rank noisy folders/subfolders as the top candidates to hand to `folder-refactor`. |
 | `improve-codebase-architecture` | Produce evidence-backed HTML architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs and record decisions. |

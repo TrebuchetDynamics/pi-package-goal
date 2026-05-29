@@ -1,6 +1,6 @@
 ---
 name: chrome-extensions
-description: Build, debug, review, and publish Chrome Extensions using Manifest V3. Use when the user mentions Chrome/browser extensions, manifest.json, content scripts, service workers, popup/side panel UI, chrome.* APIs, declarativeNetRequest, omnibox, context menus, permissions, privacy policy, or store publishing.
+description: Build, debug, review, and publish Chrome Extensions using Manifest V3. Use for Chrome/browser extensions, manifest.json, content scripts, service workers, popup UI, chrome.* APIs, permissions, privacy, or store publishing.
 ---
 
 # Chrome Extensions

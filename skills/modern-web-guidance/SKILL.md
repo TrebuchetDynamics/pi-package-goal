@@ -1,6 +1,6 @@
 ---
 name: modern-web-guidance
-description: Search modern web-platform best practices before implementing browser UI, HTML/CSS, client-side JS, framework layout/style work, Web APIs, forms, motion, or performance features. Use when the task touches frontend/browser behavior; do not use for backend APIs, CI/CD, Docker, local scripts, ESLint, or Git-only work.
+description: Search modern web-platform best practices before browser UI, HTML/CSS, client-side JS, Web APIs, forms, motion, or performance work. Use for frontend/browser behavior, not backend, CI, Docker, local scripts, ESLint, or Git-only work.
 ---
 
 # Modern Web Guidance

@@ -11,8 +11,8 @@ Use this skill for the final delivery step after implementation work. It replace
 
 Resolve mode before acting:
 
-- **Audit/status mode** — if the user asks for `audit`, `status`, `review`, or invokes the skill without an explicit commit/push/ship request: inspect and report; do not stage, commit, or push.
-- **Ship mode** — if the user asks to `commit`, `push`, `ship`, `commit and push`, `finish delivery`, `polish and commit`, or `fix issues and ship`: inspect, safely polish, validate, intentionally stage, commit, and push.
+- **Audit/status mode** — only if the user explicitly asks for `audit`, `status`, `review`, `dry run`, or `do not commit/push`: inspect and report; do not stage, commit, or push.
+- **Ship mode (default)** — if the user invokes the skill without an explicit audit/status request, or asks to `commit`, `push`, `ship`, `commit and push`, `finish delivery`, `polish and commit`, or `fix issues and ship`: inspect, safely polish, validate, intentionally stage, commit, and push.
 - **Blocked-continuation mode** — if the user asks to resolve a previous `GIT_COMMIT_PUSH_DECISION: blocked|review_needed`: inspect the named blocker first, safely fix it when in scope, then continue if ship mode is explicit or the prior request was already ship mode.
 
 If validation commands are provided, use them. Otherwise infer project validation, with `npm test` when `package.json` has a test script, plus `git diff --check`.
@@ -77,7 +77,7 @@ GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
 
-Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, not as a default pause for safe polish in ship mode. Use `blocked` when validation cannot be safely fixed, risky files are present, or git/remote state prevents safe delivery. Use `shipped` only after validation passes, commit succeeds, push succeeds, and final git state is verified.
+Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, never because the user omitted explicit ship wording. Use `blocked` when validation cannot be safely fixed, risky files are present, or git/remote state prevents safe delivery. Use `shipped` only after validation passes, commit succeeds, push succeeds, and final git state is verified.
 
 ## Shared contract
 

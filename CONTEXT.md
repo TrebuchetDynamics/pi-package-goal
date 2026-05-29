@@ -36,6 +36,10 @@ _Avoid_: vague "use related skills" advice, handoffs without evidence, duplicati
 The `folder-refactor` skill keeps folder refactors bounded to one named directory, treats repo-root reshapes as high-risk owner decisions, first maps imports/callers/tests/package boundaries, then reorganizes by responsibility while extracting shared code only from proven duplicate call sites.
 _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent public import path breakage, mixing behavior changes with file moves, ignoring language module boundaries
 
+**Candidates Folder Refactor Skill**:
+The `candidates-folder-refactor` skill scouts for noisy folders/subfolders and ranks the top five bounded targets to hand to `folder-refactor`, including support for scanning beneath a named folder.
+_Avoid_: treating heuristic scores as proof, recommending repo-root refactors, ranking generated/vendor/cache/build folders as actionable targets
+
 **Shared Skill Contract**:
 A compact baseline under `skills/shared/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
 _Avoid_: hidden universal expectations, rigid forms that override specialist instructions, broad edits to unrelated user work

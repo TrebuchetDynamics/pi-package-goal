@@ -1,6 +1,6 @@
 ---
 name: prototype
-description: Build throwaway prototypes to answer design questions before committing. Use when the user asks to prototype, sanity-check logic/state/data models, mock up UI, compare design options, or says "prototype this", "let me play with it", or "try a few designs".
+description: Build throwaway prototypes to answer design questions before committing. Use when asked to prototype, sanity-check logic/state/data models, mock up UI, compare options, or "try a few designs".
 ---
 
 # Prototype

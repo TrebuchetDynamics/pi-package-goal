@@ -17,6 +17,7 @@ const expectedSkills = [
   "grill-with-docs",
   "prototype",
   "folder-refactor",
+  "candidates-folder-refactor",
   "zoom-out",
   "to-issues",
   "to-prd",
@@ -406,10 +407,18 @@ async function testSkills() {
   assert.match(tdd, /Repo study before RED/);
   assert.match(tdd, /git status --short --branch/);
   assert.match(read("skills/prototype/SKILL.md"), /Repo study before building/);
+  const candidatesFolderRefactor = read("skills/candidates-folder-refactor/SKILL.md");
+  assert.match(candidatesFolderRefactor, /Top candidates/);
+  assert.match(candidatesFolderRefactor, /folder-refactor/);
+  assert.match(candidatesFolderRefactor, /Do not recommend repo-root refactors/);
   const folderRefactor = read("skills/folder-refactor/SKILL.md");
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
-  assert.match(folderRefactor, /Phase 1: move files and update imports only/);
+  assert.match(folderRefactor, /Phase 1 is move-only/);
+  assert.match(folderRefactor, /Extraction gate/);
+  assert.match(folderRefactor, /Suggested validation by ecosystem/);
+  assert.match(folderRefactor, /Check diff budget before broadening/);
+  assert.match(folderRefactor, /candidates-folder-refactor/);
   assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
   assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);
   assert.match(read("skills/grill-with-docs/SKILL.md"), /codebase-map-understand\.md when present/);
@@ -439,7 +448,8 @@ async function testSkills() {
   assert.match(gitCommitPush, /Polish, validate, commit, and push safe git worktree changes/);
   assert.match(gitCommitPush, /safely polish, validate, intentionally stage, commit, and push/);
   assert.match(gitCommitPush, /fix safe in-scope issues directly and rerun validation/);
-  assert.match(gitCommitPush, /not as a default pause for safe polish in ship mode/);
+  assert.match(gitCommitPush, /Ship mode \(default\)/);
+  assert.match(gitCommitPush, /never because the user omitted explicit ship wording/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
   assert.match(gitCommitPush, /Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes/);
