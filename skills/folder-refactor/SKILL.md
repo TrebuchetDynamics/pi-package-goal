@@ -14,6 +14,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 3. If no target is named and the user wants discovery, run `candidates-folder-refactor` first and use its top-five evidence to pick one bounded folder.
 4. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
 5. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff.
+6. Keep the repo GREEN: existing relevant tests must pass after each slice; if no adequate behavior tests exist for the moved code, create focused public-interface tests before deeper extraction/cleanup.
 
 ## Workflow
 
@@ -21,6 +22,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - List current files, public entrypoints, internal-only modules, tests, fixtures, generated files, and external callers.
    - Find duplicated logic, types, constants, validation, adapters, and utility seams before creating new code.
    - Name the current behavior contract: imports that must keep working, package boundaries, exported symbols, CLI/API routes, snapshots, and observable outputs.
+   - Identify related validation before editing. If coverage is missing or too implementation-coupled for the behavior being preserved, use `tdd` discipline: add one focused behavior test through a public interface, watch it pass on the current code when possible, then refactor against it.
    - For Go, inspect `go.mod`, package names, exported identifiers, import paths, and candidate validation such as `go test ./...`, targeted `go test ./path/...`, `go list ./...`, or `go vet ./...`.
 2. **Choose subfolders by responsibility**
    - Match existing project layout and naming before inventing new topology.
@@ -30,6 +32,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 3. **Refactor safely**
    - Phase 1 is move-only: move files, update imports/exports, and preserve behavior. Do not rename symbols, extract code, delete compatibility shims, or clean up logic in this phase.
    - Run the narrowest meaningful validation after Phase 1 before any extraction. If move-only validation fails, fix import/path breakage before continuing.
+   - If no meaningful validation exists, create or extend behavior tests at the nearest public seam before continuing beyond move-only work.
    - Phase 2: extract shared code only from proven duplicate call sites; run validation again.
    - Phase 3: clean up compatibility shims, dead code, and names only when callers and tests prove it is safe.
    - Preserve behavior before cleanup; do not combine moves, rewrites, and semantic changes in one opaque patch.
@@ -60,18 +63,24 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 - Which code is duplicated enough to share, and which similarity should stay separate?
 - Are tests, snapshots, build config, package exports, language package/module boundaries, and path aliases affected?
 
+### Test gate
+Before changing behavior-adjacent structure, prove at least one of:
+- relevant existing tests pass and cover the public behavior being preserved;
+- a new focused behavior test was added using `tdd` discipline and passes before/after the refactor;
+- no correct test seam exists, in which case stop deeper cleanup/extraction and report the seam gap instead of pretending validation is adequate.
+
 ### Extraction gate
 Before creating shared code, prove:
 - at least two concrete call sites need the same behavior;
 - the behavior is identical, not just similarly shaped;
-- tests or direct checks cover both callers;
+- behavior tests or direct public-interface checks cover both callers;
 - deletion of the duplicate happens only after the shared implementation validates.
 
 ### Continuation gate
 A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, or cleanup slices. Continue automatically while validation is green and no red line is hit.
 
 ### Verification gate
-Before done, provide evidence from at least one of: related tests, typecheck/build, import graph/search checks, generated snapshot updates, or a blocker explaining why validation cannot run.
+Before done, related tests must pass. If no related tests existed, include the new behavior test(s) created or a blocker explaining why no correct public seam exists. Typecheck/build, import graph/search checks, and generated snapshot updates are supporting evidence, not substitutes for available behavior tests.
 
 Suggested validation by ecosystem:
 - JS/TS: package test script, typecheck/build script when present, and `rg` for stale old import paths.
@@ -91,7 +100,7 @@ Final response must include:
 - files/subfolders moved or created;
 - code reuse/extractions performed;
 - compatibility notes for callers/imports;
-- validation evidence;
+- validation evidence, including related tests passed or new behavior tests created;
 - if incomplete, the exact next autonomous slice and what `lgtm` will continue.
 
 ## Shared contract

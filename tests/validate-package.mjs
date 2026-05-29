@@ -421,6 +421,10 @@ async function testSkills() {
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
   assert.match(folderRefactor, /Phase 1 is move-only/);
+  assert.match(folderRefactor, /Test gate/);
+  assert.match(folderRefactor, /use `tdd` discipline/);
+  assert.match(folderRefactor, /related tests must pass/);
+  assert.match(folderRefactor, /new behavior tests created/);
   assert.match(folderRefactor, /Extraction gate/);
   assert.match(folderRefactor, /Suggested validation by ecosystem/);
   assert.match(folderRefactor, /Continue autonomously/);
