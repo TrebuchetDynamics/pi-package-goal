@@ -48,4 +48,4 @@ If there is no clear prior recommendation, ask one clarifying question: "What sh
 
 ## Shared contract
 
-Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+Follow [the shared skill contract](../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

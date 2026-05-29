@@ -35,4 +35,4 @@ The _answer_ is the only thing worth keeping from a prototype. Capture it somewh
 
 ## Shared contract
 
-Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+Follow [the shared skill contract](../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

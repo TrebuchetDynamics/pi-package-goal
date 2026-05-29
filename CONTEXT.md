@@ -37,7 +37,7 @@ The `folder-refactor` skill keeps folder refactors bounded to one named director
 _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent public import path breakage, mixing behavior changes with file moves, ignoring language module boundaries
 
 **Shared Skill Contract**:
-A compact baseline under `skills/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
+A compact baseline under `skills/shared/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
 _Avoid_: hidden universal expectations, rigid forms that override specialist instructions, broad edits to unrelated user work
 
 **Handoff Evidence**:

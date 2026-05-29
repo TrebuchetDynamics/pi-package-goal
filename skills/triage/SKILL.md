@@ -104,4 +104,4 @@ If prior triage notes exist on the issue, read them, check whether the reporter 
 
 ## Shared contract
 
-Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+Follow [the shared skill contract](../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

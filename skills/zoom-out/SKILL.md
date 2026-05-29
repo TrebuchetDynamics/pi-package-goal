@@ -8,4 +8,4 @@ I don't know this area of code well. Go up a layer of abstraction. Give me a map
 
 ## Shared contract
 
-Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+Follow [the shared skill contract](../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

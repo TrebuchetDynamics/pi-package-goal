@@ -96,4 +96,4 @@ Before accepting `goal complete` or declaring completion: restate deliverables, 
 
 - [Goal operating contract](references/operating-contract.md)
 - [Claude Goal adaptation notes](references/claude-goal.md)
-- [Shared skill contract](../COMMON-CONTRACT.md)
+- [Shared skill contract](../shared/COMMON-CONTRACT.md)

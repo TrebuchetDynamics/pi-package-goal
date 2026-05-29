@@ -172,6 +172,15 @@ function listSkillFiles(baseDir = root) {
   return out.sort();
 }
 
+function listPackageSkillRootMarkdownFiles(baseDir = root) {
+  const base = path.join(baseDir, "skills");
+  if (!fs.existsSync(base)) return [];
+  return fs.readdirSync(base, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .map((entry) => path.join("skills", entry.name).split(path.sep).join("/"))
+    .sort();
+}
+
 function collectSkillInventoryIssues(baseDir, expectedNames) {
   const expected = new Set(expectedNames);
   const actual = new Set(listSkillFiles(baseDir)
@@ -357,6 +366,7 @@ async function testSkills() {
   assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
+  assert.deepEqual(listPackageSkillRootMarkdownFiles(root), [], "root markdown files under pi.skills are loaded as file skills and must move under a non-skill subdirectory");
 
   const goal = read("skills/goal/SKILL.md");
   const goalLines = goal.trimEnd().split(/\r?\n/).length;
@@ -406,8 +416,8 @@ async function testSkills() {
   assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/to-issues/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/triage/SKILL.md"), /codebase-map-understand\.md/);
-  assert.ok(exists("skills/COMMON-CONTRACT.md"), "shared skill contract must exist");
-  const commonContract = read("skills/COMMON-CONTRACT.md");
+  assert.ok(exists("skills/shared/COMMON-CONTRACT.md"), "shared skill contract must exist");
+  const commonContract = read("skills/shared/COMMON-CONTRACT.md");
   assert.match(commonContract, /Repo and ownership check/);
   assert.match(commonContract, /Verification evidence/);
   assert.match(commonContract, /Handoff shape/);
