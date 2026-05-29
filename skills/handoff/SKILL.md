@@ -13,3 +13,7 @@ Do not duplicate content already captured in other artifacts (PRDs, plans, ADRs,
 Redact any sensitive information, such as API keys, passwords, or personally identifiable information.
 
 If the user passed arguments, treat them as a description of what the next session will focus on and tailor the doc accordingly.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

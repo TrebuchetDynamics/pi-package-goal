@@ -62,3 +62,7 @@ Append to the article file as each block is agreed. Re-read the file from disk b
 - Publishing, formatting for a specific platform, or adding frontmatter the user didn't ask for.
 
 </supporting-info>
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

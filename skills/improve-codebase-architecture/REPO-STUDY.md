@@ -24,6 +24,7 @@ Before a candidate can appear in the HTML report, gather at least:
 3. **Validation evidence** — an existing test, missing-test signal, or validation command affected by the seam.
 4. **Domain/decision evidence** — relevant `CONTEXT.md` term, ADR, or explicit note that none was found.
 5. **Deletion-test result** — whether deleting the suspected module concentrates complexity or merely moves it.
+6. **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [DEEPENING.md](DEEPENING.md).
 
 Do not include candidates based only on aesthetics, naming preference, file size, or generic layering rules. A large file is not automatically shallow; a small file is not automatically deep.
 
@@ -48,6 +49,7 @@ Use direct tool passes when no sub-agent tool exists:
 - **Shape pass** — inspect imports, exports, call paths, manifests, and package/module layout.
 - **Testability pass** — inspect tests and validation commands; note where tests cross the same interface callers use, or where they must pierce implementation details.
 - **Change-locality pass** — use `rg` to find repeated conditionals, duplicated orchestration, pass-through modules, and logic spread across callers.
+- **Dependency-shape pass** — identify whether the deepening is in-process, local-substitutable, ports & adapters, or mock; note which adapters would prove the seam is real.
 
 When parallel sub-agents are available, they may run these passes independently, but their findings still need concrete file/command evidence.
 
@@ -70,6 +72,7 @@ caller path: <entry point -> current module -> dependency>
 validation path: <test/command or missing-test signal>
 domain/ADR: <term/decision or none found>
 deletion test: <concentrates complexity | moves complexity | inconclusive>
+dependency category: <in-process|local-substitutable|ports & adapters|mock>
 confidence: <Strong|Worth exploring|Speculative>
 ```
 

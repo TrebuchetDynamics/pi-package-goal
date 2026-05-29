@@ -101,3 +101,7 @@ The description is the only always-visible part. Keep it under the package budge
 - [ ] `SKILL.md` is compact; details live in `references/`.
 - [ ] Contract names ambiguity handling, topology, verification, red lines, and output.
 - [ ] Terminology, examples, and scripts are concrete and safe.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

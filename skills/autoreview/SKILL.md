@@ -97,3 +97,7 @@ Include:
 - final clean review result, or why remaining findings were intentionally rejected.
 
 Do not run an extra review solely to improve final wording.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

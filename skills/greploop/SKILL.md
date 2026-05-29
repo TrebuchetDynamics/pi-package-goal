@@ -417,3 +417,7 @@ Greploop complete.
   Resolved:      9 comments
   Remaining:     0
 ```
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

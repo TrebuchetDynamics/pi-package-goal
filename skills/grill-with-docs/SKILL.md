@@ -1,88 +1,108 @@
 ---
 name: grill-with-docs
-description: Stress-test a plan against the project domain model and documented decisions while updating CONTEXT.md or ADRs as decisions crystallise. Use when the user wants docs-backed plan grilling.
+description: Grilling session that challenges a plan against existing domain language and documented decisions, updating CONTEXT.md or ADRs inline. Use when the user wants to stress-test a plan against project language, contexts, or durable architecture decisions.
 ---
 
-<what-to-do>
+# Grill With Docs
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Stress-test a plan against the repo's domain model and documented decisions until there is shared understanding. Walk the design tree branch-by-branch, ask hard questions one at a time, recommend an answer first, and update docs only when language or decisions crystallise.
 
-Ask the questions one at a time, waiting for feedback on each question before continuing.
+## Quick start
 
-If a question can be answered by exploring the codebase, explore the codebase instead. Start by inspecting repo instructions, git state, CONTEXT.md/CONTEXT-MAP.md, ADRs, relevant tests/manifests, and codebase-map-understand.md when present.
+1. Restate the plan and the next hard uncertainty.
+2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, and codebase-map-understand.md when present.
+3. Answer anything the code/docs can answer; ask the user only owner-decision questions.
+4. Ask one question at a time and wait for feedback before continuing. For each question, include your recommended answer.
+5. Capture resolved domain terms in `CONTEXT.md` immediately; offer ADRs sparingly for durable trade-offs.
 
-</what-to-do>
+## Entry protocol
 
-<supporting-info>
+- If the plan is clear: begin grilling immediately after the repo/documentation scan.
+- If scope is medium-ambiguous: propose the most likely context and ask one clarifying question.
+- If scope is high-risk or ownership is unclear: stop and identify the blocker before editing docs.
 
-## Domain awareness
+## Documentation topology
 
-During codebase exploration, also look for existing documentation:
+Most repos have one context:
 
-### File structure
-
-Most repos have a single context:
-
-```
+```text
 /
 ├── CONTEXT.md
-├── docs/
-│   └── adr/
-│       ├── 0001-event-sourced-orders.md
-│       └── 0002-postgres-for-write-model.md
+├── docs/adr/
 └── src/
 ```
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
+Repos with multiple bounded contexts should have `CONTEXT-MAP.md` at the root pointing to context-local `CONTEXT.md` and `docs/adr/` directories. If `CONTEXT-MAP.md` exists, read it first and choose the relevant context. If unclear, ask which context owns the plan.
 
+Create docs lazily: create `CONTEXT.md` only when the first term is resolved, and create `docs/adr/` only when the first ADR is accepted.
+
+## Grilling loop
+
+Interview relentlessly about every load-bearing aspect of the plan. Walk the design tree branch-by-branch, resolving dependencies between decisions in order. Do not proceed to a dependent branch until the current decision is answered, evidenced, or blocked.
+
+For each branch:
+
+- Challenge against the glossary: if the plan conflicts with `CONTEXT.md`, call it out immediately.
+- Sharpen fuzzy language: propose one canonical term and list aliases to avoid.
+- Use concrete scenarios: invent edge cases that test boundaries between concepts.
+- Cross-reference code: if the user says behaviour works one way but code says another, surface the contradiction.
+- Prefer evidence over questions: inspect files/tests/manifests instead of asking questions the repo can answer.
+- Separate evidence questions from owner decisions: code/docs answer evidence questions; the user answers trade-offs, priorities, and domain intent.
+- Ask exactly one owner-decision question at a time and wait for feedback.
+
+Question format:
+
+```text
+Decision branch: <what part of the plan this question unlocks>
+Question: <one hard decision>
+Recommended answer: <your best answer and why>
+Why it matters: <what this unlocks or prevents>
+Evidence checked: <files/docs/tests inspected, or none yet>
+Doc impact: none | CONTEXT.md term | ADR candidate
 ```
-/
-├── CONTEXT-MAP.md
-├── docs/
-│   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
-```
 
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
+After the user answers, restate the resolved decision in one sentence, apply any accepted doc update immediately, then move to the next dependent branch.
 
-## During the session
+## Updating CONTEXT.md
 
-### Challenge against the glossary
+When a term is resolved, update the relevant `CONTEXT.md` inline; do not batch terms until the end. Use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
 
-When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+`CONTEXT.md` is a glossary, not a spec or scratch pad. Keep it free of implementation details. Only add domain concepts specific to the project context; do not add general programming concepts.
 
-### Sharpen fuzzy language
+## ADR discipline
 
-When the user uses vague or overloaded terms, propose a precise canonical term. "You're saying 'account' — do you mean the Customer or the User? Those are different things."
+Offer an ADR only when all three are true:
 
-### Discuss concrete scenarios
+1. **Hard to reverse** — changing later has meaningful cost.
+2. **Surprising without context** — a future reader would wonder why.
+3. **Real trade-off** — genuine alternatives were considered.
 
-When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the user to be precise about the boundaries between concepts.
+If the user accepts, write the ADR using [ADR-FORMAT.md](./ADR-FORMAT.md). If any criterion is missing, skip the ADR and continue grilling.
 
-### Cross-reference with code
+## Skill handoffs
 
-When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
+- From `improve-codebase-architecture`: preserve the selected candidate, evidence base, and success signal; use grilling to settle domain terms, seams, and ADR-sensitive decisions before production-code edits.
+- To `tdd`: hand off the chosen behaviour, public interface, edge scenarios, and validation target.
+- To `prototype`: hand off competing interface/state options when a throwaway model can answer the question faster than discussion.
+- To `goal`: report compact evidence after each resolved branch so broad plans can continue slice-by-slice.
 
-### Update CONTEXT.md inline
+## Verification gate
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+Before declaring the grilling useful, ensure at least one of these is true:
 
-`CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
+- the next implementation decision is unblocked and stated plainly;
+- `CONTEXT.md` was updated with a resolved term;
+- an ADR was created or explicitly rejected with reason;
+- a blocker/owner decision is named with the exact question to answer next.
 
-### Offer ADRs sparingly
+## Red lines
 
-Only offer to create an ADR when all three are true:
+- Do not ask broad questionnaires; ask one hard question at a time.
+- Do not edit production code as part of grilling.
+- Do not write docs for decisions the user has not accepted.
+- Do not add implementation details to `CONTEXT.md`.
+- Do not create ADRs for obvious, reversible, or non-trade-off choices.
 
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
-2. **Surprising without context** — a future reader will wonder "why did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
+## Shared contract
 
-If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
-
-</supporting-info>
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

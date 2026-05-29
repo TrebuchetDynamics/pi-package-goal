@@ -400,8 +400,15 @@ async function testSkills() {
   assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/to-issues/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/triage/SKILL.md"), /codebase-map-understand\.md/);
+  assert.ok(exists("skills/COMMON-CONTRACT.md"), "shared skill contract must exist");
+  const commonContract = read("skills/COMMON-CONTRACT.md");
+  assert.match(commonContract, /Repo and ownership check/);
+  assert.match(commonContract, /Verification evidence/);
+  assert.match(commonContract, /Handoff shape/);
+  assert.match(commonContract, /Safety defaults/);
   for (const file of listSkillFiles(root)) {
     assert.doesNotMatch(read(file), /setup-matt-pocock-skills/, `${file} should not reference upstream setup skill`);
+    assert.match(read(file), /COMMON-CONTRACT\.md/, `${file} should reference the shared skill contract`);
   }
 
   const piEcosystemScout = read("skills/pi-ecosystem-scout/SKILL.md");

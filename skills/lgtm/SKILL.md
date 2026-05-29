@@ -12,7 +12,11 @@ Treat the user's approval as permission to continue with the most recent concret
 1. Identify the last assistant recommendation, option, design, or plan that was awaiting approval.
 2. Treat the user's approval as selecting that recommendation.
 3. Continue with the next planned action without asking the same approval question again.
-4. Briefly state what was accepted, then act.
+4. Briefly state what was accepted, then act with the relevant specialist skill or workflow.
+
+If the approved recommendation came from a Goal slice result, treat `Recommended next action` / `If you say lgtm` as the approved plan and continue that exact next action without restating the whole goal.
+
+If the approved recommendation came from an architecture review, preserve the review's evidence base: treat approval of `Top recommendation` as selecting that candidate, inspect the exact live files before editing, and either make the smallest safe mechanical cleanup with validation or enter the architecture grilling loop for design-bearing refactors.
 
 Example:
 
@@ -41,3 +45,7 @@ If there is no clear prior recommendation, ask one clarifying question: "What sh
 - Do not restart brainstorming after approval.
 - Do not ask "do you want me to proceed?" when the user already approved.
 - Do not expand scope beyond the accepted recommendation.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

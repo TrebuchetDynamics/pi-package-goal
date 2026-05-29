@@ -14,3 +14,7 @@ Interview the plan until the remaining uncertainty is explicit, but use self-ans
 7. If the right move is to pivot, name the pivot clearly and ask only for that pivot decision.
 
 Do not ask checklist-style easy questions. Do not ask questions just to confirm facts that can be inspected.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

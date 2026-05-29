@@ -70,3 +70,7 @@ Pi ecosystem scout:
 - Preserve licenses and attribution when copying code, text, or bundled resources; pattern-only inspiration belongs in the scout report, not package notices.
 - Prefer the smallest reversible, test-backed patch after a scout result; avoid broad harness adoption unless the user explicitly asks.
 - Do not treat awesome-pi-agent as authoritative API documentation; it is an index.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

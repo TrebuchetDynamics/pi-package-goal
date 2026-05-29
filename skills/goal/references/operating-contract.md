@@ -60,11 +60,34 @@ After each slice:
 2. run the focused validation for that slice;
 3. update Goal state evidence with the validation receipt;
 4. inspect repo evidence for the next smallest safe slice;
-5. continue immediately if the objective remains active and no stop condition applies.
+5. if stopping for an owner checkpoint, produce a slice result with one recommended next action;
+6. continue immediately if the objective remains active and no stop condition applies.
 
 Good next-slice evidence includes unchecked TODO/parity items, failing or missing focused tests, module lists from the source app, `codebase-map-understand.md` seams verified against live files, and explicit continuation markers like `DEV_GOAL_DECISION: continue_next_slice`.
 
-Do not stop at a status-only report when the next safe slice is known. A status reply is enough only for `goal status`, user-requested pause, blocked work, failed validation, soft-budget/context limits, or a completed objective.
+Do not stop at a status-only report when the next safe slice is known. A status reply is enough only for `goal status`, user-requested pause, blocked work, failed validation, soft-budget/context limits, a completed objective, or an explicit owner checkpoint with a concrete recommendation.
+
+## Slice result and `lgtm` compatibility
+
+When a validated slice pauses for user review, make the next action obvious and approvable. Use this shape:
+
+```text
+Implemented: <short slice name>
+Changed:
+- <paths/modules and what changed>
+Validation:
+- <command>: pass
+Recommended next action: <one concrete next slice or delivery action>
+If you say `lgtm`: I will <exact action that approval triggers>.
+```
+
+Recommendation rules:
+
+- Prefer the next smallest safe slice from repo evidence when the objective is still active.
+- Recommend `git-commit-push` only when the objective is implemented, validation is green, and the user has asked to ship or the next action is delivery review.
+- Recommend `goal complete` only after the completion audit has evidence for every explicit requirement.
+- If the next action needs an owner decision, phrase the decision and your recommended answer; `lgtm` should approve that answer, not an ambiguous direction.
+- Never make `lgtm` imply destructive actions, publishing, deployment, force-push, rebase/merge, or broad scope not stated in the recommendation.
 
 ## Skill routing details
 

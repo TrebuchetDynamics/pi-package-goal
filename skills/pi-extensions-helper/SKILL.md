@@ -82,3 +82,7 @@ Before reporting done:
 3. Test non-interactive behavior if the extension can run without UI.
 4. Verify package manifest includes extension files and required peer/runtime dependencies.
 5. Run project tests and `git diff --check` before committing.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

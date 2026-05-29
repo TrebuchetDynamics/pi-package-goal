@@ -30,7 +30,11 @@ _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource
 
 **Skill Composition**:
 Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
-_Avoid_: central protocols every skill must remember, vague "use related skills" advice, handoffs without evidence
+_Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
+
+**Shared Skill Contract**:
+A compact baseline under `skills/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
+_Avoid_: hidden universal expectations, rigid forms that override specialist instructions, broad edits to unrelated user work
 
 **Handoff Evidence**:
 A small standard shape for skill-to-skill transfers: trigger, artifact, next skill, and success signal. It is guidance, not a rigid schema.

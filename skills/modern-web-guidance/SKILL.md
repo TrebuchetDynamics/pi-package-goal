@@ -98,3 +98,7 @@ npx -y modern-web-guidance@latest retrieve "<id>"
   - Questions if a feature is safe to use without fallbacks.
 
   No defined policy format. This is an example: `**Browser Support:** Allow Newly Available features, but only adopt custom fallback code that adds <= 20 lines and does not require external dependencies.`
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

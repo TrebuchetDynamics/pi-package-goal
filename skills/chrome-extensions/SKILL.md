@@ -500,3 +500,7 @@ Verify EVERY item before delivering:
 - [ ] Error handling on all async operations
 - [ ] `host_permissions` scoped to specific domains (not `<all_urls>` unless needed)
 - [ ] `return true` in `onMessage` listeners with async responses
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

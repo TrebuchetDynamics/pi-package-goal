@@ -35,7 +35,7 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, and commands inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `npm test`). No introduction paragraph — straight into the candidates.
+Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, and commands inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `npm test`). Include a small note if generated graph evidence was verified against live files. No introduction paragraph — straight into the candidates.
 
 ## Candidate card
 
@@ -51,9 +51,10 @@ Each candidate is one `<article>`:
 - **Problem** — one sentence. What hurts.
 - **Solution** — one sentence. What changes.
 - **Wins** — bullets, ≤6 words each. e.g. "Tests hit one interface", "Pricing logic stops leaking", "Delete 4 shallow wrappers".
+- **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock`, shown as a small badge.
 - **ADR callout** (if applicable) — one line in an amber-tinted box.
 
-No paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram. If a candidate lacks caller evidence, validation evidence, or a deletion-test result, mark it `Speculative` or cut it. Never include filler candidates just to reach a count.
+No paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram. Be visual: mix Mermaid, hand-built boxes, cross-sections, mass diagrams, and call-graph collapse. If a candidate lacks caller evidence, validation evidence, or a deletion-test result, mark it `Speculative` or cut it. Never include filler candidates just to reach a count.
 
 ## Diagram patterns
 

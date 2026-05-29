@@ -5,7 +5,7 @@ description: Produce evidence-backed architecture-deepening reviews using repo s
 
 # Improve Codebase Architecture
 
-Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
+Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability: one small interface, one high-leverage implementation, and tests that cross the same seam as callers.
 
 ## Glossary
 
@@ -50,7 +50,15 @@ Start with the repository's own evidence, not generic heuristics. Inspect:
 
 Build working study notes with domain terms, ADR constraints, hot paths, caller/test evidence, validation commands, and candidate friction. Do not write repo files during exploration unless the user asked for durable docs.
 
-For every candidate, verify at least one caller path and one test/validation path. Apply the **deletion test**: would deleting the module concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
+Explore organically and record where you feel friction:
+
+- understanding one concept requires bouncing between many small modules;
+- a module is shallow — interface nearly as complex as implementation;
+- pure functions were extracted for testability, but real bugs hide in orchestration;
+- tightly-coupled modules leak across seams;
+- tests pierce implementation details or miss the behaviour behind the interface.
+
+For every candidate, verify at least one caller path and one test/validation path. Apply the **deletion test**: would deleting the module concentrate complexity, or just move it? A "yes, concentrates" is the signal you want. Classify the dependency shape with [DEEPENING.md](DEEPENING.md): `in-process`, `local-substitutable`, `ports & adapters`, or `mock`.
 
 Study quality gate before reporting:
 
@@ -70,11 +78,12 @@ The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via C
 For each candidate, render a card with:
 
 - **Files** — involved files/modules;
-- **Study evidence** — docs, callers, tests, commands, or graph facts inspected;
-- **Problem** — why the current architecture causes friction;
-- **Solution** — what would change in plain English;
-- **Benefits** — locality, leverage, and testability wins;
-- **Before / After diagram** — side-by-side, custom-drawn;
+- **Study evidence** — docs, callers, tests, commands, graph facts, and deletion-test result;
+- **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [DEEPENING.md](DEEPENING.md);
+- **Problem** — one sentence on what hurts;
+- **Solution** — one sentence on what changes;
+- **Wins** — terse bullets naming locality, leverage, and testability gains;
+- **Before / After diagram** — the centrepiece, side-by-side and custom-drawn;
 - **Recommendation strength** — `Strong`, `Worth exploring`, or `Speculative`.
 
 End with a **Top recommendation** section: which candidate to tackle first and why.
@@ -94,9 +103,21 @@ Top recommendation: <candidate>
 Next question: Which of these would you like to explore?
 ```
 
-### 3. Grilling loop
+### 3. Approval continuation
 
-Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+If the user replies with `lgtm`, `go ahead`, `approved`, or similar after the report, treat it as selecting the **Top recommendation** unless they named a different candidate. Do not ask the same exploration question again.
+
+Continue according to the candidate type:
+
+- **Mechanical cleanup** (delete an unused duplicate Module, remove an obsolete export, move code behind an already-chosen seam): restate the accepted candidate, inspect the exact live files and git diff, make the smallest safe edit, then run the focused validation path from the report plus package/project validation when available.
+- **Design-bearing refactor** (new Interface, new Adapter, cross-module migration, ADR-sensitive change): restate the accepted candidate and enter the grilling loop before editing production code.
+- **Risky or unclear ownership** (dirty unrelated worktree, destructive deletion without caller/test proof, broad migration): stop and report the blocker or ask one hard ownership question.
+
+For mechanical cleanup, the review phase is over once the user approves the candidate; production-code edits are allowed only inside the accepted candidate's blast radius and only with validation evidence.
+
+### 4. Grilling loop
+
+Once the user picks a design-bearing candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened Module, what sits behind the seam, what tests survive.
 
 Side effects happen inline as decisions crystallize:
 
@@ -111,3 +132,7 @@ Side effects happen inline as decisions crystallize:
 - Do not include a candidate that only says "make it cleaner" or "split this up" without locality/leverage proof.
 - Do not edit production code during the review phase.
 - Do not write the HTML report into the repository.
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.

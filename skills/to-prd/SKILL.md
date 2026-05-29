@@ -74,3 +74,7 @@ A description of the things that are out of scope for this PRD.
 Any further notes about the feature.
 
 </prd-template>
+
+## Shared contract
+
+Follow [the shared skill contract](../COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
