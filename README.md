@@ -98,6 +98,7 @@ Common commands:
 
 | Command | Use it for |
 | --- | --- |
+| `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |
@@ -156,8 +157,8 @@ Notes:
 | `tdd` | Add behavior test-first with a red-green-refactor loop. |
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
-| `folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
-| `candidates-folder-refactor` | Rank noisy folders/subfolders as the top candidates to hand to `folder-refactor`. |
+| `skill-folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
+| `candidates-folder-refactor` | Rank noisy folders/subfolders as the top candidates to hand to `skill-folder-refactor`. |
 | `improve-codebase-architecture` | Produce evidence-backed HTML architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs and record decisions. |
@@ -212,7 +213,7 @@ This package ships curated skills and one Pi extension. Package resources are de
 ```json
 {
   "pi": {
-    "extensions": ["./extensions/understand.js"],
+    "extensions": ["./extensions/understand.js", "./extensions/folder-refactor.js"],
     "skills": ["./skills"]
   }
 }

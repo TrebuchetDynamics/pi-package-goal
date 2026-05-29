@@ -16,7 +16,7 @@ const expectedSkills = [
   "grill-me",
   "grill-with-docs",
   "prototype",
-  "folder-refactor",
+  "skill-folder-refactor",
   "candidates-folder-refactor",
   "zoom-out",
   "to-issues",
@@ -318,7 +318,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include the understand extension");
   assert.equal(pkg.files.includes("skills"), true);
@@ -345,6 +345,13 @@ async function testPackageManifestPaths() {
 }
 
 async function testUnderstandExtension() {
+  const folderRefactorExtension = read("extensions/folder-refactor.js");
+  assert.match(folderRefactorExtension, /folder_refactor_scan/);
+  assert.match(folderRefactorExtension, /folder_refactor_audit/);
+  assert.match(folderRefactorExtension, /folder_refactor_state/);
+  assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
+  assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
+
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
   assert.match(extension, /registerUnderstandCommand\(pi, "understand-refactor", paths\)/);
@@ -409,19 +416,22 @@ async function testSkills() {
   assert.match(read("skills/prototype/SKILL.md"), /Repo study before building/);
   const candidatesFolderRefactor = read("skills/candidates-folder-refactor/SKILL.md");
   assert.match(candidatesFolderRefactor, /Top candidates/);
-  assert.match(candidatesFolderRefactor, /folder-refactor/);
+  assert.match(candidatesFolderRefactor, /skill-folder-refactor/);
   assert.match(candidatesFolderRefactor, /Do not recommend repo-root refactors/);
   assert.match(candidatesFolderRefactor, /files\/churn\/callers\/imports\/tests\/roles\/duplicates/);
-  assert.match(candidatesFolderRefactor, /say `lgtm` to run folder-refactor immediately/);
+  assert.match(candidatesFolderRefactor, /say `lgtm` to run skill-folder-refactor immediately/);
   assert.match(candidatesFolderRefactor, /\.pi\/candidates-folder-refactor\/latest\.json/);
   assert.match(candidatesFolderRefactor, /--from-log/);
   const lgtm = read("skills/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);
-  assert.match(lgtm, /immediately run `folder-refactor`/);
-  const folderRefactor = read("skills/folder-refactor/SKILL.md");
+  assert.match(lgtm, /immediately run `skill-folder-refactor`/);
+  const folderRefactor = read("skills/skill-folder-refactor/SKILL.md");
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
+  assert.match(folderRefactor, /folder_refactor_scan/);
+  assert.match(folderRefactor, /folder_refactor_audit/);
+  assert.match(folderRefactor, /folder_refactor_state/);
   assert.match(folderRefactor, /Phase 1 is move-only/);
   assert.match(folderRefactor, /Test gate/);
   assert.match(folderRefactor, /use `tdd` discipline/);
@@ -444,7 +454,14 @@ async function testSkills() {
   assert.match(folderRefactor, /no unclassified root files/);
   assert.match(folderRefactor, /Never write "complete for this slice"/);
   assert.match(folderRefactor, /complete for the target folder, not just the latest slice/);
-  assert.match(folderRefactor, /Check diff budget before broadening/);
+  assert.match(folderRefactor, /Use diff budget as a checkpoint, not an excuse to stop/);
+  assert.match(folderRefactor, /not a completion reason/);
+  assert.match(folderRefactor, /Default to doing more work/);
+  assert.match(folderRefactor, /Treat a named next candidate as an instruction to execute it now/);
+  assert.match(folderRefactor, /Minimum useful work/);
+  assert.match(folderRefactor, /A final response that names a safe next candidate without executing it is invalid/);
+  assert.match(folderRefactor, /Do not report "Stopped at diff-budget boundary"/);
+  assert.match(folderRefactor, /Do not end with "Next candidate: <x>"/);
   assert.match(folderRefactor, /candidates-folder-refactor/);
   assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
   assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);

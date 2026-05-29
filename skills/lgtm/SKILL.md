@@ -18,7 +18,7 @@ If the approved recommendation came from a Goal slice result, treat `Recommended
 
 If the approved recommendation came from an architecture review, preserve the review's evidence base: treat approval of `Top recommendation` as selecting that candidate, inspect the exact live files before editing, and either make the smallest safe mechanical cleanup with validation or enter the architecture grilling loop for design-bearing refactors.
 
-If the approved recommendation came from `candidates-folder-refactor`, treat `lgtm` as selecting the #1 top candidate and immediately run `folder-refactor` on that exact folder with the candidate metrics, suggested boundary, inspected paths, and validation hints as handoff evidence. Do not ask the owner to pick again unless #1 is blocked by a red line.
+If the approved recommendation came from `candidates-folder-refactor`, treat `lgtm` as selecting the #1 top candidate and immediately run `skill-folder-refactor` on that exact folder with the candidate metrics, suggested boundary, inspected paths, and validation hints as handoff evidence. Do not ask the owner to pick again unless #1 is blocked by a red line.
 
 Example:
 

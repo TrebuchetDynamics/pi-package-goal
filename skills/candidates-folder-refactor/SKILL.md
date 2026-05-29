@@ -1,11 +1,11 @@
 ---
 name: candidates-folder-refactor
-description: Rank noisy folders for folder-refactor. Use when asked to find refactor candidates, noisy folders, or top folders/subfolders to split.
+description: Rank noisy folders for skill-folder-refactor. Use when asked to find refactor candidates, noisy folders, or top folders/subfolders to split.
 ---
 
 # Candidates Folder Refactor
 
-Find the top five noisy folders that are good candidates for `folder-refactor`. This skill only scouts and ranks; it does not move files.
+Find the top five noisy folders that are good candidates for `skill-folder-refactor`. This skill only scouts and ranks; it does not move files.
 
 ## Quick start
 
@@ -17,7 +17,7 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
 ```
 
-3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next folder-refactor target before deciding whether a fresh scan is needed.
+3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next skill-folder-refactor target before deciding whether a fresh scan is needed.
 4. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.
 
 ## Workflow
@@ -34,14 +34,14 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --fr
    - Inspect names/tree/imports/tests around each result.
    - Drop false positives caused by generated code, vendored code, snapshots, fixtures, or a deliberately cohesive language/package boundary.
    - For each surviving candidate, include raw scanner metrics inline (`files/churn/callers/imports/tests/roles/duplicates`) before the judgment so evidence is easy to compare.
-   - Explain why `folder-refactor` would be the next skill and what boundary to give it.
+   - Explain why `skill-folder-refactor` would be the next skill and what boundary to give it.
 4. **Use the target log for cheap reruns**
    - Each fresh scanner run writes `[target]/.pi/candidates-folder-refactor/latest.json` and appends `runs.jsonl`.
    - Start reruns with `--from-log` or by reading `latest.json`; then focus inspection on prior top candidates, newly changed folders, and the previous `Next step` instead of rescanning every broad subtree by default.
    - Treat the log as local agent memory: useful for continuity, never source of truth over live files.
 5. **Hand off**
-   - If the owner picks a candidate, hand off to `folder-refactor` with the exact target folder, evidence from the scan/log, and validation hints found nearby.
-   - If the owner says `lgtm` after the candidate report, treat it as approving candidate #1 and immediately run `folder-refactor` on that exact folder with the candidate metrics and suggested boundary.
+   - If the owner picks a candidate, hand off to `skill-folder-refactor` with the exact target folder, evidence from the scan/log, and validation hints found nearby.
+   - If the owner says `lgtm` after the candidate report, treat it as approving candidate #1 and immediately run `skill-folder-refactor` on that exact folder with the candidate metrics and suggested boundary.
 
 ## Red lines
 
@@ -55,13 +55,13 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --fr
 ```text
 Candidates folder refactor: <repo-or-folder>
 Top candidates:
-1. <path> — metrics: files <n>, churn <n>, callers <n>, imports-out <n>, tests <n>, roles <n>, duplicates <n>. <why noisy; suggested folder-refactor boundary>
+1. <path> — metrics: files <n>, churn <n>, callers <n>, imports-out <n>, tests <n>, roles <n>, duplicates <n>. <why noisy; suggested skill-folder-refactor boundary>
 2. ...
 Validation/scout evidence:
 - scanner: <command>
 - log: <target>/.pi/candidates-folder-refactor/latest.json
 - inspected: <paths or searches>
-Next step: say `lgtm` to run folder-refactor immediately on <best path>, or name another candidate.
+Next step: say `lgtm` to run skill-folder-refactor immediately on <best path>, or name another candidate.
 ```
 
 ## Shared contract

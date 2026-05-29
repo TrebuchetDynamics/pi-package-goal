@@ -1,22 +1,23 @@
 ---
-name: folder-refactor
+name: skill-folder-refactor
 description: Refactor one folder into subfolders and shared code. Use for folder refactors, directory splits, module organization, or dedupe.
 ---
 
-# Folder Refactor
+# Skill Folder Refactor
 
 Refactor one explicitly named folder into coherent subfolders and shared modules without changing behavior.
 
 ## Quick start
 
 1. Identify the target folder and scope boundary. If no folder is named, ask for it; if the target is repo root, treat it as high risk and recommend narrowing to one folder.
-2. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/exports, callers, related tests, package manifests, and language module boundaries.
-3. If no target is named and the user wants discovery, run `candidates-folder-refactor` first and use its top-five evidence to pick one bounded folder.
-4. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
-5. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff.
-6. Keep the repo GREEN: existing relevant tests must pass after each slice; if no adequate behavior tests exist for the moved code, create focused public-interface tests before deeper extraction/cleanup.
-7. Do not call a partial slice "complete". Completion means the whole named folder matches the planned topology, not merely that the latest batch of files moved successfully.
-8. Make shared code a first-class outcome after move-only safety: actively look for duplicated helpers/types/test setup in the new subfolders and extract proven shared modules when tests protect the behavior.
+2. When available, call `folder_refactor_scan` for the target folder and use `folder_refactor_state` to read/write continuation state for long refactors.
+3. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/exports, callers, related tests, package manifests, and language module boundaries.
+4. If no target is named and the user wants discovery, run `candidates-folder-refactor` first and use its top-five evidence to pick one bounded folder.
+5. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
+6. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff. Default to doing more work, not reporting a next step.
+7. Keep the repo GREEN: existing relevant tests must pass after each slice; if no adequate behavior tests exist for the moved code, create focused public-interface tests before deeper extraction/cleanup.
+8. Do not call a partial slice "complete". Completion means the whole named folder matches the planned topology, not merely that the latest batch of files moved successfully.
+9. Make shared code a first-class outcome after move-only safety: actively look for duplicated helpers/types/test setup in the new subfolders and extract proven shared modules when tests protect the behavior.
 
 ## Workflow
 
@@ -42,14 +43,19 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - Delete duplicate code only after tests or direct diff evidence prove the shared implementation covers it.
 4. **Continue autonomously**
    - Do not stop after moving one or two files if the target topology still has obvious remaining slices and validation is green.
+   - Treat a named next candidate as an instruction to execute it now, not as a final-response handoff. If you can safely name the next slice, you can usually do it.
    - After each validated slice, re-list the target folder, compare remaining root files/subfolders against the planned topology, update the objective, and pick the next safest slice in the same turn.
    - Prefer finishing all move-only slices for the named folder before attempting extraction or cleanup slices.
    - If many files still sit in the old/root location and their destination is obvious from the topology, continue moving the next batch instead of reporting success.
-   - Stop automatic continuation only for failed validation, unclear ownership, public API/product behavior risk, generated-file risk, excessive diff size, context/budget pressure, or when the whole folder matches the planned topology.
-   - If forced to stop before completion, leave a concrete continuation plan naming the next files/subfolder to move and the validation command to rerun.
-5. **Check diff budget before broadening**
-   - Pause for owner review if the patch unexpectedly changes public import paths, package exports, generated snapshots, migrations, data formats, or more than the target folder plus import-fix callers.
-   - If the diff becomes mostly rewrites instead of moves/import updates, stop and split the work.
+   - Do not stop merely because the diff is getting larger when the next slice is still inside the named target, behavior-preserving, and covered by passing validation; run another narrow validation checkpoint and continue.
+   - Minimum useful work: when at least three safe slices remain, complete at least three validated slices before reporting; when fewer remain, complete all safe remaining slices. One-slice reports are allowed only for blockers, failed validation, owner decisions, or context exhaustion.
+   - Stop automatic continuation only for failed validation, unclear ownership, public API/product behavior risk, generated-file risk, generated artifacts, context/budget pressure, or when the whole folder matches the planned topology.
+   - If forced to stop before completion, leave a concrete continuation plan naming the next files/subfolder to move and the validation command to rerun, and state the blocker that prevented executing it now.
+5. **Use diff budget as a checkpoint, not an excuse to stop**
+   - Diff budget is a safety checkpoint. It is not a completion reason and not a reason to stop while the next safe target-folder slice is obvious and validation is green.
+   - Continue through additional behavior-preserving slices inside the named folder when they only add/move focused subpackages, wrappers, tests, or pure extractions with passing related validation.
+   - Pause for owner review only if the patch unexpectedly changes public import paths, package exports, generated snapshots, migrations, data formats, product behavior, or files beyond the target folder plus import-fix callers.
+   - If the diff becomes mostly rewrites instead of moves/import updates/pure extractions, stop and split the work.
 6. **Verify and report**
    - Run related tests/typechecks or explain the closest available validation.
    - Report old → new topology, reused/shared modules, public compatibility kept or intentionally changed, and remaining risks.
@@ -89,17 +95,17 @@ Keep duplication when semantics differ, tests are missing, the shared name would
 Before creating shared code, prove the shared-code gate is satisfied; otherwise document why extraction is intentionally skipped.
 
 ### Continuation gate
-A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, shared-code opportunities, or cleanup slices. Continue automatically while validation is green and no red line is hit.
+A folder-refactor is not done merely because one safe slice passed or because the diff is nontrivial. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, shared-code opportunities, or cleanup slices. Continue automatically while validation is green and no red line is hit. A final response that names a safe next candidate without executing it is invalid unless it also names the blocker.
 
 ### Completion audit
-Before saying the topology is complete, re-read the target folder tree from disk using an actual command such as `find <target> -maxdepth 1 -type f | sort` plus `find <target> -maxdepth 1 -type d | sort`; do not summarize from memory or broad categories.
+Before saying the topology is complete, call `folder_refactor_audit` when available. Otherwise re-read the target folder tree from disk using an actual command such as `find <target> -maxdepth 1 -type f | sort` plus `find <target> -maxdepth 1 -type d | sort`; do not summarize from memory or broad categories.
 
 List every remaining root file by exact basename under one of these headings:
 - intentional root public facade/compatibility file;
 - intentionally out of scope for the chosen topology;
 - next move/extraction candidate.
 
-Do not hide many files behind vague groups such as "profile/general runtime paths" or "root tests" unless the exact filenames are also listed. If a file is not explicitly classified, the topology is incomplete. If any next move/extraction candidates remain and validation is green, continue instead of ending. Never write "complete for this slice" as the final state; report either "complete for target folder" or "incomplete, continuing/blocked".
+Do not hide many files behind vague groups such as "profile/general runtime paths" or "root tests" unless the exact filenames are also listed. If a file is not explicitly classified, the topology is incomplete. If any next move/extraction candidates remain and validation is green, continue instead of ending. Do not report "Stopped at diff-budget boundary" when the next candidate is named and safe; take that candidate next. Do not end with "Next candidate: <x>" unless `<x>` is blocked or context is exhausted. Never write "complete for this slice" as the final state; report either "complete for target folder" or "incomplete, continuing/blocked".
 
 ### Verification gate
 Before done, related tests must pass. If no related tests existed, include the new behavior test(s) created or a blocker explaining why no correct public seam exists. Typecheck/build, import graph/search checks, and generated snapshot updates are supporting evidence, not substitutes for available behavior tests.
