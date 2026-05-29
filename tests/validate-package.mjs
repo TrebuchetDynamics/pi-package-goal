@@ -419,13 +419,14 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /skill-folder-refactor/);
   assert.match(candidatesFolderRefactor, /Do not recommend repo-root refactors/);
   assert.match(candidatesFolderRefactor, /files\/churn\/callers\/imports\/tests\/roles\/duplicates/);
-  assert.match(candidatesFolderRefactor, /say `lgtm` to run skill-folder-refactor immediately/);
+  assert.match(candidatesFolderRefactor, /say `lgtm` to run `\/folder-refactor <best path>` immediately/);
   assert.match(candidatesFolderRefactor, /\.pi\/candidates-folder-refactor\/latest\.json/);
   assert.match(candidatesFolderRefactor, /--from-log/);
   const lgtm = read("skills/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);
-  assert.match(lgtm, /immediately run `skill-folder-refactor`/);
+  assert.match(lgtm, /immediately run `\/folder-refactor <candidate #1>`/);
+  assert.match(lgtm, /extension invokes `skill-folder-refactor`/);
   const folderRefactor = read("skills/skill-folder-refactor/SKILL.md");
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
