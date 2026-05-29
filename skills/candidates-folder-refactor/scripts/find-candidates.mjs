@@ -21,21 +21,50 @@ const rolePatterns = [
   /config|constant|env/i,
 ];
 
-const args = process.argv.slice(2);
-const topIndex = args.indexOf("--top");
-const top = topIndex === -1 ? 5 : Math.max(1, Number(args[topIndex + 1]) || 5);
-const targetArg = args.find((arg, index) => arg !== "--top" && (topIndex === -1 || index !== topIndex + 1)) ?? ".";
-const root = path.resolve(process.cwd(), targetArg);
+const options = parseArgs(process.argv.slice(2));
+const root = path.resolve(process.cwd(), options.targetArg);
+const logDir = path.join(root, ".pi", "candidates-folder-refactor");
+const latestLog = path.join(logDir, "latest.json");
+const runsLog = path.join(logDir, "runs.jsonl");
 
 if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
-  console.error(`Target must be an existing directory: ${targetArg}`);
+  console.error(`Target must be an existing directory: ${options.targetArg}`);
   process.exit(1);
 }
 
+if (options.fromLog) {
+  if (!fs.existsSync(latestLog)) {
+    console.error(`No candidates-folder-refactor log found at ${latestLog}`);
+    process.exit(1);
+  }
+  printReport(JSON.parse(fs.readFileSync(latestLog, "utf8")), { fromLog: true });
+  process.exit(0);
+}
+
 const statsByDir = new Map();
-const allFiles = [];
 const fileSet = new Set();
 const fileContents = new Map();
+
+function parseArgs(args) {
+  let top = 5;
+  let fromLog = false;
+  let writeLog = true;
+  let targetArg = ".";
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--top") {
+      top = Math.max(1, Number(args[index + 1]) || 5);
+      index += 1;
+    } else if (arg === "--from-log" || arg === "--cache" || arg === "--cached") {
+      fromLog = true;
+    } else if (arg === "--no-log") {
+      writeLog = false;
+    } else if (!arg.startsWith("--")) {
+      targetArg = arg;
+    }
+  }
+  return { top, fromLog, writeLog, targetArg };
+}
 
 function ensure(dir) {
   if (!statsByDir.has(dir)) {
@@ -91,7 +120,6 @@ function walk(dir) {
     const ext = path.extname(entry.name).toLowerCase();
     if (ignoredFileExtensions.has(ext)) continue;
     stat.directFiles += 1;
-    allFiles.push(full);
     fileSet.add(full);
     if (isTextSource(ext)) {
       try {
@@ -236,16 +264,56 @@ function score(stat) {
 const candidates = [...statsByDir.values()]
   .filter((stat) => stat.dir !== root)
   .filter((stat) => stat.totalFiles >= 4 || stat.directFiles >= 3 || stat.childDirs.size >= 3)
-  .map((stat) => ({ ...stat, score: score(stat), relative: path.relative(process.cwd(), stat.dir) || "." }))
-  .sort((a, b) => b.score - a.score || b.totalFiles - a.totalFiles || a.relative.localeCompare(b.relative))
-  .slice(0, top);
+  .map((stat) => serializeCandidate({ ...stat, score: score(stat), relative: path.relative(process.cwd(), stat.dir) || "." }))
+  .sort((a, b) => b.score - a.score || b.files - a.files || a.relative.localeCompare(b.relative))
+  .slice(0, options.top);
 
-console.log(`Candidates folder refactor: ${path.relative(process.cwd(), root) || "."}`);
-if (candidates.length === 0) {
-  console.log("No candidate subfolders found.");
-  process.exit(0);
+const report = {
+  version: 1,
+  generatedAt: new Date().toISOString(),
+  cwd: process.cwd(),
+  target: path.relative(process.cwd(), root) || ".",
+  targetAbsolute: root,
+  command: `node ${path.relative(process.cwd(), process.argv[1]) || process.argv[1]} ${process.argv.slice(2).join(" ")}`.trim(),
+  candidates,
+};
+
+if (options.writeLog) writeScanLog(report);
+printReport(report, { fromLog: false, latestLog: options.writeLog ? latestLog : undefined });
+
+function serializeCandidate(candidate) {
+  return {
+    relative: candidate.relative,
+    score: Number(candidate.score.toFixed(1)),
+    files: candidate.totalFiles,
+    direct: candidate.directFiles,
+    churn: candidate.churn,
+    callers: candidate.inboundCallers.size,
+    importsOut: candidate.outboundImports.size,
+    tests: candidate.testFiles,
+    roles: candidate.roles.size,
+    duplicates: candidate.duplicateBasenames + candidate.duplicateSymbols,
+    subdirs: candidate.childDirs.size,
+    extensions: [...candidate.extensions].sort().slice(0, 6),
+  };
 }
-for (const [index, candidate] of candidates.entries()) {
-  const extList = [...candidate.extensions].sort().slice(0, 6).join(", ") || "none";
-  console.log(`${index + 1}. ${candidate.relative} — score ${candidate.score.toFixed(1)}; files ${candidate.totalFiles}; churn ${candidate.churn}; callers ${candidate.inboundCallers.size}; imports-out ${candidate.outboundImports.size}; tests ${candidate.testFiles}; roles ${candidate.roles.size}; duplicates ${candidate.duplicateBasenames + candidate.duplicateSymbols}; subdirs ${candidate.childDirs.size}; extensions ${extList}`);
+
+function writeScanLog(report) {
+  fs.mkdirSync(logDir, { recursive: true });
+  fs.writeFileSync(latestLog, `${JSON.stringify(report, null, 2)}\n`);
+  fs.appendFileSync(runsLog, `${JSON.stringify(report)}\n`);
+}
+
+function printReport(report, { fromLog, latestLog } = {}) {
+  console.log(`Candidates folder refactor: ${report.target}`);
+  if (fromLog) console.log(`From log: ${report.generatedAt} (${path.join(report.targetAbsolute, ".pi", "candidates-folder-refactor", "latest.json")})`);
+  if (!report.candidates.length) {
+    console.log("No candidate subfolders found.");
+    return;
+  }
+  for (const [index, candidate] of report.candidates.entries()) {
+    const extList = candidate.extensions.join(", ") || "none";
+    console.log(`${index + 1}. ${candidate.relative} — score ${candidate.score.toFixed(1)}; files ${candidate.files}; churn ${candidate.churn}; callers ${candidate.callers}; imports-out ${candidate.importsOut}; tests ${candidate.tests}; roles ${candidate.roles}; duplicates ${candidate.duplicates}; subdirs ${candidate.subdirs}; extensions ${extList}`);
+  }
+  if (latestLog) console.log(`Log: ${latestLog}`);
 }

@@ -413,6 +413,8 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /Do not recommend repo-root refactors/);
   assert.match(candidatesFolderRefactor, /files\/churn\/callers\/imports\/tests\/roles\/duplicates/);
   assert.match(candidatesFolderRefactor, /say `lgtm` to run folder-refactor immediately/);
+  assert.match(candidatesFolderRefactor, /\.pi\/candidates-folder-refactor\/latest\.json/);
+  assert.match(candidatesFolderRefactor, /--from-log/);
   const lgtm = read("skills/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);
@@ -436,6 +438,10 @@ async function testSkills() {
   assert.match(folderRefactor, /Continuation gate/);
   assert.match(folderRefactor, /Completion audit/);
   assert.match(folderRefactor, /remaining root files/);
+  assert.match(folderRefactor, /exact basename/);
+  assert.match(folderRefactor, /do not summarize from memory or broad categories/);
+  assert.match(folderRefactor, /If a file is not explicitly classified, the topology is incomplete/);
+  assert.match(folderRefactor, /no unclassified root files/);
   assert.match(folderRefactor, /Never write "complete for this slice"/);
   assert.match(folderRefactor, /complete for the target folder, not just the latest slice/);
   assert.match(folderRefactor, /Check diff budget before broadening/);

@@ -33,6 +33,8 @@ codebase-map-understand.md
 # Smoke tests can accidentally run from subdirectories such as extensions/.
 **/.pi/*/logs.jsonl
 **/.pi/*/logs-*.jsonl
+.pi/candidates-folder-refactor/
+**/.pi/candidates-folder-refactor/
 
 # OS/editor noise
 .DS_Store

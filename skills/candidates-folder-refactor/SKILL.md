@@ -10,13 +10,15 @@ Find the top five noisy folders that are good candidates for `folder-refactor`. 
 ## Quick start
 
 1. Inspect `git status --short --branch`, repo instructions, and existing maps such as `codebase-map-understand.md` when present.
-2. Run the scanner from the repo root, optionally with a target folder:
+2. Run the scanner from the repo root, optionally with a target folder. It writes a local reuse log under the target folder:
 
 ```bash
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
+node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
 ```
 
-3. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.
+3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next folder-refactor target before deciding whether a fresh scan is needed.
+4. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.
 
 ## Workflow
 
@@ -33,15 +35,19 @@ node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
    - Drop false positives caused by generated code, vendored code, snapshots, fixtures, or a deliberately cohesive language/package boundary.
    - For each surviving candidate, include raw scanner metrics inline (`files/churn/callers/imports/tests/roles/duplicates`) before the judgment so evidence is easy to compare.
    - Explain why `folder-refactor` would be the next skill and what boundary to give it.
-4. **Hand off**
-   - If the owner picks a candidate, hand off to `folder-refactor` with the exact target folder, evidence from the scan, and validation hints found nearby.
+4. **Use the target log for cheap reruns**
+   - Each fresh scanner run writes `[target]/.pi/candidates-folder-refactor/latest.json` and appends `runs.jsonl`.
+   - Start reruns with `--from-log` or by reading `latest.json`; then focus inspection on prior top candidates, newly changed folders, and the previous `Next step` instead of rescanning every broad subtree by default.
+   - Treat the log as local agent memory: useful for continuity, never source of truth over live files.
+5. **Hand off**
+   - If the owner picks a candidate, hand off to `folder-refactor` with the exact target folder, evidence from the scan/log, and validation hints found nearby.
    - If the owner says `lgtm` after the candidate report, treat it as approving candidate #1 and immediately run `folder-refactor` on that exact folder with the candidate metrics and suggested boundary.
 
 ## Red lines
 
 - Do not edit production files while scouting candidates.
 - Do not recommend repo-root refactors; recommend a bounded folder instead.
-- Do not rank generated, vendor, cache, build-output, or dependency folders as actionable targets.
+- Do not rank generated, vendor, cache, build-output, dependency folders, or `.pi/candidates-folder-refactor/` logs as actionable targets.
 - Do not present the numeric score as objective truth; include human-readable evidence such as churn, callers, tests, roles, and duplicates.
 
 ## Output contract
@@ -53,6 +59,7 @@ Top candidates:
 2. ...
 Validation/scout evidence:
 - scanner: <command>
+- log: <target>/.pi/candidates-folder-refactor/latest.json
 - inspected: <paths or searches>
 Next step: say `lgtm` to run folder-refactor immediately on <best path>, or name another candidate.
 ```

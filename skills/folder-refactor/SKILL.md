@@ -92,12 +92,14 @@ Before creating shared code, prove the shared-code gate is satisfied; otherwise 
 A folder-refactor is not done merely because one safe slice passed. Before stopping, check whether the planned topology still has obvious remaining files, import updates, duplicate modules, shared-code opportunities, or cleanup slices. Continue automatically while validation is green and no red line is hit.
 
 ### Completion audit
-Before saying the topology is complete, re-read the target folder tree from disk and list remaining root files. For every remaining file, classify it as:
+Before saying the topology is complete, re-read the target folder tree from disk using an actual command such as `find <target> -maxdepth 1 -type f | sort` plus `find <target> -maxdepth 1 -type d | sort`; do not summarize from memory or broad categories.
+
+List every remaining root file by exact basename under one of these headings:
 - intentional root public facade/compatibility file;
 - intentionally out of scope for the chosen topology;
 - next move/extraction candidate.
 
-If any next move/extraction candidates remain and validation is green, continue instead of ending. Never write "complete for this slice" as the final state; report either "complete for target folder" or "incomplete, continuing/blocked".
+Do not hide many files behind vague groups such as "profile/general runtime paths" or "root tests" unless the exact filenames are also listed. If a file is not explicitly classified, the topology is incomplete. If any next move/extraction candidates remain and validation is green, continue instead of ending. Never write "complete for this slice" as the final state; report either "complete for target folder" or "incomplete, continuing/blocked".
 
 ### Verification gate
 Before done, related tests must pass. If no related tests existed, include the new behavior test(s) created or a blocker explaining why no correct public seam exists. Typecheck/build, import graph/search checks, and generated snapshot updates are supporting evidence, not substitutes for available behavior tests.
@@ -121,7 +123,7 @@ Final response must include:
 - shared-code opportunities found, extractions performed, and duplication intentionally left;
 - compatibility notes for callers/imports;
 - validation evidence, including related tests passed or new behavior tests created;
-- remaining root files classified as facade/out-of-scope/next candidate;
+- exact remaining root file basenames classified as facade/out-of-scope/next candidate, with no unclassified root files;
 - if incomplete, the exact next autonomous slice and what `lgtm` will continue.
 
 ## Shared contract

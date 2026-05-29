@@ -29,6 +29,12 @@ try {
   assert.match(repoOutput, /tests 1/);
   assert.match(repoOutput, /duplicates [1-9]/);
   assert.doesNotMatch(repoOutput, /node_modules/);
+  assert.match(repoOutput, /Log: .*\.pi\/candidates-folder-refactor\/latest\.json/);
+  assert.equal(fs.existsSync(path.join(fixture, ".pi/candidates-folder-refactor/latest.json")), true);
+  assert.equal(fs.existsSync(path.join(fixture, ".pi/candidates-folder-refactor/runs.jsonl")), true);
+  const cachedOutput = execFileSync(process.execPath, [script, ".", "--from-log"], { cwd: fixture, encoding: "utf8" });
+  assert.match(cachedOutput, /From log:/);
+  assert.match(cachedOutput, /src\/noisy/);
 
   const folderOutput = execFileSync(process.execPath, [script, "src"], { cwd: fixture, encoding: "utf8" });
   assert.match(folderOutput, /src\/noisy/);
