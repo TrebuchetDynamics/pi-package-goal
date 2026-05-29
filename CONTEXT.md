@@ -32,6 +32,10 @@ _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource
 Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
 _Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
 
+**Folder Refactor Skill**:
+The `folder-refactor` skill keeps folder refactors bounded to one named directory, treats repo-root reshapes as high-risk owner decisions, first maps imports/callers/tests/package boundaries, then reorganizes by responsibility while extracting shared code only from proven duplicate call sites.
+_Avoid_: broad repo-wide rewrites, speculative common abstractions, silent public import path breakage, mixing behavior changes with file moves, ignoring language module boundaries
+
 **Shared Skill Contract**:
 A compact baseline under `skills/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
 _Avoid_: hidden universal expectations, rigid forms that override specialist instructions, broad edits to unrelated user work
@@ -45,8 +49,8 @@ An in-conversation objective discipline skill that tracks active/paused/complete
 _Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
 **Git Commit Push Skill**:
-A delivery skill that audits git state, reviews changed files for safety, runs validation, commits safe in-scope work, pushes to the current upstream, and reports `GIT_COMMIT_PUSH_*` markers.
-_Avoid_: deploy/publish side effects, force-push/rebase/merge without explicit approval, committing secrets or local state, success claims without validation and push evidence
+A delivery skill that audits git state, reviews changed files for safety, fixes obvious safe polish/validation issues in scope, runs validation, commits safe in-scope work, pushes to the current upstream, and reports `GIT_COMMIT_PUSH_*` markers.
+_Avoid_: deploy/publish side effects, force-push/rebase/merge without explicit approval, committing secrets or local state, product rewrites disguised as polish, success claims without validation and push evidence
 
 **Validation Receipts**:
 Concrete command outputs, test results, git state, commit hashes, and push results used to prove a skill's final claim.

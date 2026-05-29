@@ -16,6 +16,7 @@ const expectedSkills = [
   "grill-me",
   "grill-with-docs",
   "prototype",
+  "folder-refactor",
   "zoom-out",
   "to-issues",
   "to-prd",
@@ -395,6 +396,11 @@ async function testSkills() {
   assert.match(tdd, /Repo study before RED/);
   assert.match(tdd, /git status --short --branch/);
   assert.match(read("skills/prototype/SKILL.md"), /Repo study before building/);
+  const folderRefactor = read("skills/folder-refactor/SKILL.md");
+  assert.match(folderRefactor, /repo root, treat it as high risk/);
+  assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
+  assert.match(folderRefactor, /Phase 1: move files and update imports only/);
+  assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
   assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);
   assert.match(read("skills/grill-with-docs/SKILL.md"), /codebase-map-understand\.md when present/);
   assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
@@ -420,6 +426,10 @@ async function testSkills() {
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
 
   const gitCommitPush = read("skills/git-commit-push/SKILL.md");
+  assert.match(gitCommitPush, /Polish, validate, commit, and push safe git worktree changes/);
+  assert.match(gitCommitPush, /safely polish, validate, intentionally stage, commit, and push/);
+  assert.match(gitCommitPush, /fix safe in-scope issues directly and rerun validation/);
+  assert.match(gitCommitPush, /not as a default pause for safe polish in ship mode/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
   assert.match(gitCommitPush, /Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes/);

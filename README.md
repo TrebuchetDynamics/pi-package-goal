@@ -15,7 +15,7 @@ Use it when you want Pi to:
 | Area | What it helps with | Start with |
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
-| Safe delivery | Audit changed files, run validation, commit only safe work, and push. | `git-commit-push` |
+| Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
 | Engineering loops | Debug, test-drive, prototype, review, or improve architecture. | `diagnose`, `tdd`, `prototype` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
@@ -144,7 +144,7 @@ Notes:
 | Skill | When to use it |
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
-| `git-commit-push` | Ship completed work with worktree audit, validation, intentional staging, commit, and push. |
+| `git-commit-push` | Ship completed work with safe polish, validation, intentional staging, commit, and push. |
 | `autoreview` | Run a structured closeout review before shipping. |
 | `lgtm` | Continue after you approve the agent's latest plan or recommendation. |
 | `caveman` | Switch to terse, low-token communication. |
@@ -156,6 +156,7 @@ Notes:
 | `tdd` | Add behavior test-first with a red-green-refactor loop. |
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
+| `folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
 | `improve-codebase-architecture` | Produce evidence-backed HTML architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs and record decisions. |
@@ -184,16 +185,17 @@ Notes:
 
 ## Safe delivery with `git-commit-push`
 
-Use `git-commit-push` when implementation work appears complete and you want delivery guarded by real git and validation evidence.
+Use `git-commit-push` when implementation work appears complete and you want safe polish plus delivery guarded by real git and validation evidence.
 
 The skill:
 
 1. reads repo instructions and git state;
 2. reviews changed/untracked files for secrets, local state, generated junk, and unrelated work;
-3. runs requested or inferred validation, including `git diff --check`;
-4. commits only safe in-scope changes;
-5. pushes to the current upstream; and
-6. reports final markers:
+3. fixes obvious safe hygiene/validation issues in scope;
+4. runs requested or inferred validation, including `git diff --check`;
+5. commits only safe in-scope changes;
+6. pushes to the current upstream; and
+7. reports final markers:
 
 ```text
 GIT_COMMIT_PUSH_VALIDATED: yes|no
