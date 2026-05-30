@@ -14,6 +14,7 @@ try {
   write("src/noisy/ui/component.tsx", "export const Component = () => null;\n");
   write("src/noisy/model/types.ts", "export type Thing = string;\n");
   write("src/noisy/test/fixture.test.ts", "test('x', () => {});\n");
+  write("src/noisy/index.ts", "export { handler } from './api/handler';\n");
   write("src/consumer.ts", "import { duplicateThing } from './noisy/api/handler';\nconsole.log(duplicateThing);\n");
   write("src/simple/index.ts", "export const simple = 1;\n");
   write("lib/main.dart", "void main() {}\n");

@@ -726,9 +726,9 @@ for ((i = 1; i <= loops; i++)); do
     if [[ -d "${run_root}/${candidate}" ]]; then
       candidate_file_count="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
     fi
-    # Base 60s + 1.5s per file, capped at 600s (10 min)
-    computed=$((60 + (candidate_file_count * 15 / 10)))
-    if (( computed > 600 )); then computed=600; fi
+    # Base 90s for analysis + 1.5s per file for moves, capped at 900s (15 min)
+    computed=$((90 + (candidate_file_count * 15 / 10)))
+    if (( computed > 900 )); then computed=900; fi
     candidate_timeout="${computed}"
   fi
 
@@ -738,6 +738,18 @@ for ((i = 1; i <= loops; i++)); do
     warn "candidate ${candidate} has 0 files (empty); skipping pi"
     skipped_candidates+=("${candidate}")
     continue
+  fi
+
+  # Quick smell check: if candidate already has 0 root files and few subdirs,
+  # it is already at ideal topology (all files organized). Skip pi.
+  root_files="$(find "${run_root}/${candidate}" -maxdepth 1 -type f 2>/dev/null | wc -l)"
+  if [[ "${root_files}" == "0" ]]; then
+    subdir_count="$(find "${run_root}/${candidate}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
+    if (( subdir_count <= 5 )); then
+      warn "candidate ${candidate} has 0 root files and ${subdir_count} subdirs (already clean); skipping pi"
+      skipped_candidates+=("${candidate}")
+      continue
+    fi
   fi
 
   commit_preexisting_changes
