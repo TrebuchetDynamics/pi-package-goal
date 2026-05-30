@@ -592,9 +592,8 @@ run_drill_down() {
     return 0
   fi
 
-  local drilled="${candidate}/${sub_candidate}"
-  info "drilled down: ${candidate} → ${drilled}"
-  echo "${drilled}"
+  info "drilled down: ${candidate} → ${sub_candidate}"
+  echo "${sub_candidate}"
 }
 
 snapshot_scope() {
