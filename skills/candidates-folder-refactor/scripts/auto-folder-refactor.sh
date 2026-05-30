@@ -339,7 +339,12 @@ run_pi_capture() {
   pid=$!
   tail -n +1 --pid="${pid}" -f "${output_file}" &
   tail_pid=$!
-  info "pi running $(badge "${blue}" "pid ${pid}") $(badge "${dim}" "heartbeat ${heartbeat}s")"
+  candidate_tag="${PI_AUTO_FOLDER_REFACTOR_CURRENT_CANDIDATE:-}"
+  candidate_badge=""
+  if [[ -n "${candidate_tag}" ]]; then
+    candidate_badge=" $(badge "${green}" "${candidate_tag}")"
+  fi
+  info "pi running $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${dim}" "heartbeat ${heartbeat}s")"
 
   while kill -0 "${pid}" 2>/dev/null; do
     sleep 2
@@ -348,6 +353,11 @@ run_pi_capture() {
     fi
     now="$(date +%s)"
     elapsed=$((now - started))
+    candidate_tag="${PI_AUTO_FOLDER_REFACTOR_CURRENT_CANDIDATE:-}"
+    candidate_badge=""
+    if [[ -n "${candidate_tag}" ]]; then
+      candidate_badge=" $(badge "${green}" "${candidate_tag}")"
+    fi
     if [[ "${heartbeat}" =~ ^[1-9][0-9]*$ ]] && (( elapsed >= next_heartbeat )); then
       bytes="$(wc -c <"${output_file}" 2>/dev/null || printf '0')"
       changed_summary="$(git_scope_status | awk '
@@ -361,11 +371,11 @@ run_pi_capture() {
       last_line="$(tail -n 1 "${output_file}" 2>/dev/null | tr -d '\r' | cut -c 1-100 || true)"
       recent_changes="$(git_scope_status | tail -5 | sed 's/^/ /' | tr '\n' ';' | cut -c 1-180)"
       if [[ -n "${last_line}" ]]; then
-        info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}${last_line}${reset}"
+        info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}${last_line}${reset}"
       elif [[ "${changed_summary}" != "M:0 A:0 D:0 O:0" ]]; then
-        info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}editing: ${recent_changes}${reset}"
+        info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}editing: ${recent_changes}${reset}"
       else
-        info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}thinking/no stdout yet${reset}"
+        info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}thinking/no stdout yet${reset}"
       fi
       next_heartbeat=$((next_heartbeat + heartbeat))
     fi
@@ -410,7 +420,7 @@ run_pi_prompt() {
 }
 
 git_scope_status() {
-  git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**' 2>/dev/null || true
+  git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | grep -vF '.pi/' || true
 }
 
 run_candidate_validation() {
@@ -726,6 +736,9 @@ for ((i = 1; i <= loops; i++)); do
 
   commit_preexisting_changes
   before_snapshot="$(snapshot_scope)"
+
+  # Set candidate context for heartbeat badges
+  export PI_AUTO_FOLDER_REFACTOR_CURRENT_CANDIDATE="${candidate}"
 
   # Run pi with dynamic timeout for size-bound candidates
   if [[ "${candidate_timeout}" != "0" ]]; then
