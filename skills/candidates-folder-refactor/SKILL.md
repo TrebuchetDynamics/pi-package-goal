@@ -20,6 +20,8 @@ auto-folder-refactor.sh <loops> [folder]
 auto-folder-refactor ignore [folder]
 auto-folder-refactor <loops> [folder]
 sh skills/candidates-folder-refactor/scripts/install.sh
+sh install-autofolderrefactor.sh
+./install-autofolderrefactor.sh
 ```
 
 Use `auto-folder-refactor N` only when the owner explicitly wants fully automatic candidate #1 → folder-refactor loops. The script expands the guarded folder-refactor prompt directly for Pi print mode, because slash-command injection can exit too early in non-interactive runs. It is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes. Automatic loops must focus on shared-code reuse and contract extraction, not shallow file moves. When refactor candidates are exhausted or below `PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD`, it transitions to visibility-driven bug finding through small refactors, invariants, replay tests, and contract extraction.
