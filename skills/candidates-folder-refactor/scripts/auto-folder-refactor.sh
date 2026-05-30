@@ -728,10 +728,18 @@ for ((i = 1; i <= loops; i++)); do
     if [[ -d "${run_root}/${candidate}" ]]; then
       candidate_file_count="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
     fi
-    # Base 120s + 3s per file, capped at 900s (15 min)
-    computed=$((120 + (candidate_file_count * 3)))
-    if (( computed > 900 )); then computed=900; fi
+    # Base 60s + 1.5s per file, capped at 600s (10 min)
+    computed=$((60 + (candidate_file_count * 15 / 10)))
+    if (( computed > 600 )); then computed=600; fi
     candidate_timeout="${computed}"
+  fi
+
+  # Quick smell check: skip candidate with 0 total files (truly empty)
+  total_files="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
+  if [[ "${total_files}" == "0" ]]; then
+    warn "candidate ${candidate} has 0 files (empty); skipping pi"
+    skipped_candidates+=("${candidate}")
+    continue
   fi
 
   commit_preexisting_changes
@@ -741,13 +749,15 @@ for ((i = 1; i <= loops; i++)); do
   export PI_AUTO_FOLDER_REFACTOR_CURRENT_CANDIDATE="${candidate}"
 
   # Run pi with dynamic timeout for size-bound candidates
+  # Capture exit code before || true so timeout (124) is detectable
+  set +e
   if [[ "${candidate_timeout}" != "0" ]]; then
     PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS="${candidate_timeout}" run_pi_prompt "${prompt}"
-    pi_exit=$?
   else
     run_pi_prompt "${prompt}"
-    pi_exit=$?
   fi
+  pi_exit=$?
+  set -e
 
   after_snapshot="$(snapshot_scope)"
   if [[ "${before_snapshot}" == "${after_snapshot}" ]]; then
