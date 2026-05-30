@@ -20,8 +20,10 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_SECONDS  progress heartbeat while pi is quiet (default: 30)
   PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS    kill a single pi run after N seconds (default: 0/off)
   PI_AUTO_FOLDER_REFACTOR_SCAN_TOP           candidates to keep per scan (default: 25)
-  PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit after changed loops
-  PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-commit pre-existing pwd changes before loops
+  PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
+  PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
+  PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
+  PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
 
 Examples:
   auto-folder-refactor.sh ignore
@@ -121,15 +123,26 @@ establish_refactorignore() {
   ignore_file="${run_root}/.refactorignore"
   added="$(C_BOLD="${bold}" C_DIM="${dim}" C_GREEN="${green}" C_YELLOW="${yellow}" C_CYAN="${cyan}" C_RESET="${reset}" node -e '
     const fs = require("node:fs");
+    const path = require("node:path");
     const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
     const ignoreFile = process.argv[2];
+    const runRoot = process.argv[3];
+    const scanRoot = process.argv[4];
     const existing = fs.existsSync(ignoreFile) ? fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/).map((line) => line.trim()) : [];
     const existingSet = new Set(existing.filter((line) => line && !line.startsWith("#")));
-    const suggestions = report.refactorIgnoreSuggestions || [];
+    const suggestions = mergeSuggestions(report.refactorIgnoreSuggestions || [], filesystemIgnoreSuggestions(runRoot, scanRoot));
     const missing = suggestions.map((item) => item.pattern).filter((pattern) => !existingSet.has(pattern));
     if (missing.length) {
-      const header = existing.length ? "\n# auto-folder-refactor smart ignores\n" : "# auto-folder-refactor smart ignores\n";
-      fs.appendFileSync(ignoreFile, `${header}${missing.join("\n")}\n`);
+      if (fs.existsSync(ignoreFile)) {
+        const cleaned = fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/).filter((line) => line.trim() !== "# no smart suggestions found yet");
+        fs.writeFileSync(ignoreFile, `${cleaned.join("\n").replace(/\n*$/, "")}\n`);
+      }
+      const hasAutoHeader = fs.existsSync(ignoreFile) && fs.readFileSync(ignoreFile, "utf8").includes("# auto-folder-refactor smart ignores");
+      const header = hasAutoHeader ? "" : "# auto-folder-refactor smart ignores\n";
+      const prefix = fs.existsSync(ignoreFile) && fs.readFileSync(ignoreFile, "utf8").trim() ? "\n" : "";
+      fs.appendFileSync(ignoreFile, `${prefix}${header}${missing.join("\n")}\n`);
+    } else if (!fs.existsSync(ignoreFile)) {
+      fs.writeFileSync(ignoreFile, "# auto-folder-refactor smart ignores\n# no smart suggestions found yet\n");
     }
     const c = {
       bold: process.env.C_BOLD || "",
@@ -140,9 +153,9 @@ establish_refactorignore() {
       reset: process.env.C_RESET || "",
     };
     const counts = { added: 0, kept: 0 };
-    const currentPatterns = fs.existsSync(ignoreFile)
-      ? fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#"))
-      : [];
+    const ignoreExists = fs.existsSync(ignoreFile);
+    const currentLines = ignoreExists ? fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/).filter((line) => line.trim()) : [];
+    const currentPatterns = currentLines.map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
     console.log(`${c.bold}${c.cyan}.refactorignore${c.reset} ${c.dim}${ignoreFile}${c.reset}`);
     for (const item of suggestions) {
       const status = missing.includes(item.pattern) ? "added" : "kept";
@@ -151,15 +164,69 @@ establish_refactorignore() {
       console.log(`${color}${status}${c.reset} ${String(item.confidence).padStart(2)} ${item.pattern}`);
     }
     if (!suggestions.length) console.log(`${c.dim}no new smart suggestions${c.reset}`);
-    if (currentPatterns.length) {
-      console.log(`${c.dim}current (${currentPatterns.length}):${c.reset}`);
-      for (const pattern of currentPatterns.slice(0, 40)) console.log(`${c.dim}- ${pattern}${c.reset}`);
-      if (currentPatterns.length > 40) console.log(`${c.dim}… ${currentPatterns.length - 40} more${c.reset}`);
+    if (currentLines.length) {
+      console.log(`${c.dim}current file (${currentPatterns.length} active, ${currentLines.length} nonblank):${c.reset}`);
+      for (const line of currentLines.slice(0, 60)) {
+        const trimmed = line.trim();
+        const prefix = trimmed.startsWith("#") ? "" : "- ";
+        console.log(`${c.dim}${prefix}${trimmed}${c.reset}`);
+      }
+      if (currentLines.length > 60) console.log(`${c.dim}… ${currentLines.length - 60} more lines${c.reset}`);
+    } else if (ignoreExists) {
+      console.log(`${c.dim}current file exists but has no entries${c.reset}`);
     } else {
-      console.log(`${c.dim}current: empty${c.reset}`);
+      console.log(`${c.dim}current file created empty${c.reset}`);
     }
     console.log(`${c.green}+${counts.added}${c.reset} ${c.dim}kept ${counts.kept}${c.reset}`);
-  ' "${latest_log}" "${ignore_file}")"
+
+    function mergeSuggestions(...groups) {
+      const byPattern = new Map();
+      for (const item of groups.flat()) {
+        const prior = byPattern.get(item.pattern);
+        if (!prior || item.confidence > prior.confidence) byPattern.set(item.pattern, item);
+      }
+      return [...byPattern.values()].sort((a, b) => b.confidence - a.confidence || a.pattern.localeCompare(b.pattern));
+    }
+
+    function filesystemIgnoreSuggestions(root, scan) {
+      const exactNames = new Map([
+        [".dart_tool", [10, "Dart/Flutter tool cache"]],
+        ["build", [10, "build output"]],
+        ["coverage", [9, "coverage output"]],
+        ["test-results", [9, "test result artifacts"]],
+        ["playwright-report", [9, "Playwright report artifacts"]],
+        [".gradle", [9, "Gradle cache"]],
+        [".kotlin", [8, "Kotlin build cache"]],
+        ["artifacts", [8, "artifact output folder"]],
+        ["logs", [8, "log output folder"]],
+        ["screenshots", [7, "screenshot artifacts"]],
+        ["tmp", [7, "temporary files"]],
+        ["temp", [7, "temporary files"]],
+      ]);
+      const found = [];
+      const start = fs.existsSync(scan) ? scan : root;
+      walk(start, 0);
+      return found;
+
+      function walk(dir, depth) {
+        if (depth > 4) return;
+        let entries = [];
+        try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+          if ([".git", "node_modules", ".pi", ".understand-anything"].includes(entry.name)) continue;
+          const full = path.join(dir, entry.name);
+          const hit = exactNames.get(entry.name.toLowerCase());
+          if (hit) {
+            const rel = path.relative(root, full).split(path.sep).join("/");
+            if (rel && !rel.startsWith("../")) found.push({ path: rel, pattern: `${rel}/`, confidence: hit[0], reason: hit[1], files: 0, extensions: [] });
+            continue;
+          }
+          walk(full, depth + 1);
+        }
+      }
+    }
+  ' "${latest_log}" "${ignore_file}" "${run_root}" "${resolved_scan_root}")"
   if [[ -n "${added}" ]]; then
     printf '%s\n' "${added}" >&2
   else
@@ -212,6 +279,17 @@ print_candidate_table() {
       for (const item of (report.refactorIgnoreSuggestions || []).slice(0, 5)) console.error(`${c.dim}  - ${item.pattern} — confidence ${item.confidence}; ${item.reason}${c.reset}`);
     }
     console.error(`${c.dim}log:  ${process.argv[1]}${c.reset}`);
+  ' "$1" "$2"
+}
+
+untried_candidate_count_from_log() {
+  node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const skipped = new Set((process.argv[2] || "").split("\n").filter(Boolean));
+    const report = JSON.parse(fs.readFileSync(file, "utf8"));
+    const candidates = report.candidates || [];
+    process.stdout.write(String(candidates.filter((item) => item && item.relative && !skipped.has(item.relative)).length));
   ' "$1" "$2"
 }
 
@@ -276,11 +354,14 @@ run_pi_capture() {
         /^A |^\?\?/ { added++ ; next }
         /^ D|^D / { deleted++ ; next }
         { other++ }
-        END { printf "modified:%d added:%d deleted:%d other:%d", modified, added, deleted, other }
+        END { printf "M:%d A:%d D:%d O:%d", modified, added, deleted, other }
       ')"
-      last_line="$(tail -n 1 "${output_file}" 2>/dev/null | tr -d '\r' | cut -c 1-120 || true)"
+      last_line="$(tail -n 1 "${output_file}" 2>/dev/null | tr -d '\r' | cut -c 1-100 || true)"
+      recent_changes="$(git_scope_status | tail -5 | sed 's/^/ /' | tr '\n' ';' | cut -c 1-180)"
       if [[ -n "${last_line}" ]]; then
         info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}${last_line}${reset}"
+      elif [[ "${changed_summary}" != "M:0 A:0 D:0 O:0" ]]; then
+        info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}editing: ${recent_changes}${reset}"
       else
         info "${elapsed}s $(badge "${blue}" "pid ${pid}") $(badge "${yellow}" "${changed_summary}") ${dim}thinking/no stdout yet${reset}"
       fi
@@ -331,18 +412,22 @@ git_scope_status() {
 }
 
 run_candidate_validation() {
-  local candidate=$1 module_dir rel pattern
+  local candidate=$1 candidate_dir module_dir rel pattern
   section "validation ${candidate}"
-  if [[ -d "${run_root}/${candidate}" ]] && find "${run_root}/${candidate}" -type f -name '*.go' -print -quit | grep -q .; then
-    module_dir="${run_root}"
+  candidate_dir="${run_root}/${candidate}"
+  if [[ -d "${candidate_dir}" ]] && find "${candidate_dir}" -type f -name '*.go' -print -quit | grep -q .; then
+    module_dir="${candidate_dir}"
     while [[ "${module_dir}" == "${run_root}" || "${module_dir}" == "${run_root}"/* ]]; do
       if [[ -f "${module_dir}/go.mod" ]]; then
         break
       fi
-      [[ "${module_dir}" == "${run_root}" ]] && break
       module_dir="$(dirname -- "${module_dir}")"
     done
-    rel="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${run_root}/${candidate}" "${module_dir}")"
+    if [[ ! -f "${module_dir}/go.mod" ]]; then
+      warn "no go.mod found at or above ${candidate}; skipping Go package validation"
+      return 0
+    fi
+    rel="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${candidate_dir}" "${module_dir}")"
     pattern="./${rel}/..."
     [[ "${rel}" == "." ]] && pattern="./..."
     info "go test ${pattern} -count=1"
@@ -354,6 +439,20 @@ run_candidate_validation() {
   info "git diff --check"
   git -C "${run_root}" diff --check -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
   success "diff check passed"
+}
+
+run_git_commit_push_delivery() {
+  local reason=$1 candidate=${2:-scope}
+  section "git-commit-push ${candidate}"
+  local prompt
+  prompt="$(printf '%s\n\n%s\n%s\n%s\n%s\n%s\n' \
+    "/skill:git-commit-push" \
+    "Ship mode: commit and push validated auto-folder-refactor changes." \
+    "Scope is current pwd only: ${run_root}. Do not stage parent/sibling changes outside this path." \
+    "Reason: ${reason}." \
+    "Exclude .pi/** and .understand-anything/** artifacts." \
+    "Validation already run by auto-folder-refactor when applicable; rerun only focused relevant checks plus git diff --check if needed.")"
+  run_pi_prompt "${prompt}"
 }
 
 commit_preexisting_changes() {
@@ -371,16 +470,23 @@ commit_preexisting_changes() {
   section "pre-commit existing changes"
   warn "committing pre-existing changes under pwd so auto refactor can continue"
   printf '%s\n' "${status}" >&2
+  if printf '%s\n' "${status}" | grep -Eq '^[ MADRCU?!]{1,2} [^/]+$'; then
+    warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'auto-folder-refactor ignore' to add it to .refactorignore"
+  fi
   git -C "${run_root}" add -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
   if git -C "${run_root}" diff --cached --quiet -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged pre-existing changes after excludes"
     return 0
   fi
-  git -C "${run_root}" commit -m "Checkpoint pre-existing changes before auto refactor"
-  success "committed pre-existing changes $(git -C "${run_root}" rev-parse --short HEAD)"
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_DELIVERY:-git-commit-push}" == "local" ]]; then
+    git -C "${run_root}" commit -m "Checkpoint pre-existing changes before auto refactor"
+    success "committed pre-existing changes $(git -C "${run_root}" rev-parse --short HEAD)"
+  else
+    run_git_commit_push_delivery "checkpoint pre-existing changes before auto refactor" "pre-existing"
+  fi
 }
 
-commit_scope_changes() {
+commit_scope_changes_local() {
   local candidate=$1 message
   if [[ "${PI_AUTO_FOLDER_REFACTOR_NO_COMMIT:-}" == "1" ]]; then
     warn "PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1; leaving validated changes uncommitted"
@@ -399,6 +505,42 @@ commit_scope_changes() {
   message="Refactor ${candidate} topology"
   git -C "${run_root}" commit -m "${message}"
   success "committed $(git -C "${run_root}" rev-parse --short HEAD) ${message}"
+}
+
+deliver_scope_changes() {
+  local candidate=$1
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_DELIVERY:-git-commit-push}" == "local" ]]; then
+    commit_scope_changes_local "${candidate}"
+  else
+    run_git_commit_push_delivery "validated refactor slice for ${candidate}" "${candidate}"
+  fi
+}
+
+run_bug_finding_slice() {
+  local loop_label=$1 target_label before after prompt
+  target_label="${scan_root}"
+  section "bug-finding refactor ${loop_label}"
+  kv "target" "${target_label}"
+  kv "mode" "refactor for visibility + bug discovery"
+  prompt="$(printf '%s\n\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+    "AUTO_FOLDER_REFACTOR_BUGFIND ${loop_label}. Target scope: ${run_root}/${target_label}." \
+    "Candidate refactors are exhausted or low. Transition to bug-finding through visibility refactors." \
+    "Pick one small complex subsystem under scope and refactor to expose hidden assumptions, not to optimize." \
+    "Prefer extracting pure functions, shared contracts/value types, explicit candidate/data-flow steps, replayable failure tests, and invariants/assertions." \
+    "Look for duplicated logic drift, hidden state/order dependence, magic constants, inconsistent validation, dead branches, dropped/truncated candidates, stale data/provenance ambiguity, or unreplayable failures." \
+    "When a bug is exposed, add or update a focused regression/characterization test before fixing it." \
+    "Keep compatibility and public behavior unless a regression test proves existing behavior is wrong." \
+    "Validate with the smallest relevant test command plus broader tests only when needed. Stop if no safe visibility refactor or bug-finding slice is available." \
+    "Report changed contracts/helpers, bug found or ruled out, tests added, validation receipts, and next likely bug-finding seam.")"
+  before="$(snapshot_scope)"
+  run_pi_prompt "${prompt}"
+  after="$(snapshot_scope)"
+  if [[ "${before}" == "${after}" ]]; then
+    warn "bug-finding slice made no file changes; stopping"
+    return 1
+  fi
+  run_candidate_validation "${target_label}"
+  deliver_scope_changes "bugfind-${loop_label//\//-}"
 }
 
 snapshot_scope() {
@@ -434,6 +576,10 @@ scan_top="${PI_AUTO_FOLDER_REFACTOR_SCAN_TOP:-25}"
 if [[ ! "${scan_top}" =~ ^[1-9][0-9]*$ ]]; then
   scan_top=25
 fi
+bugfind_threshold="${PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD:-0}"
+if [[ ! "${bugfind_threshold}" =~ ^[0-9]+$ ]]; then
+  bugfind_threshold=0
+fi
 
 if [[ "${mode}" == "ignore" ]]; then
   establish_refactorignore
@@ -455,14 +601,32 @@ for ((i = 1; i <= loops; i++)); do
   fi
   skipped_text="$(printf '%s\n' "${skipped_candidates[@]:-}")"
   print_candidate_table "${latest_log}" "${skipped_text}"
+  untried_count="$(untried_candidate_count_from_log "${latest_log}" "${skipped_text}")"
+  if (( untried_count <= bugfind_threshold )); then
+    warn "untried candidates ${untried_count} <= bug-find threshold ${bugfind_threshold}; switching to visibility bug-finding"
+    commit_preexisting_changes
+    if ! run_bug_finding_slice "${i}/${loops}"; then
+      section "summary"
+      kv "requested" "${loops} loops"
+      kv "completed" "$((i - 1)) refactor loops before bug-finding exhaustion"
+      kv "skipped" "${#skipped_candidates[@]} no-op candidates"
+      success "auto-folder-refactor complete"
+      exit 0
+    fi
+    continue
+  fi
   if ! candidate="$(candidate_from_log "${latest_log}" "${skipped_text}")"; then
-    warn "no untried candidate found in ${latest_log}"
-    section "summary"
-    kv "requested" "${loops} loops"
-    kv "completed" "$((i - 1)) loops before candidate pool exhausted"
-    kv "skipped" "${#skipped_candidates[@]} no-op candidates"
-    success "auto-folder-refactor complete"
-    exit 0
+    warn "no untried candidate found in ${latest_log}; switching to visibility bug-finding"
+    commit_preexisting_changes
+    if ! run_bug_finding_slice "${i}/${loops}"; then
+      section "summary"
+      kv "requested" "${loops} loops"
+      kv "completed" "$((i - 1)) loops before candidate and bug-finding exhaustion"
+      kv "skipped" "${#skipped_candidates[@]} no-op candidates"
+      success "auto-folder-refactor complete"
+      exit 0
+    fi
+    continue
   fi
 
   success "selected $(badge "${green}" "candidate") ${bold}${candidate}${reset}"
@@ -493,7 +657,7 @@ for ((i = 1; i <= loops; i++)); do
     continue
   fi
   run_candidate_validation "${candidate}"
-  commit_scope_changes "${candidate}"
+  deliver_scope_changes "${candidate}"
 done
 
 section "summary"

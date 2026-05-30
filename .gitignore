@@ -35,6 +35,8 @@ codebase-map-understand.md
 **/.pi/*/logs-*.jsonl
 .pi/candidates-folder-refactor/
 **/.pi/candidates-folder-refactor/
+.pi/auto-folder-refactor-sessions/
+.pi/folder-refactor/
 
 # OS/editor noise
 .DS_Store

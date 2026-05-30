@@ -105,7 +105,7 @@ Common commands:
 | --- | --- |
 | `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
 | `auto-folder-refactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
-| `auto-folder-refactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded folder-refactor prompt, repeat N times. Focuses on shared-code reuse/contracts, honors `.refactorignore`, and flags generated/artifact folders to ignore. |
+| `auto-folder-refactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded folder-refactor prompt, repeat N times. Focuses on shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |

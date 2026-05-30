@@ -18,7 +18,7 @@ const refactorIgnoreNameHints = new Set([
   "tmp", "temp", "outputs", "output", "reports", "report", "coverage", "screenshots", "captures", "downloads",
 ]);
 const refactorIgnorePathHints = [
-  /(^|[/\\])opensource[/\\]repos([/\\]|$)/i,
+  /(^|[/\\])opensource[/\\](repos|projects|checkouts|clones)([/\\]|$)/i,
   /(^|[/\\])third[-_ ]?party([/\\]|$)/i,
   /(^|[/\\])vendor(ed)?([/\\]|$)/i,
   /(^|[/\\])(generated|gen|dist|build|coverage|artifacts?|logs?|fixtures?|testdata)([/\\]|$)/i,
@@ -407,10 +407,15 @@ function suggestedRefactorIgnore(stat) {
   const reasons = [];
   let confidence = 0;
   const basename = path.basename(stat.dir).toLowerCase();
-  if (protectedSourceFolderNames.has(basename)) return undefined;
+  const nestedGitRoot = stat.dir !== root && fs.existsSync(path.join(stat.dir, ".git"));
+  if (protectedSourceFolderNames.has(basename) && !nestedGitRoot) return undefined;
   const opensourceIndex = parts.indexOf("opensource");
-  const reposIndex = parts.indexOf("repos");
+  const reposIndex = ["repos", "projects", "checkouts", "clones"].map((name) => parts.indexOf(name)).filter((index) => index > opensourceIndex).sort((a, b) => a - b)[0] ?? -1;
   const suggestedPath = opensourceIndex !== -1 && reposIndex > opensourceIndex ? rawParts.slice(0, reposIndex + 1).join("/") : normalized;
+  if (nestedGitRoot) {
+    reasons.push("nested git checkout/submodule boundary");
+    confidence += 8;
+  }
   if (opensourceIndex !== -1 && reposIndex > opensourceIndex) {
     reasons.push("vendored/third-party repo mirror path");
     confidence += 5;
