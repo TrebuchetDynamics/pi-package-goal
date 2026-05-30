@@ -5,7 +5,8 @@
   "type": "module",
   "bin": {
     "tx": "./tmux/tx",
-    "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh"
+    "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh",
+    "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh"
   },
   "license": "MIT AND Apache-2.0",
   "repository": {

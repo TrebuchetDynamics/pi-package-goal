@@ -41,6 +41,7 @@ if (options.fromLog) {
   process.exit(0);
 }
 
+const refactorIgnore = loadRefactorIgnore(root, process.cwd());
 const statsByDir = new Map();
 const fileSet = new Set();
 const fileContents = new Map();
@@ -92,6 +93,47 @@ function shouldIgnoreDir(name) {
   return ignoredDirs.has(name) || name.startsWith(".") && name !== ".github";
 }
 
+function loadRefactorIgnore(scanRoot, cwd) {
+  const files = [...new Set([path.join(cwd, ".refactorignore"), path.join(scanRoot, ".refactorignore")])];
+  const rules = [];
+  for (const file of files) {
+    if (!fs.existsSync(file)) continue;
+    const base = path.dirname(file);
+    for (const rawLine of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
+      let line = rawLine.trim();
+      if (!line || line.startsWith("#")) continue;
+      const negate = line.startsWith("!");
+      if (negate) line = line.slice(1).trim();
+      if (!line) continue;
+      const dirOnly = line.endsWith("/");
+      line = line.replace(/^\.\//, "").replace(/^\//, "").replace(/\/$/, "");
+      if (!line) continue;
+      rules.push({ base, pattern: line.split(path.sep).join("/"), negate, dirOnly, hasSlash: line.includes("/"), regex: globRegex(line.split(path.sep).join("/")) });
+    }
+  }
+  return rules;
+}
+
+function globRegex(pattern) {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*").replace(/\u0000/g, ".*");
+  return new RegExp(`^${escaped}$`);
+}
+
+function isRefactorIgnored(full, isDir) {
+  let ignored = false;
+  for (const rule of refactorIgnore) {
+    if (rule.dirOnly && !isDir) continue;
+    const rel = path.relative(rule.base, full).split(path.sep).join("/");
+    if (!rel || rel.startsWith("../") || path.isAbsolute(rel)) continue;
+    const segments = rel.split("/");
+    const matched = rule.hasSlash
+      ? rule.regex.test(rel) || rel.startsWith(`${rule.pattern}/`)
+      : segments.some((segment, index) => rule.regex.test(segment) || isDir && index === segments.length - 1 && rule.regex.test(segment));
+    if (matched) ignored = !rule.negate;
+  }
+  return ignored;
+}
+
 function noteRoles(stat, relativeFile) {
   for (let index = 0; index < rolePatterns.length; index += 1) {
     if (rolePatterns[index].test(relativeFile)) stat.roles.add(index);
@@ -111,12 +153,12 @@ function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (shouldIgnoreDir(entry.name)) continue;
+      if (shouldIgnoreDir(entry.name) || isRefactorIgnored(full, true)) continue;
       stat.childDirs.add(full);
       walk(full);
       continue;
     }
-    if (!entry.isFile()) continue;
+    if (!entry.isFile() || isRefactorIgnored(full, false)) continue;
     const ext = path.extname(entry.name).toLowerCase();
     if (ignoredFileExtensions.has(ext)) continue;
     stat.directFiles += 1;

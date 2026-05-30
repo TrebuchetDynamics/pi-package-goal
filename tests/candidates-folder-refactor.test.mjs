@@ -16,6 +16,10 @@ try {
   write("src/noisy/test/fixture.test.ts", "test('x', () => {});\n");
   write("src/consumer.ts", "import { duplicateThing } from './noisy/api/handler';\nconsole.log(duplicateThing);\n");
   write("src/simple/index.ts", "export const simple = 1;\n");
+  write("src/ignored-refactor/a.ts", "export const ignoredA = 1;\n");
+  write("src/ignored-refactor/b.ts", "export const ignoredB = 2;\n");
+  write("src/ignored-refactor/c.ts", "export const ignoredC = 3;\n");
+  write(".refactorignore", "# scanner ignore rules\nsrc/ignored-refactor/\n");
   write("node_modules/ignored/many.ts", "ignored\n");
   initGitFixture();
   write("src/noisy/api/handler.ts", "export function duplicateThing() { return 3; }\n");
@@ -23,7 +27,9 @@ try {
   git("commit", "-m", "touch noisy handler");
 
   const autoScript = path.join(root, "skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh");
+  const autoInstaller = path.join(root, "skills/candidates-folder-refactor/scripts/install.sh");
   accessSync(autoScript, constants.X_OK);
+  accessSync(autoInstaller, constants.X_OK);
   const autoHelp = execFileSync(autoScript, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(autoHelp, /auto-folder-refactor\.sh <loops> \[scan-root\]/);
   assert.match(autoHelp, /PI_AUTO_FOLDER_REFACTOR_PI_ARGS/);
@@ -32,6 +38,18 @@ try {
   fs.symlinkSync(outside, path.join(fixture, "outside-link"), "dir");
   assert.throws(() => execFileSync(autoScript, ["1", "outside-link"], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
   fs.rmSync(outside, { recursive: true, force: true });
+  const installBin = path.join(fixture, "bin");
+  const installOutput = execFileSync("sh", [autoInstaller], {
+    cwd: fixture,
+    encoding: "utf8",
+    env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin },
+  });
+  assert.match(installOutput, /installed wrapper:/);
+  assert.match(installOutput, /example: auto-folder-refactor 10/);
+  const installedAuto = path.join(installBin, "auto-folder-refactor");
+  accessSync(installedAuto, constants.X_OK);
+  const installedHelp = execFileSync(installedAuto, ["--help"], { cwd: fixture, encoding: "utf8" });
+  assert.match(installedHelp, /auto-folder-refactor\.sh <loops> \[scan-root\]/);
 
   const fakePi = path.join(fixture, "fake-pi.sh");
   fs.writeFileSync(fakePi, "#!/usr/bin/env bash\necho fake pi noop\n");
@@ -47,6 +65,7 @@ try {
   assert.match(repoOutput, /tests 1/);
   assert.match(repoOutput, /duplicates [1-9]/);
   assert.doesNotMatch(repoOutput, /node_modules/);
+  assert.doesNotMatch(repoOutput, /ignored-refactor/);
   assert.match(repoOutput, /Log: .*\.pi\/candidates-folder-refactor\/latest\.json/);
   assert.equal(fs.existsSync(path.join(fixture, ".pi/candidates-folder-refactor/latest.json")), true);
   assert.equal(fs.existsSync(path.join(fixture, ".pi/candidates-folder-refactor/runs.jsonl")), true);

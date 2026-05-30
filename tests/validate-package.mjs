@@ -317,7 +317,7 @@ async function testPackageManifest() {
   assert.match(pkg.description, /skills/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
-  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
+  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
   assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include the understand extension");
@@ -423,6 +423,7 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /\.pi\/candidates-folder-refactor\/latest\.json/);
   assert.match(candidatesFolderRefactor, /--from-log/);
   assert.match(candidatesFolderRefactor, /auto-folder-refactor\.sh <loops> \[folder\]/);
+  assert.match(candidatesFolderRefactor, /auto-folder-refactor <loops> \[folder\]/);
   const lgtm = read("skills/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);

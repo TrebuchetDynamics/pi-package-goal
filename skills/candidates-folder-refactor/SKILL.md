@@ -16,9 +16,13 @@ Find the top five noisy folders that are good candidates for `skill-folder-refac
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
 auto-folder-refactor.sh <loops> [folder]
+auto-folder-refactor <loops> [folder]
+sh skills/candidates-folder-refactor/scripts/install.sh
 ```
 
-Use `auto-folder-refactor.sh N` only when the owner explicitly wants fully automatic candidate #1 → `/folder-refactor` loops. The script is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes.
+Use `auto-folder-refactor N` only when the owner explicitly wants fully automatic candidate #1 → folder-refactor loops. The script expands the guarded folder-refactor prompt directly for Pi print mode, because slash-command injection can exit too early in non-interactive runs. It is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes.
+
+The scanner honors `.refactorignore` in the current working directory and scan root. Use one pattern per line, with `#` comments, optional trailing `/` for directories, `*`/`**` globs, and `!` negation for later rules.
 
 3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next `/folder-refactor` target before deciding whether a fresh scan is needed.
 4. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.
