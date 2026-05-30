@@ -15,14 +15,16 @@ Find the top five noisy folders that are good candidates for `skill-folder-refac
 ```bash
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
+auto-folder-refactor.sh ignore [folder]
 auto-folder-refactor.sh <loops> [folder]
+auto-folder-refactor ignore [folder]
 auto-folder-refactor <loops> [folder]
 sh skills/candidates-folder-refactor/scripts/install.sh
 ```
 
-Use `auto-folder-refactor N` only when the owner explicitly wants fully automatic candidate #1 → folder-refactor loops. The script expands the guarded folder-refactor prompt directly for Pi print mode, because slash-command injection can exit too early in non-interactive runs. It is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes.
+Use `auto-folder-refactor N` only when the owner explicitly wants fully automatic candidate #1 → folder-refactor loops. The script expands the guarded folder-refactor prompt directly for Pi print mode, because slash-command injection can exit too early in non-interactive runs. It is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes. Automatic loops must focus on shared-code reuse and contract extraction, not shallow file moves.
 
-The scanner honors `.refactorignore` in the current working directory and scan root. Use one pattern per line, with `#` comments, optional trailing `/` for directories, `*`/`**` globs, and `!` negation for later rules.
+The scanner honors `.refactorignore` in the current working directory and scan root. Use one pattern per line, with `#` comments, optional trailing `/` for directories, `*`/`**` globs, and `!` negation for later rules. It also reports `Suggested .refactorignore entries` for artifact/generated/vendor-looking folders and omits those from refactor candidates. Smart suggestions use confidence-scored evidence: generated-code headers, lock/generated marker files, artifact-heavy extensions, vendor/opensource path patterns, artifact folder names, low-churn unreferenced huge trees, and parent-folder compaction. Source roots such as `lib/`, `src/`, `internal/`, `domain/`, and weak architecture names like `external/` are protected unless stronger artifact/generated evidence exists.
 
 3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next `/folder-refactor` target before deciding whether a fresh scan is needed.
 4. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.
