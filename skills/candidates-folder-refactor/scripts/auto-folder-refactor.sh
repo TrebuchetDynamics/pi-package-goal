@@ -24,6 +24,8 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
   PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
+  PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 10)
+  PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT=1       scale timeout by candidate file count (default: on)
 
 Examples:
   auto-folder-refactor.sh ignore
@@ -533,7 +535,7 @@ run_bug_finding_slice() {
     "Validate with the smallest relevant test command plus broader tests only when needed. Stop if no safe visibility refactor or bug-finding slice is available." \
     "Report changed contracts/helpers, bug found or ruled out, tests added, validation receipts, and next likely bug-finding seam.")"
   before="$(snapshot_scope)"
-  run_pi_prompt "${prompt}"
+  run_pi_prompt "${prompt}" || true
   after="$(snapshot_scope)"
   if [[ "${before}" == "${after}" ]]; then
     warn "bug-finding slice made no file changes; stopping"
@@ -541,6 +543,58 @@ run_bug_finding_slice() {
   fi
   run_candidate_validation "${target_label}"
   deliver_scope_changes "bugfind-${loop_label//\//-}"
+}
+
+# If the candidate has too many subdirectories, drill down by running the
+# scanner scoped to it and picking the top manageable sub-candidate.
+# This prevents Pi from hanging on 400-file / 48-subdir targets.
+run_drill_down() {
+  local candidate=$1
+  local candidate_abs="${run_root}/${candidate}"
+
+  if [[ ! -d "${candidate_abs}" ]]; then
+    echo "${candidate}"
+    return 0
+  fi
+
+  local subdir_count
+  subdir_count="$(find "${candidate_abs}" -maxdepth 1 -type d 2>/dev/null | wc -l)"
+  subdir_count=$((subdir_count - 1))
+
+  if (( subdir_count <= drilldown_max_subdirs )); then
+    echo "${candidate}"
+    return 0
+  fi
+
+  info "candidate ${candidate} has ${subdir_count} subdirs > ${drilldown_max_subdirs}; drilling down"
+  node "${scanner}" "${candidate_abs}" --top 5 >/dev/null 2>&1
+  local sub_log="${candidate_abs}/.pi/candidates-folder-refactor/latest.json"
+
+  if [[ ! -f "${sub_log}" ]]; then
+    warn "drill-down: no scanner output; using original candidate"
+    echo "${candidate}"
+    return 0
+  fi
+
+  local sub_candidate
+  sub_candidate="$(node -e '
+    const fs = require("node:fs");
+    const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const candidates = report.candidates || [];
+    const maxFiles = parseInt(process.argv[2] || "50", 10);
+    const best = candidates.find((item) => item && item.relative && item.files > 0 && item.files <= maxFiles && item.subdirs <= 5);
+    process.stdout.write(best ? best.relative : "");
+  ' "${sub_log}" "50")"
+
+  if [[ -z "${sub_candidate}" ]]; then
+    warn "drill-down: no manageable sub-candidate (≤50 files, ≤5 subdirs); using original"
+    echo "${candidate}"
+    return 0
+  fi
+
+  local drilled="${candidate}/${sub_candidate}"
+  info "drilled down: ${candidate} → ${drilled}"
+  echo "${drilled}"
 }
 
 snapshot_scope() {
@@ -579,6 +633,14 @@ fi
 bugfind_threshold="${PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD:-0}"
 if [[ ! "${bugfind_threshold}" =~ ^[0-9]+$ ]]; then
   bugfind_threshold=0
+fi
+dynamic_timeout="${PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT:-1}"
+if [[ "${dynamic_timeout}" != "0" && "${dynamic_timeout}" != "1" ]]; then
+  dynamic_timeout=1
+fi
+drilldown_max_subdirs="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS:-10}"
+if [[ ! "${drilldown_max_subdirs}" =~ ^[1-9][0-9]*$ ]]; then
+  drilldown_max_subdirs=10
 fi
 
 if [[ "${mode}" == "ignore" ]]; then
@@ -629,6 +691,9 @@ for ((i = 1; i <= loops; i++)); do
     continue
   fi
 
+  # Drill down if candidate has too many subdirs (prevents pi hang on 400-file targets)
+  candidate="$(run_drill_down "${candidate}")"
+
   success "selected $(badge "${green}" "candidate") ${bold}${candidate}${reset}"
   section "folder-refactor ${candidate}"
   kv "target" "${candidate}"
@@ -647,12 +712,38 @@ for ((i = 1; i <= loops; i++)); do
     "- If nextCandidateFiles is non-empty and validation is green, execute the next candidate instead of stopping." \
     "AUTO_FOLDER_REFACTOR loop ${i}/${loops}. Fully automatic mode scoped to pwd only: ${run_root}. Do not inspect, edit, move, or validate parent directories outside pwd; only operate on pwd and its subfolders. Keep taking safe validated slices that improve sharing/reuse/contracts, not just directory shape. Do not stop with a safe next candidate; execute it. Stop only for failed validation, owner-risk blocker, generated/destructive risk, candidate outside pwd, or context exhaustion. If blocked, state the exact blocker and next command.")"
 
+  # Compute dynamic timeout based on candidate file count
+  candidate_timeout="${PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS:-0}"
+  if [[ "${dynamic_timeout}" == "1" && "${candidate_timeout}" == "0" ]]; then
+    candidate_file_count=0
+    if [[ -d "${run_root}/${candidate}" ]]; then
+      candidate_file_count="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
+    fi
+    # Base 120s + 3s per file, capped at 900s (15 min)
+    computed=$((120 + (candidate_file_count * 3)))
+    if (( computed > 900 )); then computed=900; fi
+    candidate_timeout="${computed}"
+  fi
+
   commit_preexisting_changes
   before_snapshot="$(snapshot_scope)"
-  run_pi_prompt "${prompt}"
+
+  # Run pi with dynamic timeout for size-bound candidates
+  if [[ "${candidate_timeout}" != "0" ]]; then
+    PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS="${candidate_timeout}" run_pi_prompt "${prompt}"
+    pi_exit=$?
+  else
+    run_pi_prompt "${prompt}"
+    pi_exit=$?
+  fi
+
   after_snapshot="$(snapshot_scope)"
   if [[ "${before_snapshot}" == "${after_snapshot}" ]]; then
-    warn "no file changes after loop ${i}; marking ${bold}${candidate}${reset} skipped and continuing"
+    if [[ "${pi_exit}" == "124" ]]; then
+      warn "no file changes after loop ${i} (timed out ${candidate_timeout}s); marking ${bold}${candidate}${reset} skipped and continuing"
+    else
+      warn "no file changes after loop ${i}; marking ${bold}${candidate}${reset} skipped and continuing"
+    fi
     skipped_candidates+=("${candidate}")
     continue
   fi
