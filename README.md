@@ -80,10 +80,10 @@ Or, when `tx` is already on your `PATH` from an npm install/link, install the pr
 tx install
 ```
 
-The `tx` command is declared in `package.json` as:
+The `tx` and `auto-folder-refactor.sh` commands are declared in `package.json` as package bins:
 
 ```json
-{ "bin": { "tx": "./tmux/tx" } }
+{ "bin": { "tx": "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" } }
 ```
 
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
@@ -99,6 +99,7 @@ Common commands:
 | Command | Use it for |
 | --- | --- |
 | `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
+| `auto-folder-refactor.sh N [folder]` | Fully automatic loop: scan candidates, pick top #1, run `/folder-refactor`, repeat N times. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |

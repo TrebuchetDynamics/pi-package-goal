@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { accessSync, constants } from "node:fs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -20,6 +21,23 @@ try {
   write("src/noisy/api/handler.ts", "export function duplicateThing() { return 3; }\n");
   git("add", "src/noisy/api/handler.ts");
   git("commit", "-m", "touch noisy handler");
+
+  const autoScript = path.join(root, "skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh");
+  accessSync(autoScript, constants.X_OK);
+  const autoHelp = execFileSync(autoScript, ["--help"], { cwd: fixture, encoding: "utf8" });
+  assert.match(autoHelp, /auto-folder-refactor\.sh <loops> \[scan-root\]/);
+  assert.match(autoHelp, /PI_AUTO_FOLDER_REFACTOR_PI_ARGS/);
+  assert.throws(() => execFileSync(autoScript, ["1", ".."], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-auto-folder-refactor-"));
+  fs.symlinkSync(outside, path.join(fixture, "outside-link"), "dir");
+  assert.throws(() => execFileSync(autoScript, ["1", "outside-link"], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
+  fs.rmSync(outside, { recursive: true, force: true });
+
+  const fakePi = path.join(fixture, "fake-pi.sh");
+  fs.writeFileSync(fakePi, "#!/usr/bin/env bash\necho fake pi noop\n");
+  fs.chmodSync(fakePi, 0o755);
+  const noopOutput = execFileSync(autoScript, ["2", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePi }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(noopOutput, /fake pi noop/);
 
   const script = path.join(root, "skills/candidates-folder-refactor/scripts/find-candidates.mjs");
   const repoOutput = execFileSync(process.execPath, [script, "."], { cwd: fixture, encoding: "utf8" });

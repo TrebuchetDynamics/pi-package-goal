@@ -4,7 +4,8 @@
   "description": "Pi package bundling high-signal engineering skills plus an Understand-Anything slash-command extension.",
   "type": "module",
   "bin": {
-    "tx": "./tmux/tx"
+    "tx": "./tmux/tx",
+    "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh"
   },
   "license": "MIT AND Apache-2.0",
   "repository": {

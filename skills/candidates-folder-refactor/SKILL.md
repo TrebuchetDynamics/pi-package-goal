@@ -15,7 +15,10 @@ Find the top five noisy folders that are good candidates for `skill-folder-refac
 ```bash
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
 node skills/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
+auto-folder-refactor.sh <loops> [folder]
 ```
+
+Use `auto-folder-refactor.sh N` only when the owner explicitly wants fully automatic candidate #1 → `/folder-refactor` loops. The script is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes.
 
 3. On reruns, read `[folder]/.pi/candidates-folder-refactor/latest.json` first to reuse prior candidates, ignored false positives, and the likely next `/folder-refactor` target before deciding whether a fresh scan is needed.
 4. Read the top results, then inspect each candidate enough to confirm whether the noise is real or just generated/vendor/test-fixture bulk.

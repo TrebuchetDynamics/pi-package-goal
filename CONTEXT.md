@@ -41,8 +41,8 @@ The package-local extension at `extensions/folder-refactor.js` registers `/folde
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
 **Candidates Folder Refactor Skill**:
-The `candidates-folder-refactor` skill scouts for noisy folders/subfolders and ranks the top five bounded targets to hand to `skill-folder-refactor`, including support for scanning beneath a named folder.
-_Avoid_: treating heuristic scores as proof, recommending repo-root refactors, ranking generated/vendor/cache/build folders as actionable targets
+The `candidates-folder-refactor` skill scouts for noisy folders/subfolders and ranks the top five bounded targets to hand to `/folder-refactor`, including support for scanning beneath a named folder and the `auto-folder-refactor.sh N [folder]` loop for explicitly requested fully automatic top-candidate runs.
+_Avoid_: treating heuristic scores as proof, recommending repo-root refactors, ranking generated/vendor/cache/build folders as actionable targets, running automatic loops without owner intent
 
 **Shared Skill Contract**:
 A compact baseline under `skills/shared/COMMON-CONTRACT.md` for repo hygiene, verification evidence, handoff shape, and safety defaults. Every `SKILL.md` references it so package-wide expectations stay discoverable without bloating each skill.
