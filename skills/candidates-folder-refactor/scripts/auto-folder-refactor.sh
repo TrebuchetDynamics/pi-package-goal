@@ -556,8 +556,12 @@ run_bug_finding_slice() {
 # If the candidate has too many subdirectories, drill down by running the
 # scanner scoped to it and picking the top manageable sub-candidate.
 # This prevents Pi from hanging on 400-file / 48-subdir targets.
+# Drill down: if candidate has too many subdirs, pick a manageable sub-candidate.
+# Skips sub-candidates already in the skipped array.
 run_drill_down() {
   local candidate=$1
+  shift
+  local skipped_sub=("$@")
   local candidate_abs="${run_root}/${candidate}"
 
   if [[ ! -d "${candidate_abs}" ]]; then
@@ -584,18 +588,28 @@ run_drill_down() {
     return 0
   fi
 
+  # Build a set of already-tried sub-candidate basenames (last path component)
+  local tried
+  tried="$(printf '%s\n' "${skipped_sub[@]}" | while read line; do basename "$line" 2>/dev/null; done)"
+
   local sub_candidate
   sub_candidate="$(node -e '
     const fs = require("node:fs");
     const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
     const candidates = report.candidates || [];
     const maxFiles = parseInt(process.argv[2] || "50", 10);
-    const best = candidates.find((item) => item && item.relative && item.files > 0 && item.files <= maxFiles && item.subdirs <= 5);
+    const tried = (process.argv[3] || "").split("\n").filter(Boolean);
+    const triedSet = new Set(tried);
+    const best = candidates.find((item) => {
+      if (!item || !item.relative) return false;
+      const base = item.relative.split("/").pop();
+      return item.files > 0 && item.files <= maxFiles && item.subdirs <= 5 && !triedSet.has(base);
+    });
     process.stdout.write(best ? best.relative : "");
-  ' "${sub_log}" "50")"
+  ' "${sub_log}" "50" "${tried}")"
 
   if [[ -z "${sub_candidate}" ]]; then
-    warn "drill-down: no manageable sub-candidate (≤50 files, ≤5 subdirs); using original"
+    warn "drill-down: no untried manageable sub-candidate (≤50 files, ≤5 subdirs); using original"
     echo "${candidate}"
     return 0
   fi
@@ -699,7 +713,16 @@ for ((i = 1; i <= loops; i++)); do
   fi
 
   # Drill down if candidate has too many subdirs (prevents pi hang on 400-file targets)
-  candidate="$(run_drill_down "${candidate}")"
+  # Pass already-skipped sub-candidates so it picks the next untried one
+  drill_candidate="${candidate}"
+  candidate="$(run_drill_down "${candidate}" "${skipped_candidates[@]:-}")"
+  # If all sub-candidates exhausted, skip the parent too
+  already_skipped_sub="$(printf '%s\n' "${skipped_candidates[@]:-}" | grep -c "${drill_candidate}/" || true)"
+  if [[ "${candidate}" == "${drill_candidate}" && "${already_skipped_sub}" -gt 0 ]]; then
+    warn "all sub-candidates of ${drill_candidate} exhausted; skipping parent"
+    skipped_candidates+=("${drill_candidate}")
+    continue
+  fi
 
   success "selected $(badge "${green}" "candidate") ${bold}${candidate}${reset}"
   section "folder-refactor ${candidate}"
@@ -776,12 +799,8 @@ for ((i = 1; i <= loops; i++)); do
     else
       warn "no file changes after loop ${i}; marking ${bold}${candidate}${reset} skipped and continuing"
     fi
-    # Also skip parent if drill-down split the candidate
-    # Prevents re-picking the same parent folder on next scan
-    parent="$(dirname "${candidate}" 2>/dev/null || true)"
-    if [[ "${parent}" != "." && "${parent}" != "," && "${parent}" != "${candidate}" ]]; then
-      skipped_candidates+=("${parent}")
-    fi
+    # Only skip the candidate itself (not the parent), so drill-down
+    # can pick the next untried sub-candidate from the same parent.
     skipped_candidates+=("${candidate}")
     continue
   fi
