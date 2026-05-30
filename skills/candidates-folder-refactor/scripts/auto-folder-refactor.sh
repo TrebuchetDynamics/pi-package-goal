@@ -392,7 +392,6 @@ run_pi_capture() {
   set +e
   wait "${pid}"
   status=$?
-  set -e
   wait "${tail_pid}" 2>/dev/null || true
   rm -f "${output_file}"
   return "${status}"
@@ -404,7 +403,6 @@ run_pi_prompt() {
   set +e
   run_pi_capture "${prompt}" with-package | tee "${output_file}"
   status=${PIPESTATUS[0]}
-  set -e
   if [[ ${status} -eq 0 ]]; then
     rm -f "${output_file}"
     return 0
@@ -765,6 +763,12 @@ for ((i = 1; i <= loops; i++)); do
       warn "no file changes after loop ${i} (timed out ${candidate_timeout}s); marking ${bold}${candidate}${reset} skipped and continuing"
     else
       warn "no file changes after loop ${i}; marking ${bold}${candidate}${reset} skipped and continuing"
+    fi
+    # Also skip parent if drill-down split the candidate
+    # Prevents re-picking the same parent folder on next scan
+    parent="$(dirname "${candidate}" 2>/dev/null || true)"
+    if [[ "${parent}" != "." && "${parent}" != "," && "${parent}" != "${candidate}" ]]; then
+      skipped_candidates+=("${parent}")
     fi
     skipped_candidates+=("${candidate}")
     continue
