@@ -1,5 +1,7 @@
 # Dark mode
 
+Shared contract: see [Visual theme guides](./README.md) for color-scheme, token, and scrollbar policy reused by this guide.
+
 The `color-scheme` property indicates which color schemes (such as light or dark) your page supports. This informs the browser that it can automatically theme native UI elements—like scrollbars, form controls, and the default canvas background—to match your site's design and help minimize white flashes during initial loading.
 
 ## Implementation

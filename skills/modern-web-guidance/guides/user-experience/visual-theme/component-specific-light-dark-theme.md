@@ -1,5 +1,7 @@
 # Component-specific light/dark themes
 
+Shared contract: see [Visual theme guides](./README.md) for color-scheme, token, and scrollbar policy reused by this guide.
+
 While more commonly set on the root, the `color-scheme` property can be set on individual elements to force them into a different color scheme from the rest of the page.
 This can be useful for components that must always be viewed in a specific color scheme (e.g. always in dark or light mode).
 

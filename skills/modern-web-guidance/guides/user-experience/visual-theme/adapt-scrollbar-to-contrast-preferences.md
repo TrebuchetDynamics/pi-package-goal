@@ -1,5 +1,7 @@
 # Adapt scrollbar to high-contrast preferences
 
+Shared contract: see [Visual theme guides](./README.md) for color-scheme, token, and scrollbar policy reused by this guide.
+
 Users who enable high-contrast modes in their operating system or browser expect UI elements (like scrollbars) to be extremely legible, often relying on stark foreground-background separation rather than subtle grays or theme colors.
 
 This guide provides optional instructions on how to use the `@media (prefers-contrast: more)` CSS media feature to enforce high-contrast scrollbar styling.

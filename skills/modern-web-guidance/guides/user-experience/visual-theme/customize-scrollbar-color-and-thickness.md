@@ -1,5 +1,7 @@
 # Customize the color or thickness of a scrollbar
 
+Shared contract: see [Visual theme guides](./README.md) for color-scheme, token, and scrollbar policy reused by this guide.
+
 You can customize the appearance of scrollbars using the standard CSS properties `scrollbar-color` and `scrollbar-width`.
 
 *   **`scrollbar-color`**: Accepts two `<color>` values. The first applies to the thumb (the moving part), and the second to the track (the fixed background).
