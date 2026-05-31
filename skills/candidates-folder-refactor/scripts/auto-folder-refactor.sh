@@ -37,6 +37,10 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT=errors|all  pi stdout mode (default: errors)
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE=1 only print unchanged heartbeats in debug (default: 1)
   PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root decrease (default: 1)
+  PI_AUTO_FOLDER_REFACTOR_PERSIST_SKIPS=1    persist candidate skips across runs (default: 0/off)
+  PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION=1 prefer manageable candidates with root files (default: 1)
+  PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES      max files for fast-root candidate preference (default: 80)
+  PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES max root files for fast-root candidate preference (default: 40)
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
@@ -135,7 +139,8 @@ mkdir -p "${state_dir}"
 state_key="$(printf '%s' "${resolved_scan_root}" | node -e 'const crypto=require("node:crypto"); process.stdout.write(crypto.createHash("sha256").update(require("node:fs").readFileSync(0)).digest("hex").slice(0,16));')"
 skipped_file="${state_dir}/skipped.${state_key}.txt"
 skipped_log="${state_dir}/skipped.${state_key}.jsonl"
-if [[ -f "${skipped_file}" ]]; then
+persist_skips="${PI_AUTO_FOLDER_REFACTOR_PERSIST_SKIPS:-0}"
+if [[ "${persist_skips}" == "1" && -f "${skipped_file}" ]]; then
   mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | awk -F '\t' '{print $1}' | sort -u)
 fi
 
@@ -151,12 +156,16 @@ mark_skipped() {
   local candidate=$1 reason=${2:-skipped} scope=${3:-candidate} temporary=${4:-0} now
   now="$(date -Is)"
   mkdir -p "${state_dir}"
-  if [[ "${temporary}" != "1" ]]; then
+  if [[ "${temporary}" != "1" && "${persist_skips}" == "1" ]]; then
     grep -v -F -x "${candidate}" "${skipped_file}" 2>/dev/null > "${skipped_file}.tmp" || true
     printf '%s\n' "${candidate}" >> "${skipped_file}.tmp"
     sort -u "${skipped_file}.tmp" > "${skipped_file}"
     rm -f "${skipped_file}.tmp"
     refresh_skipped_candidates
+  fi
+  if [[ "${temporary}" == "1" || "${persist_skips}" != "1" ]]; then
+    skipped_candidates+=("${candidate}")
+    mapfile -t skipped_candidates < <(printf '%s\n' "${skipped_candidates[@]}" | grep -v '^$' | sort -u)
   fi
   node -e 'const fs=require("node:fs"); const rec={ts:process.argv[1], candidate:process.argv[2], reason:process.argv[3], scope:process.argv[4], temporary:process.argv[5] === "1"}; fs.appendFileSync(process.argv[6], JSON.stringify(rec)+"\n");' "${now}" "${candidate}" "${reason}" "${scope}" "${temporary}" "${skipped_log}"
   skip_count=$((skip_count + 1))

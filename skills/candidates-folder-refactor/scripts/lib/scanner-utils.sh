@@ -209,7 +209,22 @@ candidate_from_log() {
       const normalized = relative.split(/[\\/]/).join("/");
       return normalized === path || normalized.startsWith(`${path}/`);
     });
-    const picked = candidates.find((item) => item && item.relative && !skipped.has(item.relative) && !isIgnored(item.relative));
+    const eligible = candidates.filter((item) => item && item.relative && !skipped.has(item.relative) && !isIgnored(item.relative));
+    const maxFiles = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES || 80) || 80);
+    const maxRoot = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES || 40) || 40);
+    const fastRootReduction = process.env.PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION !== "0";
+    const byFastRoot = (a, b) => {
+      const aRoot = a.direct || 0;
+      const bRoot = b.direct || 0;
+      const aFiles = a.files || 0;
+      const bFiles = b.files || 0;
+      return bRoot - aRoot || aFiles - bFiles || b.score - a.score || a.relative.localeCompare(b.relative);
+    };
+    const picked = fastRootReduction
+      ? [...eligible].filter((item) => (item.direct || 0) > 0 && (item.direct || 0) <= maxRoot && (item.files || 0) <= maxFiles).sort(byFastRoot)[0]
+        || [...eligible].filter((item) => (item.direct || 0) > 0 && (item.direct || 0) <= maxRoot).sort(byFastRoot)[0]
+        || eligible[0]
+      : eligible[0];
     const candidate = picked && picked.relative;
     if (!candidate) process.exit(3);
     const absolute = path.resolve(runRoot, candidate);
@@ -248,7 +263,7 @@ run_drill_down() {
     subdir_count=$((subdir_count - 1))
     total_files="$(find "${candidate_abs}" -type f 2>/dev/null | wc -l)"
 
-    if (( total_files <= max_files && subdir_count <= drilldown_max_subdirs )); then
+    if (( total_files <= max_files )); then
       echo "${current}"
       return 0
     fi
