@@ -1,5 +1,7 @@
 # Build a Scroll Progress Indicator
 
+Shared contract: see [Scroll-driven effect guides](./README.md) for native timeline, feature-detection, reduced-motion, declaration-order, and fallback policy reused by this guide.
+
 A scroll progress indicator is a common user interface pattern that visually communicates the user's progress through a scrollable document or container. As the user scrolls, a visual element updates to reflect their position, providing a clear and intuitive sense of how much content has been viewed and how much remains.
 
 ## How to implement

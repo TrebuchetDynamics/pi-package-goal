@@ -1,5 +1,7 @@
 # Scrollytelling
 
+Shared contract: see [Scroll-driven effect guides](./README.md) for native timeline, feature-detection, reduced-motion, declaration-order, and fallback policy reused by this guide.
+
 Scrollytelling is a popular technique used to create engaging and immersive web experiences. It involves animating elements on a page as the user scrolls, effectively telling a story or guiding the user through a narrative. With CSS Scroll-Driven Animations, you can create these effects directly in CSS, without needing to rely on JavaScript. The animations are controlled by the scroll position, not a time-based clock, which ensures they are always in sync with the user's scroll.
 
 ## How to implement

@@ -1,5 +1,7 @@
 # Build Carousel Slide Effects
 
+Shared contract: see [Scroll-driven effect guides](./README.md) for native timeline, feature-detection, reduced-motion, declaration-order, and fallback policy reused by this guide.
+
 Carousel slide effects are a great way to add visual interest to a carousel. As the user scrolls through the slides, each slide can animate as it enters, centers, and exits the scrollport. For example, the slides can fade in and out, rotate, or scale in size. This creates a dynamic and engaging user experience. Unlike simple entry/exit animations, this effect uses a single, continuous animation to control the slide's appearance across the entire scrollport.
 
 ## How to implement
