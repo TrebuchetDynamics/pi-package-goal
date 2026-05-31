@@ -148,17 +148,20 @@ print_candidate_table() {
       reset: process.env.C_RESET || "",
     };
     const suggestedIgnores = new Set((report.refactorIgnoreSuggestions || []).map((item) => item.path));
-    const rows = report.candidates || [];
-    const widths = { n: 3, path: 34, score: 7, files: 6, churn: 6, dup: 6, sub: 5, roles: 5 };
+    const rowLimit = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_TABLE_ROWS || 10) || 10);
+    const showSuggestions = process.env.PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS === "1";
+    const rows = (report.candidates || []).slice(0, rowLimit);
+    const totalRows = (report.candidates || []).length;
+    const widths = { n: 3, path: 34, score: 7, files: 9, churn: 6, dup: 6, sub: 5, roles: 5 };
     const trunc = (value, width) => {
       const text = String(value);
       return text.length > width ? `${text.slice(0, Math.max(0, width - 1))}…` : text.padEnd(width);
     };
     const line = `${c.dim}${"─".repeat(112)}${c.reset}`;
-    console.error(`${c.bold}${c.cyan}┌ Candidates${c.reset} ${c.dim}${report.target} · ${rows.length} shown${c.reset}`);
+    console.error(`${c.bold}${c.cyan}┌ Candidates${c.reset} ${c.dim}${report.target} · ${rows.length}/${totalRows} shown${c.reset}`);
     console.error(`${c.dim}│ generated ${report.generatedAt || "unknown"}${c.reset}`);
     console.error(line);
-    console.error(`${c.dim} #  ${"path".padEnd(widths.path)} ${"score".padStart(widths.score)} ${"files".padStart(widths.files)} ${"churn".padStart(widths.churn)} ${"dups".padStart(widths.dup)} ${"sub".padStart(widths.sub)} ${"role".padStart(widths.roles)}  extensions${c.reset}`);
+    console.error(`${c.dim} #  ${"path".padEnd(widths.path)} ${"score".padStart(widths.score)} ${"root/tot".padStart(widths.files)} ${"churn".padStart(widths.churn)} ${"dups".padStart(widths.dup)} ${"sub".padStart(widths.sub)} ${"role".padStart(widths.roles)}  extensions${c.reset}`);
     console.error(line);
     for (const [index, item] of rows.entries()) {
       const wasSkipped = skipped.has(item.relative);
@@ -167,14 +170,15 @@ print_candidate_table() {
       const rank = String(index + 1).padStart(2);
       const path = trunc(item.relative, widths.path);
       const exts = (item.extensions || []).join(" ") || "none";
-      console.error(`${rankColor}${rank}.${c.reset} ${wasSkipped ? c.dim : c.bold}${path}${c.reset} ${String(item.score.toFixed ? item.score.toFixed(1) : item.score).padStart(widths.score)} ${String(item.files).padStart(widths.files)} ${String(item.churn).padStart(widths.churn)} ${String(item.duplicates).padStart(widths.dup)} ${String(item.subdirs).padStart(widths.sub)} ${String(item.roles).padStart(widths.roles)}  ${c.dim}${exts}${c.reset}${skippedMark}`);
+      const fileShape = `${item.direct ?? 0}/${item.files ?? 0}`;
+      console.error(`${rankColor}${rank}.${c.reset} ${wasSkipped ? c.dim : c.bold}${path}${c.reset} ${String(item.score.toFixed ? item.score.toFixed(1) : item.score).padStart(widths.score)} ${fileShape.padStart(widths.files)} ${String(item.churn).padStart(widths.churn)} ${String(item.duplicates).padStart(widths.dup)} ${String(item.subdirs).padStart(widths.sub)} ${String(item.roles).padStart(widths.roles)}  ${c.dim}${exts}${c.reset}${skippedMark}`);
     }
     console.error(line);
     const best = rows.find((item) => !skipped.has(item.relative));
     if (best) console.error(`${c.green}next:${c.reset} ${c.bold}${best.relative}${c.reset} ${c.dim}(score ${best.score})${c.reset}`);
     if (suggestedIgnores.size) {
-      console.error(`${c.yellow}refactorignore:${c.reset} ${suggestedIgnores.size} artifact/generated-looking folder(s) omitted from candidates`);
-      for (const item of (report.refactorIgnoreSuggestions || []).slice(0, 5)) console.error(`${c.dim}  - ${item.pattern} — confidence ${item.confidence}; ${item.reason}${c.reset}`);
+      console.error(`${c.yellow}refactorignore:${c.reset} ${suggestedIgnores.size} artifact/generated-looking folder(s) omitted from candidates${showSuggestions ? "" : " (set PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS=1 to list)"}`);
+      if (showSuggestions) for (const item of (report.refactorIgnoreSuggestions || []).slice(0, 5)) console.error(`${c.dim}  - ${item.pattern} — confidence ${item.confidence}; ${item.reason}${c.reset}`);
     }
     console.error(`${c.dim}log:  ${process.argv[1]}${c.reset}`);
   ' "$1" "$2"
@@ -251,9 +255,9 @@ run_drill_down() {
     return 0
   fi
 
-  # Build a set of already-tried sub-candidate basenames (last path component)
+  # Build a set of already-tried sub-candidate paths, not basenames.
   local tried
-  tried="$(printf '%s\n' "${skipped_sub[@]}" | while read line; do basename "$line" 2>/dev/null; done)"
+  tried="$(printf '%s\n' "${skipped_sub[@]}")"
 
   local sub_candidate
   sub_candidate="$(node -e '
@@ -261,12 +265,12 @@ run_drill_down() {
     const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
     const candidates = report.candidates || [];
     const maxFiles = parseInt(process.argv[2] || "50", 10);
-    const tried = (process.argv[3] || "").split("\n").filter(Boolean);
+    const tried = (process.argv[3] || "").split("\n").filter(Boolean).map((value) => value.split(/[\\/]/).join("/"));
     const triedSet = new Set(tried);
     const best = candidates.find((item) => {
       if (!item || !item.relative) return false;
-      const base = item.relative.split("/").pop();
-      return item.files > 0 && item.files <= maxFiles && item.subdirs <= 5 && !triedSet.has(base);
+      const relative = item.relative.split(/[\\/]/).join("/");
+      return item.files > 0 && item.files <= maxFiles && item.subdirs <= 5 && !triedSet.has(relative);
     });
     process.stdout.write(best ? best.relative : "");
   ' "${sub_log}" "50" "${tried}")"

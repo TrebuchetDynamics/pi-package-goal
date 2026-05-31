@@ -32,12 +32,17 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_SECONDS  progress heartbeat while pi is quiet (default: 30)
   PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS    kill a single pi run after N seconds (default: 0/off)
   PI_AUTO_FOLDER_REFACTOR_SCAN_TOP           candidates to keep per scan (default: 25)
+  PI_AUTO_FOLDER_REFACTOR_TABLE_ROWS         candidate rows to display (default: 10)
+  PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS=1 list refactorignore suggestions (default: summary only)
+  PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT=errors|all  pi stdout mode (default: errors)
+  PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE=1 only print unchanged heartbeats in debug (default: 1)
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
+  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery (default: git-commit-push)
   PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 10)
-  PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT=1       scale timeout by candidate file count (default: on)
+  PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT=1       legacy ignored; timeouts are off by default
 
 Examples:
   auto-folder-refactor.sh ignore
@@ -103,6 +108,10 @@ fi
 
 # --- Config defaults ---
 skipped_candidates=()
+landed_count=0
+rollback_count=0
+noop_count=0
+skip_count=0
 scan_top="${PI_AUTO_FOLDER_REFACTOR_SCAN_TOP:-25}"
 if [[ ! "${scan_top}" =~ ^[1-9][0-9]*$ ]]; then
   scan_top=25
@@ -111,14 +120,27 @@ bugfind_threshold="${PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD:-0}"
 if [[ ! "${bugfind_threshold}" =~ ^[0-9]+$ ]]; then
   bugfind_threshold=0
 fi
-dynamic_timeout="${PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT:-1}"
-if [[ "${dynamic_timeout}" != "0" && "${dynamic_timeout}" != "1" ]]; then
-  dynamic_timeout=1
-fi
+dynamic_timeout=0
 drilldown_max_subdirs="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS:-10}"
 if [[ ! "${drilldown_max_subdirs}" =~ ^[1-9][0-9]*$ ]]; then
   drilldown_max_subdirs=10
 fi
+
+state_dir="${run_root}/.pi/auto-folder-refactor-state"
+mkdir -p "${state_dir}"
+skipped_file="${state_dir}/skipped.$(printf '%s' "${resolved_scan_root}" | node -e 'const crypto=require("node:crypto"); process.stdout.write(crypto.createHash("sha256").update(require("node:fs").readFileSync(0)).digest("hex").slice(0,16));').txt"
+if [[ -f "${skipped_file}" ]]; then
+  mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | sort -u)
+fi
+
+mark_skipped() {
+  local candidate=$1 reason=${2:-skipped}
+  skipped_candidates+=("${candidate}")
+  printf '%s\n' "${candidate}" >> "${skipped_file}"
+  sort -u "${skipped_file}" -o "${skipped_file}"
+  skip_count=$((skip_count + 1))
+  warn "marked skipped: ${candidate} (${reason})"
+}
 
 # --- Mode dispatch ---
 if [[ "${mode}" == "ignore" ]]; then
@@ -152,7 +174,10 @@ for ((i = 1; i <= loops; i++)); do
       section "summary"
       kv "requested" "${loops} loops"
       kv "completed" "$((i - 1)) refactor loops before bug-finding exhaustion"
-      kv "skipped" "${#skipped_candidates[@]} no-op candidates"
+      kv "landed" "${landed_count}"
+      kv "rolled back" "${rollback_count}"
+      kv "no-op" "${noop_count}"
+      kv "skipped total" "${#skipped_candidates[@]}"
       success "auto-folder-refactor complete"
       exit 0
     fi
@@ -165,7 +190,10 @@ for ((i = 1; i <= loops; i++)); do
       section "summary"
       kv "requested" "${loops} loops"
       kv "completed" "$((i - 1)) loops before candidate and bug-finding exhaustion"
-      kv "skipped" "${#skipped_candidates[@]} no-op candidates"
+      kv "landed" "${landed_count}"
+      kv "rolled back" "${rollback_count}"
+      kv "no-op" "${noop_count}"
+      kv "skipped total" "${#skipped_candidates[@]}"
       success "auto-folder-refactor complete"
       exit 0
     fi
@@ -180,7 +208,7 @@ for ((i = 1; i <= loops; i++)); do
   already_skipped_sub="$(printf '%s\n' "${skipped_candidates[@]:-}" | grep -c "${drill_candidate}/" || true)"
   if [[ "${candidate}" == "${drill_candidate}" && "${already_skipped_sub}" -gt 0 ]]; then
     warn "all sub-candidates of ${drill_candidate} exhausted; skipping parent"
-    skipped_candidates+=("${drill_candidate}")
+    mark_skipped "${drill_candidate}" "sub-candidates exhausted"
     continue
   fi
 
@@ -194,6 +222,7 @@ for ((i = 1; i <= loops; i++)); do
     "Use the folder-refactor guardrail extension while working:" \
     "- Start with folder_refactor_scan on ${candidate}." \
     "- Make shared-code reuse the main objective: search for duplicated policy/types/helpers before moving files." \
+    "- Prefer one small compile-preserving slice over broad package moves; move only a few files before updating imports/tests and validating." \
     "- Prefer extracting small contracts/interfaces/value types/shared helpers into focused packages over shallow file moves." \
     "- Build new contracts only when they reduce coupling or duplicated behavior; keep compatibility wrappers at the old boundary when needed." \
     "- Reuse existing contracts/helpers before inventing new ones; name the reused or newly created contract in the report." \
@@ -202,24 +231,22 @@ for ((i = 1; i <= loops; i++)); do
     "- If nextCandidateFiles is non-empty and validation is green, execute the next candidate instead of stopping." \
     "AUTO_FOLDER_REFACTOR loop ${i}/${loops}. Fully automatic mode scoped to pwd only: ${run_root}. Do not inspect, edit, move, or validate parent directories outside pwd; only operate on pwd and its subfolders. Keep taking safe validated slices that improve sharing/reuse/contracts, not just directory shape. Do not stop with a safe next candidate; execute it. Stop only for failed validation, owner-risk blocker, generated/destructive risk, candidate outside pwd, or context exhaustion. If blocked, state the exact blocker and next command.")"
 
-  # Compute dynamic timeout based on candidate file count
   candidate_timeout="${PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS:-0}"
-  if [[ "${dynamic_timeout}" == "1" && "${candidate_timeout}" == "0" ]]; then
-    candidate_file_count=0
-    if [[ -d "${run_root}/${candidate}" ]]; then
-      candidate_file_count="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
-    fi
-    # Base 90s for analysis + 1.5s per file for moves, capped at 900s (15 min)
-    computed=$((90 + (candidate_file_count * 15 / 10)))
-    if (( computed > 900 )); then computed=900; fi
-    candidate_timeout="${computed}"
+  if [[ ! "${candidate_timeout}" =~ ^[0-9]+$ ]]; then
+    candidate_timeout=0
+  fi
+  if [[ "${candidate_timeout}" == "0" ]]; then
+    kv "timeout" "off"
+  else
+    kv "timeout" "${candidate_timeout}s"
   fi
 
   # Quick smell check: skip candidate with 0 total files (truly empty)
   total_files="$(find "${run_root}/${candidate}" -type f 2>/dev/null | wc -l)"
   if [[ "${total_files}" == "0" ]]; then
     warn "candidate ${candidate} has 0 files (empty); skipping pi"
-    skipped_candidates+=("${candidate}")
+    noop_count=$((noop_count + 1))
+    mark_skipped "${candidate}" "empty"
     continue
   fi
 
@@ -230,18 +257,25 @@ for ((i = 1; i <= loops; i++)); do
     subdir_count="$(find "${run_root}/${candidate}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
     if (( subdir_count <= 5 )); then
       warn "candidate ${candidate} has 0 root files and ${subdir_count} subdirs (already clean); skipping pi"
-      skipped_candidates+=("${candidate}")
+      noop_count=$((noop_count + 1))
+      mark_skipped "${candidate}" "already clean"
       continue
     fi
   fi
 
   commit_preexisting_changes
+  pre_slice_status="$(git_scope_status)"
   before_snapshot="$(snapshot_scope)"
+  before_candidate_metrics="$(folder_debt_metrics "${candidate}")"
+  before_parent_metrics=""
+  if [[ "${candidate}" == */* ]]; then
+    before_parent_metrics="$(folder_debt_metrics "${candidate%/*}")"
+  fi
 
   # Set candidate context for heartbeat badges
   export PI_AUTO_FOLDER_REFACTOR_CURRENT_CANDIDATE="${candidate}"
 
-  # Run pi with dynamic timeout for size-bound candidates
+  # Run pi. Timeout is off by default; PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS is opt-in.
   set +e
   if [[ "${candidate_timeout}" != "0" ]]; then
     PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS="${candidate_timeout}" run_pi_prompt "${prompt}"
@@ -260,14 +294,50 @@ for ((i = 1; i <= loops; i++)); do
     fi
     # Only skip the candidate itself (not the parent), so drill-down
     # can pick the next untried sub-candidate from the same parent.
-    skipped_candidates+=("${candidate}")
+    noop_count=$((noop_count + 1))
+    mark_skipped "${candidate}" "no changes"
     continue
   fi
+
+  if [[ "${pi_exit}" == "124" ]]; then
+    rollback_failed_slice "pi timed out after ${candidate_timeout}s before completing a coherent slice" "${candidate}" "${pre_slice_status}"
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "timeout rollback"
+    continue
+  fi
+  if [[ "${pi_exit}" != "0" ]]; then
+    rollback_failed_slice "pi exited with status ${pi_exit}" "${candidate}" "${pre_slice_status}"
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "pi failure rollback"
+    continue
+  fi
+
+  set +e
   run_candidate_validation "${candidate}"
+  validation_exit=$?
+  set -e
+  if [[ "${validation_exit}" != "0" ]]; then
+    rollback_failed_slice "validation failed with status ${validation_exit}" "${candidate}" "${pre_slice_status}"
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "validation rollback"
+    continue
+  fi
+  after_candidate_metrics="$(folder_debt_metrics "${candidate}")"
+  section "metric delta ${candidate}"
+  print_metric_delta "target ${candidate}" "${before_candidate_metrics}" "${after_candidate_metrics}"
+  if [[ -n "${before_parent_metrics}" ]]; then
+    after_parent_metrics="$(folder_debt_metrics "${candidate%/*}")"
+    print_metric_delta "parent ${candidate%/*}" "${before_parent_metrics}" "${after_parent_metrics}"
+  fi
   deliver_scope_changes "${candidate}"
+  landed_count=$((landed_count + 1))
 done
 
 section "summary"
 kv "requested" "${loops} loops"
-kv "skipped" "${#skipped_candidates[@]} no-op candidates"
+kv "landed" "${landed_count}"
+kv "rolled back" "${rollback_count}"
+kv "no-op" "${noop_count}"
+kv "skipped total" "${#skipped_candidates[@]}"
+kv "skip state" "${skipped_file}"
 success "auto-folder-refactor complete"

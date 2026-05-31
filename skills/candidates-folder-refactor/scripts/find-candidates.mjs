@@ -317,18 +317,22 @@ function isInside(file, dir) {
 }
 
 function score(stat) {
+  // Rank folders by current topology pain, not by historical activity or by
+  // successful extraction into child packages. Recursive totals/churn are useful
+  // evidence columns, but if they dominate the score then a good refactor that
+  // creates focused subpackages makes the parent look "worse" forever.
+  const duplicateSignals = stat.duplicateBasenames + stat.duplicateSymbols;
   const testGap = stat.totalFiles >= 8 && stat.testFiles === 0 ? 10 : 0;
-  return stat.totalFiles
-    + stat.directFiles * 1.5
-    + stat.childDirs.size * 4
-    + stat.extensions.size * 5
+  return Math.min(stat.totalFiles, 50) * 0.3
+    + stat.directFiles * 5
+    + stat.childDirs.size * 8
+    + stat.extensions.size * 4
     + stat.roles.size * 7
-    + stat.maxDepth * 3
-    + Math.min(stat.churn, 30) * 1.2
-    + stat.inboundCallers.size * 4
-    + stat.outboundImports.size * 2
-    + stat.duplicateBasenames * 5
-    + stat.duplicateSymbols * 6
+    + stat.maxDepth * 2
+    + Math.min(stat.churn, 10) * 0.2
+    + stat.inboundCallers.size * 3
+    + stat.outboundImports.size
+    + Math.min(duplicateSignals, 20)
     + testGap;
 }
 
@@ -537,7 +541,7 @@ function printReport(report, { fromLog, latestLog } = {}) {
   }
   for (const [index, candidate] of report.candidates.entries()) {
     const extList = candidate.extensions.join(", ") || "none";
-    console.log(`${index + 1}. ${candidate.relative} — score ${candidate.score.toFixed(1)}; files ${candidate.files}; churn ${candidate.churn}; callers ${candidate.callers}; imports-out ${candidate.importsOut}; tests ${candidate.tests}; roles ${candidate.roles}; duplicates ${candidate.duplicates}; subdirs ${candidate.subdirs}; extensions ${extList}`);
+    console.log(`${index + 1}. ${candidate.relative} — score ${candidate.score.toFixed(1)}; files ${candidate.files}; root-files ${candidate.direct}; churn ${candidate.churn}; callers ${candidate.callers}; imports-out ${candidate.importsOut}; tests ${candidate.tests}; roles ${candidate.roles}; duplicates ${candidate.duplicates}; subdirs ${candidate.subdirs}; extensions ${extList}`);
   }
   if (latestLog) console.log(`Log: ${latestLog}`);
 }

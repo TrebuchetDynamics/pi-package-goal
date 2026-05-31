@@ -80,18 +80,36 @@ try {
   const fakePi = path.join(os.tmpdir(), `fake-pi-${process.pid}.sh`);
   fs.writeFileSync(fakePi, "#!/usr/bin/env bash\necho fake pi noop\n");
   fs.chmodSync(fakePi, 0o755);
-  const noopOutput = execFileSync(autoScript, ["2", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePi }, stdio: ["ignore", "pipe", "pipe"] });
+  const noopOutput = execFileSync(autoScript, ["2", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePi, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.match(noopOutput, /fake pi noop/);
+  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
 
   fs.rmSync(fakePi, { force: true });
   const fakePiChange = path.join(os.tmpdir(), `fake-pi-change-${process.pid}.sh`);
   fs.writeFileSync(fakePiChange, "#!/usr/bin/env bash\necho fake pi changed\necho changed > src/noisy/auto_refactor_marker.txt\n");
   fs.chmodSync(fakePiChange, 0o755);
-  const changeOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiChange, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  const changeOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiChange, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.match(changeOutput, /fake pi changed/);
   assert.match(git("log", "-1", "--pretty=%s"), /Refactor src\/noisy topology/);
   assert.equal(git("status", "--porcelain", "--", "src/noisy/auto_refactor_marker.txt"), "");
   fs.rmSync(fakePiChange, { force: true });
+
+  const fakePiBadDiff = path.join(os.tmpdir(), `fake-pi-bad-diff-${process.pid}.sh`);
+  fs.writeFileSync(fakePiBadDiff, "#!/usr/bin/env bash\necho fake pi bad diff\nprintf 'bad trailing whitespace  \\n' >> src/noisy/index.ts\n");
+  fs.chmodSync(fakePiBadDiff, 0o755);
+  const badDiffOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiBadDiff, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(badDiffOutput, /trailing whitespace/);
+  assert.equal(git("status", "--porcelain", "--", "src/noisy/index.ts"), "");
+  fs.rmSync(fakePiBadDiff, { force: true });
+  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
+
+  const fakePiTimeout = path.join(os.tmpdir(), `fake-pi-timeout-${process.pid}.sh`);
+  fs.writeFileSync(fakePiTimeout, "#!/usr/bin/env bash\necho fake pi timeout\necho partial > src/noisy/partial_timeout.txt\nsleep 5\n");
+  fs.chmodSync(fakePiTimeout, 0o755);
+  const timeoutOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiTimeout, PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS: "1", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(timeoutOutput, /fake pi timeout/);
+  assert.equal(fs.existsSync(path.join(fixture, "src/noisy/partial_timeout.txt")), false);
+  fs.rmSync(fakePiTimeout, { force: true });
   fs.rmSync(installBin, { recursive: true, force: true });
 
   const script = path.join(root, "skills/candidates-folder-refactor/scripts/find-candidates.mjs");
