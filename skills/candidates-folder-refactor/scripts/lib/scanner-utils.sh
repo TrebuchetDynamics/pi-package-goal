@@ -229,58 +229,70 @@ run_drill_down() {
   local candidate=$1
   shift
   local skipped_sub=("$@")
-  local candidate_abs="${run_root}/${candidate}"
-
-  if [[ ! -d "${candidate_abs}" ]]; then
-    echo "${candidate}"
-    return 0
-  fi
-
-  local subdir_count
-  subdir_count="$(find "${candidate_abs}" -maxdepth 1 -type d 2>/dev/null | wc -l)"
-  subdir_count=$((subdir_count - 1))
-
-  if (( subdir_count <= drilldown_max_subdirs )); then
-    echo "${candidate}"
-    return 0
-  fi
-
-  info "candidate ${candidate} has ${subdir_count} subdirs > ${drilldown_max_subdirs}; drilling down"
-  node "${scanner}" "${candidate_abs}" --top 5 >/dev/null 2>&1
-  local sub_log="${candidate_abs}/.pi/candidates-folder-refactor/latest.json"
-
-  if [[ ! -f "${sub_log}" ]]; then
-    warn "drill-down: no scanner output; using original candidate"
-    echo "${candidate}"
-    return 0
-  fi
-
-  # Build a set of already-tried sub-candidate paths, not basenames.
-  local tried
+  local current="${candidate}"
+  local depth=0 max_depth max_files tried candidate_abs subdir_count total_files sub_log sub_candidate
+  max_depth="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_DEPTH:-3}"
+  max_files="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_FILES:-30}"
+  [[ "${max_depth}" =~ ^[1-9][0-9]*$ ]] || max_depth=3
+  [[ "${max_files}" =~ ^[1-9][0-9]*$ ]] || max_files=30
   tried="$(printf '%s\n' "${skipped_sub[@]}")"
 
-  local sub_candidate
-  sub_candidate="$(node -e '
-    const fs = require("node:fs");
-    const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-    const candidates = report.candidates || [];
-    const maxFiles = parseInt(process.argv[2] || "50", 10);
-    const tried = (process.argv[3] || "").split("\n").filter(Boolean).map((value) => value.split(/[\\/]/).join("/"));
-    const triedSet = new Set(tried);
-    const best = candidates.find((item) => {
-      if (!item || !item.relative) return false;
-      const relative = item.relative.split(/[\\/]/).join("/");
-      return item.files > 0 && item.files <= maxFiles && item.subdirs <= 5 && !triedSet.has(relative);
-    });
-    process.stdout.write(best ? best.relative : "");
-  ' "${sub_log}" "50" "${tried}")"
+  while (( depth < max_depth )); do
+    candidate_abs="${run_root}/${current}"
+    if [[ ! -d "${candidate_abs}" ]]; then
+      echo "${current}"
+      return 0
+    fi
 
-  if [[ -z "${sub_candidate}" ]]; then
-    warn "drill-down: no untried manageable sub-candidate (≤50 files, ≤5 subdirs); using original"
-    echo "${candidate}"
-    return 0
-  fi
+    subdir_count="$(find "${candidate_abs}" -maxdepth 1 -type d 2>/dev/null | wc -l)"
+    subdir_count=$((subdir_count - 1))
+    total_files="$(find "${candidate_abs}" -type f 2>/dev/null | wc -l)"
 
-  info "drilled down: ${candidate} → ${sub_candidate}"
-  echo "${sub_candidate}"
+    if (( total_files <= max_files && subdir_count <= drilldown_max_subdirs )); then
+      echo "${current}"
+      return 0
+    fi
+    if (( subdir_count == 0 )); then
+      echo "${current}"
+      return 0
+    fi
+
+    info "candidate ${current} has ${total_files} files/${subdir_count} subdirs; drilling down for ≤${max_files} files and ≤${drilldown_max_subdirs} subdirs"
+    node "${scanner}" "${candidate_abs}" --top 10 >/dev/null 2>&1
+    sub_log="${candidate_abs}/.pi/candidates-folder-refactor/latest.json"
+
+    if [[ ! -f "${sub_log}" ]]; then
+      warn "drill-down: no scanner output; using ${current}"
+      echo "${current}"
+      return 0
+    fi
+
+    sub_candidate="$(node -e '
+      const fs = require("node:fs");
+      const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+      const candidates = report.candidates || [];
+      const maxFiles = parseInt(process.argv[2] || "30", 10);
+      const maxSubdirs = parseInt(process.argv[3] || "5", 10);
+      const tried = (process.argv[4] || "").split("\n").filter(Boolean).map((value) => value.split(/[\\/]/).join("/"));
+      const triedSet = new Set(tried);
+      const normalized = (item) => item.relative.split(/[\\/]/).join("/");
+      const untried = candidates.filter((item) => item && item.relative && item.files > 0 && !triedSet.has(normalized(item)));
+      const best = untried.find((item) => item.files <= maxFiles && item.subdirs <= maxSubdirs)
+        || untried.find((item) => item.subdirs <= maxSubdirs)
+        || untried[0];
+      process.stdout.write(best ? best.relative : "");
+    ' "${sub_log}" "${max_files}" "${drilldown_max_subdirs}" "${tried}")"
+
+    if [[ -z "${sub_candidate}" || "${sub_candidate}" == "${current}" ]]; then
+      warn "drill-down: no untried smaller sub-candidate; using ${current}"
+      echo "${current}"
+      return 0
+    fi
+
+    info "drilled down: ${current} → ${sub_candidate}"
+    current="${sub_candidate}"
+    depth=$((depth + 1))
+  done
+
+  echo "${current}"
 }

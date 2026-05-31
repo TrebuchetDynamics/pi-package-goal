@@ -36,12 +36,15 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS=1 list refactorignore suggestions (default: summary only)
   PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT=errors|all  pi stdout mode (default: errors)
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE=1 only print unchanged heartbeats in debug (default: 1)
+  PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root decrease (default: 1)
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
-  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery (default: git-commit-push)
+  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery (default: local)
   PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
-  PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 10)
+  PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 5)
+  PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_FILES    max files for drilled candidate (default: 30)
+  PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_DEPTH        recursive drill-down depth (default: 3)
   PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT=1       legacy ignored; timeouts are off by default
 
 Examples:
@@ -112,6 +115,7 @@ landed_count=0
 rollback_count=0
 noop_count=0
 skip_count=0
+progress_metric_args=()
 scan_top="${PI_AUTO_FOLDER_REFACTOR_SCAN_TOP:-25}"
 if [[ ! "${scan_top}" =~ ^[1-9][0-9]*$ ]]; then
   scan_top=25
@@ -121,25 +125,42 @@ if [[ ! "${bugfind_threshold}" =~ ^[0-9]+$ ]]; then
   bugfind_threshold=0
 fi
 dynamic_timeout=0
-drilldown_max_subdirs="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS:-10}"
+drilldown_max_subdirs="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS:-5}"
 if [[ ! "${drilldown_max_subdirs}" =~ ^[1-9][0-9]*$ ]]; then
-  drilldown_max_subdirs=10
+  drilldown_max_subdirs=5
 fi
 
 state_dir="${run_root}/.pi/auto-folder-refactor-state"
 mkdir -p "${state_dir}"
-skipped_file="${state_dir}/skipped.$(printf '%s' "${resolved_scan_root}" | node -e 'const crypto=require("node:crypto"); process.stdout.write(crypto.createHash("sha256").update(require("node:fs").readFileSync(0)).digest("hex").slice(0,16));').txt"
+state_key="$(printf '%s' "${resolved_scan_root}" | node -e 'const crypto=require("node:crypto"); process.stdout.write(crypto.createHash("sha256").update(require("node:fs").readFileSync(0)).digest("hex").slice(0,16));')"
+skipped_file="${state_dir}/skipped.${state_key}.txt"
+skipped_log="${state_dir}/skipped.${state_key}.jsonl"
 if [[ -f "${skipped_file}" ]]; then
-  mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | sort -u)
+  mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | awk -F '\t' '{print $1}' | sort -u)
 fi
 
+refresh_skipped_candidates() {
+  if [[ -f "${skipped_file}" ]]; then
+    mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | awk -F '\t' '{print $1}' | sort -u)
+  else
+    skipped_candidates=()
+  fi
+}
+
 mark_skipped() {
-  local candidate=$1 reason=${2:-skipped}
-  skipped_candidates+=("${candidate}")
-  printf '%s\n' "${candidate}" >> "${skipped_file}"
-  sort -u "${skipped_file}" -o "${skipped_file}"
+  local candidate=$1 reason=${2:-skipped} scope=${3:-candidate} temporary=${4:-0} now
+  now="$(date -Is)"
+  mkdir -p "${state_dir}"
+  if [[ "${temporary}" != "1" ]]; then
+    grep -v -F -x "${candidate}" "${skipped_file}" 2>/dev/null > "${skipped_file}.tmp" || true
+    printf '%s\n' "${candidate}" >> "${skipped_file}.tmp"
+    sort -u "${skipped_file}.tmp" > "${skipped_file}"
+    rm -f "${skipped_file}.tmp"
+    refresh_skipped_candidates
+  fi
+  node -e 'const fs=require("node:fs"); const rec={ts:process.argv[1], candidate:process.argv[2], reason:process.argv[3], scope:process.argv[4], temporary:process.argv[5] === "1"}; fs.appendFileSync(process.argv[6], JSON.stringify(rec)+"\n");' "${now}" "${candidate}" "${reason}" "${scope}" "${temporary}" "${skipped_log}"
   skip_count=$((skip_count + 1))
-  warn "marked skipped: ${candidate} (${reason})"
+  warn "marked skipped: ${candidate} (${reason}; scope=${scope}; temporary=${temporary})"
 }
 
 # --- Mode dispatch ---
@@ -207,8 +228,8 @@ for ((i = 1; i <= loops; i++)); do
   # If all sub-candidates exhausted, skip the parent too
   already_skipped_sub="$(printf '%s\n' "${skipped_candidates[@]:-}" | grep -c "${drill_candidate}/" || true)"
   if [[ "${candidate}" == "${drill_candidate}" && "${already_skipped_sub}" -gt 0 ]]; then
-    warn "all sub-candidates of ${drill_candidate} exhausted; skipping parent"
-    mark_skipped "${drill_candidate}" "sub-candidates exhausted"
+    warn "all sub-candidates of ${drill_candidate} exhausted for this run; not persisting parent skip"
+    mark_skipped "${drill_candidate}" "sub-candidates exhausted this run" "parent" "1"
     continue
   fi
 
@@ -246,7 +267,7 @@ for ((i = 1; i <= loops; i++)); do
   if [[ "${total_files}" == "0" ]]; then
     warn "candidate ${candidate} has 0 files (empty); skipping pi"
     noop_count=$((noop_count + 1))
-    mark_skipped "${candidate}" "empty"
+    mark_skipped "${candidate}" "empty" "candidate" "0"
     continue
   fi
 
@@ -258,7 +279,7 @@ for ((i = 1; i <= loops; i++)); do
     if (( subdir_count <= 5 )); then
       warn "candidate ${candidate} has 0 root files and ${subdir_count} subdirs (already clean); skipping pi"
       noop_count=$((noop_count + 1))
-      mark_skipped "${candidate}" "already clean"
+      mark_skipped "${candidate}" "already clean" "candidate" "0"
       continue
     fi
   fi
@@ -295,20 +316,20 @@ for ((i = 1; i <= loops; i++)); do
     # Only skip the candidate itself (not the parent), so drill-down
     # can pick the next untried sub-candidate from the same parent.
     noop_count=$((noop_count + 1))
-    mark_skipped "${candidate}" "no changes"
+    mark_skipped "${candidate}" "no changes" "candidate" "0"
     continue
   fi
 
   if [[ "${pi_exit}" == "124" ]]; then
     rollback_failed_slice "pi timed out after ${candidate_timeout}s before completing a coherent slice" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
-    mark_skipped "${candidate}" "timeout rollback"
+    mark_skipped "${candidate}" "timeout rollback" "candidate" "0"
     continue
   fi
   if [[ "${pi_exit}" != "0" ]]; then
     rollback_failed_slice "pi exited with status ${pi_exit}" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
-    mark_skipped "${candidate}" "pi failure rollback"
+    mark_skipped "${candidate}" "pi failure rollback" "candidate" "0"
     continue
   fi
 
@@ -319,15 +340,23 @@ for ((i = 1; i <= loops; i++)); do
   if [[ "${validation_exit}" != "0" ]]; then
     rollback_failed_slice "validation failed with status ${validation_exit}" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
-    mark_skipped "${candidate}" "validation rollback"
+    mark_skipped "${candidate}" "validation rollback" "candidate" "0"
     continue
   fi
   after_candidate_metrics="$(folder_debt_metrics "${candidate}")"
   section "metric delta ${candidate}"
   print_metric_delta "target ${candidate}" "${before_candidate_metrics}" "${after_candidate_metrics}"
+  progress_metric_args=("${before_candidate_metrics}" "${after_candidate_metrics}")
   if [[ -n "${before_parent_metrics}" ]]; then
     after_parent_metrics="$(folder_debt_metrics "${candidate%/*}")"
     print_metric_delta "parent ${candidate%/*}" "${before_parent_metrics}" "${after_parent_metrics}"
+    progress_metric_args+=("${before_parent_metrics}" "${after_parent_metrics}")
+  fi
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS:-1}" == "1" ]] && ! metric_progress_decreased "${progress_metric_args[@]}"; then
+    rollback_failed_slice "validated slice did not reduce target/parent debt or root files" "${candidate}" "${pre_slice_status}"
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "no metric progress rollback" "candidate" "0"
+    continue
   fi
   deliver_scope_changes "${candidate}"
   landed_count=$((landed_count + 1))

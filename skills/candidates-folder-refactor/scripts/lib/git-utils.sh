@@ -56,6 +56,18 @@ print_metric_delta() {
   ' "${label}" "${before}" "${after}"
 }
 
+metric_progress_decreased() {
+  node -e '
+    const pairs = process.argv.slice(1).filter(Boolean);
+    for (let index = 0; index < pairs.length; index += 2) {
+      const before = JSON.parse(pairs[index]);
+      const after = JSON.parse(pairs[index + 1]);
+      if ((after.debt || 0) < (before.debt || 0) || (after.root || 0) < (before.root || 0)) process.exit(0);
+    }
+    process.exit(1);
+  ' "$@"
+}
+
 candidate_git_pathspecs() {
   local candidate=$1
   if [[ "${candidate}" == "." ]]; then
@@ -158,7 +170,7 @@ commit_preexisting_changes() {
     warn "no staged pre-existing changes after excludes"
     return 0
   fi
-  if [[ "${PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY:-git-commit-push}" == "local" ]]; then
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY:-local}" == "local" ]]; then
     git -C "${run_root}" commit -m "Checkpoint pre-existing changes before auto refactor"
     success "committed pre-existing changes $(git -C "${run_root}" rev-parse --short HEAD)"
   else

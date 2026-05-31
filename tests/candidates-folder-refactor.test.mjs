@@ -88,7 +88,7 @@ try {
   const fakePiChange = path.join(os.tmpdir(), `fake-pi-change-${process.pid}.sh`);
   fs.writeFileSync(fakePiChange, "#!/usr/bin/env bash\necho fake pi changed\necho changed > src/noisy/auto_refactor_marker.txt\n");
   fs.chmodSync(fakePiChange, 0o755);
-  const changeOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiChange, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  const changeOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiChange, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS: "0", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.match(changeOutput, /fake pi changed/);
   assert.match(git("log", "-1", "--pretty=%s"), /Refactor src\/noisy topology/);
   assert.equal(git("status", "--porcelain", "--", "src/noisy/auto_refactor_marker.txt"), "");
