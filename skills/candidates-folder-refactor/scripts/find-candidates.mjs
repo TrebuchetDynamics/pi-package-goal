@@ -317,23 +317,10 @@ function isInside(file, dir) {
 }
 
 function score(stat) {
-  // Rank folders by current topology pain, not by historical activity or by
-  // successful extraction into child packages. Recursive totals/churn are useful
-  // evidence columns, but if they dominate the score then a good refactor that
-  // creates focused subpackages makes the parent look "worse" forever.
-  const duplicateSignals = stat.duplicateBasenames + stat.duplicateSymbols;
-  const testGap = stat.totalFiles >= 8 && stat.testFiles === 0 ? 10 : 0;
-  return Math.min(stat.totalFiles, 50) * 0.3
-    + stat.directFiles * 5
-    + stat.childDirs.size * 8
-    + stat.extensions.size * 4
-    + stat.roles.size * 7
-    + stat.maxDepth * 2
-    + Math.min(stat.churn, 10) * 0.2
-    + stat.inboundCallers.size * 3
-    + stat.outboundImports.size
-    + Math.min(duplicateSignals, 20)
-    + testGap;
+  // Debt is intentionally based only on the table's progress metrics.
+  // Root files are the main thing to reduce; total files are a small tie-breaker
+  // so huge parents don't look clean, but churn/dups/subdirs/roles stay evidence-only.
+  return stat.directFiles * 10 + Math.min(stat.totalFiles, 100) * 0.1;
 }
 
 const refactorIgnoreSuggestions = compactRefactorIgnoreSuggestions([...statsByDir.values()]
@@ -350,7 +337,7 @@ const candidates = [...statsByDir.values()]
   .filter((stat) => stat.totalFiles >= 4 || stat.directFiles >= 3 || stat.childDirs.size >= 3)
   .map((stat) => serializeCandidate({ ...stat, score: score(stat), relative: path.relative(process.cwd(), stat.dir) || "." }))
   .filter((candidate) => !isSuggestedIgnoredCandidate(candidate.relative, suggestedIgnorePaths))
-  .sort((a, b) => b.score - a.score || b.files - a.files || a.relative.localeCompare(b.relative))
+  .sort((a, b) => b.score - a.score || depthOf(b.relative) - depthOf(a.relative) || a.files - b.files || a.relative.localeCompare(b.relative))
   .slice(0, options.top);
 
 const report = {
@@ -366,6 +353,11 @@ const report = {
 
 if (options.writeLog) writeScanLog(report);
 printReport(report, { fromLog: false, latestLog: options.writeLog ? latestLog : undefined });
+
+function depthOf(relative) {
+  if (!relative || relative === ".") return 0;
+  return relative.split(/[\\/]/).filter(Boolean).length;
+}
 
 function isSuggestedIgnoredCandidate(relative, ignoredPaths) {
   const normalized = relative.split(path.sep).join("/");
@@ -541,7 +533,7 @@ function printReport(report, { fromLog, latestLog } = {}) {
   }
   for (const [index, candidate] of report.candidates.entries()) {
     const extList = candidate.extensions.join(", ") || "none";
-    console.log(`${index + 1}. ${candidate.relative} — score ${candidate.score.toFixed(1)}; files ${candidate.files}; root-files ${candidate.direct}; churn ${candidate.churn}; callers ${candidate.callers}; imports-out ${candidate.importsOut}; tests ${candidate.tests}; roles ${candidate.roles}; duplicates ${candidate.duplicates}; subdirs ${candidate.subdirs}; extensions ${extList}`);
+    console.log(`${index + 1}. ${candidate.relative} — debt ${candidate.score.toFixed(1)}; root ${candidate.direct}; total ${candidate.files}; evidence: churn ${candidate.churn}; callers ${candidate.callers}; imports-out ${candidate.importsOut}; tests ${candidate.tests}; duplicates ${candidate.duplicates}; subdirs ${candidate.subdirs}; roles ${candidate.roles}; extensions ${extList}`);
   }
   if (latestLog) console.log(`Log: ${latestLog}`);
 }

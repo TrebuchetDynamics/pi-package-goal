@@ -152,7 +152,7 @@ print_candidate_table() {
     const showSuggestions = process.env.PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS === "1";
     const rows = (report.candidates || []).slice(0, rowLimit);
     const totalRows = (report.candidates || []).length;
-    const widths = { n: 3, path: 34, score: 7, files: 9, churn: 6, dup: 6, sub: 5, roles: 5 };
+    const widths = { n: 3, path: 34, debt: 7, root: 6, total: 6, status: 10 };
     const trunc = (value, width) => {
       const text = String(value);
       return text.length > width ? `${text.slice(0, Math.max(0, width - 1))}…` : text.padEnd(width);
@@ -161,7 +161,7 @@ print_candidate_table() {
     console.error(`${c.bold}${c.cyan}┌ Candidates${c.reset} ${c.dim}${report.target} · ${rows.length}/${totalRows} shown${c.reset}`);
     console.error(`${c.dim}│ generated ${report.generatedAt || "unknown"}${c.reset}`);
     console.error(line);
-    console.error(`${c.dim} #  ${"path".padEnd(widths.path)} ${"score".padStart(widths.score)} ${"root/tot".padStart(widths.files)} ${"churn".padStart(widths.churn)} ${"dups".padStart(widths.dup)} ${"sub".padStart(widths.sub)} ${"role".padStart(widths.roles)}  extensions${c.reset}`);
+    console.error(`${c.dim} #  ${"path".padEnd(widths.path)} ${"debt".padStart(widths.debt)} ${"root".padStart(widths.root)} ${"total".padStart(widths.total)} ${"status".padEnd(widths.status)} extensions${c.reset}`);
     console.error(line);
     for (const [index, item] of rows.entries()) {
       const wasSkipped = skipped.has(item.relative);
@@ -170,8 +170,8 @@ print_candidate_table() {
       const rank = String(index + 1).padStart(2);
       const path = trunc(item.relative, widths.path);
       const exts = (item.extensions || []).join(" ") || "none";
-      const fileShape = `${item.direct ?? 0}/${item.files ?? 0}`;
-      console.error(`${rankColor}${rank}.${c.reset} ${wasSkipped ? c.dim : c.bold}${path}${c.reset} ${String(item.score.toFixed ? item.score.toFixed(1) : item.score).padStart(widths.score)} ${fileShape.padStart(widths.files)} ${String(item.churn).padStart(widths.churn)} ${String(item.duplicates).padStart(widths.dup)} ${String(item.subdirs).padStart(widths.sub)} ${String(item.roles).padStart(widths.roles)}  ${c.dim}${exts}${c.reset}${skippedMark}`);
+      const status = wasSkipped ? "skipped" : "open";
+      console.error(`${rankColor}${rank}.${c.reset} ${wasSkipped ? c.dim : c.bold}${path}${c.reset} ${String(item.score.toFixed ? item.score.toFixed(1) : item.score).padStart(widths.debt)} ${String(item.direct ?? 0).padStart(widths.root)} ${String(item.files ?? 0).padStart(widths.total)} ${status.padEnd(widths.status)} ${c.dim}${exts}${c.reset}`);
     }
     console.error(line);
     const best = rows.find((item) => !skipped.has(item.relative));
@@ -213,12 +213,13 @@ candidate_from_log() {
     const maxFiles = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES || 80) || 80);
     const maxRoot = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES || 40) || 40);
     const fastRootReduction = process.env.PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION !== "0";
+    const depthOf = (item) => item.relative.split(/[\\/]/).filter(Boolean).length;
     const byFastRoot = (a, b) => {
       const aRoot = a.direct || 0;
       const bRoot = b.direct || 0;
       const aFiles = a.files || 0;
       const bFiles = b.files || 0;
-      return bRoot - aRoot || aFiles - bFiles || b.score - a.score || a.relative.localeCompare(b.relative);
+      return bRoot - aRoot || depthOf(b) - depthOf(a) || aFiles - bFiles || b.score - a.score || a.relative.localeCompare(b.relative);
     };
     const picked = fastRootReduction
       ? [...eligible].filter((item) => (item.direct || 0) > 0 && (item.direct || 0) <= maxRoot && (item.files || 0) <= maxFiles).sort(byFastRoot)[0]
