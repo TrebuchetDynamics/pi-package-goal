@@ -5,9 +5,9 @@ import path from "node:path";
 
 const ignoredDirs = new Set([
   ".git", ".hg", ".svn", "node_modules", "vendor", "dist", "build", "coverage", ".next", ".nuxt", ".turbo",
-  ".cache", ".parcel-cache", ".pi", ".understand-anything", "target", "out", "tmp", "temp",
+  ".cache", ".parcel-cache", ".pi", ".understand-anything", "__pycache__", "target", "out", "tmp", "temp",
 ]);
-const ignoredFileExtensions = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".svg", ".pdf", ".zip", ".gz", ".tgz", ".lock"]);
+const ignoredFileExtensions = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".svg", ".pdf", ".zip", ".gz", ".tgz", ".lock", ".pyc", ".pyo"]);
 const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go", ".rs", ".java", ".kt", ".cs", ".rb", ".php", ".dart", ".swift", ".scala", ".c", ".cc", ".cpp", ".h", ".hpp"];
 const protectedSourceFolderNames = new Set(["src", "lib", "app", "apps", "internal", "pkg", "cmd", "core", "domain", "features", "packages"]);
 const flutterPlatformFolderNames = new Set(["android", "ios", "macos", "linux", "windows", "web"]);
@@ -16,20 +16,20 @@ const refactorIgnoreNameHints = new Set([
   "artifacts", "artifact", "logs", "log", "generated", "gen", "snapshots", "snapshot", "recordings", "recording",
   "third_party", "third-party", "thirdparty", "external", "externals", "vendor", "vendors", "deps", "dependencies",
   "fixtures", "fixture", "testdata", "golden", "goldens", "corpus", "samples", "sampledata", "cache", "caches",
-  "tmp", "temp", "outputs", "output", "reports", "report", "coverage", "screenshots", "captures", "downloads",
+  "tmp", "temp", "outputs", "output", "reports", "report", "coverage", "screenshots", "captures", "downloads", "__pycache__",
 ]);
 const refactorIgnorePathHints = [
   /(^|[/\\])opensource[/\\](repos|projects|checkouts|clones)([/\\]|$)/i,
   /(^|[/\\])third[-_ ]?party([/\\]|$)/i,
   /(^|[/\\])vendor(ed)?([/\\]|$)/i,
-  /(^|[/\\])(generated|gen|dist|build|coverage|artifacts?|logs?|fixtures?|testdata)([/\\]|$)/i,
+  /(^|[/\\])(generated|gen|dist|build|coverage|artifacts?|logs?|fixtures?|testdata|__pycache__)([/\\]|$)/i,
 ];
 const refactorIgnoreMarkerFiles = new Set([
   ".generated", "generated.txt", "do_not_edit", "DO_NOT_EDIT", "package-lock.json", "yarn.lock", "pnpm-lock.yaml",
 ]);
 const refactorIgnoreArtifactExtensions = new Set([
   ".log", ".pid", ".sqlite", ".sqlite3", ".db", ".csv", ".tsv", ".wav", ".mp3", ".mp4", ".wasm", ".zip", ".7z", ".gz", ".tgz",
-  ".dll", ".dylib", ".so", ".exe", ".bin", ".bak", ".tmp", ".exit", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf",
+  ".dll", ".dylib", ".so", ".exe", ".bin", ".bak", ".tmp", ".exit", ".pyc", ".pyo", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf",
 ]);
 const sourceLikeExtensions = new Set(sourceExtensions);
 const rolePatterns = [
@@ -122,7 +122,12 @@ function shouldIgnoreDir(name) {
 }
 
 function loadRefactorIgnore(scanRoot, cwd) {
-  const files = [...new Set([path.join(cwd, ".refactorignore"), path.join(scanRoot, ".refactorignore")])];
+  const files = [...new Set([
+    path.join(cwd, ".gitignore"),
+    path.join(scanRoot, ".gitignore"),
+    path.join(cwd, ".refactorignore"),
+    path.join(scanRoot, ".refactorignore"),
+  ])];
   const rules = [];
   for (const file of files) {
     if (!fs.existsSync(file)) continue;

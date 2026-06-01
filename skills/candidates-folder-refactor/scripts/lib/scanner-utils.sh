@@ -94,6 +94,7 @@ establish_refactorignore() {
         ["test-results", [9, "test result artifacts"]],
         ["playwright-report", [9, "Playwright report artifacts"]],
         [".gradle", [9, "Gradle cache"]],
+        ["__pycache__", [10, "Python bytecode cache"]],
         [".kotlin", [8, "Kotlin build cache"]],
         ["artifacts", [8, "artifact output folder"]],
         ["logs", [8, "log output folder"]],
