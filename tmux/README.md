@@ -7,7 +7,7 @@ Portable tmux assets and the `tx` tmux-session launcher.
 - `tmux.conf` — tmux configuration. Install as `~/.tmux.conf`.
 - `style.tmux` — local style overrides. Installed as `~/.tmux/style.tmux` only when missing.
 - `git-status.sh` — status-bar git segment. Prints the branch name in green when clean and red when changed/untracked.
-- `short-path.sh` — status-bar path segment. Prints only the last two path folders, e.g. `/home/xel/git/gormes/gormes-agent` -> `/gormes/gormes-agent`.
+- `short-path.sh` — status-bar path segment. Prints only the last two path folders, e.g. `/home/xel/git/pi-package-development-goal` -> `git/pi-package-development-goal`.
 - `tx` — installable helper for starting, attaching, listing, and killing configured tmux sessions.
 - `install.sh` — installer for the config, status helpers, and `tx`.
 

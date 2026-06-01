@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# Print only the last two path components, with a leading slash.
-# Example: /home/xel/git/gormes/gormes-agent -> /gormes/gormes-agent
+# Print only the last two path components.
+# Example: /home/xel/git/pi-package-development-goal -> git/pi-package-development-goal
 
 path=${1:-}
 [ -n "$path" ] || exit 0
@@ -17,7 +17,7 @@ parent=${path%/*}
 parent_base=${parent##*/}
 
 if [ -z "$parent_base" ] || [ "$parent" = "$path" ]; then
-  printf '/%s' "$base"
+  printf '%s' "$base"
 else
-  printf '/%s/%s' "$parent_base" "$base"
+  printf '%s/%s' "$parent_base" "$base"
 fi

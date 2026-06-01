@@ -111,7 +111,8 @@ async function testInstallScript() {
 }
 
 async function testStatusHelpers() {
-  assert.equal(run("tmux/short-path.sh", ["/home/xel/git/gormes/gormes-agent"]).trim(), "/gormes/gormes-agent");
+  assert.equal(run("tmux/short-path.sh", ["/home/xel/git/gormes/gormes-agent"]).trim(), "gormes/gormes-agent");
+  assert.equal(run("tmux/short-path.sh", ["/home/xel/git/pi-package-development-goal"]).trim(), "git/pi-package-development-goal");
   assert.equal(run("tmux/git-status.sh", ["/"]).trim(), "");
 
   if (!hasCommand("git")) return;
@@ -136,9 +137,9 @@ async function testTmuxMouseSelectionDoesNotAutoCopy() {
 async function testTmuxConfigShowsGitBranchStatus() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
+  assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
   assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
   assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
-  assert.doesNotMatch(config, /#\(~\/\.tmux\/short-path\.sh/);
 }
 
 async function testTmuxUsesDefaultResizeBehavior() {
