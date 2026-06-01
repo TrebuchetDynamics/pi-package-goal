@@ -82,6 +82,29 @@ try {
   assert.match(fs.readFileSync(path.join(ignoreFixture, ".refactorignore"), "utf8"), /artifacts\//);
   fs.rmSync(ignoreFixture, { recursive: true, force: true });
 
+  const ignoredAddFixture = fs.mkdtempSync(path.join(os.tmpdir(), "auto-folder-refactor-ignored-add-"));
+  fs.writeFileSync(path.join(ignoredAddFixture, ".gitignore"), ".pi/\n.understand-anything/\n");
+  fs.mkdirSync(path.join(ignoredAddFixture, "src/noisy"), { recursive: true });
+  fs.writeFileSync(path.join(ignoredAddFixture, "src/noisy/index.ts"), "export const initial = 1;\n");
+  execFileSync("git", ["init"], { cwd: ignoredAddFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: ignoredAddFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: ignoredAddFixture, stdio: "ignore" });
+  execFileSync("git", ["add", ".gitignore", "src/noisy/index.ts"], { cwd: ignoredAddFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial fixture"], { cwd: ignoredAddFixture, stdio: "ignore" });
+  fs.mkdirSync(path.join(ignoredAddFixture, ".pi/logs"), { recursive: true });
+  fs.mkdirSync(path.join(ignoredAddFixture, ".understand-anything"), { recursive: true });
+  fs.writeFileSync(path.join(ignoredAddFixture, ".pi/logs/local.jsonl"), "{}\n");
+  fs.writeFileSync(path.join(ignoredAddFixture, ".understand-anything/meta.json"), "{}\n");
+  fs.writeFileSync(path.join(ignoredAddFixture, "src/noisy/index.ts"), "export const changed = 1;\n");
+  const ignoredAddFakePi = path.join(os.tmpdir(), `fake-pi-ignored-add-${process.pid}.sh`);
+  fs.writeFileSync(ignoredAddFakePi, "#!/usr/bin/env bash\necho ignored add fake pi\n");
+  fs.chmodSync(ignoredAddFakePi, 0o755);
+  const ignoredAddOutput = execFileSync(autoScript, ["1", "src"], { cwd: ignoredAddFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: ignoredAddFakePi, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "0", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.doesNotMatch(ignoredAddOutput, /The following paths are ignored/);
+  assert.doesNotMatch(execFileSync("git", ["show", "--name-only", "--pretty=", "HEAD"], { cwd: ignoredAddFixture, encoding: "utf8" }), /^\.pi\//m);
+  fs.rmSync(ignoredAddFakePi, { force: true });
+  fs.rmSync(ignoredAddFixture, { recursive: true, force: true });
+
   const fakePi = path.join(os.tmpdir(), `fake-pi-${process.pid}.sh`);
   fs.writeFileSync(fakePi, "#!/usr/bin/env bash\necho fake pi noop\n");
   fs.chmodSync(fakePi, 0o755);

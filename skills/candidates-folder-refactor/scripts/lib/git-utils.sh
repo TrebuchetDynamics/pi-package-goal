@@ -144,6 +144,14 @@ rollback_failed_slice() {
   rollback_scope_changes "${reason}" "${candidate}"
 }
 
+stage_scope_changes() {
+  # Avoid explicit ignored pathspecs in `git add`; they can turn ignored
+  # .pi/.understand-anything directories into hard blockers. Stage broadly
+  # inside run_root, then unstage local agent artifacts defensively.
+  git -C "${run_root}" -c advice.addIgnoredFile=false add --all -- .
+  git -C "${run_root}" restore --staged -- .pi .understand-anything 2>/dev/null || true
+}
+
 run_candidate_validation() {
   local candidate=$1 candidate_dir module_dir rel pattern
   section "validation ${candidate}"
@@ -206,7 +214,7 @@ commit_preexisting_changes() {
   if printf '%s\n' "${status}" | grep -Eq '^[ MADRCU?!]{1,2} [^/]+$'; then
     warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'auto-folder-refactor ignore' to add it to .refactorignore"
   fi
-  git -C "${run_root}" add -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
+  stage_scope_changes
   if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged pre-existing changes after excludes"
     return 0
@@ -230,7 +238,7 @@ commit_scope_changes_local() {
     return 1
   fi
   section "commit ${candidate}"
-  git -C "${run_root}" add -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
+  stage_scope_changes
   if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged changes to commit after validation"
     return 0
