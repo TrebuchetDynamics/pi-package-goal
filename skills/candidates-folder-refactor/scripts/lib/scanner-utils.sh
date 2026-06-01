@@ -179,8 +179,15 @@ print_candidate_table() {
     }
     console.error(line);
     if (hiddenSkipped && !showSkipped) console.error(`${c.dim}skipped candidates hidden; set PI_AUTO_FOLDER_REFACTOR_SHOW_SKIPPED=1 to include them in the table${c.reset}`);
-    const best = rows.find((item) => !skipped.has(item.relative));
-    if (best) console.error(`${c.green}next:${c.reset} ${c.bold}${best.relative}${c.reset} ${c.dim}(score ${best.score})${c.reset}`);
+    const maxFiles = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES || 80) || 80);
+    const maxRoot = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES || 40) || 40);
+    const depthOf = (item) => item.relative.split(/[\\/]/).filter(Boolean).length;
+    const fastRootReduction = process.env.PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION === "1";
+    const manageable = allCandidates.filter((item) => item && item.relative && !skipped.has(item.relative) && (item.direct || 0) > 0 && (item.direct || 0) <= maxRoot && (item.files || 0) <= maxFiles)
+      .sort((a, b) => (b.direct || 0) - (a.direct || 0) || depthOf(b) - depthOf(a) || (a.files || 0) - (b.files || 0) || (b.score || 0) - (a.score || 0) || a.relative.localeCompare(b.relative))[0];
+    const debtBest = rows.find((item) => !skipped.has(item.relative));
+    if (debtBest) console.error(`${c.green}top debt:${c.reset} ${c.bold}${debtBest.relative}${c.reset} ${c.dim}(score ${debtBest.score})${c.reset}`);
+    if (fastRootReduction && manageable && (!debtBest || manageable.relative !== debtBest.relative)) console.error(`${c.green}picker:${c.reset} ${c.bold}${manageable.relative}${c.reset} ${c.dim}(manageable: root ${manageable.direct}, total ${manageable.files}; limits root≤${maxRoot}, files≤${maxFiles})${c.reset}`);
     if (suggestedIgnores.size) {
       console.error(`${c.yellow}refactorignore:${c.reset} ${suggestedIgnores.size} artifact/generated-looking folder(s) omitted from candidates${showSuggestions ? "" : " (set PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS=1 to list)"}`);
       if (showSuggestions) for (const item of (report.refactorIgnoreSuggestions || []).slice(0, 5)) console.error(`${c.dim}  - ${item.pattern} — confidence ${item.confidence}; ${item.reason}${c.reset}`);
@@ -217,7 +224,7 @@ candidate_from_log() {
     const eligible = candidates.filter((item) => item && item.relative && !skipped.has(item.relative) && !isIgnored(item.relative));
     const maxFiles = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES || 80) || 80);
     const maxRoot = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES || 40) || 40);
-    const fastRootReduction = process.env.PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION !== "0";
+    const fastRootReduction = process.env.PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION === "1";
     const depthOf = (item) => item.relative.split(/[\\/]/).filter(Boolean).length;
     const byFastRoot = (a, b) => {
       const aRoot = a.direct || 0;
@@ -251,7 +258,7 @@ run_drill_down() {
   shift
   local skipped_sub=("$@")
   local current="${candidate}"
-  local depth=0 max_depth max_files tried candidate_abs subdir_count total_files sub_log sub_candidate
+  local depth=0 max_depth max_files tried candidate_abs subdir_count total_files sub_log sub_candidate sub_candidate_json sub_reason
   max_depth="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_DEPTH:-3}"
   max_files="${PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_FILES:-30}"
   [[ "${max_depth}" =~ ^[1-9][0-9]*$ ]] || max_depth=3
@@ -288,7 +295,7 @@ run_drill_down() {
       return 0
     fi
 
-    sub_candidate="$(node -e '
+    sub_candidate_json="$(node -e '
       const fs = require("node:fs");
       const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
       const candidates = report.candidates || [];
@@ -301,8 +308,13 @@ run_drill_down() {
       const best = untried.find((item) => item.files <= maxFiles && item.subdirs <= maxSubdirs)
         || untried.find((item) => item.subdirs <= maxSubdirs)
         || untried[0];
-      process.stdout.write(best ? best.relative : "");
-    ' "${sub_log}" "${max_files}" "${drilldown_max_subdirs}" "${tried}")"
+      if (!best) process.exit(3);
+      const fits = best.files <= maxFiles && best.subdirs <= maxSubdirs;
+      const reason = fits ? `fits limits files ${best.files}≤${maxFiles}, subdirs ${best.subdirs}≤${maxSubdirs}` : `best remaining child files ${best.files}, subdirs ${best.subdirs}`;
+      process.stdout.write(JSON.stringify({ relative: best.relative, reason, files: best.files, direct: best.direct, subdirs: best.subdirs, score: best.score }));
+    ' "${sub_log}" "${max_files}" "${drilldown_max_subdirs}" "${tried}" || true)"
+    sub_candidate="$(node -e 'const item=JSON.parse(process.argv[1]||"{}"); process.stdout.write(item.relative||"");' "${sub_candidate_json}" 2>/dev/null || true)"
+    sub_reason="$(node -e 'const item=JSON.parse(process.argv[1]||"{}"); process.stdout.write(item.reason||"");' "${sub_candidate_json}" 2>/dev/null || true)"
 
     if [[ -z "${sub_candidate}" || "${sub_candidate}" == "${current}" ]]; then
       warn "drill-down: no untried smaller sub-candidate; using ${current}"
@@ -310,7 +322,7 @@ run_drill_down() {
       return 0
     fi
 
-    info "drilled down: ${current} → ${sub_candidate}"
+    info "drilled down: ${current} → ${sub_candidate}${sub_reason:+ (${sub_reason})}"
     current="${sub_candidate}"
     depth=$((depth + 1))
   done

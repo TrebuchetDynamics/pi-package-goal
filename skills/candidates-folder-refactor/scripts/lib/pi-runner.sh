@@ -4,7 +4,7 @@
 
 run_pi_capture() {
   local prompt=$1 mode=$2 output_file pid tail_pid status started now elapsed heartbeat timeout next_heartbeat bytes changed_summary last_line
-  local verbosity show_pi_output heartbeat_on_change last_changed_summary recent_changes candidate_tag candidate_badge
+  local verbosity show_pi_output heartbeat_on_change last_changed_summary recent_changes candidate_tag candidate_badge change_limit change_count
   local restore_errexit=0
   [[ $- == *e* ]] && restore_errexit=1
   output_file="$(mktemp "${TMPDIR:-/tmp}/auto-folder-refactor-pi.XXXXXX")"
@@ -20,6 +20,10 @@ run_pi_capture() {
     show_pi_output="${PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT:-all}"
   fi
   heartbeat_on_change="${PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE:-1}"
+  change_limit="${PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_FILES:-6}"
+  if [[ ! "${change_limit}" =~ ^[1-9][0-9]*$ ]]; then
+    change_limit=6
+  fi
   last_changed_summary=""
   started="$(date +%s)"
   next_heartbeat="${heartbeat}"
@@ -65,14 +69,18 @@ run_pi_capture() {
         END { printf "M:%d A:%d D:%d O:%d", modified, added, deleted, other }
       ')"
       last_line="$(tail -n 1 "${output_file}" 2>/dev/null | tr -d '\r' | cut -c 1-100 || true)"
-      recent_changes="$(git_scope_status | tail -5 | sed 's/^/ /' | tr '\n' ';' | cut -c 1-180)"
+      change_count="$(git_scope_status | wc -l | tr -d ' ')"
+      recent_changes="$(git_scope_status | head -"${change_limit}" | sed 's/^/    /')"
       if [[ "${heartbeat_on_change}" == "1" && "${changed_summary}" == "${last_changed_summary}" && "${verbosity}" != "debug" ]]; then
         next_heartbeat=$((next_heartbeat + heartbeat))
         continue
       fi
       last_changed_summary="${changed_summary}"
       if [[ "${changed_summary}" != "M:0 A:0 D:0 O:0" ]]; then
-        info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}editing: ${recent_changes}${reset}"
+        info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}editing ${change_count} file(s); showing ${change_limit}${reset}"
+        if [[ -n "${recent_changes}" ]]; then
+          printf '%s%s%s\n' "${dim}" "${recent_changes}" "${reset}" >&2
+        fi
       elif [[ -n "${last_line}" && "${show_pi_output}" == "all" ]]; then
         info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}${last_line}${reset}"
       else

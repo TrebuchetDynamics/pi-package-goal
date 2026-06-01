@@ -30,6 +30,7 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_PI_ARGS  extra pi args, shell-split simply on spaces
   PI_AUTO_FOLDER_REFACTOR_WITH_LOCAL_RESOURCES=1  explicitly add this checkout's extension/skills paths
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_SECONDS  progress heartbeat while pi is quiet (default: 30)
+  PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_FILES    changed files to show per heartbeat (default: 6)
   PI_AUTO_FOLDER_REFACTOR_TIMEOUT_SECONDS    kill a single pi run after N seconds (default: 0/off)
   PI_AUTO_FOLDER_REFACTOR_SCAN_TOP           candidates to keep per scan (default: 25)
   PI_AUTO_FOLDER_REFACTOR_TABLE_ROWS         candidate rows to display (default: 10)
@@ -40,7 +41,7 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root decrease (default: 1)
   PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS   base retry cooldown for soft failed candidates (default: 3600)
   PI_AUTO_FOLDER_REFACTOR_COOLDOWN_MAX_SECONDS max retry cooldown after backoff (default: 86400)
-  PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION=1 prefer manageable candidates with root files (default: 1)
+  PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION=1 prefer manageable candidates with root files (default: 0; top debt wins)
   PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES      max files for fast-root candidate preference (default: 80)
   PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES max root files for fast-root candidate preference (default: 40)
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
