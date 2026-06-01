@@ -17,7 +17,26 @@ Resolve mode before acting:
 
 If validation commands are provided, use them. Otherwise infer project validation, with `npm test` when `package.json` has a test script, plus `git diff --check`.
 
-Ask only if ownership/scope is unclear, a fix would change product behavior or broaden scope, destructive git operations are needed, no upstream exists, push is rejected, or credentials/remote state require an owner decision. Do not ask merely to approve safe formatting, import cleanup, `.gitignore` hygiene, or obvious validation fixes in ship mode.
+Ask only if ownership/scope is unclear, a fix would change product behavior or broaden scope, destructive git operations are needed, no upstream exists, push is rejected, or credentials/remote state require an owner decision. Do not ask merely to approve safe formatting, import cleanup, `.gitignore` hygiene, missing test fixtures/templates/helpers, or obvious validation fixes in ship mode.
+
+## Ship-mode repair mandate
+
+In ship mode, a validation failure is an instruction to repair the repo, not a reason to stop at the first red command. Keep a tight repair loop: reproduce the failing command, inspect the exact missing/broken artifact, make the smallest safe repo-consistent fix, rerun the failing command, then rerun the delivery validation set. Report `blocked` only after the next required fix crosses a red line or genuinely needs owner input.
+
+Treat these as safe in-scope repair candidates unless evidence says otherwise:
+
+- missing files referenced by tracked tests, Makefiles, scripts, docs, or package manifests;
+- missing templates, test fixtures, small shell helpers, generated-file ignore rules, or packaging manifests required by validation;
+- stale paths/names in tests or scripts when the intended current path is obvious from nearby files;
+- formatting, import, lint, vet, typecheck, or diff-check failures;
+- deterministic test setup cleanup that removes local-state coupling.
+
+Before blocking on validation, prove at least one of:
+
+- the missing/broken artifact cannot be reconstructed from adjacent tests/docs/scripts;
+- the fix would require product behavior/API changes, secrets, credentials, deployment access, dependency upgrades, or external services;
+- multiple plausible repairs exist and choosing among them is an owner decision;
+- a focused repair was attempted and the failure moved to a genuinely different risky blocker.
 
 ## Skill composition
 
@@ -42,7 +61,7 @@ Ask only if ownership/scope is unclear, a fix would change product behavior or b
    - required user-specified commands;
    - inferred project tests;
    - `git diff --check`.
-8. If validation fails, fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging. Report blocked only when the next fix is risky, broad, unclear, or outside scope.
+8. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
 9. Stage intentionally by explicit pathspec. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope.
 10. Prefer coherent split commits when changes are separable; otherwise make one clear commit. After committing, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
 11. Push to the current branch's upstream. If no upstream exists, ask before choosing one. If push is rejected for fetch-first/non-fast-forward, stop and ask before rebase/merge.
@@ -77,7 +96,7 @@ GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
 
-Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, never because the user omitted explicit ship wording. Use `blocked` when validation cannot be safely fixed, risky files are present, or git/remote state prevents safe delivery. Use `shipped` only after validation passes, commit succeeds, push succeeds, and final git state is verified.
+Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, never because the user omitted explicit ship wording. Use `blocked` when validation cannot be safely fixed after a focused repair attempt, risky files are present, or git/remote state prevents safe delivery. If blocked by validation, include the repair attempts already made and the exact red-line reason the next fix cannot be performed safely. Use `shipped` only after validation passes, commit succeeds, push succeeds, and final git state is verified.
 
 ## Shared contract
 
