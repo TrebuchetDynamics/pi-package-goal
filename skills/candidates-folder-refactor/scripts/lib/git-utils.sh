@@ -2,10 +2,51 @@
 # Git and validation helpers for auto-folder-refactor
 # Provides: git_scope_status, rollback_scope_changes, rollback_failed_slice,
 #           run_candidate_validation, commit_preexisting_changes, commit_scope_changes_local,
-#           deliver_scope_changes, run_git_commit_push_delivery, snapshot_scope
+#           deliver_scope_changes, run_git_commit_push_delivery, snapshot_scope,
+#           revert_artifact_churn
 
 git_scope_status() {
-  git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | grep -vF '.pi/' || true
+  git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | grep -vF '.pi/' || true
+}
+
+is_auto_artifact_path() {
+  local path=$1 extra_regex=${PI_AUTO_FOLDER_REFACTOR_ARTIFACT_REGEX:-}
+  case "${path}" in
+    *.log|*.tmp|*.cache|*.pid|*.trace|*.prof|*.out|*.coverage|coverage/*|*/coverage/*|dist/*|*/dist/*|build/*|*/build/*|*/paper-toxicity-decisions.jsonl|paper-toxicity-decisions.jsonl)
+      return 0
+      ;;
+  esac
+  if [[ -n "${extra_regex}" && "${path}" =~ ${extra_regex} ]]; then
+    return 0
+  fi
+  return 1
+}
+
+revert_artifact_churn() {
+  local candidate=${1:-scope} line path status
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_ARTIFACT_GUARD:-1}" == "0" ]]; then
+    return 0
+  fi
+  local -a paths=()
+  while IFS= read -r line; do
+    [[ -z "${line}" ]] && continue
+    status="${line:0:2}"
+    path="${line:3}"
+    if [[ "${status}" == R* || "${status}" == *R ]]; then
+      path="${path##* -> }"
+    fi
+    if is_auto_artifact_path "${path}"; then
+      paths+=("${path}")
+    fi
+  done < <(git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' 2>/dev/null || true)
+  if (( ${#paths[@]} == 0 )); then
+    return 0
+  fi
+  section "artifact guard ${candidate}"
+  warn "reverting runtime/generated artifact churn before validation/commit"
+  printf '  %s\n' "${paths[@]}" >&2
+  git -C "${run_root}" restore --staged --worktree -- "${paths[@]}" >/dev/null 2>&1 || true
+  git -C "${run_root}" clean -fd -- "${paths[@]}" >/dev/null 2>&1 || true
 }
 
 folder_debt_metrics() {
@@ -71,9 +112,9 @@ metric_progress_decreased() {
 candidate_git_pathspecs() {
   local candidate=$1
   if [[ "${candidate}" == "." ]]; then
-    printf '%s\n' . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
+    printf '%s\n' . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
   else
-    printf '%s\n' "${candidate}" ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
+    printf '%s\n' "${candidate}" ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
   fi
 }
 
@@ -129,7 +170,7 @@ run_candidate_validation() {
     info "no Go package validation inferred for ${candidate}"
   fi
   info "git diff --check"
-  git -C "${run_root}" diff --check -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**' || return $?
+  git -C "${run_root}" diff --check -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' || return $?
   success "diff check passed"
 }
 
@@ -165,8 +206,8 @@ commit_preexisting_changes() {
   if printf '%s\n' "${status}" | grep -Eq '^[ MADRCU?!]{1,2} [^/]+$'; then
     warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'auto-folder-refactor ignore' to add it to .refactorignore"
   fi
-  git -C "${run_root}" add -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
-  if git -C "${run_root}" diff --cached --quiet -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'; then
+  git -C "${run_root}" add -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
+  if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged pre-existing changes after excludes"
     return 0
   fi
@@ -189,12 +230,16 @@ commit_scope_changes_local() {
     return 1
   fi
   section "commit ${candidate}"
-  git -C "${run_root}" add -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'
-  if git -C "${run_root}" diff --cached --quiet -- . ':(exclude)**/.pi/**' ':(exclude)**/.understand-anything/**'; then
+  git -C "${run_root}" add -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'
+  if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged changes to commit after validation"
     return 0
   fi
-  message="Refactor ${candidate} topology"
+  if [[ "${candidate}" == bugfind-* ]]; then
+    message="Bugfind ${candidate#bugfind-} visibility slice"
+  else
+    message="Refactor ${candidate} topology"
+  fi
   git -C "${run_root}" commit -m "${message}"
   success "committed $(git -C "${run_root}" rev-parse --short HEAD) ${message}"
 }

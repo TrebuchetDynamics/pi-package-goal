@@ -29,7 +29,11 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - For Go, inspect `go.mod`, package names, exported identifiers, import paths, and candidate validation such as `go test ./...`, targeted `go test ./path/...`, `go list ./...`, or `go vet ./...`.
 2. **Choose subfolders by responsibility**
    - Match existing project layout and naming before inventing new topology.
-   - Prefer domain/responsibility folders over vague buckets like `utils/` or `common/`.
+   - Refactor around behavior, responsibility, domain, feature, and change reason rather than files, helpers, or technical type buckets.
+   - Prefer domain/responsibility folders over vague buckets like `utils/`, `common/`, or `misc/`; use specific names such as `validation/`, `formatting/`, `pricing/`, `auth/`, `parser/`, or `adapters/` when those are the actual responsibilities.
+   - For each new module boundary, be able to state what it owns, what it exposes, and what it must never know about.
+   - Keep dependency direction sane: core/domain logic should not import UI, transport, database, framework, or app orchestration details.
+   - Separate pure logic from side effects where possible, and put external systems behind adapters/gateways.
    - Create shared modules only after at least two concrete call sites need the same behavior; keep duplication when behavior only looks similar.
    - Keep public exports stable with barrel/compatibility files when callers outside the folder depend on current paths.
 3. **Refactor safely**
@@ -40,6 +44,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
    - Prefer local shared modules inside the target folder (for example `shared/`, `internal/`, `testutil/`, or language-idiomatic equivalents) over dumping unrelated code into global utilities.
    - Phase 3: clean up compatibility shims, dead code, and names only when callers and tests prove it is safe.
    - Preserve behavior before cleanup; do not combine moves, rewrites, and semantic changes in one opaque patch.
+   - Use “make the next change easier, safer, and more obvious without changing current behavior” as the refactor success criterion.
    - Delete duplicate code only after tests or direct diff evidence prove the shared implementation covers it.
 4. **Continue autonomously**
    - Do not stop after moving one or two files if the target topology still has obvious remaining slices and validation is green.

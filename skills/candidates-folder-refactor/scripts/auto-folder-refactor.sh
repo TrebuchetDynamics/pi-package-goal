@@ -34,14 +34,18 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_SCAN_TOP           candidates to keep per scan (default: 25)
   PI_AUTO_FOLDER_REFACTOR_TABLE_ROWS         candidate rows to display (default: 10)
   PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS=1 list refactorignore suggestions (default: summary only)
+  PI_AUTO_FOLDER_REFACTOR_SHOW_SKIPPED=1     include skipped candidates in ranking table (default: hidden)
   PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT=errors|all  pi stdout mode (default: errors)
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE=1 only print unchanged heartbeats in debug (default: 1)
   PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root decrease (default: 1)
-  PI_AUTO_FOLDER_REFACTOR_PERSIST_SKIPS=1    persist candidate skips across runs (default: 0/off)
+  PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS   base retry cooldown for soft failed candidates (default: 3600)
+  PI_AUTO_FOLDER_REFACTOR_COOLDOWN_MAX_SECONDS max retry cooldown after backoff (default: 86400)
   PI_AUTO_FOLDER_REFACTOR_FAST_ROOT_REDUCTION=1 prefer manageable candidates with root files (default: 1)
   PI_AUTO_FOLDER_REFACTOR_PICK_MAX_FILES      max files for fast-root candidate preference (default: 80)
   PI_AUTO_FOLDER_REFACTOR_PICK_MAX_ROOT_FILES max root files for fast-root candidate preference (default: 40)
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
+  PI_AUTO_FOLDER_REFACTOR_ARTIFACT_GUARD=0   disable runtime/generated artifact revert guard (default: on)
+  PI_AUTO_FOLDER_REFACTOR_ARTIFACT_REGEX     extra regex for changed runtime artifacts to revert before commit
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
   PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery (default: local)
@@ -137,40 +141,82 @@ fi
 state_dir="${run_root}/.pi/auto-folder-refactor-state"
 mkdir -p "${state_dir}"
 state_key="$(printf '%s' "${resolved_scan_root}" | node -e 'const crypto=require("node:crypto"); process.stdout.write(crypto.createHash("sha256").update(require("node:fs").readFileSync(0)).digest("hex").slice(0,16));')"
-skipped_file="${state_dir}/skipped.${state_key}.txt"
-skipped_log="${state_dir}/skipped.${state_key}.jsonl"
-persist_skips="${PI_AUTO_FOLDER_REFACTOR_PERSIST_SKIPS:-0}"
-if [[ "${persist_skips}" == "1" && -f "${skipped_file}" ]]; then
-  mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | awk -F '\t' '{print $1}' | sort -u)
+state_file="${state_dir}/state.${state_key}.jsonl"
+cooldown_seconds="${PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS:-3600}"
+if [[ ! "${cooldown_seconds}" =~ ^[0-9]+$ ]]; then
+  cooldown_seconds=3600
+fi
+cooldown_max_seconds="${PI_AUTO_FOLDER_REFACTOR_COOLDOWN_MAX_SECONDS:-86400}"
+if [[ ! "${cooldown_max_seconds}" =~ ^[0-9]+$ ]]; then
+  cooldown_max_seconds=86400
+fi
+if (( cooldown_max_seconds < cooldown_seconds )); then
+  cooldown_max_seconds="${cooldown_seconds}"
 fi
 
 refresh_skipped_candidates() {
-  if [[ -f "${skipped_file}" ]]; then
-    mapfile -t skipped_candidates < <(grep -v '^$' "${skipped_file}" | awk -F '\t' '{print $1}' | sort -u)
-  else
+  if [[ ! -f "${state_file}" ]]; then
     skipped_candidates=()
+    return 0
   fi
+  mapfile -t skipped_candidates < <(node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const now = Date.now();
+    const latest = new Map();
+    for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean)) {
+      try { const rec = JSON.parse(line); latest.set(rec.candidate, rec); } catch {}
+    }
+    for (const [candidate, rec] of latest) {
+      if (rec.state === "blocked" || rec.state === "done" || rec.state === "exhausted") console.log(candidate);
+      if (rec.state === "cooldown" && Date.parse(rec.until || "") > now) console.log(candidate);
+    }
+  ' "${state_file}" | sort -u)
 }
 
-mark_skipped() {
-  local candidate=$1 reason=${2:-skipped} scope=${3:-candidate} temporary=${4:-0} now
+mark_candidate_state() {
+  local candidate=$1 reason=${2:-skipped} scope=${3:-candidate} requested_temporary=${4:-0} now state until effective_cooldown
   now="$(date -Is)"
+  state="cooldown"
+  case "${reason}" in
+    empty|"already clean") state="done" ;;
+    "timeout rollback"|"pi failure rollback"|"validation rollback") state="blocked" ;;
+    "sub-candidates exhausted this run") state="exhausted" ;;
+    "no changes"|"no metric progress rollback") state="cooldown" ;;
+  esac
+  until=""
+  if [[ "${state}" == "cooldown" ]]; then
+    effective_cooldown="$(node -e '
+      const fs = require("node:fs");
+      const file = process.argv[1];
+      const candidate = process.argv[2];
+      const reason = process.argv[3];
+      const base = Math.max(0, Number(process.argv[4]) || 0);
+      const max = Math.max(base, Number(process.argv[5]) || base);
+      let attempts = 0;
+      if (fs.existsSync(file)) {
+        for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean)) {
+          try {
+            const rec = JSON.parse(line);
+            if (rec.candidate === candidate && rec.reason === reason && rec.state === "cooldown") attempts += 1;
+          } catch {}
+        }
+      }
+      const multiplier = Math.pow(2, Math.min(attempts, 16));
+      process.stdout.write(String(Math.min(max, base * multiplier)));
+    ' "${state_file}" "${candidate}" "${reason}" "${cooldown_seconds}" "${cooldown_max_seconds}")"
+    until="$(date -Is -d "+${effective_cooldown} seconds" 2>/dev/null || date -Is)"
+  fi
   mkdir -p "${state_dir}"
-  if [[ "${temporary}" != "1" && "${persist_skips}" == "1" ]]; then
-    grep -v -F -x "${candidate}" "${skipped_file}" 2>/dev/null > "${skipped_file}.tmp" || true
-    printf '%s\n' "${candidate}" >> "${skipped_file}.tmp"
-    sort -u "${skipped_file}.tmp" > "${skipped_file}"
-    rm -f "${skipped_file}.tmp"
-    refresh_skipped_candidates
-  fi
-  if [[ "${temporary}" == "1" || "${persist_skips}" != "1" ]]; then
-    skipped_candidates+=("${candidate}")
-    mapfile -t skipped_candidates < <(printf '%s\n' "${skipped_candidates[@]}" | grep -v '^$' | sort -u)
-  fi
-  node -e 'const fs=require("node:fs"); const rec={ts:process.argv[1], candidate:process.argv[2], reason:process.argv[3], scope:process.argv[4], temporary:process.argv[5] === "1"}; fs.appendFileSync(process.argv[6], JSON.stringify(rec)+"\n");' "${now}" "${candidate}" "${reason}" "${scope}" "${temporary}" "${skipped_log}"
+  node -e 'const fs=require("node:fs"); const rec={ts:process.argv[1], candidate:process.argv[2], reason:process.argv[3], scope:process.argv[4], state:process.argv[5], until:process.argv[6] || undefined}; fs.appendFileSync(process.argv[7], JSON.stringify(rec)+"\n");' "${now}" "${candidate}" "${reason}" "${scope}" "${state}" "${until}" "${state_file}"
+  refresh_skipped_candidates
   skip_count=$((skip_count + 1))
-  warn "marked skipped: ${candidate} (${reason}; scope=${scope}; temporary=${temporary})"
+  warn "candidate state: ${candidate} → ${state} (${reason}; scope=${scope}${until:+; until=${until}}${effective_cooldown:+; cooldown=${effective_cooldown}s})"
 }
+
+mark_skipped() { mark_candidate_state "$@"; }
+
+refresh_skipped_candidates
 
 # --- Mode dispatch ---
 if [[ "${mode}" == "ignore" ]]; then
@@ -237,7 +283,7 @@ for ((i = 1; i <= loops; i++)); do
   # If all sub-candidates exhausted, skip the parent too
   already_skipped_sub="$(printf '%s\n' "${skipped_candidates[@]:-}" | grep -c "${drill_candidate}/" || true)"
   if [[ "${candidate}" == "${drill_candidate}" && "${already_skipped_sub}" -gt 0 ]]; then
-    warn "all sub-candidates of ${drill_candidate} exhausted for this run; not persisting parent skip"
+    warn "all sub-candidates of ${drill_candidate} exhausted for this run; marking parent exhausted"
     mark_skipped "${drill_candidate}" "sub-candidates exhausted this run" "parent" "1"
     continue
   fi
@@ -251,11 +297,18 @@ for ((i = 1; i <= loops; i++)); do
     "/skill:skill-folder-refactor ${candidate}" \
     "Use the folder-refactor guardrail extension while working:" \
     "- Start with folder_refactor_scan on ${candidate}." \
-    "- Make shared-code reuse the main objective: search for duplicated policy/types/helpers before moving files." \
-    "- Prefer one small compile-preserving slice over broad package moves; move only a few files before updating imports/tests and validating." \
+    "- Refactor around behavior/responsibility, not file shuffling; group by domain/feature/change reason." \
+    "- Preserve behavior first: add or keep focused tests around the current public behavior before structural edits." \
+    "- Prefer one small reversible compile-preserving slice over broad package moves; move only a few files before updating imports/tests and validating." \
+    "- For each new module boundary, state what it owns, exposes, and must never know about." \
+    "- Keep dependency direction sane: core/domain logic must not import UI, transport, database, framework, or app orchestration details." \
+    "- Separate pure logic from side effects; use adapters/contracts at external boundaries." \
+    "- Avoid vague buckets like utils/common/misc; use specific names such as validation, formatting, pricing, auth, parser, or adapters." \
+    "- Make shared-code reuse the main objective only when behavior is identical across proven call sites; do not create speculative abstractions." \
     "- Prefer extracting small contracts/interfaces/value types/shared helpers into focused packages over shallow file moves." \
     "- Build new contracts only when they reduce coupling or duplicated behavior; keep compatibility wrappers at the old boundary when needed." \
     "- Reuse existing contracts/helpers before inventing new ones; name the reused or newly created contract in the report." \
+    "- Success criterion: make the next change easier, safer, and more obvious without changing current behavior." \
     "- Before any final report, call folder_refactor_audit with exact remaining root file basenames classified as facadeFiles, outOfScopeFiles, or nextCandidateFiles." \
     "- If folder_refactor_audit fails, do not report done; either continue safe slices or report the specific blocker." \
     "- If nextCandidateFiles is non-empty and validation is green, execute the next candidate instead of stopping." \
@@ -315,6 +368,7 @@ for ((i = 1; i <= loops; i++)); do
   pi_exit=$?
   set -e
 
+  revert_artifact_churn "${candidate}"
   after_snapshot="$(snapshot_scope)"
   if [[ "${before_snapshot}" == "${after_snapshot}" ]]; then
     if [[ "${pi_exit}" == "124" ]]; then
@@ -364,7 +418,7 @@ for ((i = 1; i <= loops; i++)); do
   if [[ "${PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS:-1}" == "1" ]] && ! metric_progress_decreased "${progress_metric_args[@]}"; then
     rollback_failed_slice "validated slice did not reduce target/parent debt or root files" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
-    mark_skipped "${candidate}" "no metric progress rollback" "candidate" "0"
+    mark_skipped "${candidate}" "no metric progress rollback" "candidate" "1"
     continue
   fi
   deliver_scope_changes "${candidate}"
@@ -377,5 +431,5 @@ kv "landed" "${landed_count}"
 kv "rolled back" "${rollback_count}"
 kv "no-op" "${noop_count}"
 kv "skipped total" "${#skipped_candidates[@]}"
-kv "skip state" "${skipped_file}"
+kv "state" "${state_file}"
 success "auto-folder-refactor complete"

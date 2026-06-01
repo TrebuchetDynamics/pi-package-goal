@@ -17,8 +17,13 @@ try {
   write("src/noisy/index.ts", "export { handler } from './api/handler';\n");
   write("src/consumer.ts", "import { duplicateThing } from './noisy/api/handler';\nconsole.log(duplicateThing);\n");
   write("src/simple/index.ts", "export const simple = 1;\n");
+  write("pubspec.yaml", "name: fixture_app\n");
   write("lib/main.dart", "void main() {}\n");
   write("lib/app.dart", "class App {}\n");
+  write("android/build.gradle", "plugins { id 'com.android.application' version '8.0.0' apply false }\n");
+  write("android/app/src/main/AndroidManifest.xml", "<manifest />\n");
+  write("android/app/src/main/kotlin/com/example/MainActivity.kt", "class MainActivity\n");
+  write("android/gradle.properties", "org.gradle.jvmargs=-Xmx1536M\n");
   write("src/domain/external/client.dart", "class ExternalClient {}\n");
   write("artifacts/run/a.log", "log\n");
   write("artifacts/run/b.log", "log\n");
@@ -110,6 +115,32 @@ try {
   assert.match(timeoutOutput, /fake pi timeout/);
   assert.equal(fs.existsSync(path.join(fixture, "src/noisy/partial_timeout.txt")), false);
   fs.rmSync(fakePiTimeout, { force: true });
+  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
+
+  const fakePiNoMetric = path.join(os.tmpdir(), `fake-pi-no-metric-${process.pid}.sh`);
+  fs.writeFileSync(fakePiNoMetric, "#!/usr/bin/env bash\necho fake pi no metric\necho marker > src/noisy/no_metric_marker.txt\n");
+  fs.chmodSync(fakePiNoMetric, 0o755);
+  execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiNoMetric, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS: "0", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.equal(fs.existsSync(path.join(fixture, "src/noisy/no_metric_marker.txt")), false);
+  const skipStateDir = path.join(fixture, ".pi/auto-folder-refactor-state");
+  const stateText = fs.readdirSync(skipStateDir).filter((name) => name.startsWith("state.") && name.endsWith(".jsonl")).map((name) => fs.readFileSync(path.join(skipStateDir, name), "utf8")).join("\n");
+  assert.match(stateText, /"state":"cooldown"/);
+  assert.match(stateText, /"reason":"no metric progress rollback"/);
+  execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiNoMetric, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS: "1", PI_AUTO_FOLDER_REFACTOR_COOLDOWN_MAX_SECONDS: "4", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  const updatedStateText = fs.readdirSync(skipStateDir).filter((name) => name.startsWith("state.") && name.endsWith(".jsonl")).map((name) => fs.readFileSync(path.join(skipStateDir, name), "utf8")).join("\n");
+  assert.equal((updatedStateText.match(/"state":"cooldown"/g) || []).length, 2);
+  fs.rmSync(fakePiNoMetric, { force: true });
+  fs.rmSync(skipStateDir, { recursive: true, force: true });
+
+  const fakePiBugfind = path.join(os.tmpdir(), `fake-pi-bugfind-${process.pid}.sh`);
+  fs.writeFileSync(fakePiBugfind, "#!/usr/bin/env bash\necho fake pi bugfind\necho fixed > src/noisy/bugfind_marker.txt\necho runtime > src/noisy/paper-toxicity-decisions.jsonl\n");
+  fs.chmodSync(fakePiBugfind, 0o755);
+  const bugfindOutput = execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiBugfind, PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD: "999", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(bugfindOutput, /fake pi bugfind/);
+  assert.match(git("log", "-1", "--pretty=%s"), /Bugfind 1-1 visibility slice/);
+  assert.equal(git("status", "--porcelain", "--", "src/noisy/bugfind_marker.txt"), "");
+  assert.equal(fs.existsSync(path.join(fixture, "src/noisy/paper-toxicity-decisions.jsonl")), false);
+  fs.rmSync(fakePiBugfind, { force: true });
   fs.rmSync(installBin, { recursive: true, force: true });
 
   const script = path.join(root, "skills/candidates-folder-refactor/scripts/find-candidates.mjs");
@@ -125,6 +156,7 @@ try {
   assert.match(repoOutput, /artifacts\//);
   assert.match(repoOutput, /src\/generated\//);
   assert.match(repoOutput, /opensource\/repos\//);
+  assert.match(repoOutput, /android\//);
   assert.match(repoOutput, /opensource-projects\/repo-a\//);
   assert.match(repoOutput, /confidence [3-9]/);
   assert.doesNotMatch(repoOutput.split("Log:")[0], /\d+\. artifacts/);
@@ -136,10 +168,12 @@ try {
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "artifacts/"), true);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "src/generated/"), true);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "opensource/repos/"), true);
+  assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "android/"), true);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "opensource-projects/repo-a/"), true);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "opensource/"), false);
   assert.equal(latestReport.candidates.some((item) => item.relative === "src/generated"), false);
   assert.equal(latestReport.candidates.some((item) => item.relative === "src/generated/client"), false);
+  assert.equal(latestReport.candidates.some((item) => item.relative === "android"), false);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "lib/"), false);
   assert.equal(latestReport.refactorIgnoreSuggestions.some((item) => item.pattern === "src/domain/external/"), false);
   const cachedOutput = execFileSync(process.execPath, [script, ".", "--from-log"], { cwd: fixture, encoding: "utf8" });

@@ -3,7 +3,7 @@
 # Provides: run_bug_finding_slice
 
 run_bug_finding_slice() {
-  local loop_label=$1 target_label before after prompt
+  local loop_label=$1 target_label before after prompt pre_slice_status pi_exit validation_exit
   target_label="${scan_root}"
   section "bug-finding refactor ${loop_label}"
   kv "target" "${target_label}"
@@ -12,19 +12,37 @@ run_bug_finding_slice() {
     "AUTO_FOLDER_REFACTOR_BUGFIND ${loop_label}. Target scope: ${run_root}/${target_label}." \
     "Candidate refactors are exhausted or low. Transition to bug-finding through visibility refactors." \
     "Pick one small complex subsystem under scope and refactor to expose hidden assumptions, not to optimize." \
+    "Keep edits inside the named subsystem you choose; do not drift into unrelated folders after naming the seam." \
+    "Do not edit runtime/generated artifacts such as logs, jsonl decision dumps, coverage, build, dist, or cache files; if a test writes them, isolate or clean them." \
     "Prefer extracting pure functions, shared contracts/value types, explicit candidate/data-flow steps, replayable failure tests, and invariants/assertions." \
     "Look for duplicated logic drift, hidden state/order dependence, magic constants, inconsistent validation, dead branches, dropped/truncated candidates, stale data/provenance ambiguity, or unreplayable failures." \
     "When a bug is exposed, add or update a focused regression/characterization test before fixing it." \
     "Keep compatibility and public behavior unless a regression test proves existing behavior is wrong." \
     "Validate with the smallest relevant test command plus broader tests only when needed. Stop if no safe visibility refactor or bug-finding slice is available." \
     "Report changed contracts/helpers, bug found or ruled out, tests added, validation receipts, and next likely bug-finding seam.")"
+  pre_slice_status="$(git_scope_status)"
   before="$(snapshot_scope)"
-  run_pi_prompt "${prompt}" || true
+  set +e
+  run_pi_prompt "${prompt}"
+  pi_exit=$?
+  set -e
+  revert_artifact_churn "bugfind-${loop_label//\//-}"
   after="$(snapshot_scope)"
   if [[ "${before}" == "${after}" ]]; then
-    warn "bug-finding slice made no file changes; stopping"
+    warn "bug-finding slice made no non-artifact file changes; stopping"
     return 1
   fi
+  if [[ "${pi_exit}" != "0" ]]; then
+    rollback_failed_slice "bug-finding pi exited with status ${pi_exit}" "${target_label}" "${pre_slice_status}"
+    return 1
+  fi
+  set +e
   run_candidate_validation "${target_label}"
+  validation_exit=$?
+  set -e
+  if [[ "${validation_exit}" != "0" ]]; then
+    rollback_failed_slice "bug-finding validation failed with status ${validation_exit}" "${target_label}" "${pre_slice_status}"
+    return 1
+  fi
   deliver_scope_changes "bugfind-${loop_label//\//-}"
 }

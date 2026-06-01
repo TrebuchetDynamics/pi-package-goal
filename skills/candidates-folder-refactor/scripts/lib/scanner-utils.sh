@@ -150,15 +150,19 @@ print_candidate_table() {
     const suggestedIgnores = new Set((report.refactorIgnoreSuggestions || []).map((item) => item.path));
     const rowLimit = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_TABLE_ROWS || 10) || 10);
     const showSuggestions = process.env.PI_AUTO_FOLDER_REFACTOR_SHOW_SUGGESTIONS === "1";
-    const rows = (report.candidates || []).slice(0, rowLimit);
-    const totalRows = (report.candidates || []).length;
+    const allCandidates = report.candidates || [];
+    const showSkipped = process.env.PI_AUTO_FOLDER_REFACTOR_SHOW_SKIPPED === "1";
+    const displayCandidates = showSkipped ? allCandidates : allCandidates.filter((item) => !skipped.has(item.relative));
+    const rows = displayCandidates.slice(0, rowLimit);
+    const totalRows = displayCandidates.length;
+    const hiddenSkipped = allCandidates.length - displayCandidates.length;
     const widths = { n: 3, path: 34, debt: 7, root: 6, total: 6, status: 10 };
     const trunc = (value, width) => {
       const text = String(value);
       return text.length > width ? `${text.slice(0, Math.max(0, width - 1))}…` : text.padEnd(width);
     };
     const line = `${c.dim}${"─".repeat(112)}${c.reset}`;
-    console.error(`${c.bold}${c.cyan}┌ Candidates${c.reset} ${c.dim}${report.target} · ${rows.length}/${totalRows} shown${c.reset}`);
+    console.error(`${c.bold}${c.cyan}┌ Candidates${c.reset} ${c.dim}${report.target} · ${rows.length}/${totalRows} open shown${hiddenSkipped ? ` · ${hiddenSkipped} skipped hidden` : ""}${c.reset}`);
     console.error(`${c.dim}│ generated ${report.generatedAt || "unknown"}${c.reset}`);
     console.error(line);
     console.error(`${c.dim} #  ${"path".padEnd(widths.path)} ${"debt".padStart(widths.debt)} ${"root".padStart(widths.root)} ${"total".padStart(widths.total)} ${"status".padEnd(widths.status)} extensions${c.reset}`);
@@ -174,6 +178,7 @@ print_candidate_table() {
       console.error(`${rankColor}${rank}.${c.reset} ${wasSkipped ? c.dim : c.bold}${path}${c.reset} ${String(item.score.toFixed ? item.score.toFixed(1) : item.score).padStart(widths.debt)} ${String(item.direct ?? 0).padStart(widths.root)} ${String(item.files ?? 0).padStart(widths.total)} ${status.padEnd(widths.status)} ${c.dim}${exts}${c.reset}`);
     }
     console.error(line);
+    if (hiddenSkipped && !showSkipped) console.error(`${c.dim}skipped candidates hidden; set PI_AUTO_FOLDER_REFACTOR_SHOW_SKIPPED=1 to include them in the table${c.reset}`);
     const best = rows.find((item) => !skipped.has(item.relative));
     if (best) console.error(`${c.green}next:${c.reset} ${c.bold}${best.relative}${c.reset} ${c.dim}(score ${best.score})${c.reset}`);
     if (suggestedIgnores.size) {

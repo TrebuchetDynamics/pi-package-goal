@@ -10,6 +10,7 @@ const ignoredDirs = new Set([
 const ignoredFileExtensions = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".svg", ".pdf", ".zip", ".gz", ".tgz", ".lock"]);
 const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go", ".rs", ".java", ".kt", ".cs", ".rb", ".php", ".dart", ".swift", ".scala", ".c", ".cc", ".cpp", ".h", ".hpp"];
 const protectedSourceFolderNames = new Set(["src", "lib", "app", "apps", "internal", "pkg", "cmd", "core", "domain", "features", "packages"]);
+const flutterPlatformFolderNames = new Set(["android", "ios", "macos", "linux", "windows", "web"]);
 const shallowNameOnlyHints = new Set(["external", "externals", "output", "outputs", "cache", "caches", "screenshots", "captures", "downloads"]);
 const refactorIgnoreNameHints = new Set([
   "artifacts", "artifact", "logs", "log", "generated", "gen", "snapshots", "snapshot", "recordings", "recording",
@@ -420,6 +421,10 @@ function suggestedRefactorIgnore(stat) {
     reasons.push("generated/vendor/artifact path pattern");
     confidence += 3;
   }
+  if (isLikelyFlutterPlatformFolder(stat.dir, basename)) {
+    reasons.push("Flutter platform scaffold, not primary refactor target");
+    confidence += 8;
+  }
   if (refactorIgnoreNameHints.has(basename)) {
     reasons.push(`folder name '${basename}' is usually non-refactorable`);
     confidence += shallowNameOnlyHints.has(basename) ? 1 : 3;
@@ -465,6 +470,50 @@ function suggestedRefactorIgnore(stat) {
     files: stat.totalFiles,
     extensions: [...stat.extensions].sort().slice(0, 6),
   };
+}
+
+function isLikelyFlutterPlatformFolder(dir, basename) {
+  if (!flutterPlatformFolderNames.has(basename)) return false;
+  if (!hasPubspecAtOrAbove(dir)) return false;
+  const markerNames = new Set([
+    "AndroidManifest.xml", "build.gradle", "build.gradle.kts", "gradle.properties", "settings.gradle", "settings.gradle.kts",
+    "Podfile", "Info.plist", "Runner.xcodeproj", "Runner.xcworkspace", "CMakeLists.txt", "index.html",
+  ]);
+  const markerExtensions = new Set([".xcodeproj", ".xcworkspace", ".sln", ".vcxproj"]);
+  let markers = 0;
+  for (const file of listFilesShallow(dir, 3)) {
+    const name = path.basename(file);
+    if (markerNames.has(name) || markerExtensions.has(path.extname(name))) markers += 1;
+    if (markers >= 1 && basename !== "web") return true;
+    if (markers >= 2) return true;
+  }
+  return false;
+}
+
+function hasPubspecAtOrAbove(dir) {
+  for (let current = dir; current.startsWith(root); current = path.dirname(current)) {
+    if (fs.existsSync(path.join(current, "pubspec.yaml"))) return true;
+    if (current === root) break;
+  }
+  return fs.existsSync(path.join(root, "pubspec.yaml")) || fs.existsSync(path.join(process.cwd(), "pubspec.yaml"));
+}
+
+function listFilesShallow(dir, maxDepth) {
+  const files = [];
+  walkShallow(dir, 0);
+  return files;
+
+  function walkShallow(current, depth) {
+    if (depth > maxDepth || files.length > 200) return;
+    let entries = [];
+    try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      if ([".git", ".pi", ".dart_tool", "build", ".gradle"].includes(entry.name)) continue;
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) walkShallow(full, depth + 1);
+      else if (entry.isFile()) files.push(full);
+    }
+  }
 }
 
 function generatedTextHitCount(files) {
