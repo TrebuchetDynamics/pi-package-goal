@@ -86,6 +86,11 @@ try {
   const ignoreOutput = execFileSync(autoScript, ["ignore"], { cwd: ignoreFixture, encoding: "utf8", env: { ...process.env, NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.equal(ignoreOutput, "");
   assert.match(fs.readFileSync(path.join(ignoreFixture, ".refactorignore"), "utf8"), /artifacts\//);
+  fs.mkdirSync(path.join(ignoreFixture, "scan-here/artifacts/run"), { recursive: true });
+  fs.writeFileSync(path.join(ignoreFixture, "scan-here/artifacts/run/b.log"), "log\n");
+  const scopedIgnoreOutput = execFileSync(autoScript, ["ignore", "scan-here"], { cwd: ignoreFixture, encoding: "utf8", env: { ...process.env, NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.equal(scopedIgnoreOutput, "");
+  assert.match(fs.readFileSync(path.join(ignoreFixture, ".refactorignore"), "utf8"), /scan-here\/artifacts\//);
   fs.rmSync(ignoreFixture, { recursive: true, force: true });
 
   const ignoredAddFixture = fs.mkdtempSync(path.join(os.tmpdir(), "auto-folder-refactor-ignored-add-"));
@@ -213,6 +218,16 @@ try {
   const cachedOutput = execFileSync(process.execPath, [script, ".", "--from-log"], { cwd: fixture, encoding: "utf8" });
   assert.match(cachedOutput, /From log:/);
   assert.match(cachedOutput, /src\/noisy/);
+
+  const rootHeavy = path.join(fixture, "cmd/gormes");
+  fs.mkdirSync(rootHeavy, { recursive: true });
+  fs.writeFileSync(path.join(rootHeavy, "agent.go"), "package main\n");
+  fs.writeFileSync(path.join(rootHeavy, "admin.go"), "package main\n");
+  fs.writeFileSync(path.join(rootHeavy, "auth.go"), "package main\n");
+  const rootCandidateOutput = execFileSync(process.execPath, [script, "."], { cwd: rootHeavy, encoding: "utf8" });
+  assert.match(rootCandidateOutput, /\. — debt/);
+  const rootCandidateReport = JSON.parse(fs.readFileSync(path.join(rootHeavy, ".pi/candidates-folder-refactor/latest.json"), "utf8"));
+  assert.equal(rootCandidateReport.candidates[0].relative, ".");
 
   const folderOutput = execFileSync(process.execPath, [script, "src"], { cwd: fixture, encoding: "utf8" });
   assert.match(folderOutput, /src\/noisy/);

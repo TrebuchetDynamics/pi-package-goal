@@ -336,9 +336,11 @@ const refactorIgnoreSuggestions = compactRefactorIgnoreSuggestions([...statsByDi
   .sort((a, b) => b.confidence - a.confidence || b.files - a.files || a.path.localeCompare(b.path))
   .slice(0, options.suggestionsLimit);
 const suggestedIgnorePaths = refactorIgnoreSuggestions.map((suggestion) => suggestion.path.split(path.sep).join("/"));
+const gitRoot = gitRootFor(root);
+const shouldNominateScanRoot = !gitRoot || path.resolve(gitRoot) !== root;
 
 const candidates = [...statsByDir.values()]
-  .filter((stat) => stat.dir !== root)
+  .filter((stat) => stat.dir !== root || shouldNominateScanRoot && stat.directFiles >= 3)
   .map((stat) => candidateStatExcludingSuggestedIgnores(stat, suggestedIgnorePaths))
   .filter((stat) => stat.totalFiles >= 4 || stat.directFiles >= 3 || stat.childDirs.size >= 3)
   .map((stat) => serializeCandidate({ ...stat, score: score(stat), relative: path.relative(process.cwd(), stat.dir) || "." }))

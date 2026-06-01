@@ -35,7 +35,7 @@ The scanner honors `.refactorignore` in the current working directory and scan r
 
 1. **Choose scan root**
    - No folder named: scan the current repo and rank folders/subfolders below it.
-   - Folder named: scan only beneath that folder and rank subfolders under it; do not recommend the folder itself.
+   - Folder named: scan that folder and its subfolders. If the folder is not the repository root and has significant root-file debt, it may be ranked as the candidate itself (`.` from inside that folder, or the folder path from its parent).
 2. **Score candidates**
    - Prefer folders with many files, many direct children, mixed extensions, mixed responsibility signals, and nested subfolders.
    - Add evidence columns for recent `git log` churn, import fan-in/fan-out, test presence, responsibility role signals, and duplicate file/symbol names.
@@ -57,7 +57,7 @@ The scanner honors `.refactorignore` in the current working directory and scan r
 ## Red lines
 
 - Do not edit production files while scouting candidates.
-- Do not recommend repo-root refactors; recommend a bounded folder instead.
+- Do not recommend repo-root refactors; recommend a bounded folder instead. A non-repo-root scan target may be recommended when its root files are the actual debt.
 - Do not rank generated, vendor, cache, build-output, dependency folders, or `.pi/candidates-folder-refactor/` logs as actionable targets.
 - Do not present the numeric score as objective truth; include human-readable evidence such as churn, callers, tests, roles, and duplicates.
 
