@@ -31,6 +31,7 @@ const expectedSkills = [
   "autoreview",
   "pi-ecosystem-scout",
   "pi-extensions-helper",
+  "ui-ux-pro-max",
 ];
 
 const skillDescriptionBudget = {

@@ -45,6 +45,15 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/qualisero-awesome-pi-agent-LICENSE`
 
+## nextlevelbuilder/ui-ux-pro-max-skill
+
+- Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+- Snapshot inspected: `b7e3af8`
+- Bundled paths:
+  - `skills/ui-ux-pro-max/`
+- License: MIT
+- Full license copy: `licenses/nextlevelbuilder-ui-ux-pro-max-skill-LICENSE`
+
 ## greptileai/skills
 
 - Source: https://github.com/greptileai/skills
