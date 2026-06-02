@@ -299,8 +299,10 @@ for ((i = 1; i <= loops; i++)); do
     "Use the folder-refactor guardrail extension while working:" \
     "- Start with folder_refactor_scan on ${candidate}." \
     "- Refactor around behavior/responsibility, not file shuffling; group by domain/feature/change reason." \
+    "- For root-file-heavy targets, root files are the debt: create focused responsibility subfolders/packages and move coherent file groups out of the target root." \
+    "- Do not leave orphaned root files when their responsibility is clear; root should keep only entrypoints/facades/compatibility files that are named explicitly in the audit." \
     "- Preserve behavior first: add or keep focused tests around the current public behavior before structural edits." \
-    "- Prefer one small reversible compile-preserving slice over broad package moves; move only a few files before updating imports/tests and validating." \
+    "- Prefer one small reversible compile-preserving slice over broad package moves; move coherent file groups before updating imports/tests and validating." \
     "- For each new module boundary, state what it owns, exposes, and must never know about." \
     "- Keep dependency direction sane: core/domain logic must not import UI, transport, database, framework, or app orchestration details." \
     "- Separate pure logic from side effects; use adapters/contracts at external boundaries." \
