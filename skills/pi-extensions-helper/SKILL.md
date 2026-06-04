@@ -39,6 +39,16 @@ Pick the smallest shape that matches the goal:
 - **Provider/model**: `pi.registerProvider()`, `setModel`, `thinking_level_select`.
 - **Package resource**: expose extension path through `package.json` `pi.extensions`.
 
+## Provider/CLI bridge rule
+
+For provider bridge patterns, keep the bridge explicit and user-controlled:
+
+- Register provider bridges with `pi.registerProvider()` and expose a `/provider-name status` command that reports auth source, registered models, smoke-test command, and known limitations.
+- If a CLI-backed provider uses `streamSimple`, deny or disable the upstream CLI's native tools; Pi owns tool execution and the bridge should translate model intent back into Pi tool calls only when the protocol is reliable.
+- Treat credential-file reuse, proxy headers, OAuth refresh helpers, paid requests, and unofficial endpoints as owner/legal/security decisions before bundling.
+- Prefer documenting provider bridge patterns over bundling a new provider when auth semantics, terms of service, or tool-call reliability are unclear.
+- Call out prompt-bridged tool calls as less reliable than native provider tool calling; fail closed if the upstream CLI attempts to use its own tools.
+
 ## Example lookup
 
 Use examples before inventing patterns:

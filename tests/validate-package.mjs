@@ -18,6 +18,7 @@ const expectedSkills = [
   "prototype",
   "skill-folder-refactor",
   "candidates-folder-refactor",
+  "prompt-cache-auditor",
   "zoom-out",
   "to-issues",
   "to-prd",
@@ -316,13 +317,19 @@ async function testPackageManifest() {
   assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-goal#readme");
   assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-goal/issues");
   assert.match(pkg.description, /skills/);
+  assert.match(pkg.description, /UX extensions/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
+  assert.ok(pkg.keywords.includes("statusline"));
+  assert.ok(pkg.keywords.includes("advisor"));
+  assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/goal-statusline.js", "./extensions/goal-advisor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
-  assert.equal(pkg.files.includes("extensions"), true, "package tarball must include the understand extension");
+  assert.deepEqual(pkg.pi.themes, ["./themes"]);
+  assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
   assert.equal(pkg.files.includes("skills"), true);
+  assert.equal(pkg.files.includes("themes"), true, "package tarball must include theme resources");
   assert.equal(pkg.files.includes("tmux"), true, "package tarball must include tmux helpers and tx bin");
   const gitignore = read(".gitignore");
   assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
@@ -352,6 +359,19 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorExtension, /folder_refactor_state/);
   assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
+
+  const statuslineExtension = read("extensions/goal-statusline.js");
+  assert.match(statuslineExtension, /registerCommand\("goal-statusline"/);
+  assert.match(statuslineExtension, /setStatus\(STATUS_KEY/);
+  assert.match(statuslineExtension, /getContextZone/);
+  assert.doesNotMatch(statuslineExtension, /setFooter/);
+
+  const advisorExtension = read("extensions/goal-advisor.js");
+  assert.match(advisorExtension, /name: TOOL_NAME/);
+  assert.match(advisorExtension, /enabled: false/);
+  assert.match(advisorExtension, /registerCommand\("goal-advisor"/);
+  assert.match(advisorExtension, /await import\("@earendil-works\/pi-ai"\)/);
+  assert.match(advisorExtension, /goal_advisor/);
 
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
@@ -484,11 +504,21 @@ async function testSkills() {
     assert.match(read(file), /COMMON-CONTRACT\.md/, `${file} should reference the shared skill contract`);
   }
 
+  const promptCacheAuditor = read("skills/prompt-cache-auditor/SKILL.md");
+  assert.match(promptCacheAuditor, /prompt_cache_key/);
+  assert.match(promptCacheAuditor, /cache_control/);
+  assert.match(promptCacheAuditor, /cache-read counters/);
+  assert.match(read("skills/prompt-cache-auditor/references/provider-patterns.md"), /OnlyTerp\/prompt-cache-skills/);
+  assert.match(read("skills/prompt-cache-auditor/references/provider-patterns.md"), /cache_read_input_tokens/);
+  assert.ok(exists("skills/prompt-cache-auditor/scripts/summarize-cache-usage.mjs"), "prompt cache skill helper must exist");
+
   const piEcosystemScout = read("skills/pi-ecosystem-scout/SKILL.md");
   assert.match(piEcosystemScout, /translate the external pattern into a local requirement before editing/);
   assert.match(piEcosystemScout, /pattern-only inspiration belongs in the scout report, not package notices/);
   const piExtensionsHelper = read("skills/pi-extensions-helper/SKILL.md");
   assert.match(piExtensionsHelper, /write the local design rule first/);
+  assert.match(piExtensionsHelper, /Provider\/CLI bridge rule/);
+  assert.match(piExtensionsHelper, /Pi owns tool execution/);
   assert.match(piExtensionsHelper, /Keep guardrail logic in pure helpers with focused tests/);
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
 
@@ -510,11 +540,16 @@ async function testDocsAndNotices() {
   assert.match(readme, /bundles curated agent skills/);
   assert.match(readme, /git-commit-push/);
   assert.doesNotMatch(readme, /\/development-goal/);
-  assert.match(readme, /## Included extension/);
+  assert.match(readme, /## Included extensions/);
+  assert.match(readme, /goal-statusline/);
+  assert.match(readme, /goal-advisor/);
+  assert.match(readme, /goal-neon/);
+  assert.match(readme, /Provider bridge pattern/);
   assert.match(readme, /\/understand-refactor/);
   assert.match(readme, /reads an existing output plan before overwriting it/);
   assert.match(readme, /\/understand-refactor grill N/);
   assert.match(readme, /pi\.extensions/);
+  assert.match(readme, /pi\.themes/);
 }
 
 await testPackageManifest();

@@ -1,11 +1,12 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills and one `/understand` extension.
+A Pi package that bundles curated agent skills, opt-in Pi UX extensions, a theme, and `/understand` bridge commands.
 
 Use it when you want Pi to:
 
 - keep a clear objective in view while it works;
 - use safer commit/push discipline;
+- show an opt-in goal/status HUD and consult an explicit advisor model when useful;
 - switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
 - build or review Pi package resources; and
 - map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
@@ -16,9 +17,11 @@ Use it when you want Pi to:
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
-| Engineering loops | Debug, test-drive, prototype, review, or improve architecture. | `diagnose`, `tdd`, `prototype` |
+| Opt-in UX | Show a compact status HUD or explicitly consult an advisor model without taking over Pi defaults. | `/goal-statusline`, `/goal-advisor` |
+| Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
+| Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `goal-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 
 ## Install
@@ -56,6 +59,8 @@ Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill co
 /skill:git-commit-push audit
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
+/goal-statusline on
+/goal-advisor status
 /understand
 /understand agent
 ```
@@ -93,7 +98,59 @@ auto-folder-refactor 10
 
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
 
-## Included extension: `/understand`
+## Included extensions
+
+### `/goal-statusline`
+
+`/goal-statusline` is an opt-in status HUD that uses Pi's `ctx.ui.setStatus()` instead of replacing the default footer.
+
+It shows:
+
+- current directory;
+- git branch, changed-file count, and related GitHub PR number when `gh pr view` resolves one;
+- remaining context tokens, percentage, and zone (`Plan`, `Code`, `Dump`, `ExDump`, `Dead`);
+- average model response speed in tokens/second; and
+- active provider/model plus thinking level.
+
+Commands:
+
+| Command | Use it for |
+| --- | --- |
+| `/goal-statusline on` | Enable the HUD for the current session. |
+| `/goal-statusline off` | Disable it and clear its status text. |
+| `/goal-statusline status` | Show whether it is enabled and the current formatted status line. |
+| `/goal-statusline refresh` | Refresh git and PR data immediately. |
+
+Operational notes:
+
+- It is disabled by default. Start Pi with `--goal-statusline` or run `/goal-statusline on` when you want it.
+- Git and PR lookups use `git` and optional `gh` subprocesses with fixed arguments; missing `gh` simply omits the PR segment.
+- The extension does not replace the footer, install hooks, or persist local state.
+
+### `/goal-advisor`
+
+`/goal-advisor` configures the opt-in `goal_advisor` tool. The tool lets the executor consult a configured advisor model for strategic planning, review, stuck-state diagnosis, or course correction.
+
+Commands:
+
+| Command | Use it for |
+| --- | --- |
+| `/goal-advisor status` | Show enabled state, configured model, uses, and cache preference. |
+| `/goal-advisor model <provider>/<model>` | Pick the advisor model from Pi's model registry. |
+| `/goal-advisor enable` | Enable the advisor tool after a model is configured. |
+| `/goal-advisor disable` | Disable the advisor tool and remove its status indicator. |
+| `/goal-advisor max-uses <number>` | Set the per-branch consultation budget. |
+| `/goal-advisor cache <none|short|long>` | Set the prompt-cache preference passed to providers that support it. |
+| `/goal-advisor reset` | Reset the branch use count. |
+
+Operational notes:
+
+- It is disabled until you configure a model and explicitly enable it.
+- Each advisor consultation is a separate model call and may add cost and latency.
+- The advisor has no tools and only sees the conversation transcript supplied by Pi.
+- Use counts are reconstructed from session branch entries and tool-result details so `/tree` navigation does not leak budget across branches.
+
+### `/understand`
 
 `/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.
 
@@ -145,6 +202,34 @@ Notes:
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
+## Included theme: `goal-neon`
+
+`goal-neon` is a complete Pi TUI theme with a dark neon palette and top-level HTML export colors.
+
+Select it from Pi's `/settings` theme picker after installing the package, or set it in Pi settings:
+
+```json
+{ "theme": "goal-neon" }
+```
+
+Theme discipline:
+
+- all required Pi color tokens are present;
+- `export` colors live in the top-level `export` object, not inside `colors`; and
+- the package uses `pi.themes` so the theme is loaded through normal Pi package discovery, not a curl-pipe installer.
+
+## Provider bridge pattern
+
+This package documents provider bridge patterns but intentionally does not bundle Grok/OpenCode-style provider bridges by default.
+
+Borrowed design rules:
+
+- provider bridges should expose a `/provider-name status` command with auth source, registered models, smoke-test command, and limitations;
+- dynamic `pi.registerProvider()` and CLI-backed `streamSimple` are valid extension shapes when the API is understood;
+- upstream CLI tools must be denied or disabled so Pi owns file reads, writes, shell commands, and other tool execution;
+- credential-file reuse, proxy headers, OAuth refresh helpers, paid calls, and unofficial endpoints need explicit owner/legal/security approval before bundling; and
+- prompt-bridged tool calls are less reliable than native provider tool calling and should fail closed if the upstream CLI attempts to act directly.
+
 ## Included skills
 
 ### Goal and delivery
@@ -163,6 +248,7 @@ Notes:
 | --- | --- |
 | `tdd` | Add behavior test-first with a red-green-refactor loop. |
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
+| `prompt-cache-auditor` | Audit and fix LLM prompt-cache misses, cache-key bugs, and provider cache verification gaps. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
 | `skill-folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
 | `candidates-folder-refactor` | Rank noisy folders/subfolders as the top candidates to hand to `skill-folder-refactor`. |
@@ -215,13 +301,19 @@ It does not deploy, publish, force-push, rewrite history, rebase, or merge remot
 
 ## Package shape
 
-This package ships curated skills and one Pi extension. Package resources are declared in `package.json` with both `pi.extensions` and `pi.skills`:
+This package ships curated skills, package-local Pi extensions, and a theme. Package resources are declared in `package.json` with `pi.extensions`, `pi.skills`, and `pi.themes`:
 
 ```json
 {
   "pi": {
-    "extensions": ["./extensions/understand.js", "./extensions/folder-refactor.js"],
-    "skills": ["./skills"]
+    "extensions": [
+      "./extensions/understand.js",
+      "./extensions/folder-refactor.js",
+      "./extensions/goal-statusline.js",
+      "./extensions/goal-advisor.js"
+    ],
+    "skills": ["./skills"],
+    "themes": ["./themes"]
   }
 }
 ```

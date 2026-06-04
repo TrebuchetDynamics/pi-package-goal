@@ -1,6 +1,6 @@
 ---
 name: writing-shape
-description: Shape a markdown pile of notes, fragments, transcript, or rough draft into a publishable article through a conversational editing session. Use when the user wants writing structure, openings, paragraph growth, format choices, or article polish.
+description: Shape rough notes, fragments, transcripts, or drafts into publishable articles. Use for writing structure, openings, paragraph growth, format, or article polish.
 ---
 
 <what-to-do>

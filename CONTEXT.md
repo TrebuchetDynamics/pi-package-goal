@@ -32,6 +32,10 @@ _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource
 Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
 _Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
 
+**Prompt Cache Auditor Skill**:
+The `prompt-cache-auditor` skill audits LLM agent harness prompt-caching paths by first classifying provider topology, stable versus volatile prompt prefixes, cache keys/markers, and verification counters, then applying one request-building fix at a time and requiring warm-turn cache-read evidence before claiming savings.
+_Avoid_: live paid API calls without approval, credential-bearing captures in reports, current-user-turn cache breakpoints, random per-request `prompt_cache_key`, savings claims without provider usage counters
+
 **Skill Folder Refactor Skill**:
 The `skill-folder-refactor` skill keeps folder refactors bounded to one named directory, treats repo-root reshapes as high-risk owner decisions, first maps imports/callers/tests/package boundaries, then reorganizes by responsibility while extracting shared code only from proven duplicate call sites.
 _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent public import path breakage, mixing behavior changes with file moves, ignoring language module boundaries
@@ -39,6 +43,22 @@ _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent publi
 **Folder Refactor Extension**:
 The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
+
+**Goal Statusline Extension**:
+The package-local extension at `extensions/goal-statusline.js` registers `/goal-statusline` as an opt-in status HUD that uses `ctx.ui.setStatus()` to show cwd, git, PR, context, response speed, and model state without replacing Pi's default footer.
+_Avoid_: default footer takeover, shell-injected git commands, hidden network lookups, status UI that cannot be turned off
+
+**Goal Advisor Extension**:
+The package-local extension at `extensions/goal-advisor.js` registers `/goal-advisor` and the `goal_advisor` tool. It is disabled until the user explicitly configures an advisor model and enables it, because every consultation is a separate model call with cost and latency.
+_Avoid_: automatic paid advisor calls, advisor tools with filesystem access, hidden model delegation, branch-hostile global use counters
+
+**Provider Bridge Pattern**:
+A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
+_Avoid_: bundling provider proxies by default, silently reading credential files, letting upstream CLIs edit files outside Pi's tools, treating prompt-bridged tool calls as native reliability
+
+**Package Theme**:
+A Pi TUI theme resource under `themes/` that provides a complete token map and optional top-level HTML export colors. Themes are package resources, not installer side effects.
+_Avoid_: incomplete color tokens, putting `export` inside `colors`, copying palettes without attribution when source material is bundled
 
 **Candidates Folder Refactor Skill**:
 The `candidates-folder-refactor` skill scouts for noisy folders/subfolders and ranks bounded targets to hand to `/folder-refactor`, including support for scanning beneath a named folder and the `auto-folder-refactor N [folder]` loop for explicitly requested fully automatic top-candidate runs.

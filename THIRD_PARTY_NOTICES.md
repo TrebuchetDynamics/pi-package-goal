@@ -72,6 +72,15 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/openclaw-agent-skills-LICENSE`
 
+## OnlyTerp/prompt-cache-skills
+
+- Source: https://github.com/OnlyTerp/prompt-cache-skills
+- Snapshot inspected: `dde837e`
+- Bundled paths:
+  - `skills/prompt-cache-auditor/`
+- License: MIT; skills/docs prose is also available under CC-BY-4.0
+- Full license copy: `licenses/OnlyTerp-prompt-cache-skills-LICENSE`
+
 ## Lum1104/Understand-Anything
 
 - Source: https://github.com/Lum1104/Understand-Anything

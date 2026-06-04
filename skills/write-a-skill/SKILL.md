@@ -26,6 +26,10 @@ Before changing a skill, inspect the current skill inventory, `README.md`, `CONT
    - Does the workflow cover real use cases?
    - Is anything too broad, too vague, or too chatty?
 
+## Atomic fix skill pattern
+
+For narrow defect or optimization skills, prefer the upstream prompt-cache pattern: **Target → Symptom → Fix → Verify**. Make applicability deterministic, keep one bug per skill, cite the source/version being adapted, and require a concrete post-fix assertion instead of prose confidence.
+
 ## Skill structure
 
 ```text
