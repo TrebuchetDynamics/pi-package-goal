@@ -320,11 +320,10 @@ async function testPackageManifest() {
   assert.match(pkg.description, /UX extensions/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
-  assert.ok(pkg.keywords.includes("statusline"));
   assert.ok(pkg.keywords.includes("advisor"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/goal-statusline.js", "./extensions/goal-advisor.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/goal-advisor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -359,12 +358,6 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorExtension, /folder_refactor_state/);
   assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
-
-  const statuslineExtension = read("extensions/goal-statusline.js");
-  assert.match(statuslineExtension, /registerCommand\("goal-statusline"/);
-  assert.match(statuslineExtension, /setStatus\(STATUS_KEY/);
-  assert.match(statuslineExtension, /getContextZone/);
-  assert.doesNotMatch(statuslineExtension, /setFooter/);
 
   const advisorExtension = read("extensions/goal-advisor.js");
   assert.match(advisorExtension, /name: TOOL_NAME/);
@@ -541,7 +534,6 @@ async function testDocsAndNotices() {
   assert.match(readme, /git-commit-push/);
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /## Included extensions/);
-  assert.match(readme, /goal-statusline/);
   assert.match(readme, /goal-advisor/);
   assert.match(readme, /goal-neon/);
   assert.match(readme, /Provider bridge pattern/);

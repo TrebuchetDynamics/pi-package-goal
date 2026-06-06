@@ -44,10 +44,6 @@ _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent publi
 The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
-**Goal Statusline Extension**:
-The package-local extension at `extensions/goal-statusline.js` registers `/goal-statusline` as an opt-in status HUD that uses `ctx.ui.setStatus()` to show non-redundant delivery signals: changed-file count, PR number, context zone, compact remaining context, and response speed.
-_Avoid_: default footer takeover, repeating Pi's built-in cwd/branch/model footer, shell-injected git commands, hidden network lookups, status UI that cannot be turned off
-
 **Goal Advisor Extension**:
 The package-local extension at `extensions/goal-advisor.js` registers `/goal-advisor` and the `goal_advisor` tool. It is disabled until the user explicitly configures an advisor model and enables it, because every consultation is a separate model call with cost and latency.
 _Avoid_: automatic paid advisor calls, advisor tools with filesystem access, hidden model delegation, branch-hostile global use counters

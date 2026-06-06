@@ -6,7 +6,7 @@ Use it when you want Pi to:
 
 - keep a clear objective in view while it works;
 - use safer commit/push discipline;
-- show an opt-in goal/status HUD and consult an explicit advisor model when useful;
+- explicitly consult an advisor model when useful;
 - switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
 - build or review Pi package resources; and
 - map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
@@ -17,7 +17,7 @@ Use it when you want Pi to:
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
-| Opt-in UX | Show a compact status HUD or explicitly consult an advisor model without taking over Pi defaults. | `/goal-statusline`, `/goal-advisor` |
+| Opt-in UX | Explicitly consult an advisor model without taking over Pi defaults. | `/goal-advisor` |
 | Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
@@ -59,7 +59,6 @@ Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill co
 /skill:git-commit-push audit
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
-/goal-statusline on
 /goal-advisor status
 /understand
 /understand agent
@@ -99,32 +98,6 @@ auto-folder-refactor 10
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
 
 ## Included extensions
-
-### `/goal-statusline`
-
-`/goal-statusline` is an opt-in status HUD that uses Pi's `ctx.ui.setStatus()` instead of replacing the default footer.
-
-It shows only the bits Pi's built-in footer does not already make obvious:
-
-- changed-file count and related GitHub PR number when `gh pr view` resolves one;
-- context zone (`Plan`, `Code`, `Dump`, `ExDump`, `Dead`) plus compact remaining-token count; and
-- average model response speed in tokens/second.
-
-Commands:
-
-| Command | Use it for |
-| --- | --- |
-| `/goal-statusline on` | Enable the HUD for the current session. |
-| `/goal-statusline off` | Disable it and clear its status text. |
-| `/goal-statusline status` | Show whether it is enabled and the current formatted status line. |
-| `/goal-statusline refresh` | Refresh git and PR data immediately. |
-
-Operational notes:
-
-- It is disabled by default. Start Pi with `--goal-statusline` or run `/goal-statusline on` when you want it.
-- Git and PR lookups use `git` and optional `gh` subprocesses with fixed arguments; missing `gh` simply omits the PR segment.
-- It intentionally avoids repeating cwd, branch, provider, model, and thinking level because Pi's built-in footer already shows those.
-- The extension does not replace the footer, install hooks, or persist local state.
 
 ### `/goal-advisor`
 
@@ -308,7 +281,6 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
     "extensions": [
       "./extensions/understand.js",
       "./extensions/folder-refactor.js",
-      "./extensions/goal-statusline.js",
       "./extensions/goal-advisor.js"
     ],
     "skills": ["./skills"],
