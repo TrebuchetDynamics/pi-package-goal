@@ -48,10 +48,6 @@ _Avoid_: speculative utilities, one-call-site abstractions, hiding behavior chan
 The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
-**Goal Advisor Extension**:
-The package-local extension at `extensions/goal-advisor.js` registers `/goal-advisor` and the `goal_advisor` tool. It is disabled until the user explicitly configures an advisor model and enables it, because every consultation is a separate model call with cost and latency.
-_Avoid_: automatic paid advisor calls, advisor tools with filesystem access, hidden model delegation, branch-hostile global use counters
-
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
 _Avoid_: bundling provider proxies by default, silently reading credential files, letting upstream CLIs edit files outside Pi's tools, treating prompt-bridged tool calls as native reliability

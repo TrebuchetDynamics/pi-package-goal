@@ -1,12 +1,11 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills, opt-in Pi UX extensions, a theme, and `/understand` bridge commands.
+A Pi package that bundles curated agent skills, Pi UX extensions, a theme, and `/understand` bridge commands.
 
 Use it when you want Pi to:
 
 - keep a clear objective in view while it works;
 - use safer commit/push discipline;
-- explicitly consult an advisor model when useful;
 - switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
 - build or review Pi package resources; and
 - map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
@@ -17,11 +16,10 @@ Use it when you want Pi to:
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
-| Opt-in UX | Explicitly consult an advisor model without taking over Pi defaults. | `/goal-advisor` |
 | Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
-| Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `goal-neon` |
+| Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 
 ## Install
@@ -59,7 +57,6 @@ Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill co
 /skill:git-commit-push audit
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
-/goal-advisor status
 /understand
 /understand agent
 ```
@@ -98,29 +95,6 @@ auto-folder-refactor 10
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
 
 ## Included extensions
-
-### `/goal-advisor`
-
-`/goal-advisor` configures the opt-in `goal_advisor` tool. The tool lets the executor consult a configured advisor model for strategic planning, review, stuck-state diagnosis, or course correction.
-
-Commands:
-
-| Command | Use it for |
-| --- | --- |
-| `/goal-advisor status` | Show enabled state, configured model, uses, and cache preference. |
-| `/goal-advisor model <provider>/<model>` | Pick the advisor model from Pi's model registry. |
-| `/goal-advisor enable` | Enable the advisor tool after a model is configured. |
-| `/goal-advisor disable` | Disable the advisor tool and remove its status indicator. |
-| `/goal-advisor max-uses <number>` | Set the per-branch consultation budget. |
-| `/goal-advisor cache <none|short|long>` | Set the prompt-cache preference passed to providers that support it. |
-| `/goal-advisor reset` | Reset the branch use count. |
-
-Operational notes:
-
-- It is disabled until you configure a model and explicitly enable it.
-- Each advisor consultation is a separate model call and may add cost and latency.
-- The advisor has no tools and only sees the conversation transcript supplied by Pi.
-- Use counts are reconstructed from session branch entries and tool-result details so `/tree` navigation does not leak budget across branches.
 
 ### `/understand`
 
@@ -174,14 +148,14 @@ Notes:
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
-## Included theme: `goal-neon`
+## Included theme: `trebuchet-neon`
 
-`goal-neon` is a complete Pi TUI theme with a dark neon palette and top-level HTML export colors.
+`trebuchet-neon` is a complete Pi TUI theme with a dark neon palette and top-level HTML export colors.
 
 Select it from Pi's `/settings` theme picker after installing the package, or set it in Pi settings:
 
 ```json
-{ "theme": "goal-neon" }
+{ "theme": "trebuchet-neon" }
 ```
 
 Theme discipline:
@@ -281,8 +255,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
   "pi": {
     "extensions": [
       "./extensions/understand.js",
-      "./extensions/folder-refactor.js",
-      "./extensions/goal-advisor.js"
+      "./extensions/folder-refactor.js"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

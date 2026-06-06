@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
-  "name": "goal-neon",
+  "name": "trebuchet-neon",
   "vars": {
     "bg": "#10131a",
     "bgRaised": "#171b24",

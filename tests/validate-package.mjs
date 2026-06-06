@@ -321,10 +321,9 @@ async function testPackageManifest() {
   assert.match(pkg.description, /UX extensions/);
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
-  assert.ok(pkg.keywords.includes("advisor"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/goal-advisor.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -360,12 +359,6 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
 
-  const advisorExtension = read("extensions/goal-advisor.js");
-  assert.match(advisorExtension, /name: TOOL_NAME/);
-  assert.match(advisorExtension, /enabled: false/);
-  assert.match(advisorExtension, /registerCommand\("goal-advisor"/);
-  assert.match(advisorExtension, /await import\("@earendil-works\/pi-ai"\)/);
-  assert.match(advisorExtension, /goal_advisor/);
 
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
@@ -535,8 +528,8 @@ async function testDocsAndNotices() {
   assert.match(readme, /git-commit-push/);
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /## Included extensions/);
-  assert.match(readme, /goal-advisor/);
-  assert.match(readme, /goal-neon/);
+  assert.doesNotMatch(readme, /goal-advisor/);
+  assert.match(readme, /trebuchet-neon/);
   assert.match(readme, /Provider bridge pattern/);
   assert.match(readme, /\/understand-refactor/);
   assert.match(readme, /reads an existing output plan before overwriting it/);
