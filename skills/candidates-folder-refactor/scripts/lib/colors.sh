@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Colors and formatting helpers for auto-folder-refactor
+# Colors and formatting helpers for autofolderrefactor
 
 if [[ -t 2 && -z "${NO_COLOR:-}" ]]; then
   bold="$(tput bold 2>/dev/null || true)"

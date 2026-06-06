@@ -6,15 +6,15 @@ script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 : "${HOME:?HOME is required}"
 
 AUTO_FOLDER_REFACTOR_BIN_DIR=${AUTO_FOLDER_REFACTOR_BIN_DIR:-$HOME/.local/bin}
-AUTO_FOLDER_REFACTOR_BIN_NAME=${AUTO_FOLDER_REFACTOR_BIN_NAME:-auto-folder-refactor}
+AUTO_FOLDER_REFACTOR_BIN_NAME=${AUTO_FOLDER_REFACTOR_BIN_NAME:-autofolderrefactor}
 AUTO_FOLDER_REFACTOR_INSTALL_BACKUP=${AUTO_FOLDER_REFACTOR_INSTALL_BACKUP:-1}
 
 timestamp=$(date +%Y%m%d%H%M%S)
-src="$script_dir/auto-folder-refactor.sh"
+src="$script_dir/autofolderrefactor"
 dest="$AUTO_FOLDER_REFACTOR_BIN_DIR/$AUTO_FOLDER_REFACTOR_BIN_NAME"
 
 if [ ! -f "$src" ]; then
-  printf 'auto-folder-refactor install: source not found: %s\n' "$src" >&2
+  printf 'autofolderrefactor install: source not found: %s\n' "$src" >&2
   exit 1
 fi
 

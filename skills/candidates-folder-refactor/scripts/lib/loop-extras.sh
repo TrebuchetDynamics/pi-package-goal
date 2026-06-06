@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Loop extras for auto-folder-refactor (bug-finding slice)
+# Loop extras for autofolderrefactor (bug-finding slice)
 # Provides: run_bug_finding_slice
 
 run_bug_finding_slice() {

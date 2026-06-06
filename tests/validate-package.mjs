@@ -322,7 +322,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
-  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", "auto-folder-refactor.sh": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" });
+  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
   assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
@@ -430,8 +430,8 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /say `lgtm` to run `\/folder-refactor <best path>` immediately/);
   assert.match(candidatesFolderRefactor, /\.pi\/candidates-folder-refactor\/latest\.json/);
   assert.match(candidatesFolderRefactor, /--from-log/);
-  assert.match(candidatesFolderRefactor, /auto-folder-refactor\.sh <loops> \[folder\]/);
-  assert.match(candidatesFolderRefactor, /auto-folder-refactor <loops> \[folder\]/);
+  assert.match(candidatesFolderRefactor, /autofolderrefactor ignore \[folder\]/);
+  assert.match(candidatesFolderRefactor, /autofolderrefactor <loops> \[folder\]/);
   const lgtm = read("skills/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);

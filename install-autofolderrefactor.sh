@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-# Install autofolderrefactor — convenience wrapper for auto-folder-refactor.sh
+# Install autofolderrefactor — convenience wrapper for autofolderrefactor
 #
 # Usage:
 #   sh install-autofolderrefactor.sh
@@ -10,7 +10,7 @@ set -eu
 # Override with: AUTO_FOLDER_REFACTOR_BIN_DIR=/usr/local/bin sh install-autofolderrefactor.sh
 
 script_dir="$(CDPATH= cd "$(dirname "$0")" && pwd)"
-src="${script_dir}/skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh"
+src="${script_dir}/skills/candidates-folder-refactor/scripts/autofolderrefactor"
 
 : "${HOME:?HOME is required}"
 

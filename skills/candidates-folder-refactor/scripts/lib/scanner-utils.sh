@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Scanner interaction helpers for auto-folder-refactor
+# Scanner interaction helpers for autofolderrefactor
 # Provides: latest_log_for_root, establish_refactorignore, print_candidate_table,
 #           untried_candidate_count_from_log, candidate_from_log, run_drill_down
 
@@ -35,12 +35,12 @@ establish_refactorignore() {
         const cleaned = fs.readFileSync(ignoreFile, "utf8").split(/\r?\n/).filter((line) => line.trim() !== "# no smart suggestions found yet");
         fs.writeFileSync(ignoreFile, `${cleaned.join("\n").replace(/\n*$/, "")}\n`);
       }
-      const hasAutoHeader = fs.existsSync(ignoreFile) && fs.readFileSync(ignoreFile, "utf8").includes("# auto-folder-refactor smart ignores");
-      const header = hasAutoHeader ? "" : "# auto-folder-refactor smart ignores\n";
+      const hasAutoHeader = fs.existsSync(ignoreFile) && fs.readFileSync(ignoreFile, "utf8").includes("# autofolderrefactor smart ignores");
+      const header = hasAutoHeader ? "" : "# autofolderrefactor smart ignores\n";
       const prefix = fs.existsSync(ignoreFile) && fs.readFileSync(ignoreFile, "utf8").trim() ? "\n" : "";
       fs.appendFileSync(ignoreFile, `${prefix}${header}${missing.join("\n")}\n`);
     } else if (!fs.existsSync(ignoreFile)) {
-      fs.writeFileSync(ignoreFile, "# auto-folder-refactor smart ignores\n# no smart suggestions found yet\n");
+      fs.writeFileSync(ignoreFile, "# autofolderrefactor smart ignores\n# no smart suggestions found yet\n");
     }
     const c = {
       bold: process.env.C_BOLD || "",

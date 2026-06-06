@@ -81,15 +81,15 @@ Or, when `tx` is already on your `PATH` from an npm install/link, install the pr
 tx install
 ```
 
-The `tx`, `auto-folder-refactor.sh`, and `auto-folder-refactor` commands are declared in `package.json` as package bins. To install the short command globally from a checkout:
+The `tx` and `autofolderrefactor` commands are declared in `package.json` as package bins. To install the command globally from a checkout:
 
 ```bash
 sh skills/candidates-folder-refactor/scripts/install.sh
-auto-folder-refactor 10
+autofolderrefactor 10
 ```
 
 ```json
-{ "bin": { "tx": "./tmux/tx", "auto-folder-refactor": "./skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh" } }
+{ "bin": { "tx": "./tmux/tx", "autofolderrefactor": "./skills/candidates-folder-refactor/scripts/autofolderrefactor" } }
 ```
 
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
@@ -107,8 +107,8 @@ Common commands:
 | Command | Use it for |
 | --- | --- |
 | `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
-| `auto-folder-refactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
-| `auto-folder-refactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded folder-refactor prompt, repeat N times. Focuses on shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
+| `autofolderrefactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
+| `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |

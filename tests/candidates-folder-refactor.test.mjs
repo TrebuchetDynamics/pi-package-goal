@@ -53,33 +53,33 @@ try {
   git("add", "src/noisy/api/handler.ts");
   git("commit", "-m", "touch noisy handler");
 
-  const autoScript = path.join(root, "skills/candidates-folder-refactor/scripts/auto-folder-refactor.sh");
+  const autoScript = path.join(root, "skills/candidates-folder-refactor/scripts/autofolderrefactor");
   const autoInstaller = path.join(root, "skills/candidates-folder-refactor/scripts/install.sh");
   accessSync(autoScript, constants.X_OK);
   accessSync(autoInstaller, constants.X_OK);
   const autoHelp = execFileSync(autoScript, ["--help"], { cwd: fixture, encoding: "utf8" });
-  assert.match(autoHelp, /auto-folder-refactor\.sh <loops> \[scan-root\]/);
+  assert.match(autoHelp, /autofolderrefactor <loops> \[scan-root\]/);
   assert.match(autoHelp, /PI_AUTO_FOLDER_REFACTOR_PI_ARGS/);
   assert.throws(() => execFileSync(autoScript, ["1", ".."], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
-  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-auto-folder-refactor-"));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-autofolderrefactor-"));
   fs.symlinkSync(outside, path.join(fixture, "outside-link"), "dir");
   assert.throws(() => execFileSync(autoScript, ["1", "outside-link"], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
   fs.rmSync(path.join(fixture, "outside-link"), { force: true });
   fs.rmSync(outside, { recursive: true, force: true });
-  const installBin = fs.mkdtempSync(path.join(os.tmpdir(), "auto-folder-refactor-bin-"));
+  const installBin = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-bin-"));
   const installOutput = execFileSync("sh", [autoInstaller], {
     cwd: fixture,
     encoding: "utf8",
     env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin },
   });
   assert.match(installOutput, /installed wrapper:/);
-  assert.match(installOutput, /example: auto-folder-refactor 10/);
-  const installedAuto = path.join(installBin, "auto-folder-refactor");
+  assert.match(installOutput, /example: autofolderrefactor 10/);
+  const installedAuto = path.join(installBin, "autofolderrefactor");
   accessSync(installedAuto, constants.X_OK);
   const installedHelp = execFileSync(installedAuto, ["--help"], { cwd: fixture, encoding: "utf8" });
-  assert.match(installedHelp, /auto-folder-refactor\.sh <loops> \[scan-root\]/);
+  assert.match(installedHelp, /autofolderrefactor <loops> \[scan-root\]/);
 
-  const ignoreFixture = fs.mkdtempSync(path.join(os.tmpdir(), "auto-folder-refactor-ignore-"));
+  const ignoreFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-ignore-"));
   fs.mkdirSync(path.join(ignoreFixture, "artifacts/run"), { recursive: true });
   fs.writeFileSync(path.join(ignoreFixture, "artifacts/run/a.log"), "log\n");
   fs.writeFileSync(path.join(ignoreFixture, "artifacts/run/result.csv"), "x,y\n");
@@ -93,7 +93,7 @@ try {
   assert.match(fs.readFileSync(path.join(ignoreFixture, ".refactorignore"), "utf8"), /scan-here\/artifacts\//);
   fs.rmSync(ignoreFixture, { recursive: true, force: true });
 
-  const ignoredAddFixture = fs.mkdtempSync(path.join(os.tmpdir(), "auto-folder-refactor-ignored-add-"));
+  const ignoredAddFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-ignored-add-"));
   fs.writeFileSync(path.join(ignoredAddFixture, ".gitignore"), ".pi/\n.understand-anything/\n");
   fs.mkdirSync(path.join(ignoredAddFixture, "src/noisy"), { recursive: true });
   fs.writeFileSync(path.join(ignoredAddFixture, "src/noisy/index.ts"), "export const initial = 1;\n");
@@ -121,7 +121,7 @@ try {
   fs.chmodSync(fakePi, 0o755);
   const noopOutput = execFileSync(autoScript, ["2", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePi, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.match(noopOutput, /fake pi noop/);
-  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
 
   fs.rmSync(fakePi, { force: true });
   const fakePiChange = path.join(os.tmpdir(), `fake-pi-change-${process.pid}.sh`);
@@ -133,6 +133,21 @@ try {
   assert.equal(git("status", "--porcelain", "--", "src/noisy/auto_refactor_marker.txt"), "");
   fs.rmSync(fakePiChange, { force: true });
 
+  const goValidationFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-go-validation-"));
+  fs.mkdirSync(path.join(goValidationFixture, "internal/tools/pkg"), { recursive: true });
+  fs.writeFileSync(path.join(goValidationFixture, "go.mod"), "module example.com/validation\n\ngo 1.22\n");
+  fs.writeFileSync(path.join(goValidationFixture, "internal/tools/pkg/pkg.go"), "package pkg\n\nfunc Value() int { return 1 }\n");
+  fs.writeFileSync(path.join(goValidationFixture, "internal/tools/pkg/pkg_test.go"), "package pkg\n\nimport \"testing\"\n\nfunc TestValue(t *testing.T) { if Value() != 1 { t.Fatal(Value()) } }\n");
+  execFileSync("git", ["init"], { cwd: goValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: goValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: goValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: goValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial go fixture"], { cwd: goValidationFixture, stdio: "ignore" });
+  const goValidationScript = `set -euo pipefail\n. ${JSON.stringify(path.join(root, "skills/candidates-folder-refactor/scripts/lib/colors.sh"))}\n. ${JSON.stringify(path.join(root, "skills/candidates-folder-refactor/scripts/lib/git-utils.sh"))}\nrun_root=${JSON.stringify(path.join(goValidationFixture, "internal/tools"))}\nrun_candidate_validation pkg 2>&1\n`;
+  const goValidationOutput = execFileSync("bash", ["-lc", goValidationScript], { cwd: path.join(goValidationFixture, "internal/tools"), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(goValidationOutput, /go test \.\/internal\/tools\/pkg\/\.\.\. -count=1/);
+  fs.rmSync(goValidationFixture, { recursive: true, force: true });
+
   const fakePiBadDiff = path.join(os.tmpdir(), `fake-pi-bad-diff-${process.pid}.sh`);
   fs.writeFileSync(fakePiBadDiff, "#!/usr/bin/env bash\necho fake pi bad diff\nprintf 'bad trailing whitespace  \\n' >> src/noisy/index.ts\n");
   fs.chmodSync(fakePiBadDiff, 0o755);
@@ -140,7 +155,7 @@ try {
   assert.match(badDiffOutput, /trailing whitespace/);
   assert.equal(git("status", "--porcelain", "--", "src/noisy/index.ts"), "");
   fs.rmSync(fakePiBadDiff, { force: true });
-  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
 
   const fakePiTimeout = path.join(os.tmpdir(), `fake-pi-timeout-${process.pid}.sh`);
   fs.writeFileSync(fakePiTimeout, "#!/usr/bin/env bash\necho fake pi timeout\necho partial > src/noisy/partial_timeout.txt\nsleep 5\n");
@@ -149,14 +164,14 @@ try {
   assert.match(timeoutOutput, /fake pi timeout/);
   assert.equal(fs.existsSync(path.join(fixture, "src/noisy/partial_timeout.txt")), false);
   fs.rmSync(fakePiTimeout, { force: true });
-  fs.rmSync(path.join(fixture, ".pi/auto-folder-refactor-state"), { recursive: true, force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
 
   const fakePiNoMetric = path.join(os.tmpdir(), `fake-pi-no-metric-${process.pid}.sh`);
   fs.writeFileSync(fakePiNoMetric, "#!/usr/bin/env bash\necho fake pi no metric\necho marker > src/noisy/no_metric_marker.txt\n");
   fs.chmodSync(fakePiNoMetric, 0o755);
   execFileSync(autoScript, ["1", "src"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiNoMetric, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS: "0", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.equal(fs.existsSync(path.join(fixture, "src/noisy/no_metric_marker.txt")), false);
-  const skipStateDir = path.join(fixture, ".pi/auto-folder-refactor-state");
+  const skipStateDir = path.join(fixture, ".pi/autofolderrefactor-state");
   const stateText = fs.readdirSync(skipStateDir).filter((name) => name.startsWith("state.") && name.endsWith(".jsonl")).map((name) => fs.readFileSync(path.join(skipStateDir, name), "utf8")).join("\n");
   assert.match(stateText, /"state":"cooldown"/);
   assert.match(stateText, /"reason":"no metric progress rollback"/);

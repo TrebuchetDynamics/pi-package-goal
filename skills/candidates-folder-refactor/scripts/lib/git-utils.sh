@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Git and validation helpers for auto-folder-refactor
+# Git and validation helpers for autofolderrefactor
 # Provides: git_scope_status, rollback_scope_changes, rollback_failed_slice,
 #           run_candidate_validation, commit_preexisting_changes, commit_scope_changes_local,
 #           deliver_scope_changes, run_git_commit_push_delivery, snapshot_scope,
@@ -56,6 +56,7 @@ folder_debt_metrics() {
     const path = require("node:path");
     const dir = process.argv[1];
     const source = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go", ".rs", ".java", ".kt", ".cs", ".rb", ".php", ".dart", ".swift", ".scala", ".c", ".cc", ".cpp", ".h", ".hpp"]);
+    const skip = new Set([".git", ".pi", ".understand-anything", "node_modules"]);
     const roles = [/api|route|controller|handler/i, /component|view|page|screen|ui/i, /service|client|adapter|gateway/i, /model|schema|type|entity/i, /util|helper|common|shared/i, /test|spec|fixture|mock/i, /style|css|theme/i, /hook|store|state|context/i, /config|constant|env/i];
     let root = 0, total = 0;
     const roleSet = new Set();
@@ -64,7 +65,7 @@ folder_debt_metrics() {
       let entries = [];
       try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch { return; }
       for (const entry of entries) {
-        if (entry.name === ".git" || entry.name === ".pi" || entry.name === ".understand-anything" || entry.name === "node_modules") continue;
+        if (skip.has(entry.name)) continue;
         const full = path.join(current, entry.name);
         if (entry.isDirectory()) { walk(full); continue; }
         if (!entry.isFile()) continue;
@@ -76,8 +77,10 @@ folder_debt_metrics() {
       }
     }
     walk(dir);
+    let subdirs = 0;
+    try { subdirs = fs.readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isDirectory() && !skip.has(entry.name)).length; } catch {}
     const debt = root * 10 + roleSet.size * 5;
-    process.stdout.write(JSON.stringify({ root, total, roles: roleSet.size, debt }));
+    process.stdout.write(JSON.stringify({ root, total, roles: roleSet.size, subdirs, debt }));
   ' "${run_root}/${candidate}"
 }
 
@@ -87,7 +90,7 @@ print_metric_delta() {
     const label = process.argv[1];
     const before = JSON.parse(process.argv[2]);
     const after = JSON.parse(process.argv[3]);
-    const keys = ["debt", "root", "total", "roles"];
+    const keys = ["debt", "root", "total", "roles", "subdirs"];
     const parts = keys.map((key) => {
       const delta = (after[key] || 0) - (before[key] || 0);
       const sign = delta > 0 ? "+" : "";
@@ -104,8 +107,24 @@ metric_progress_decreased() {
       const before = JSON.parse(pairs[index]);
       const after = JSON.parse(pairs[index + 1]);
       if ((after.debt || 0) < (before.debt || 0) || (after.root || 0) < (before.root || 0)) process.exit(0);
+      if ((after.subdirs || 0) > (before.subdirs || 0) && (after.total || 0) > (before.total || 0)) process.exit(0);
     }
     process.exit(1);
+  ' "$@"
+}
+
+metric_progress_reason() {
+  node -e '
+    const pairs = process.argv.slice(1).filter(Boolean);
+    const reasons = [];
+    for (let index = 0; index < pairs.length; index += 2) {
+      const before = JSON.parse(pairs[index]);
+      const after = JSON.parse(pairs[index + 1]);
+      if ((after.debt || 0) < (before.debt || 0)) reasons.push("debt decreased");
+      if ((after.root || 0) < (before.root || 0)) reasons.push("root files decreased");
+      if ((after.subdirs || 0) > (before.subdirs || 0) && (after.total || 0) > (before.total || 0)) reasons.push("responsibility subfolders increased with new source/test files");
+    }
+    process.stdout.write(reasons.length ? [...new Set(reasons)].join(", ") : "no debt/root reduction and no new responsibility subfolder split");
   ' "$@"
 }
 
@@ -122,7 +141,7 @@ rollback_scope_changes() {
   local reason=$1 candidate=${2:-scope}
   local -a rollback_pathspecs
   section "rollback ${candidate}"
-  warn "discarding auto-folder-refactor changes: ${reason}"
+  warn "discarding autofolderrefactor changes: ${reason}"
   if ! git -C "${run_root}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     error "cannot rollback: ${run_root} is not inside a git worktree"
     return 1
@@ -137,7 +156,7 @@ rollback_failed_slice() {
   local reason=$1 candidate=$2 pre_slice_status=${3:-}
   if [[ -n "${pre_slice_status}" ]]; then
     section "rollback blocked ${candidate}"
-    error "cannot safely rollback failed auto-folder-refactor slice because scope was dirty before pi ran"
+    error "cannot safely rollback failed autofolderrefactor slice because scope was dirty before pi ran"
     printf '%s\n' "${pre_slice_status}" >&2
     return 1
   fi
@@ -153,32 +172,36 @@ stage_scope_changes() {
 }
 
 run_candidate_validation() {
-  local candidate=$1 candidate_dir module_dir rel pattern
+  local candidate=$1 candidate_dir module_dir rel pattern repo_root
+  LAST_VALIDATION_RECEIPT=""
   section "validation ${candidate}"
   candidate_dir="${run_root}/${candidate}"
   if [[ -d "${candidate_dir}" ]] && find "${candidate_dir}" -type f -name '*.go' -print -quit | grep -q .; then
     module_dir="${candidate_dir}"
-    while [[ "${module_dir}" == "${run_root}" || "${module_dir}" == "${run_root}"/* ]]; do
+    repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
+    while [[ "${module_dir}" == "${repo_root}" || "${module_dir}" == "${repo_root}"/* ]]; do
       if [[ -f "${module_dir}/go.mod" ]]; then
         break
       fi
       module_dir="$(dirname -- "${module_dir}")"
     done
     if [[ ! -f "${module_dir}/go.mod" ]]; then
-      warn "no go.mod found at or above ${candidate}; skipping Go package validation"
-      return 0
+      warn "no go.mod found at or above ${candidate} up to ${repo_root}; skipping Go package validation"
+    else
+      rel="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${candidate_dir}" "${module_dir}")"
+      pattern="./${rel}/..."
+      [[ "${rel}" == "." ]] && pattern="./..."
+      info "go test ${pattern} -count=1 (from ${module_dir})"
+      (cd "${module_dir}" && go test "${pattern}" -count=1) || return $?
+      LAST_VALIDATION_RECEIPT="go test ${pattern} -count=1 from ${module_dir}: pass"
+      success "go test passed"
     fi
-    rel="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${candidate_dir}" "${module_dir}")"
-    pattern="./${rel}/..."
-    [[ "${rel}" == "." ]] && pattern="./..."
-    info "go test ${pattern} -count=1"
-    (cd "${module_dir}" && go test "${pattern}" -count=1) || return $?
-    success "go test passed"
   else
     info "no Go package validation inferred for ${candidate}"
   fi
   info "git diff --check"
   git -C "${run_root}" diff --check -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' || return $?
+  LAST_VALIDATION_RECEIPT="${LAST_VALIDATION_RECEIPT:+${LAST_VALIDATION_RECEIPT}; }git diff --check: pass"
   success "diff check passed"
 }
 
@@ -188,11 +211,11 @@ run_git_commit_push_delivery() {
   local prompt
   prompt="$(printf '%s\n\n%s\n%s\n%s\n%s\n%s\n' \
     "/skill:git-commit-push" \
-    "Ship mode: commit and push validated auto-folder-refactor changes." \
+    "Ship mode: commit and push validated autofolderrefactor changes." \
     "Scope is current pwd only: ${run_root}. Do not stage parent/sibling changes outside this path." \
     "Reason: ${reason}." \
     "Exclude .pi/** and .understand-anything/** artifacts." \
-    "Validation already run by auto-folder-refactor when applicable; rerun only focused relevant checks plus git diff --check if needed.")"
+    "Validation already run by autofolderrefactor when applicable; rerun only focused relevant checks plus git diff --check if needed.")"
   run_pi_prompt "${prompt}"
 }
 
@@ -212,7 +235,7 @@ commit_preexisting_changes() {
   warn "delivering pre-existing changes under pwd so auto refactor can continue"
   printf '%s\n' "${status}" >&2
   if printf '%s\n' "${status}" | grep -Eq '^[ MADRCU?!]{1,2} [^/]+$'; then
-    warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'auto-folder-refactor ignore' to add it to .refactorignore"
+    warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'autofolderrefactor ignore' to add it to .refactorignore"
   fi
   stage_scope_changes
   if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
@@ -248,7 +271,12 @@ commit_scope_changes_local() {
   else
     message="Refactor ${candidate} topology"
   fi
-  git -C "${run_root}" commit -m "${message}"
+  git -C "${run_root}" commit \
+    -m "${message}" \
+    -m "Target: ${candidate}" \
+    -m "Validation: ${LAST_VALIDATION_RECEIPT:-not recorded}" \
+    -m "Progress: ${LAST_PROGRESS_REASON:-not recorded}" \
+    -m "Mode: autofolderrefactor share-code + folder-refactor; shared code/bugs are reported by the agent when found."
   success "committed $(git -C "${run_root}" rev-parse --short HEAD) ${message}"
 }
 

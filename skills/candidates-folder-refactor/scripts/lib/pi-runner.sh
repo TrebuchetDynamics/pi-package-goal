@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Pi runner helpers for auto-folder-refactor
+# Pi runner helpers for autofolderrefactor
 # Provides: run_pi_capture, run_pi_prompt
 
 run_pi_capture() {
   local prompt=$1 mode=$2 output_file pid tail_pid status started now elapsed heartbeat timeout next_heartbeat bytes changed_summary last_line
-  local verbosity show_pi_output heartbeat_on_change last_changed_summary recent_changes candidate_tag candidate_badge change_limit change_count
+  local verbosity show_pi_output heartbeat_on_change last_changed_summary recent_changes candidate_tag candidate_badge change_limit change_count no_change_timeout
   local restore_errexit=0
   [[ $- == *e* ]] && restore_errexit=1
-  output_file="$(mktemp "${TMPDIR:-/tmp}/auto-folder-refactor-pi.XXXXXX")"
+  output_file="$(mktemp "${TMPDIR:-/tmp}/autofolderrefactor-pi.XXXXXX")"
   heartbeat="${PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_SECONDS:-30}"
   if [[ ! "${heartbeat}" =~ ^[1-9][0-9]*$ ]]; then
     warn "invalid PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_SECONDS=${heartbeat}; using 30"
@@ -20,6 +20,10 @@ run_pi_capture() {
     show_pi_output="${PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT:-all}"
   fi
   heartbeat_on_change="${PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE:-1}"
+  no_change_timeout="${PI_AUTO_FOLDER_REFACTOR_NO_CHANGE_TIMEOUT_SECONDS:-0}"
+  if [[ ! "${no_change_timeout}" =~ ^[0-9]+$ ]]; then
+    no_change_timeout=0
+  fi
   change_limit="${PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_FILES:-6}"
   if [[ ! "${change_limit}" =~ ^[1-9][0-9]*$ ]]; then
     change_limit=6
@@ -81,6 +85,15 @@ run_pi_capture() {
         if [[ -n "${recent_changes}" ]]; then
           printf '%s%s%s\n' "${dim}" "${recent_changes}" "${reset}" >&2
         fi
+      elif (( no_change_timeout > 0 && elapsed >= no_change_timeout )); then
+        warn "no-change timeout ${no_change_timeout}s reached; killing $(badge "${blue}" "pid ${pid}")"
+        kill "${pid}" 2>/dev/null || true
+        wait "${pid}" 2>/dev/null || true
+        if [[ -n "${tail_pid}" ]]; then wait "${tail_pid}" 2>/dev/null || true; fi
+        if [[ "${show_pi_output}" == "errors" ]]; then cat "${output_file}"; fi
+        rm -f "${output_file}"
+        (( restore_errexit )) && set -e
+        return 124
       elif [[ -n "${last_line}" && "${show_pi_output}" == "all" ]]; then
         info "${elapsed}s $(badge "${blue}" "pid ${pid}")${candidate_badge} $(badge "${yellow}" "${changed_summary}") ${dim}${last_line}${reset}"
       else
@@ -114,7 +127,7 @@ run_pi_prompt() {
   local prompt=$1 output_file status
   local restore_errexit=0
   [[ $- == *e* ]] && restore_errexit=1
-  output_file="$(mktemp "${TMPDIR:-/tmp}/auto-folder-refactor-pi.XXXXXX")"
+  output_file="$(mktemp "${TMPDIR:-/tmp}/autofolderrefactor-pi.XXXXXX")"
   set +e
   run_pi_capture "${prompt}" with-package | tee "${output_file}"
   status=${PIPESTATUS[0]}
