@@ -104,13 +104,11 @@ Run `tx init` to create an example config, `tx add <alias> [dir]` to add session
 
 `/goal-statusline` is an opt-in status HUD that uses Pi's `ctx.ui.setStatus()` instead of replacing the default footer.
 
-It shows:
+It shows only the bits Pi's built-in footer does not already make obvious:
 
-- current directory;
-- git branch, changed-file count, and related GitHub PR number when `gh pr view` resolves one;
-- remaining context tokens, percentage, and zone (`Plan`, `Code`, `Dump`, `ExDump`, `Dead`);
-- average model response speed in tokens/second; and
-- active provider/model plus thinking level.
+- changed-file count and related GitHub PR number when `gh pr view` resolves one;
+- context zone (`Plan`, `Code`, `Dump`, `ExDump`, `Dead`) plus compact remaining-token count; and
+- average model response speed in tokens/second.
 
 Commands:
 
@@ -125,6 +123,7 @@ Operational notes:
 
 - It is disabled by default. Start Pi with `--goal-statusline` or run `/goal-statusline on` when you want it.
 - Git and PR lookups use `git` and optional `gh` subprocesses with fixed arguments; missing `gh` simply omits the PR segment.
+- It intentionally avoids repeating cwd, branch, provider, model, and thinking level because Pi's built-in footer already shows those.
 - The extension does not replace the footer, install hooks, or persist local state.
 
 ### `/goal-advisor`

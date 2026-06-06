@@ -33,11 +33,11 @@ const line = formatGoalStatusLine({
   model: "gpt-5.5",
   thinking: "high",
 });
-assert.match(line, /pi-package-goal/);
-assert.match(line, /main \[3\] PR #12/);
-assert.match(line, /150,000 \(75\.0%\) Plan/);
+assert.match(line, /changes: 3 · PR #12/);
+assert.match(line, /Plan \(150k left\)/);
 assert.match(line, /42\.5 tok\/s/);
-assert.match(line, /openai\/gpt-5\.5 \[high\]/);
+assert.doesNotMatch(line, /pi-package-goal/);
+assert.doesNotMatch(line, /openai\/gpt-5\.5/);
 
 let aggregate = createEmptyResponseSpeedAggregate();
 aggregate = addCompletedResponseSpeed(aggregate, 100, 2_000);
@@ -51,16 +51,25 @@ assert.deepEqual(parseGoalStatuslineCommand("on"), { action: "enable" });
 assert.deepEqual(parseGoalStatuslineCommand("refresh"), { action: "refresh" });
 assert.deepEqual(parseGoalStatuslineCommand("bogus"), { action: "unknown", value: "bogus" });
 
-const registered = { commands: [], events: [], flags: [] };
+const registered = { commands: [], events: new Map(), flags: [] };
 goalStatuslineExtension({
   registerFlag(name) { registered.flags.push(name); },
   getFlag() { return false; },
-  on(name) { registered.events.push(name); },
+  on(name, handler) { registered.events.set(name, handler); },
   registerCommand(name) { registered.commands.push(name); },
-  getThinkingLevel() { return "off"; },
 });
 assert.deepEqual(registered.commands, ["goal-statusline"]);
 assert.ok(registered.flags.includes("goal-statusline"));
-assert.ok(registered.events.includes("message_update"));
+assert.ok(registered.events.has("message_update"));
+
+const staleCtx = {
+  get cwd() { throw new Error("This extension ctx is stale after session replacement or reload."); },
+  get hasUI() { throw new Error("This extension ctx is stale after session replacement or reload."); },
+  get model() { throw new Error("This extension ctx is stale after session replacement or reload."); },
+  getContextUsage() { throw new Error("This extension ctx is stale after session replacement or reload."); },
+};
+await assert.doesNotReject(() => registered.events.get("tool_result")({}, staleCtx));
+await assert.doesNotReject(() => registered.events.get("message_end")({ message: { role: "toolResult" } }, staleCtx));
+await assert.doesNotReject(() => registered.events.get("session_shutdown")({}, staleCtx));
 
 console.log("goal-statusline-extension ok");

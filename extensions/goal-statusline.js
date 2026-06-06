@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { basename } from "node:path";
 
 const STATUS_KEY = "goal-statusline";
 const GIT_REFRESH_MS = 5_000;
@@ -25,24 +24,18 @@ export function getContextSummary({ contextWindow = 0, usedTokens = 0 } = {}) {
 }
 
 export function formatGoalStatusLine({
-  cwd = "",
-  branch,
   changedFiles = 0,
   prNumber,
   context = getContextSummary(),
   speed,
-  provider,
-  model,
-  thinking = "off",
 } = {}) {
-  const dir = basename(cwd) || cwd || ".";
-  const git = `${branch || "no-git"} [${Number.isFinite(changedFiles) ? changedFiles : 0}]${prNumber ? ` PR #${prNumber}` : ""}`;
+  const changedCount = Number.isFinite(changedFiles) ? changedFiles : 0;
+  const git = `changes: ${changedCount}${prNumber ? ` · PR #${prNumber}` : ""}`;
   const contextText = context.contextWindow > 0
-    ? `${formatCount(context.remainingTokens)} (${context.remainingPercent.toFixed(1)}%) ${context.label}`
+    ? `${context.label} (${formatCompactCount(context.remainingTokens)} left)`
     : "context n/a";
   const speedText = speed?.tokensPerSecond ? `${formatTokensPerSecond(speed.tokensPerSecond)} tok/s${speed.inProgress ? "…" : ""}` : "-- tok/s";
-  const modelText = `${provider ? `${provider}/` : ""}${model || "no-model"}${thinking && thinking !== "off" ? ` [${thinking}]` : ""}`;
-  return [dir, git, contextText, speedText, modelText].join(" │ ");
+  return [git, contextText, speedText].join(" │ ");
 }
 
 export function createEmptyResponseSpeedAggregate() {
@@ -87,8 +80,11 @@ export function estimateTokens(text = "") {
   return length === 0 ? 0 : Math.max(1, length / 4);
 }
 
-function formatCount(value) {
-  return Math.round(value).toLocaleString();
+function formatCompactCount(value) {
+  const rounded = Math.max(0, Math.round(value));
+  if (rounded >= 1_000_000) return `${(rounded / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (rounded >= 1_000) return `${(rounded / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  return rounded.toString();
 }
 
 function formatTokensPerSecond(tokensPerSecond) {
@@ -140,9 +136,21 @@ function styleLine(line, theme, contextSummary, speed) {
   return theme.fg(color, line);
 }
 
+function withLiveContext(ctx, fn) {
+  try {
+    return ctx ? fn(ctx) : undefined;
+  } catch (error) {
+    if (isStaleContextError(error)) return undefined;
+    throw error;
+  }
+}
+
+function isStaleContextError(error) {
+  return typeof error?.message === "string" && error.message.includes("extension ctx is stale");
+}
+
 export default function goalStatuslineExtension(pi) {
   let enabled = false;
-  let currentCtx;
   let gitInfo = { branch: undefined, changedFiles: 0, prNumber: undefined };
   let lastGitRefresh = 0;
   let lastPrRefresh = 0;
@@ -159,36 +167,29 @@ export default function goalStatuslineExtension(pi) {
   });
 
   pi.on("session_start", async (_event, ctx) => {
-    currentCtx = ctx;
     enabled = Boolean(pi.getFlag?.("goal-statusline"));
     if (enabled) mount(ctx);
   });
 
   pi.on("session_shutdown", async (_event, ctx) => {
-    if (ctx?.hasUI) ctx.ui.setStatus(STATUS_KEY, undefined);
-    currentCtx = undefined;
+    clearStatus(ctx);
     resetSpeed();
   });
 
-  pi.on("model_select", async () => {
+  pi.on("model_select", async (_event, ctx) => {
     resetSpeed();
-    updateStatus();
+    updateStatus(ctx);
   });
 
-  pi.on("thinking_level_select", async () => {
-    resetSpeed();
-    updateStatus();
-  });
-
-  pi.on("message_start", async (event) => {
+  pi.on("message_start", async (event, ctx) => {
     if (event.message.role !== "assistant") return;
     responseStartMs = Date.now();
     liveOutputTokenEstimate = 0;
     liveSpeed = getAverageResponseSpeed(speedAggregate, { outputTokens: 0, durationMs: 0, inProgress: true });
-    updateStatus();
+    updateStatus(ctx);
   });
 
-  pi.on("message_update", async (event) => {
+  pi.on("message_update", async (event, ctx) => {
     if (event.message.role !== "assistant" || responseStartMs === undefined) return;
     const streamEvent = event.assistantMessageEvent;
     if (["text_delta", "thinking_delta", "toolcall_delta"].includes(streamEvent?.type)) {
@@ -199,10 +200,10 @@ export default function goalStatuslineExtension(pi) {
       durationMs: Date.now() - responseStartMs,
       inProgress: true,
     });
-    requestThrottledUpdate();
+    requestThrottledUpdate(ctx);
   });
 
-  pi.on("message_end", async (event) => {
+  pi.on("message_end", async (event, ctx) => {
     if (event.message.role === "assistant") {
       const durationMs = responseStartMs === undefined ? 0 : Date.now() - responseStartMs;
       speedAggregate = addCompletedResponseSpeed(speedAggregate, assistantOutputTokens(event.message), durationMs);
@@ -210,20 +211,18 @@ export default function goalStatuslineExtension(pi) {
       responseStartMs = undefined;
       liveOutputTokenEstimate = 0;
     }
-    refreshGit(currentCtx?.cwd, { forceGit: false });
-    updateStatus();
+    refreshGitFromContext(ctx, { forceGit: false });
+    updateStatus(ctx);
   });
 
   pi.on("tool_result", async (_event, ctx) => {
-    currentCtx = ctx;
-    refreshGit(ctx.cwd, { forceGit: true });
-    updateStatus();
+    refreshGitFromContext(ctx, { forceGit: true });
+    updateStatus(ctx);
   });
 
   pi.registerCommand("goal-statusline", {
     description: "Toggle or refresh the opt-in goal statusline HUD",
     handler: async (args, ctx) => {
-      currentCtx = ctx;
       const command = parseGoalStatuslineCommand(args);
       if (command.action === "enable" || command.action === "toggle" && !enabled) {
         enabled = true;
@@ -238,8 +237,8 @@ export default function goalStatuslineExtension(pi) {
         return;
       }
       if (command.action === "refresh") {
-        refreshGit(ctx.cwd, { forceGit: true, forcePr: true });
-        updateStatus();
+        refreshGitFromContext(ctx, { forceGit: true, forcePr: true });
+        updateStatus(ctx);
         ctx.ui.notify("goal-statusline refreshed", "info");
         return;
       }
@@ -256,20 +255,20 @@ export default function goalStatuslineExtension(pi) {
   });
 
   function mount(ctx) {
-    if (!ctx.hasUI) return;
-    refreshGit(ctx.cwd, { forceGit: true, forcePr: true });
+    if (!hasLiveUi(ctx)) return;
+    refreshGitFromContext(ctx, { forceGit: true, forcePr: true });
     updateStatus(ctx);
   }
 
   function unmount(ctx) {
-    if (ctx?.hasUI) ctx.ui.setStatus(STATUS_KEY, undefined);
+    clearStatus(ctx);
   }
 
-  function requestThrottledUpdate() {
+  function requestThrottledUpdate(ctx) {
     const now = Date.now();
     if (now - lastSpeedRender < SPEED_RENDER_THROTTLE_MS) return;
     lastSpeedRender = now;
-    updateStatus();
+    updateStatus(ctx);
   }
 
   function resetSpeed() {
@@ -306,29 +305,46 @@ export default function goalStatuslineExtension(pi) {
     }
   }
 
-  function buildLine(ctx = currentCtx) {
-    const usage = ctx?.getContextUsage?.();
-    const context = getContextSummary({
-      contextWindow: ctx?.model?.contextWindow ?? 0,
-      usedTokens: usage?.tokens ?? 0,
-    });
+  function buildLine(ctx) {
     return formatGoalStatusLine({
-      cwd: ctx?.cwd,
-      branch: gitInfo.branch,
       changedFiles: gitInfo.changedFiles,
       prNumber: gitInfo.prNumber,
-      context,
+      context: contextSummaryFromContext(ctx),
       speed: liveSpeed,
-      provider: ctx?.model?.provider,
-      model: ctx?.model?.id?.replace(/^models\//, ""),
-      thinking: pi.getThinkingLevel?.() ?? "off",
     });
   }
 
-  function updateStatus(ctx = currentCtx) {
-    if (!enabled || !ctx?.hasUI) return;
-    const usage = ctx.getContextUsage?.();
-    const context = getContextSummary({ contextWindow: ctx.model?.contextWindow ?? 0, usedTokens: usage?.tokens ?? 0 });
-    ctx.ui.setStatus(STATUS_KEY, styleLine(buildLine(ctx), ctx.ui.theme, context, liveSpeed));
+  function updateStatus(ctx) {
+    if (!enabled) return;
+    withLiveContext(ctx, (liveCtx) => {
+      if (!liveCtx.hasUI) return;
+      const context = contextSummaryFromContext(liveCtx);
+      liveCtx.ui.setStatus(STATUS_KEY, styleLine(buildLine(liveCtx), liveCtx.ui.theme, context, liveSpeed));
+    });
+  }
+
+  function refreshGitFromContext(ctx, options = {}) {
+    const cwd = withLiveContext(ctx, (liveCtx) => liveCtx.cwd);
+    if (cwd) refreshGit(cwd, options);
+  }
+
+  function contextSummaryFromContext(ctx) {
+    return withLiveContext(ctx, (liveCtx) => {
+      const usage = liveCtx.getContextUsage?.();
+      return getContextSummary({
+        contextWindow: liveCtx.model?.contextWindow ?? 0,
+        usedTokens: usage?.tokens ?? 0,
+      });
+    }) ?? getContextSummary();
+  }
+
+  function hasLiveUi(ctx) {
+    return withLiveContext(ctx, (liveCtx) => Boolean(liveCtx.hasUI)) ?? false;
+  }
+
+  function clearStatus(ctx) {
+    withLiveContext(ctx, (liveCtx) => {
+      if (liveCtx.hasUI) liveCtx.ui.setStatus(STATUS_KEY, undefined);
+    });
   }
 }

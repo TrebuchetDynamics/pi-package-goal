@@ -45,8 +45,8 @@ The package-local extension at `extensions/folder-refactor.js` registers `/folde
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
 **Goal Statusline Extension**:
-The package-local extension at `extensions/goal-statusline.js` registers `/goal-statusline` as an opt-in status HUD that uses `ctx.ui.setStatus()` to show cwd, git, PR, context, response speed, and model state without replacing Pi's default footer.
-_Avoid_: default footer takeover, shell-injected git commands, hidden network lookups, status UI that cannot be turned off
+The package-local extension at `extensions/goal-statusline.js` registers `/goal-statusline` as an opt-in status HUD that uses `ctx.ui.setStatus()` to show non-redundant delivery signals: changed-file count, PR number, context zone, compact remaining context, and response speed.
+_Avoid_: default footer takeover, repeating Pi's built-in cwd/branch/model footer, shell-injected git commands, hidden network lookups, status UI that cannot be turned off
 
 **Goal Advisor Extension**:
 The package-local extension at `extensions/goal-advisor.js` registers `/goal-advisor` and the `goal_advisor` tool. It is disabled until the user explicitly configures an advisor model and enables it, because every consultation is a separate model call with cost and latency.
