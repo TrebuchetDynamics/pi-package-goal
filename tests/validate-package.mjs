@@ -17,6 +17,7 @@ const expectedSkills = [
   "grill-with-docs",
   "prototype",
   "skill-folder-refactor",
+  "share-code",
   "candidates-folder-refactor",
   "prompt-cache-auditor",
   "zoom-out",
