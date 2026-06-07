@@ -87,6 +87,14 @@ Trebuchet Dynamics under the MIT License.
 - Usage: the local `/understand` extension can clone and load the upstream Understand-Anything skills from a user checkout; no upstream code is bundled in this package tarball.
 - License: MIT
 
+## rtk-ai/rtk
+
+- Source: https://github.com/rtk-ai/rtk
+- Snapshot inspected: current `master` clone on 2026-06-07
+- Usage: source evidence for the package-local `extensions/rtk.js` Pi command-rewrite integration; the Rust RTK binary is not bundled in this package tarball.
+- License: Apache-2.0
+- Full license copy: `licenses/rtk-ai-rtk-LICENSE`
+
 ## tolibear/goalbuddy
 
 - Source: https://github.com/tolibear/goalbuddy

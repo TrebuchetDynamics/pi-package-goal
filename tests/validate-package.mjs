@@ -323,7 +323,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -359,6 +359,11 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
 
+  const rtkExtension = read("extensions/rtk.js");
+  assert.match(rtkExtension, /registerCommand\("rtk"/);
+  assert.match(rtkExtension, /rtk-ai\/rtk/);
+  assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
+  assert.match(rtkExtension, /tool_call/);
 
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);

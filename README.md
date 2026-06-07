@@ -107,6 +107,8 @@ Common commands:
 | Command | Use it for |
 | --- | --- |
 | `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
+| `/rtk status` | Check whether [rtk-ai/rtk](https://github.com/rtk-ai/rtk) is installed and active for Pi bash command rewriting. |
+| `/rtk install` | After confirmation, install the upstream `rtk` binary so this package's Pi extension can rewrite eligible bash tool calls through `rtk rewrite`. |
 | `autofolderrefactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
 | `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
@@ -147,6 +149,27 @@ Notes:
 - `/understand refactor [@folder] [focus] [output.md]` uses the current repo graph by default; with `@folder`, it reads `folder/.understand-anything/knowledge-graph.json`, defaults the plan name from that folder, and if no graph exists, starts `/understand <folder>` directly to build a folder-only graph first.
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
+
+### RTK bash command compression
+
+This package includes `extensions/rtk.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
+
+Setup options:
+
+```text
+/rtk status
+/rtk install
+```
+
+Or install RTK yourself, then reload Pi:
+
+```bash
+brew install rtk
+# or
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+```
+
+Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
 
 ## Included theme: `trebuchet-neon`
 
@@ -255,7 +278,8 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
   "pi": {
     "extensions": [
       "./extensions/understand.js",
-      "./extensions/folder-refactor.js"
+      "./extensions/folder-refactor.js",
+      "./extensions/rtk.js"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
