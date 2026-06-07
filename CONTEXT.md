@@ -41,8 +41,8 @@ The `skill-folder-refactor` skill keeps folder refactors bounded to one named di
 _Avoid_: broad repo-wide rewrites, speculative common abstractions, silent public import path breakage, mixing behavior changes with file moves, ignoring language module boundaries
 
 **Share Code Skill**:
-The `share-code` skill composes folder-refactor discipline with a stronger reuse-and-bug pass: it refactors one bounded folder to make duplicate behavior visible, extracts only proven shared code, and treats inconsistent edge cases found during extraction as test-backed bug fixes rather than hidden refactor changes.
-_Avoid_: speculative utilities, one-call-site abstractions, hiding behavior changes inside refactors, broad repo-wide dedupe sweeps
+The `share-code` skill composes folder-refactor discipline with a stronger reuse-and-bug pass: it refactors one bounded folder to make duplicate behavior visible, extracts only proven shared code, prioritizes production/source duplication over test cleanup, and treats inconsistent edge cases found during extraction as evidence-backed bug fixes rather than hidden refactor changes.
+_Avoid_: speculative utilities, one-call-site abstractions, test-first cleanup unless requested, hiding behavior changes inside refactors, broad repo-wide dedupe sweeps
 
 **Folder Refactor Extension**:
 The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
