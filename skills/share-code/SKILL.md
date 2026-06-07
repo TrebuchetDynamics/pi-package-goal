@@ -9,7 +9,7 @@ Refactor one bounded folder to discover real shared-code opportunities and bug-r
 
 ## Quick start
 
-1. Identify the target folder. If none is named, ask for one or run `candidates-folder-refactor` to pick a bounded candidate; do not start at repo root.
+1. Identify the target folder. If none is named, pick smartly instead of asking by running `candidates-folder-refactor` (or reading its latest log) and selecting the highest-signal bounded candidate with duplicate/reuse evidence, tests/callers, and non-generated source files; do not start at repo root.
 2. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/callers, related tests, and package/module boundaries.
 3. Baseline behavior before edits: run the narrowest relevant tests, or add a focused public-interface test with `tdd` discipline before deeper extraction.
 4. Use `skill-folder-refactor` mechanics for safe move-only slices, then run a reuse-and-bug pass over the new seams.
@@ -36,9 +36,10 @@ Refactor one bounded folder to discover real shared-code opportunities and bug-r
 ## Skill contract
 
 ### Entry protocol
-- Trivial: proceed for a small folder with obvious duplicates and existing tests.
-- Medium ambiguity: propose the target folder, suspected shared seams, and one missing hard question.
-- High ambiguity/risk: stop when repo root, public API breakage, generated files, migrations, or ownership are unclear.
+- Named target: proceed for a bounded folder with obvious duplicates and existing tests.
+- No named target: do not ask the owner to choose. Run `candidates-folder-refactor` or inspect `[folder]/.pi/candidates-folder-refactor/latest.json`, select the best bounded folder, state the evidence briefly, and proceed.
+- Medium ambiguity after scan: pick the safest high-signal candidate and name the suspected shared seams; ask only if multiple candidates imply different product ownership or risk.
+- High ambiguity/risk: stop when the only target is repo root, public API breakage, generated files, migrations, or ownership are unclear.
 
 ### Topology check
 - Is there exactly one folder boundary?

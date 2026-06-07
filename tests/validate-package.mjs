@@ -437,6 +437,9 @@ async function testSkills() {
   assert.match(lgtm, /selecting the #1 top candidate/);
   assert.match(lgtm, /immediately run `\/folder-refactor <candidate #1>`/);
   assert.match(lgtm, /extension invokes `skill-folder-refactor`/);
+  const shareCode = read("skills/share-code/SKILL.md");
+  assert.match(shareCode, /pick smartly instead of asking/);
+  assert.match(shareCode, /selecting the highest-signal bounded candidate/);
   const folderRefactor = read("skills/skill-folder-refactor/SKILL.md");
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
