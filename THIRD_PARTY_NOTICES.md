@@ -54,6 +54,50 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/nextlevelbuilder-ui-ux-pro-max-skill-LICENSE`
 
+## anthropics/claude-code frontend-design
+
+- Source: https://github.com/anthropics/claude-code
+- Snapshot inspected: `7228175`
+- Bundled paths:
+  - `skills/frontend-design/`
+- License: Anthropic commercial terms
+- Full license copy: `licenses/anthropics-claude-code-LICENSE.md`
+
+## wzx2002/codex-frontend-skill
+
+- Source: https://github.com/wzx2002/codex-frontend-skill
+- Snapshot inspected: `3c3a7c4`
+- Bundled paths:
+  - `skills/frontend-production-shadcn/`
+- License: no license file found in upstream snapshot.
+
+## Leonxlnx/taste-skill
+
+- Source: https://github.com/Leonxlnx/taste-skill
+- Snapshot inspected: `3c7017d`
+- Bundled paths:
+  - `skills/design-taste-frontend/`
+- License: MIT
+- Full license copy: `licenses/Leonxlnx-taste-skill-LICENSE`
+
+## Nutlope/hallmark
+
+- Source: https://github.com/Nutlope/hallmark
+- Snapshot inspected: `aeb42fb`
+- Bundled paths:
+  - `skills/hallmark/`
+- License: MIT
+- Full license copy: `licenses/Nutlope-hallmark-LICENSE`
+
+## google-labs-code/stitch-skills
+
+- Source: https://github.com/google-labs-code/stitch-skills
+- Snapshot inspected: `1544aa4`
+- Bundled paths:
+  - `skills/stitch-react-components/`
+- License: Apache-2.0
+- Full license copy: `licenses/google-labs-code-stitch-skills-LICENSE`
+
 ## greptileai/skills
 
 - Source: https://github.com/greptileai/skills

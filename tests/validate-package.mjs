@@ -34,11 +34,17 @@ const expectedSkills = [
   "pi-ecosystem-scout",
   "pi-extensions-helper",
   "ui-ux-pro-max",
+  "ui-design",
+  "frontend-design",
+  "frontend-production-shadcn",
+  "design-taste-frontend",
+  "hallmark",
+  "stitch-react-components",
 ];
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 5000,
+  maxTotalChars: 6500,
 };
 
 function readJson(file) {

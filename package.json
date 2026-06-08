@@ -7,7 +7,7 @@
     "tx": "./tmux/tx",
     "autofolderrefactor": "./skills/candidates-folder-refactor/scripts/autofolderrefactor"
   },
-  "license": "MIT AND Apache-2.0",
+  "license": "SEE LICENSE IN THIRD_PARTY_NOTICES.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TrebuchetDynamics/pi-package-goal.git"

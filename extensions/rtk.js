@@ -3,6 +3,23 @@ const INSTALL_TIMEOUT_MS = 120_000;
 const MIN_SUPPORTED_RTK = [0, 23, 0];
 const RTK_INSTALL_COMMAND = "curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh";
 
+export function uniquePaths(paths) {
+  return [...new Set(paths.filter(Boolean))];
+}
+
+export function localRtkBin(home = process.env.HOME) {
+  return home ? `${home}/.local/bin/rtk` : "";
+}
+
+export function pathWithLocalBin(env = process.env) {
+  const localBin = env.HOME ? `${env.HOME}/.local/bin` : "";
+  return uniquePaths([localBin, ...String(env.PATH ?? "").split(":")]).join(":");
+}
+
+export function rtkCommandCandidates(env = process.env) {
+  return uniquePaths(["rtk", localRtkBin(env.HOME)]);
+}
+
 export function parseRtkVersion(raw) {
   const match = String(raw ?? "").trim().match(/(\d+)\.(\d+)\.(\d+)/);
   if (!match) return null;
@@ -48,30 +65,41 @@ export function parseRtkCommandArgs(args = "") {
 }
 
 async function execRtk(pi, args, options = {}) {
-  return pi.exec("rtk", args, { timeout: REWRITE_TIMEOUT_MS, ...options });
+  const env = { ...process.env, PATH: pathWithLocalBin(process.env), ...(options.env ?? {}) };
+  return pi.exec(options.rtkCommand ?? "rtk", args, { timeout: REWRITE_TIMEOUT_MS, ...options, env });
+}
+
+async function findUsableRtk(pi) {
+  for (const candidate of rtkCommandCandidates()) {
+    const version = await execRtk(pi, ["--version"], { rtkCommand: candidate }).catch(() => ({ code: 1, stdout: "" }));
+    if (version.code !== 0) continue;
+    return { command: candidate, version: String(version.stdout ?? "").trim() };
+  }
+  return null;
 }
 
 async function checkRtk(pi) {
-  const version = await execRtk(pi, ["--version"]);
-  if (version.code !== 0) {
-    return { ok: false, reason: "rtk binary not found in PATH", version: "" };
+  const found = await findUsableRtk(pi);
+  if (!found) {
+    return { ok: false, reason: "rtk binary not found; /rtk install places it in ~/.local/bin", version: "", command: "" };
   }
 
-  const versionText = String(version.stdout ?? "").trim();
-  if (!isSupportedRtkVersion(versionText)) {
-    return { ok: false, reason: `rtk is too old; need >= ${MIN_SUPPORTED_RTK.join(".")}`, version: versionText };
+  if (!isSupportedRtkVersion(found.version)) {
+    return { ok: false, reason: `rtk is too old; need >= ${MIN_SUPPORTED_RTK.join(".")}`, version: found.version, command: found.command };
   }
 
-  const gain = await execRtk(pi, ["gain"]);
+  const gain = await execRtk(pi, ["gain"], { rtkCommand: found.command });
   if (gain.code !== 0) {
-    return { ok: false, reason: "rtk exists but does not look like rtk-ai/rtk; `rtk gain` failed", version: versionText };
+    return { ok: false, reason: "rtk exists but does not look like rtk-ai/rtk; `rtk gain` failed", version: found.version, command: found.command };
   }
 
-  return { ok: true, reason: "rtk-ai/rtk available", version: versionText };
+  return { ok: true, reason: "rtk-ai/rtk available", version: found.version, command: found.command };
 }
 
 async function rewriteCommand(pi, command, signal) {
-  const result = await execRtk(pi, ["rewrite", command], { signal });
+  const found = await findUsableRtk(pi);
+  if (!found) return null;
+  const result = await execRtk(pi, ["rewrite", command], { signal, rtkCommand: found.command });
   return normalizeRewriteResult(result, command);
 }
 
@@ -81,7 +109,7 @@ function report(ctx, message, level = "info") {
 }
 
 function formatStatus(status) {
-  if (status.ok) return `RTK enabled for Pi bash tool calls (${status.version}). Set RTK_DISABLED=1 to bypass.`;
+  if (status.ok) return `RTK enabled for Pi bash tool calls (${status.version}, ${status.command}). Set RTK_DISABLED=1 to bypass.`;
   return `RTK not active: ${status.reason}. Install with /rtk install or run: ${RTK_INSTALL_COMMAND}`;
 }
 
@@ -121,7 +149,10 @@ async function handleRtkCommand(pi, args, ctx) {
     }
 
     report(ctx, "Installing rtk-ai/rtk...");
-    const install = await pi.exec("sh", ["-c", RTK_INSTALL_COMMAND], { timeout: INSTALL_TIMEOUT_MS });
+    const install = await pi.exec("sh", ["-c", RTK_INSTALL_COMMAND], {
+      timeout: INSTALL_TIMEOUT_MS,
+      env: { ...process.env, PATH: pathWithLocalBin(process.env) },
+    });
     if (install.code !== 0 || install.killed) {
       report(ctx, `RTK install failed. Exit ${install.code}; stderr: ${String(install.stderr ?? "").trim()}`, "error");
       return;

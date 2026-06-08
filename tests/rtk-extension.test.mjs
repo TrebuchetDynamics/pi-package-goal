@@ -2,11 +2,20 @@ import assert from "node:assert/strict";
 import {
   compareSemver,
   isSupportedRtkVersion,
+  localRtkBin,
   normalizeRewriteResult,
   parseRtkCommandArgs,
   parseRtkVersion,
+  pathWithLocalBin,
+  rtkCommandCandidates,
   shouldSkipRewrite,
+  uniquePaths,
 } from "../extensions/rtk.js";
+
+assert.deepEqual(uniquePaths(["a", "", "b", "a"]), ["a", "b"]);
+assert.equal(localRtkBin("/home/alice"), "/home/alice/.local/bin/rtk");
+assert.equal(pathWithLocalBin({ HOME: "/home/alice", PATH: "/usr/bin:/home/alice/.local/bin" }), "/home/alice/.local/bin:/usr/bin");
+assert.deepEqual(rtkCommandCandidates({ HOME: "/home/alice" }), ["rtk", "/home/alice/.local/bin/rtk"]);
 
 assert.deepEqual(parseRtkVersion("rtk 0.28.2"), [0, 28, 2]);
 assert.deepEqual(parseRtkVersion("0.23.0"), [0, 23, 0]);

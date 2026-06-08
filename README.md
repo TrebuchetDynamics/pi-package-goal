@@ -19,6 +19,7 @@ Use it when you want Pi to:
 | Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
+| Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `frontend-production-shadcn`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 
@@ -152,7 +153,7 @@ Notes:
 
 ### RTK bash command compression
 
-This package includes `extensions/rtk.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
+This package includes `extensions/rtk.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
 
 Setup options:
 
@@ -246,6 +247,13 @@ Borrowed design rules:
 | `write-a-skill` | Create a new agent skill with the expected structure. |
 | `modern-web-guidance` | Check current web-platform guidance before browser UI or frontend work. |
 | `chrome-extensions` | Build, debug, review, or publish Chrome extensions. |
+| `ui-design` | Orchestrate the UI/UX skills and pick the right frontend/design workflow for the task. |
+| `ui-ux-pro-max` | Apply broad UI/UX design-system, typography, color, layout, accessibility, and motion guidance. |
+| `frontend-design` | Create distinctive production-grade frontend interfaces that avoid generic AI aesthetics. |
+| `frontend-production-shadcn` | Build polished React/TypeScript/Tailwind/shadcn product UI for dashboards, app shells, forms, and redesigns. |
+| `design-taste-frontend` | Use anti-slop taste rules for landing pages, portfolios, and redesigns. |
+| `hallmark` | Apply Hallmark's anti-AI-slop design flows for builds, audits, redesigns, and design extraction. |
+| `stitch-react-components` | Convert Stitch designs into modular Vite/React components with validation. |
 | `greploop` | Use Greptile-driven PR/MR/CL cleanup when explicitly requested and available. |
 
 ## Safe delivery with `git-commit-push`
