@@ -41,6 +41,10 @@ const invocation = buildSkillInvocation({
 });
 assert.match(invocation, /<skill name="graphify" location="\/home\/alice\/\.graphify\/repo\/graphify\/skill-pi\.md">/);
 assert.match(invocation, /User invoked \/graphify \. --no-viz/);
+assert.match(invocation, /ensure Graphify's git hooks are active/);
+assert.match(invocation, /graphify hook install after graphifyy is available/);
+assert.match(invocation, /large corpus and lists top first-level subdirectories/);
+assert.match(invocation, /Automatically continue with the listed top subdirectories as a multi-path run/);
 assert.match(invocation, /# \/graphify/);
 assert.match(invocation, /User: \/graphify \. --no-viz/);
 

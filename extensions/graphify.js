@@ -33,6 +33,8 @@ export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skill
   return [
     `<skill name="graphify" location="${skillPath}">`,
     `User invoked ${invocation}. Follow the Graphify Pi skill below exactly.`,
+    `Pi bridge policy: before any repo graph build, update, query, path, or explain run, ensure Graphify's git hooks are active in the current target repo by running graphify hook install after graphifyy is available. If the hook is already installed, continue without asking.`,
+    `Pi bridge policy: when Graphify detects a large corpus and lists top first-level subdirectories, do not ask the user which one to run. Automatically continue with the listed top subdirectories as a multi-path run, preserving their order, unless the user already named a narrower path or explicitly asked to choose manually.`,
     "",
     skillContent.trimEnd(),
     "</skill>",
@@ -145,8 +147,8 @@ function helpText(paths = getGraphifyPaths()) {
     `  /graphify [args]             Load upstream Graphify Pi skill and run it\n` +
     `  /graphify help               Show this help without cloning upstream\n` +
     `  /graphify status             Show checkout status\n` +
-    `  /graphify install            Clone upstream Graphify skill\n` +
-    `  /graphify update             git pull --ff-only upstream checkout\n\n` +
+    `  /graphify install            Clone upstream Graphify skill and install repo hooks\n` +
+    `  /graphify update             git pull --ff-only upstream checkout and install repo hooks\n\n` +
     `Upstream: ${paths.repoUrl}\n` +
     `Checkout: ${paths.repoDir}\n` +
     `Skill: ${paths.skillPath}\n\n` +
@@ -177,10 +179,8 @@ async function handleBridgeCommand(pi, args, ctx, paths) {
 
   if (parsed.action === "install" || parsed.action === "update") {
     const action = await updateGraphify(pi, ctx, paths);
-    const hookOutput = parsed.action === "install" ? await installGraphifyHook(pi, ctx) : "";
-    const message = parsed.action === "install"
-      ? formatGraphifyInstallMessage(action, paths, hookOutput)
-      : `Graphify ${action} at ${paths.repoDir}. Use /graphify . to build a graph.`;
+    const hookOutput = await installGraphifyHook(pi, ctx);
+    const message = formatGraphifyInstallMessage(action, paths, hookOutput);
     await postMessage(pi, message, { action: parsed.action, result: action, hookOutput, paths });
   }
 }
