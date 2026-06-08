@@ -1,6 +1,6 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills, Pi UX extensions, a theme, `/understand` bridge commands, and a Graphiphy `/graphify` bridge.
+A Pi package that bundles curated agent skills, Pi UX extensions, a theme, `/understand` bridge commands, and a Graphify `/graphify` bridge.
 
 Use it when you want Pi to:
 
@@ -22,7 +22,7 @@ Use it when you want Pi to:
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `frontend-production-shadcn`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
-| Knowledge graphs | Run Graphify from Pi through the Graphiphy bridge to build/query `graphify-out/` graphs. | `/graphify` |
+| Knowledge graphs | Run Graphify from Pi through the Graphify bridge to build/query `graphify-out/` graphs. | `/graphify` |
 
 ## Install
 
@@ -153,7 +153,7 @@ Notes:
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
-### Graphiphy `/graphify`
+### Graphify `/graphify`
 
 `/graphify` bridges Pi to the upstream [Graphify](https://github.com/safishamsi/graphify) Pi skill (`graphify/skill-pi.md`). On first use it prompts to clone Graphify into `~/.graphify/repo`; override with `GRAPHIFY_DIR` or `GRAPHIFY_REPO_URL`.
 
@@ -164,11 +164,9 @@ Common commands:
 | `/graphify .` | Build a Graphify knowledge graph for the current project. |
 | `/graphify query "How does auth work?"` | Query an existing `graphify-out/graph.json`. |
 | `/graphify help` | Show local bridge help without cloning upstream. |
-| `/graphiphy .` | Typo-compatible alias for `/graphify .`. |
-| `/graphphy help` | Short typo-compatible help alias for users who misspell the bridge name. |
-| `/graphify-bridge status` | Show the upstream checkout status. |
-| `/graphify-bridge install` | Clone the upstream Graphify repo. |
-| `/graphify-bridge update` | Pull the upstream checkout with `git pull --ff-only`. |
+| `/graphify status` | Show the upstream checkout status. |
+| `/graphify install` | Clone the upstream Graphify repo. |
+| `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
 
 The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs.
 

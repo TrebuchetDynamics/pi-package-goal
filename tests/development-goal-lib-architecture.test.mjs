@@ -12,7 +12,7 @@ const jiti = createJiti(import.meta.url, { interopDefault: true });
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 assert.ok(pkg.files.includes("lib"), "published package must include lib goal modules");
 assert.equal(pkg.files.includes("extensions"), true, "published package must include package extensions");
-assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphiphy.js"], "package must register package extensions");
+assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphify.js"], "package must register package extensions");
 assert.deepEqual(pkg.pi.themes, ["./themes"], "package must register package themes");
 
 const reportParser = await jiti.import(path.join(root, "lib", "goal", "report-parser.ts"));

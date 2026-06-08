@@ -329,7 +329,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphiphy.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphify.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -371,14 +371,14 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
 
-  const graphiphyExtension = read("extensions/graphiphy.js");
-  assert.match(graphiphyExtension, /DEFAULT_COMMAND_NAME = "graphify"/);
-  assert.match(graphiphyExtension, /ALIAS_COMMAND_NAME = "graphiphy"/);
-  assert.match(graphiphyExtension, /TYPO_ALIAS_COMMAND_NAME = "graphphy"/);
-  assert.match(graphiphyExtension, /registerCommand\("graphify-bridge"/);
-  assert.match(graphiphyExtension, /https:\/\/github\.com\/safishamsi\/graphify\.git/);
-  assert.match(graphiphyExtension, /skill-pi\.md/);
-  assert.match(graphiphyExtension, /isHelpArg/);
+  const graphifyExtension = read("extensions/graphify.js");
+  assert.match(graphifyExtension, /DEFAULT_COMMAND_NAME = "graphify"/);
+  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphiphy"/);
+  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphphy"/);
+  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphify-bridge"/);
+  assert.match(graphifyExtension, /https:\/\/github\.com\/safishamsi\/graphify\.git/);
+  assert.match(graphifyExtension, /skill-pi\.md/);
+  assert.match(graphifyExtension, /isHelpArg/);
 
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);

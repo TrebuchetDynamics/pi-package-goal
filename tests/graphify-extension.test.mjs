@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
 import {
   buildSkillInvocation,
-  getGraphiphyPaths,
+  getGraphifyPaths,
   isHelpArg,
   parseBridgeCommand,
   splitBridgeArgs,
-} from "../extensions/graphiphy.js";
+} from "../extensions/graphify.js";
 
-assert.deepEqual(getGraphiphyPaths({}, "/home/alice"), {
+assert.deepEqual(getGraphifyPaths({}, "/home/alice"), {
   repoDir: "/home/alice/.graphify/repo",
   repoUrl: "https://github.com/safishamsi/graphify.git",
   skillPath: "/home/alice/.graphify/repo/graphify/skill-pi.md",
 });
 
-assert.deepEqual(getGraphiphyPaths({ GRAPHIFY_DIR: "/tmp/graphify", GRAPHIFY_REPO_URL: "https://example.test/g.git" }, "/home/alice"), {
+assert.deepEqual(getGraphifyPaths({ GRAPHIFY_DIR: "/tmp/graphify", GRAPHIFY_REPO_URL: "https://example.test/g.git" }, "/home/alice"), {
   repoDir: "/tmp/graphify",
   repoUrl: "https://example.test/g.git",
   skillPath: "/tmp/graphify/graphify/skill-pi.md",
@@ -43,4 +43,4 @@ assert.match(invocation, /User invoked \/graphify \. --no-viz/);
 assert.match(invocation, /# \/graphify/);
 assert.match(invocation, /User: \/graphify \. --no-viz/);
 
-console.log("graphiphy-extension ok");
+console.log("graphify-extension ok");

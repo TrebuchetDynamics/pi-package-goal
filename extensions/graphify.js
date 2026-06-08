@@ -5,10 +5,8 @@ import { homedir } from "node:os";
 
 const DEFAULT_REPO_URL = "https://github.com/safishamsi/graphify.git";
 const DEFAULT_COMMAND_NAME = "graphify";
-const ALIAS_COMMAND_NAME = "graphiphy";
-const TYPO_ALIAS_COMMAND_NAME = "graphphy";
 
-export function getGraphiphyPaths(env = process.env, home = homedir()) {
+export function getGraphifyPaths(env = process.env, home = homedir()) {
   const repoDir = env.GRAPHIFY_DIR?.trim() || join(home, ".graphify", "repo");
   const repoUrl = env.GRAPHIFY_REPO_URL?.trim() || DEFAULT_REPO_URL;
   const skillPath = join(repoDir, "graphify", "skill-pi.md");
@@ -51,7 +49,7 @@ async function pathExists(path) {
   }
 }
 
-async function isInstalled(paths = getGraphiphyPaths()) {
+async function isInstalled(paths = getGraphifyPaths()) {
   return pathExists(paths.skillPath);
 }
 
@@ -82,12 +80,12 @@ async function updateGraphify(pi, ctx, paths) {
   return "updated";
 }
 
-async function ensureInstalled(pi, ctx, paths = getGraphiphyPaths(), { prompt = true } = {}) {
+async function ensureInstalled(pi, ctx, paths = getGraphifyPaths(), { prompt = true } = {}) {
   if (await isInstalled(paths)) return;
 
   if (prompt) {
     if (!ctx.hasUI) {
-      throw new Error(`Graphify is not installed. Run /graphify-bridge install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`);
+      throw new Error(`Graphify is not installed. Run /graphify install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`);
     }
     const ok = await ctx.ui.confirm(
       "Install Graphify Pi skill?",
@@ -105,8 +103,10 @@ export function isHelpArg(args = "") {
 }
 
 async function sendGraphifySkillInvocation(pi, ctx, paths, commandName, args) {
-  if (isHelpArg(args)) {
-    await postMessage(pi, helpText(paths), { action: "help", commandName, paths });
+  const { first } = splitBridgeArgs(args);
+  const localAction = first.toLowerCase();
+  if (isHelpArg(args) || ["install", "status", "update"].includes(localAction)) {
+    await handleBridgeCommand(pi, args, ctx, paths);
     return;
   }
 
@@ -121,19 +121,17 @@ async function sendGraphifySkillInvocation(pi, ctx, paths, commandName, args) {
 }
 
 async function postMessage(pi, content, details = {}) {
-  pi.sendMessage({ customType: "graphiphy", content, display: true, details });
+  pi.sendMessage({ customType: "graphify", content, display: true, details });
 }
 
-function helpText(paths = getGraphiphyPaths()) {
-  return `Graphiphy bridge for Graphify\n\n` +
-    `Slash commands:\n` +
+function helpText(paths = getGraphifyPaths()) {
+  return `Graphify bridge\n\n` +
+    `Slash command:\n` +
     `  /graphify [args]             Load upstream Graphify Pi skill and run it\n` +
     `  /graphify help               Show this help without cloning upstream\n` +
-    `  /graphiphy [args]            Alias for /graphify\n` +
-    `  /graphphy help               Typo-compatible help alias\n` +
-    `  /graphify-bridge status      Show checkout status\n` +
-    `  /graphify-bridge install     Clone upstream Graphify skill\n` +
-    `  /graphify-bridge update      git pull --ff-only upstream checkout\n\n` +
+    `  /graphify status             Show checkout status\n` +
+    `  /graphify install            Clone upstream Graphify skill\n` +
+    `  /graphify update             git pull --ff-only upstream checkout\n\n` +
     `Upstream: ${paths.repoUrl}\n` +
     `Checkout: ${paths.repoDir}\n` +
     `Skill: ${paths.skillPath}\n\n` +
@@ -142,7 +140,7 @@ function helpText(paths = getGraphiphyPaths()) {
 
 async function statusText(pi, ctx, paths) {
   if (!(await isInstalled(paths))) {
-    return `Graphify is not installed. Run /graphify-bridge install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
+    return `Graphify is not installed. Run /graphify install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
   }
   const result = await runGit(pi, ["-C", paths.repoDir, "rev-parse", "--short", "HEAD"], ctx, 30_000);
   return `Graphify installed at ${paths.repoDir}\nHEAD: ${result.stdout.trim()}\nPi skill: ${paths.skillPath}`;
@@ -169,24 +167,11 @@ async function handleBridgeCommand(pi, args, ctx, paths) {
   }
 }
 
-function registerGraphifyCommand(pi, name, paths) {
-  pi.registerCommand(name, {
-    description: name === DEFAULT_COMMAND_NAME
-      ? "Load upstream Graphify Pi skill to build/query a project knowledge graph"
-      : "Alias for /graphify; load upstream Graphify Pi skill",
+export default function registerGraphifyExtension(pi) {
+  const paths = getGraphifyPaths();
+
+  pi.registerCommand(DEFAULT_COMMAND_NAME, {
+    description: "Load upstream Graphify Pi skill to build/query a project knowledge graph",
     handler: async (args, ctx) => sendGraphifySkillInvocation(pi, ctx, paths, DEFAULT_COMMAND_NAME, args),
-  });
-}
-
-export default function registerGraphiphyExtension(pi) {
-  const paths = getGraphiphyPaths();
-
-  registerGraphifyCommand(pi, DEFAULT_COMMAND_NAME, paths);
-  registerGraphifyCommand(pi, ALIAS_COMMAND_NAME, paths);
-  registerGraphifyCommand(pi, TYPO_ALIAS_COMMAND_NAME, paths);
-
-  pi.registerCommand("graphify-bridge", {
-    description: "Manage the Graphiphy bridge checkout for safishamsi/graphify",
-    handler: async (args, ctx) => handleBridgeCommand(pi, args, ctx, paths),
   });
 }
