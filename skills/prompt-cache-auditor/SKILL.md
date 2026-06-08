@@ -9,7 +9,7 @@ Audit or improve prompt caching in code that constructs LLM API requests. Optimi
 
 ## Quick start
 
-1. Inspect `git status --short --branch`, repo instructions, manifests, and the request-building code before editing.
+1. Inspect `git status --short --branch`, repo instructions, manifests, and the request-building code before editing. If `graphify-out/graph.json` exists and the harness spans multiple modules, query Graphify for request-builder/provider paths, then verify named files.
 2. Identify the harness/provider/API endpoint, target files, current cache fields, and available tests or capture path.
 3. Read [provider patterns](references/provider-patterns.md) when provider mechanics, verification counters, or wire-capture details matter.
 

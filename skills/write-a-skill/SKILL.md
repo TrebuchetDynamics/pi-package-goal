@@ -9,7 +9,7 @@ Create skills that load only when useful, give clear workflows, and keep standin
 
 ## Repo study before drafting
 
-Before changing a skill, inspect the current skill inventory, `README.md`, `CONTEXT.md`, `THIRD_PARTY_NOTICES.md`, package manifests, validation tests, and any upstream source being adapted. Preserve third-party notices and make the skill fit this repo's package language instead of copying upstream commands that do not exist here.
+Before changing a skill, inspect the current skill inventory, `README.md`, `CONTEXT.md`, `THIRD_PARTY_NOTICES.md`, package manifests, validation tests, and any upstream source being adapted. When `graphify-out/graph.json` exists, query Graphify for package/skill relationships that can focus the repo study, then verify named files directly. Preserve third-party notices and make the skill fit this repo's package language instead of copying upstream commands that do not exist here.
 
 ## Process
 

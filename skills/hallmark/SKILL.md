@@ -156,6 +156,7 @@ If the project already has code — a `package.json`, a `tailwind.config.*`, an 
 3. **Microinteraction stance** — `package.json` dependencies for `framer-motion`, `gsap`, `motion`, `lenis`, `lottie-react`, `@react-spring/*`, `auto-animate`. Any one of those = "motion-on" project. None = "motion-cut" project.
 4. **Spacing scale** — Tailwind `theme.extend.spacing`; CSS `--space-*` custom-property pattern; presence of a 4-pt or 8-pt scale.
 5. **Framework** — Next.js (`next` in deps), Astro (`astro`), Vue (`vue`), Svelte / SvelteKit (`svelte` / `@sveltejs/kit`), Remix (`@remix-run/*`), or vanilla HTML.
+6. **Code graph** — if `graphify-out/graph.json` exists and the page touches established routes/components/data flows, query Graphify for relationship leads, then verify named files directly.
 
 **Output format** — emit this block once, before Step 1, with file:line citations so the user can verify what you found:
 

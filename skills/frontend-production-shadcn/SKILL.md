@@ -43,7 +43,7 @@ Do not optimize for visual flash. Optimize for credibility, clarity, density, an
 
 ## 1. First Inspect the Repository
 
-Before implementing, inspect the project when possible.
+Before implementing, inspect the project when possible. If `graphify-out/graph.json` exists and the UI task spans routes/components/data flows, query Graphify for relevant relationships, then verify named files in source.
 
 Look for:
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   buildSkillInvocation,
+  formatGraphifyInstallMessage,
   getGraphifyPaths,
   isHelpArg,
   parseBridgeCommand,
@@ -42,5 +43,10 @@ assert.match(invocation, /<skill name="graphify" location="\/home\/alice\/\.grap
 assert.match(invocation, /User invoked \/graphify \. --no-viz/);
 assert.match(invocation, /# \/graphify/);
 assert.match(invocation, /User: \/graphify \. --no-viz/);
+
+const installMessage = formatGraphifyInstallMessage("installed", getGraphifyPaths({}, "/home/alice"), "installed at .git/hooks/post-commit");
+assert.match(installMessage, /Graphify installed at \/home\/alice\/\.graphify\/repo\./);
+assert.match(installMessage, /Hook install: installed at \.git\/hooks\/post-commit/);
+assert.match(installMessage, /Use \/graphify \. to build a graph\./);
 
 console.log("graphify-extension ok");

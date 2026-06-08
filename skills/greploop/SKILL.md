@@ -289,7 +289,7 @@ Stop the loop if **any** of these are true:
 
 For each unresolved Greptile comment:
 
-1. Read the file and understand the comment in context.
+1. Read the file and understand the comment in context. If `graphify-out/graph.json` exists and the finding's impact is cross-module, query Graphify for caller/path leads and verify named files.
 2. Determine if it's actionable (code change needed) or informational.
 3. If actionable, make the fix.
 4. If informational or a false positive, note it but still resolve the thread.

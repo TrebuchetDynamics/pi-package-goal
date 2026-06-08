@@ -10,7 +10,7 @@ Stress-test a plan against the repo's domain model and documented decisions unti
 ## Quick start
 
 1. Restate the plan and the next hard uncertainty.
-2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, and codebase-map-understand.md when present.
+2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, `codebase-map-understand.md when present`, and `graphify-out/graph.json` when present. Query Graphify for relationship evidence when the plan spans modules, then verify named files.
 3. Answer anything the code/docs can answer; ask the user only owner-decision questions.
 4. Ask one question at a time and wait for feedback before continuing. For each question, include your recommended answer.
 5. Capture resolved domain terms in `CONTEXT.md` immediately; offer ADRs sparingly for durable trade-offs.

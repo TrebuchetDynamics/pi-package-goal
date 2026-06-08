@@ -301,7 +301,7 @@ This Skill is not needed in the following situations:
 
 ## How to Use
 
-Search specific domains using the CLI tool below.
+Search specific domains using the CLI tool below. If `graphify-out/graph.json` exists and the UX work must preserve existing routes/components/data flows, query Graphify for relationship leads first, then verify named files in source.
 
 ---
 

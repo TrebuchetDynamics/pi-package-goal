@@ -1,7 +1,7 @@
 {
   "name": "pi-package-goal",
   "version": "0.1.0",
-  "description": "Pi package bundling high-signal engineering skills, opt-in Pi UX extensions, and an Understand-Anything slash-command bridge.",
+  "description": "Pi package bundling high-signal engineering skills, opt-in Pi UX extensions, and Understand/Graphify slash-command bridges.",
   "type": "module",
   "bin": {
     "tx": "./tmux/tx",
@@ -30,7 +30,8 @@
     "prompt-cache",
     "pi-theme",
     "pi-extension",
-    "understand-anything"
+    "understand-anything",
+    "graphify"
   ],
   "files": [
     "lib",

@@ -165,10 +165,10 @@ Common commands:
 | `/graphify query "How does auth work?"` | Query an existing `graphify-out/graph.json`. |
 | `/graphify help` | Show local bridge help without cloning upstream. |
 | `/graphify status` | Show the upstream checkout status. |
-| `/graphify install` | Clone the upstream Graphify repo. |
+| `/graphify install` | Clone the upstream Graphify repo and run `graphify hook install` for the current project. |
 | `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
 
-The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs.
+The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install action also installs Graphify's git hooks so commits/checkouts can trigger graph maintenance.
 
 ### RTK bash command compression
 

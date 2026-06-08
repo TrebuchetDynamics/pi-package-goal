@@ -5,7 +5,7 @@ description: Build, debug, review, and publish Chrome Extensions using Manifest 
 
 # Chrome Extensions
 
-Build production-quality Chrome extensions using Manifest V3 and publish them to the Chrome Web Store.
+Build production-quality Chrome extensions using Manifest V3 and publish them to the Chrome Web Store. If `graphify-out/graph.json` exists and the extension task spans service workers, content scripts, popup/side-panel UI, or shared modules, query Graphify for relationship leads before broad manual exploration, then verify named files.
 
 ## Part 1 — Building Extensions
 

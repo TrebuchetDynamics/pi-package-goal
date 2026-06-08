@@ -1,6 +1,6 @@
 # pi-package-goal Context
 
-This package ships Pi skills plus a single `/understand` bridge extension.
+This package ships Pi skills plus `/understand`, `/graphify`, folder-refactor, and RTK bridge extensions.
 
 ## Language
 
@@ -32,6 +32,10 @@ _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource
 Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
 _Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
 
+**Graphify Skill Guidance**:
+Shared and high-traffic skill instructions tell agents to query `graphify-out/graph.json` when codebase-wide relationship, architecture, data-flow, refactor, onboarding, review, or impact evidence is useful, then verify graph leads against live source and tests before editing or reporting.
+_Avoid_: treating graph output as authoritative without live-file verification, building a graph for tiny localized edits, broad Graphify rebuilds without task value
+
 **Prompt Cache Auditor Skill**:
 The `prompt-cache-auditor` skill audits LLM agent harness prompt-caching paths by first classifying provider topology, stable versus volatile prompt prefixes, cache keys/markers, and verification counters, then applying one request-building fix at a time and requiring warm-turn cache-read evidence before claiming savings.
 _Avoid_: live paid API calls without approval, credential-bearing captures in reports, current-user-turn cache breakpoints, random per-request `prompt_cache_key`, savings claims without provider usage counters
@@ -47,6 +51,10 @@ _Avoid_: speculative utilities, one-call-site abstractions, test-first cleanup u
 **Folder Refactor Extension**:
 The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
+
+**Graphify Extension**:
+The package-local extension at `extensions/graphify.js` registers `/graphify`. It clones/updates `safishamsi/graphify`, loads the upstream Pi skill from the user checkout, and on `/graphify install` also runs `graphify hook install` so the current project gets Graphify's git hook integration.
+_Avoid_: misspelled command aliases, bundling upstream code without notices, treating graph hooks as installed when the hook command failed, running silent startup network work
 
 **RTK Extension**:
 The package-local extension at `extensions/rtk.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.

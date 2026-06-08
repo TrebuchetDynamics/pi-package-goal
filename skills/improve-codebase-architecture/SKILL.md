@@ -45,8 +45,9 @@ Start with the repository's own evidence, not generic heuristics. Inspect:
 1. repo instructions and git state (`AGENTS.md`, `git status --short --branch`);
 2. orientation docs (`README.md`, `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `TODO.md`/plans when present);
 3. `codebase-map-understand.md` when present, then the exact files it points to;
-4. package/app manifests, validation scripts, and tests for the area;
-5. callers and callees around each suspected seam using `rg`, `find`, and targeted reads.
+4. `graphify-out/graph.json` when present: query Graphify for architecture paths, callers, hotspots, and cross-module edges, then verify the exact files it names;
+5. package/app manifests, validation scripts, and tests for the area;
+6. callers and callees around each suspected seam using `rg`, `find`, and targeted reads.
 
 Build working study notes with domain terms, ADR constraints, hot paths, caller/test evidence, validation commands, and candidate friction. Do not write repo files during exploration unless the user asked for durable docs.
 

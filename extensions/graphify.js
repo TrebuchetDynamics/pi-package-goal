@@ -80,6 +80,21 @@ async function updateGraphify(pi, ctx, paths) {
   return "updated";
 }
 
+export function formatGraphifyInstallMessage(action, paths, hookOutput = "") {
+  const hookText = String(hookOutput ?? "").trim();
+  const suffix = hookText ? `\nHook install: ${hookText}` : "\nHook install: completed";
+  return `Graphify ${action} at ${paths.repoDir}.${suffix}\nUse /graphify . to build a graph.`;
+}
+
+async function installGraphifyHook(pi, ctx) {
+  const result = await pi.exec("graphify", ["hook", "install"], { signal: ctx.signal, timeout: 120_000 });
+  if (result.code !== 0 || result.killed) {
+    const output = commandOutput(result);
+    throw new Error(output || "graphify hook install failed");
+  }
+  return commandOutput(result);
+}
+
 async function ensureInstalled(pi, ctx, paths = getGraphifyPaths(), { prompt = true } = {}) {
   if (await isInstalled(paths)) return;
 
@@ -162,8 +177,11 @@ async function handleBridgeCommand(pi, args, ctx, paths) {
 
   if (parsed.action === "install" || parsed.action === "update") {
     const action = await updateGraphify(pi, ctx, paths);
-    const message = `Graphify ${action} at ${paths.repoDir}. Use /graphify . to build a graph.`;
-    await postMessage(pi, message, { action: parsed.action, result: action, paths });
+    const hookOutput = parsed.action === "install" ? await installGraphifyHook(pi, ctx) : "";
+    const message = parsed.action === "install"
+      ? formatGraphifyInstallMessage(action, paths, hookOutput)
+      : `Graphify ${action} at ${paths.repoDir}. Use /graphify . to build a graph.`;
+    await postMessage(pi, message, { action: parsed.action, result: action, hookOutput, paths });
   }
 }
 
