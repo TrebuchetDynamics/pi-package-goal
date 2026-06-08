@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import {
+import registerFolderRefactorExtension, {
   auditFolderRefactorCompletion,
   buildFolderRefactorPrompt,
   formatAuditResult,
@@ -101,6 +101,20 @@ try {
   });
   assert.equal(baselineMismatch.ok, false);
   assert.match(formatAuditResult(baselineMismatch), /scan baseline hash mismatch/);
+
+  const registeredCommands = [];
+  const registeredTools = [];
+  registerFolderRefactorExtension({
+    getAllTools: () => [
+      { name: "folder_refactor_scan" },
+      { name: "folder_refactor_audit" },
+      { name: "folder_refactor_state" },
+    ],
+    registerCommand: (name) => registeredCommands.push(name),
+    registerTool: (definition) => registeredTools.push(definition.name),
+  });
+  assert.deepEqual(registeredCommands, ["folder-refactor"]);
+  assert.deepEqual(registeredTools, []);
 } finally {
   await rm(fixture, { recursive: true, force: true });
 }

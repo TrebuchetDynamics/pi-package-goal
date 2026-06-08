@@ -805,6 +805,13 @@ function compactScanForTool(scan, fullScanPath) {
   };
 }
 
+function registerToolIfAvailable(pi, definition) {
+  const existingTools = typeof pi.getAllTools === "function" ? pi.getAllTools() : [];
+  if (existingTools.some((tool) => tool.name === definition.name)) return false;
+  pi.registerTool(definition);
+  return true;
+}
+
 export default function (pi) {
   pi.registerCommand("folder-refactor", {
     description: "Start guarded folder-refactor with deterministic completion audit",
@@ -817,7 +824,7 @@ export default function (pi) {
     },
   });
 
-  pi.registerTool({
+  registerToolIfAvailable(pi, {
     name: "folder_refactor_scan",
     label: "Folder Refactor Scan",
     description: "Return deterministic JSON inventory for a folder-refactor target: sorted root files/dirs/symlinks/other, git status hints, safety metadata, refactor classification hints, and a scan hash. Read-only; no files are moved.",
@@ -838,7 +845,7 @@ export default function (pi) {
     },
   });
 
-  pi.registerTool({
+  registerToolIfAvailable(pi, {
     name: "folder_refactor_audit",
     label: "Folder Refactor Audit",
     description: "Deterministically audit a folder-refactor final report: every remaining root file must be explicitly classified and safe next candidates must not be skipped.",
@@ -857,7 +864,7 @@ export default function (pi) {
     },
   });
 
-  pi.registerTool({
+  registerToolIfAvailable(pi, {
     name: "folder_refactor_state",
     label: "Folder Refactor State",
     description: "Read or write local .pi/folder-refactor state for long folder-refactor objectives.",
