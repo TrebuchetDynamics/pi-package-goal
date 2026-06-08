@@ -110,6 +110,7 @@ try {
       { name: "folder_refactor_audit" },
       { name: "folder_refactor_state" },
     ],
+    on: (_event, handler) => handler(),
     registerCommand: (name) => registeredCommands.push(name),
     registerTool: (definition) => registeredTools.push(definition.name),
   });
