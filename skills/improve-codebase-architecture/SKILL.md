@@ -40,12 +40,14 @@ This skill is _informed_ by the project's domain model. The domain language give
 
 ### 1. Study the repo before proposing architecture
 
+**Graphify startup gate:** this skill must visibly activate Graphify before broad architecture study. First check for `graphify-out/graph.json`. If it exists, run `graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500` (or `/graphify query ...`) and record the query in study evidence. If it does not exist and the repo is not tiny, start `/graphify .` before the manual study; if Graphify cannot build because credentials/backend are missing, record that blocker and continue with direct repo study. Graph facts are leads only: verify every named file, caller, and test against live source before reporting.
+
 Start with the repository's own evidence, not generic heuristics. Inspect:
 
 1. repo instructions and git state (`AGENTS.md`, `git status --short --branch`);
 2. orientation docs (`README.md`, `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `TODO.md`/plans when present);
 3. `codebase-map-understand.md` when present, then the exact files it points to;
-4. `graphify-out/graph.json` when present: query Graphify for architecture paths, callers, hotspots, and cross-module edges, then verify the exact files it names;
+4. Graphify output from the startup gate: architecture paths, callers, hotspots, and cross-module edges, then the exact live files it names;
 5. package/app manifests, validation scripts, and tests for the area;
 6. callers and callees around each suspected seam using `rg`, `find`, and targeted reads.
 

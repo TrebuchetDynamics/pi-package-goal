@@ -50,27 +50,28 @@ Before blocking on validation, prove at least one of:
 
 1. Read repo instructions (`AGENTS.md`, package scripts, relevant docs) and inspect `git status --short --branch`.
 2. Inspect diffs for every changed and untracked path. For untracked files, inspect names, type/size, and contents when text.
-3. Check whether generated junk, local state, logs, caches, temp files, or tool outputs should be ignored. In ship mode, fix safe hygiene directly: tighten `.gitignore`, remove/leave unstaged generated junk, run formatters already declared by the repo, update imports, and apply small mechanical fixes from validation.
-4. Classify each path:
+3. If the patch claims architecture/refactor/codebase-impact evidence and `graphify-out/graph.json` exists, query Graphify for the touched modules/callers and verify the named files before classifying the patch. Do not build or refresh Graphify during delivery unless validation or the accepted scope requires it.
+4. Check whether generated junk, local state, logs, caches, temp files, or tool outputs should be ignored. In ship mode, fix safe hygiene directly: tighten `.gitignore`, remove/leave unstaged generated junk, run formatters already declared by the repo, update imports, and apply small mechanical fixes from validation.
+5. Classify each path:
    - **safe in-scope** — directly belongs to the requested work, including safe polish, formatting, import cleanup, and `.gitignore` hygiene;
    - **review_needed** — plausibly useful but ownership/scope is unclear, or a fix would alter intended behavior/API;
    - **blocked** — secrets, credentials, generated/binary junk that cannot be safely ignored, local state/logs, dependency lockfile surprises, unrelated user work, or validation failures without a safe in-scope fix.
-5. In audit/status mode, stop after the classification and validation receipts; do not stage.
-6. In ship mode, keep working through safe polish loops until clean or blocked. Block before commit only if any path is `blocked`, or if `review_needed` paths are required for delivery and cannot be safely resolved without owner input.
-7. Run validation:
+6. In audit/status mode, stop after the classification and validation receipts; do not stage.
+7. In ship mode, keep working through safe polish loops until clean or blocked. Block before commit only if any path is `blocked`, or if `review_needed` paths are required for delivery and cannot be safely resolved without owner input.
+8. Run validation:
    - required user-specified commands;
    - inferred project tests;
    - `git diff --check`.
-8. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
-9. Stage intentionally by explicit pathspec. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope.
-10. Prefer coherent split commits when changes are separable; otherwise make one clear commit. After committing, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
-11. Push to the current branch's upstream. If no upstream exists, ask before choosing one. If push is rejected for fetch-first/non-fast-forward, stop and ask before rebase/merge.
-12. Verify final `git status --short --branch` and report commit hash(es), push result, remaining worktree state, and validation receipts.
+9. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
+10. Stage intentionally by explicit pathspec. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope.
+11. Prefer coherent split commits when changes are separable; otherwise make one clear commit. After committing, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
+12. Push to the current branch's upstream. If no upstream exists, ask before choosing one. If push is rejected for fetch-first/non-fast-forward, stop and ask before rebase/merge.
+13. Verify final `git status --short --branch` and report commit hash(es), push result, remaining worktree state, and validation receipts.
 
 ## Red lines
 
 - Do not commit secrets, `.env` files, private keys, credentials, or personal machine state.
-- Do not include `.pi/*/logs.jsonl`, caches, build output, generated Understand artifacts, or unrelated user edits unless explicitly requested.
+- Do not include `.pi/*/logs.jsonl`, caches, build output, generated Understand artifacts, generated Graphify artifacts (`graphify-out/`), or unrelated user edits unless explicitly requested.
 - Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes, change remotes, or delete branches unless explicitly requested.
 - Do not make product/architecture changes, dependency upgrades, lockfile churn, or broad rewrites under the label of polish unless explicitly in scope.
 - Do not stage broadly before every path has been inspected.

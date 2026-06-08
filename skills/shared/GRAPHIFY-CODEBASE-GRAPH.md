@@ -2,18 +2,44 @@
 
 Use this when a skill needs codebase-wide relationship evidence.
 
+## Activation rule
+
+Before broad codebase exploration, check for `graphify-out/graph.json`.
+
+- If it exists, run a focused Graphify query before broad manual grepping/reading.
+- If it does not exist and the task is broad architecture/refactor/onboarding/impact work, start `/graphify .` unless the current skill is explicitly read-only/status-only, the user asked not to build artifacts, or graph building is blocked by missing backend/credentials.
+- If Graphify cannot build or query, record the blocker and continue with direct repo evidence instead of pretending graph evidence exists.
+
 ## When to use Graphify
 
-- If `graphify-out/graph.json` exists and the task asks about architecture, module relationships, caller/callee paths, data flow, refactor candidates, onboarding, PR impact, or “how does this codebase work?”, query Graphify before broad manual exploration.
-- For broad repo understanding where no graph exists, consider `/graphify .` when the extra setup cost is justified. Do not build a graph for a tiny localized edit, a single known file, or a pure writing/design task.
-- If the user explicitly asks to rebuild/update a graph, use `/graphify .`, `/graphify <path>`, or `/graphify <path> --update` as appropriate.
+Use Graphify for tasks involving:
 
-## How to use it
+- architecture, module relationships, caller/callee paths, data flow, dependency seams, refactor candidates, dedupe, bug-impact analysis, onboarding, PR/review impact, package-resource relationships, route/component/data-flow relationships, or “how does this codebase work?”
 
-- Prefer `/graphify query "<question>"` from Pi. In shell-only validation contexts, `graphify query "<question>" --budget <n>` is acceptable when the CLI is already installed.
-- Ask relationship questions, not vague summaries: “What callers reach X?”, “Which files connect auth to billing?”, “What paths mention Y?”, “Where are duplicate parser seams?”
-- Treat graph results as leads. Verify every claimed file, caller, dependency, or hotspot against live source files and tests before editing or reporting.
-- If graph output conflicts with current files, trust live files and note the graph as stale. Use `/graphify <path> --update` only when the task benefits from refreshing the graph.
+Skip Graphify for:
+
+- a tiny localized edit in one known file;
+- pure prose shaping with no codebase claims;
+- delivery-only status where all changed paths are already known and no architecture/impact claim is being made;
+- explicit user requests not to build/query graph artifacts.
+
+## Query patterns by task
+
+Use concrete relationship questions, not vague summaries:
+
+- Architecture: `graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500`
+- Refactor: `graphify query "duplicate logic, shared seams, callers, and tests for <target>" --budget 2000`
+- Diagnose/TDD: `graphify query "call paths and tests related to <bug or behavior>" --budget 2000`
+- Review/delivery: `graphify query "impact and callers for changed files <paths>" --budget 2000`
+- UI/frontend: `graphify query "routes components data flow and tests for <surface>" --budget 2000`
+- Pi/package resources: `graphify query "package resources extensions skills tests and manifest relationships for <topic>" --budget 2000`
+
+## Verification discipline
+
+- Treat graph results as leads. Verify every claimed file, caller, dependency, hotspot, route, or test against live source files before editing or reporting.
+- If graph output conflicts with current files, trust live files and note the graph as stale.
+- Use `/graphify <path> --update` only when refreshing the graph is useful for the task; do not refresh as delivery theater.
+- Do not commit generated `graphify-out/` artifacts unless the user explicitly asks.
 
 ## Evidence handoff
 

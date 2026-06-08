@@ -428,6 +428,9 @@ async function testSkills() {
   assert.match(architecture, /git status --short --branch/);
   assert.match(architecture, /codebase-map-understand\.md/);
   assert.match(architecture, /Study evidence/);
+  assert.match(architecture, /Graphify startup gate/);
+  assert.match(architecture, /graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500/);
+  assert.match(architecture, /start `\/graphify \.` before the manual study/);
   assert.match(architecture, /Study quality gate/);
   assert.match(architecture, /Architecture review generated: <absolute html path>/);
   assert.doesNotMatch(architecture, /subagent_type=Explore/);
@@ -507,11 +510,18 @@ async function testSkills() {
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
   assert.match(commonContract, /Repo and ownership check/);
   assert.match(commonContract, /Verification evidence/);
+  assert.match(commonContract, /Graphify codebase evidence/);
+  assert.match(commonContract, /Before broad codebase exploration, check whether `graphify-out\/graph\.json` exists/);
+  assert.match(commonContract, /query Graphify first and say the query you ran/);
+  assert.match(commonContract, /start `\/graphify \.`/);
+  assert.match(read("skills/shared/GRAPHIFY-CODEBASE-GRAPH.md"), /Query patterns by task/);
+  assert.match(read("skills/shared/GRAPHIFY-CODEBASE-GRAPH.md"), /architecture hotspots, module relationships, callers, tests, and cross-module seams/);
   assert.match(commonContract, /Handoff shape/);
   assert.match(commonContract, /Safety defaults/);
   for (const file of listSkillFiles(root)) {
     assert.doesNotMatch(read(file), /setup-matt-pocock-skills/, `${file} should not reference upstream setup skill`);
     assert.match(read(file), /COMMON-CONTRACT\.md/, `${file} should reference the shared skill contract`);
+    assert.match(read(file), /Graphify|graphify-out\/graph\.json/, `${file} should name when Graphify evidence applies or is intentionally checked`);
   }
 
   const promptCacheAuditor = read("skills/prompt-cache-auditor/SKILL.md");

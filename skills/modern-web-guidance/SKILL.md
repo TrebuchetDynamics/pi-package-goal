@@ -13,6 +13,7 @@ Must use this skill:
 - At the **start** of implementing any web feature.
 - Before creating a new component, to check if a standardized pattern already exists.
 - To avoid implementing ad-hoc solutions or loading large dependencies unnecessarily.
+- When `graphify-out/graph.json` exists and the web change touches existing routes/components/data flow, query Graphify for project-specific relationship leads before applying generic web guidance; verify named files directly.
 
 ## Usage Instructions
 

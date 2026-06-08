@@ -11,7 +11,7 @@ Use this contract as the baseline for every packaged skill unless a skill's own 
 
 ## Graphify codebase evidence
 
-When a task needs codebase-wide relationship, architecture, data-flow, refactor, onboarding, or impact evidence, and `graphify-out/graph.json` exists, query Graphify before broad manual exploration. Treat graph facts as leads only: verify named files, callers, and tests against live source before editing or reporting. Full guidance: [Graphify codebase graph](GRAPHIFY-CODEBASE-GRAPH.md).
+Before broad codebase exploration, check whether `graphify-out/graph.json` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, query Graphify first and say the query you ran. If no graph exists and the task is broad enough to benefit from one, start `/graphify .` unless the skill is explicitly read-only/status-only or the user asked not to build artifacts. Treat graph facts as leads only: verify named files, callers, and tests against live source before editing or reporting. Full guidance: [Graphify codebase graph](GRAPHIFY-CODEBASE-GRAPH.md).
 
 ## Verification evidence
 
