@@ -155,3 +155,13 @@ Trebuchet Dynamics under the MIT License.
   - `skills/goal/`
 - License: MIT
 - Full license copy: `licenses/jthack-claude-goal-LICENSE`
+
+## Michaelliv/pi-goal
+
+- Source: https://github.com/Michaelliv/pi-goal
+- Snapshot inspected: `806d849f4dc8`
+- Bundled paths:
+  - `extensions/goal/`
+- Local changes: renamed the bundled extension path from `pi-goal` to `goal` and updated Pi core imports to `@earendil-works/*` package names.
+- License: MIT
+- Full license copy: `licenses/Michaelliv-pi-goal-LICENSE`

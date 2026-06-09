@@ -47,6 +47,7 @@
   ],
   "pi": {
     "extensions": [
+      "./extensions/goal",
       "./extensions/understand.js",
       "./extensions/folder-refactor.js",
       "./extensions/rtk.js",

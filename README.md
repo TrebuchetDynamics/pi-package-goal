@@ -55,7 +55,8 @@ After installing or updating, reload your open Pi session:
 Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled.
 
 ```text
-/skill:goal improve the README until a new user can install and choose a skill
+/goal improve the README until a new user can install and choose a skill
+/skill:goal write a stronger long-running objective for this repo
 /skill:git-commit-push audit
 /skill:tdd add coverage for the parser edge case
 /skill:diagnose debug the failing npm test
@@ -98,6 +99,23 @@ autofolderrefactor 10
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
 
 ## Included extensions
+
+### `/goal`
+
+`/goal` is the bundled [pi-goal](https://github.com/Michaelliv/pi-goal) extension, installed from this package under the simple extension name `goal`.
+
+Common commands:
+
+| Command | Use it for |
+| --- | --- |
+| `/goal <objective>` | Start or replace a persistent objective for the current session. |
+| `/goal --tokens 50k <objective>` | Pursue the objective until complete or the token budget is reached. |
+| `/goal status` | Show the current goal, usage, and status bar setting. |
+| `/goal pause` / `/goal resume` | Stop or resume autonomous continuation. |
+| `/goal clear` | Remove the current goal. |
+| `/goal statusbar on|off` | Toggle the footer status line. |
+
+While active, the extension exposes `get_goal` and `update_goal` tools so the agent can inspect the objective and mark it complete only after evidence-backed verification.
 
 ### `/understand`
 

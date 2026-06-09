@@ -329,7 +329,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphify.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphify.js"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -358,6 +358,14 @@ async function testPackageManifestPaths() {
 }
 
 async function testUnderstandExtension() {
+  const goalExtension = read("extensions/goal/index.ts");
+  assert.match(goalExtension, /registerCommand\("goal"/);
+  assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
+  assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
+  assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
+  assert.match(goalExtension, /@earendil-works\/pi-coding-agent/);
+  assert.doesNotMatch(goalExtension, /@mariozechner\//);
+
   const folderRefactorExtension = read("extensions/folder-refactor.js");
   assert.match(folderRefactorExtension, /folder_refactor_scan/);
   assert.match(folderRefactorExtension, /folder_refactor_audit/);
