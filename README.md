@@ -179,7 +179,7 @@ Common commands:
 
 | Command | Use it for |
 | --- | --- |
-| `/graphify .` | Build a Graphify knowledge graph for the current project. |
+| `/graphify .` | Build/update a pure AST/local/no-LLM Graphify code graph for the current project by default. |
 | `/graphify query "How does auth work?"` | Query an existing `graphify-out/graph.json`. |
 | `/graphify help` | Show local bridge help without cloning upstream. |
 | `/graphify status` | Show the upstream checkout status. |
@@ -189,6 +189,8 @@ Common commands:
 | `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
 
 The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install action also installs Graphify's git hooks so commits/checkouts can trigger graph maintenance.
+
+Pi's `/graphify` bridge defaults to pure AST/local/no-LLM graph maintenance for build and update flows. It should not run semantic extraction, dispatch LLM subagents, or ask for API keys unless the user explicitly asks for semantic/doc/PDF/image/video/deep/backend extraction. Markdown and other prose files can be intentionally omitted in this mode.
 
 When a target already has `graphify-out/graph.json`, build-style invocations automatically add `--update` (for example `/graphify .` becomes `/graphify . --update`). Existing-graph read commands (`/graphify query`, `/graphify path`, and `/graphify explain`) use direct CLI fast paths instead of injecting the upstream skill into the conversation. Add and explicit `--update`/`--cluster-only` commands are left unchanged.
 

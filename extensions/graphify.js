@@ -33,8 +33,10 @@ export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skill
   return [
     `<skill name="graphify" location="${skillPath}">`,
     `User invoked ${invocation}. Follow the Graphify Pi skill below exactly.`,
+    `Pi bridge policy: default graph builds and updates in Pi are pure AST/local/no-LLM. For bare path invocations such as /graphify ., /graphify src, or /graphify . --update, run Graphify's no-LLM code path (graphify update <path>, using --force when needed) and do not run semantic extraction, do not dispatch subagents, and do not ask for or suggest API keys. Only use semantic/LLM extraction when the user explicitly asks for semantic, docs, PDFs, images, video, deep mode, or an LLM/backend.`,
     `Pi bridge policy: before any repo graph build, update, query, path, or explain run, ensure Graphify's git hooks are active in the current target repo by running graphify hook install after graphifyy is available. If the hook is already installed, continue without asking.`,
     `Pi bridge policy: when Graphify detects a large corpus and lists top first-level subdirectories, do not ask the user which one to run. Automatically continue with the listed top subdirectories as a multi-path run, preserving their order, unless the user already named a narrower path or explicitly asked to choose manually.`,
+    `Pi bridge policy: if pure AST mode omits markdown or other prose files, report that as an intentional no-LLM tradeoff rather than a failure.`,
     "",
     skillContent.trimEnd(),
     "</skill>",
@@ -182,6 +184,78 @@ export function isGraphifyCliFastPath(args = "") {
   return ["explain", "path", "query"].includes(first.toLowerCase());
 }
 
+export function isExplicitSemanticGraphifyArgs(args = "") {
+  let tokens;
+  try {
+    tokens = parseGraphifyCliArgs(args);
+  } catch {
+    return true;
+  }
+  const lowered = tokens.map((token) => token.toLowerCase());
+  return lowered.some((token, index) =>
+    token === "semantic" ||
+    token === "docs" ||
+    token === "pdf" ||
+    token === "pdfs" ||
+    token === "image" ||
+    token === "images" ||
+    token === "video" ||
+    token === "videos" ||
+    token === "--wiki" ||
+    token === "--obsidian" ||
+    token === "--backend" ||
+    token.startsWith("--backend=") ||
+    token === "--model" ||
+    token.startsWith("--model=") ||
+    token === "--whisper-model" ||
+    token.startsWith("--whisper-model=") ||
+    token === "--mode=deep" ||
+    (token === "--mode" && lowered[index + 1] === "deep")
+  );
+}
+
+export function isGraphifyAstOnlyBuildArgs(args = "") {
+  if (isExplicitSemanticGraphifyArgs(args)) return false;
+  let tokens;
+  try {
+    tokens = parseGraphifyCliArgs(args);
+  } catch {
+    return false;
+  }
+  const first = tokens[0] ?? "";
+  if (["add", "explain", "path", "query"].includes(first.toLowerCase())) return false;
+  if (/^https?:\/\//i.test(first)) return false;
+  const allowedFlags = new Set(["--update", "--force", "--no-cluster", "--no-viz"]);
+  return tokens.every((token, index) => {
+    if (index === 0 && token && !token.startsWith("-")) return true;
+    return allowedFlags.has(token);
+  });
+}
+
+export function buildGraphifyAstOnlyUpdateArgs(args = "") {
+  const tokens = parseGraphifyCliArgs(args);
+  const target = tokens.find((token) => !token.startsWith("-")) ?? ".";
+  const updateArgs = ["GRAPHIFY_NO_TIPS=1", "graphify", "update", target, "--force"];
+  if (tokens.includes("--no-cluster")) updateArgs.push("--no-cluster");
+  return updateArgs;
+}
+
+export async function runGraphifyAstOnlyBuild(pi, ctx, args = "") {
+  await installGraphifyHook(pi, ctx);
+  const cliArgs = buildGraphifyAstOnlyUpdateArgs(args);
+  const result = await pi.exec("env", cliArgs, { signal: ctx.signal, timeout: 300_000 });
+  const output = commandOutput(result);
+  if (result.code !== 0 || result.killed) {
+    throw new Error(output || `env ${cliArgs.join(" ")} failed`);
+  }
+  await postMessage(pi, output || "Graphify AST-only update completed with no output.", {
+    action: "update",
+    mode: "ast-only",
+    args: cliArgs.slice(3),
+    exitCode: result.code,
+  });
+}
+
 export async function runGraphifyCliFastPath(pi, ctx, args = "") {
   const cliArgs = parseGraphifyCliArgs(args);
   const result = await pi.exec("graphify", cliArgs, { signal: ctx.signal, timeout: 120_000 });
@@ -237,6 +311,11 @@ async function sendGraphifySkillInvocation(pi, ctx, paths, commandName, args) {
   }
 
   const automaticUpdate = await applyAutomaticGraphifyUpdate(args, ctx.cwd);
+  if (isGraphifyAstOnlyBuildArgs(automaticUpdate.args)) {
+    await runGraphifyAstOnlyBuild(pi, ctx, automaticUpdate.args);
+    return;
+  }
+
   await graphifyLifecycle.sendSkillInvocation(pi, ctx, paths, { commandName, skillPath: paths.skillPath, args: automaticUpdate.args });
 }
 
