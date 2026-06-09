@@ -35,7 +35,7 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, and commands inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `npm test`). Include a small note if generated graph evidence was verified against live files. No introduction paragraph — straight into the candidates.
+Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, commands, and worktree status inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `graphify query ...`, `git status --short --branch`, `npm test`). Include a small note if generated graph evidence was verified against live files. No introduction paragraph — straight into the candidates.
 
 ## Candidate card
 
@@ -46,7 +46,7 @@ Each candidate is one `<article>`:
 - **Title** — short, names the deepening (e.g. "Collapse the Order intake pipeline").
 - **Badge row** — recommendation strength (`Strong` = emerald, `Worth exploring` = amber, `Speculative` = slate), plus a tag for the dependency category (`in-process`, `local-substitutable`, `ports & adapters`, `mock`).
 - **Files** — monospaced list, `font-mono text-sm`.
-- **Study evidence** — 2-4 compact receipts from repo study: docs/ADRs, caller path, test/validation path, deletion-test result.
+- **Study evidence** — 2-4 compact receipts from repo study: docs/ADRs, graph query, caller path, test/validation path, deletion-test result, and dirty-worktree classification when relevant.
 - **Before / After diagram** — the centrepiece. Two columns, side by side. See patterns below.
 - **Problem** — one sentence. What hurts.
 - **Solution** — one sentence. What changes.
@@ -103,7 +103,7 @@ Before: a tree of function calls rendered as nested boxes. After: the same tree 
 
 ## Top recommendation section
 
-One larger card. Candidate name, one sentence on why, anchor link to its card, and the decisive evidence receipt. Choose by locality/leverage proof, not by diff size. That's it.
+One larger card. Candidate name, one sentence on why, anchor link to its card, and the decisive evidence receipt. Choose by locality/leverage proof, not by diff size, file length, or novelty. That's it.
 
 ## Tone
 

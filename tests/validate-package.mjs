@@ -387,6 +387,13 @@ async function testUnderstandExtension() {
   assert.match(graphifyExtension, /https:\/\/github\.com\/safishamsi\/graphify\.git/);
   assert.match(graphifyExtension, /skill-pi\.md/);
   assert.match(graphifyExtension, /isHelpArg/);
+  assert.match(graphifyExtension, /createRepoBackedSkillBridge/);
+
+  const lifecycle = read("lib/pi-bridge/lifecycle.js");
+  assert.match(lifecycle, /createRepoBackedSkillBridge/);
+  assert.match(lifecycle, /ensureInstalled/);
+  assert.match(lifecycle, /sendSkillInvocation/);
+  assert.match(lifecycle, /checkoutHead/);
 
   const extension = read("extensions/understand.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
@@ -399,6 +406,7 @@ async function testUnderstandExtension() {
   assert.match(extension, /buildRefactorGrillPrompt/);
   assert.match(extension, /summarizePreviousRefactorPlan/);
   assert.match(extension, /https:\/\/github\.com\/Lum1104\/Understand-Anything\.git/);
+  assert.match(extension, /createRepoBackedSkillBridge/);
   assert.match(extension, /resources_discover/);
 }
 
@@ -440,13 +448,19 @@ async function testSkills() {
   assert.match(architecture, /graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500/);
   assert.match(architecture, /start `\/graphify \.` before the manual study/);
   assert.match(architecture, /Study quality gate/);
+  assert.match(architecture, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
+  assert.match(architecture, /diagrams carry the argument/);
+  assert.match(architecture, /strongest locality\/leverage proof/);
   assert.match(architecture, /Architecture review generated: <absolute html path>/);
   assert.doesNotMatch(architecture, /subagent_type=Explore/);
   const repoStudy = read("skills/improve-codebase-architecture/REPO-STUDY.md");
   assert.match(repoStudy, /Candidate evidence requirements/);
   assert.match(repoStudy, /Generated map discipline/);
+  assert.match(repoStudy, /Dirty-worktree pass/);
+  assert.match(repoStudy, /accepted in-scope dirty evidence/);
   assert.match(repoStudy, /Review quality gate/);
   assert.match(read("skills/improve-codebase-architecture/HTML-REPORT.md"), /Evidence base/);
+  assert.match(read("skills/improve-codebase-architecture/HTML-REPORT.md"), /worktree status/);
   assert.match(read("skills/improve-codebase-architecture/INTERFACE-DESIGN.md"), /If parallel sub-agents are available/);
 
   const tdd = read("skills/tdd/SKILL.md");
@@ -510,7 +524,12 @@ async function testSkills() {
   assert.match(folderRefactor, /candidates-folder-refactor/);
   assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
   assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);
-  assert.match(read("skills/grill-with-docs/SKILL.md"), /codebase-map-understand\.md when present/);
+  const grillWithDocs = read("skills/grill-with-docs/SKILL.md");
+  assert.match(grillWithDocs, /codebase-map-understand\.md when present/);
+  assert.match(grillWithDocs, /resolving dependencies between decisions one-by-one/);
+  assert.match(grillWithDocs, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
+  assert.match(grillWithDocs, /state which prior decision this branch depends on/);
+  assert.match(grillWithDocs, /If the user has not accepted the canonical term, keep grilling instead of writing/);
   assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/to-issues/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/triage/SKILL.md"), /codebase-map-understand\.md/);

@@ -1,6 +1,5 @@
-import { constants as fsConstants } from "node:fs";
-import { access, mkdir, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import { commandOutput, createRepoBackedSkillBridge, pathExists } from "../lib/pi-bridge/lifecycle.js";
 import { homedir } from "node:os";
 
 const DEFAULT_REPO_URL = "https://github.com/safishamsi/graphify.git";
@@ -42,45 +41,19 @@ export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skill
   ].join("\n").trimEnd();
 }
 
-async function pathExists(path) {
-  try {
-    await access(path, fsConstants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function isInstalled(paths = getGraphifyPaths()) {
   return pathExists(paths.skillPath);
 }
 
-function commandOutput(result) {
-  return [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
-}
-
-async function runGit(pi, args, ctx, timeout = 600_000) {
-  const result = await pi.exec("git", args, { signal: ctx.signal, timeout });
-  if (result.code !== 0) {
-    const output = commandOutput(result);
-    throw new Error(output || `git ${args.join(" ")} failed with exit code ${result.code}`);
-  }
-  return result;
-}
-
-async function cloneGraphify(pi, ctx, paths) {
-  await mkdir(dirname(paths.repoDir), { recursive: true });
-  await runGit(pi, ["clone", "--depth", "1", paths.repoUrl, paths.repoDir], ctx);
-}
-
-async function updateGraphify(pi, ctx, paths) {
-  if (!(await isInstalled(paths))) {
-    await cloneGraphify(pi, ctx, paths);
-    return "installed";
-  }
-  await runGit(pi, ["-C", paths.repoDir, "pull", "--ff-only"], ctx);
-  return "updated";
-}
+const graphifyLifecycle = createRepoBackedSkillBridge({
+  bridgeName: "Graphify",
+  isInstalled,
+  installPromptTitle: "Install Graphify Pi skill?",
+  installPromptMessage: (paths) => `Clone ${paths.repoUrl} to ${paths.repoDir} so /graphify can load upstream graphify/skill-pi.md?`,
+  installCancelledMessage: "Graphify install cancelled.",
+  notInstalledMessage: (paths) => `Graphify is not installed. Run /graphify install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`,
+  buildInvocation: ({ commandName, skillPath, skillContent, args }) => buildSkillInvocation({ commandName, skillPath, skillContent, args }),
+});
 
 export function formatGraphifyInstallMessage(action, paths, hookOutput = "") {
   const hookText = String(hookOutput ?? "").trim();
@@ -97,23 +70,6 @@ async function installGraphifyHook(pi, ctx) {
   return commandOutput(result);
 }
 
-async function ensureInstalled(pi, ctx, paths = getGraphifyPaths(), { prompt = true } = {}) {
-  if (await isInstalled(paths)) return;
-
-  if (prompt) {
-    if (!ctx.hasUI) {
-      throw new Error(`Graphify is not installed. Run /graphify install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`);
-    }
-    const ok = await ctx.ui.confirm(
-      "Install Graphify Pi skill?",
-      `Clone ${paths.repoUrl} to ${paths.repoDir} so /graphify can load upstream graphify/skill-pi.md?`,
-    );
-    if (!ok) throw new Error("Graphify install cancelled.");
-  }
-
-  await cloneGraphify(pi, ctx, paths);
-}
-
 export function isHelpArg(args = "") {
   const trimmed = String(args ?? "").trim().toLowerCase();
   return trimmed === "help" || trimmed === "--help" || trimmed === "-h";
@@ -127,14 +83,7 @@ async function sendGraphifySkillInvocation(pi, ctx, paths, commandName, args) {
     return;
   }
 
-  await ensureInstalled(pi, ctx, paths);
-  const skillContent = await readFile(paths.skillPath, "utf8");
-  const message = buildSkillInvocation({ commandName, skillPath: paths.skillPath, skillContent, args });
-  if (ctx.isIdle()) {
-    pi.sendUserMessage(message);
-  } else {
-    pi.sendUserMessage(message, { deliverAs: "followUp" });
-  }
+  await graphifyLifecycle.sendSkillInvocation(pi, ctx, paths, { commandName, skillPath: paths.skillPath, args });
 }
 
 async function postMessage(pi, content, details = {}) {
@@ -159,8 +108,8 @@ async function statusText(pi, ctx, paths) {
   if (!(await isInstalled(paths))) {
     return `Graphify is not installed. Run /graphify install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
   }
-  const result = await runGit(pi, ["-C", paths.repoDir, "rev-parse", "--short", "HEAD"], ctx, 30_000);
-  return `Graphify installed at ${paths.repoDir}\nHEAD: ${result.stdout.trim()}\nPi skill: ${paths.skillPath}`;
+  const head = await graphifyLifecycle.checkoutHead(pi, ctx, paths);
+  return `Graphify installed at ${paths.repoDir}\nHEAD: ${head}\nPi skill: ${paths.skillPath}`;
 }
 
 async function handleBridgeCommand(pi, args, ctx, paths) {
@@ -178,7 +127,7 @@ async function handleBridgeCommand(pi, args, ctx, paths) {
   }
 
   if (parsed.action === "install" || parsed.action === "update") {
-    const action = await updateGraphify(pi, ctx, paths);
+    const action = await graphifyLifecycle.update(pi, ctx, paths);
     const hookOutput = await installGraphifyHook(pi, ctx);
     const message = formatGraphifyInstallMessage(action, paths, hookOutput);
     await postMessage(pi, message, { action: parsed.action, result: action, hookOutput, paths });

@@ -1,6 +1,6 @@
-import { constants as fsConstants } from "node:fs";
-import { access, lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
+import { createRepoBackedSkillBridge, pathExists } from "../lib/pi-bridge/lifecycle.js";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
@@ -746,30 +746,8 @@ export function generateCompareMarkdown(graphA, graphB, { cwd = process.cwd(), f
   return `${lines.join("\n").replace(/\n{3,}/g, "\n\n")}\n`;
 }
 
-async function pathExists(path) {
-  try {
-    await access(path, fsConstants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function isInstalled(paths = getUnderstandPaths()) {
   return pathExists(join(paths.skillsRoot, "understand", "SKILL.md"));
-}
-
-function commandOutput(result) {
-  return [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
-}
-
-async function runGit(pi, args, ctx, timeout = 600_000) {
-  const result = await pi.exec("git", args, { signal: ctx.signal, timeout });
-  if (result.code !== 0) {
-    const output = commandOutput(result);
-    throw new Error(output || `git ${args.join(" ")} failed with exit code ${result.code}`);
-  }
-  return result;
 }
 
 async function linkPluginRoot(paths) {
@@ -781,54 +759,23 @@ async function linkPluginRoot(paths) {
   }
 }
 
-async function cloneUnderstandAnything(pi, ctx, paths) {
-  await mkdir(dirname(paths.repoDir), { recursive: true });
-  await runGit(pi, ["clone", "--depth", "1", paths.repoUrl, paths.repoDir], ctx);
-  await linkPluginRoot(paths);
-}
-
-async function updateUnderstandAnything(pi, ctx, paths) {
-  if (!(await isInstalled(paths))) {
-    await cloneUnderstandAnything(pi, ctx, paths);
-    return "installed";
-  }
-  await runGit(pi, ["-C", paths.repoDir, "pull", "--ff-only"], ctx);
-  await linkPluginRoot(paths);
-  return "updated";
-}
-
-async function ensureInstalled(pi, ctx, paths = getUnderstandPaths(), { prompt = true } = {}) {
-  if (await isInstalled(paths)) {
-    await linkPluginRoot(paths);
-    return;
-  }
-
-  if (prompt) {
-    if (!ctx.hasUI) {
-      throw new Error(
-        `Understand-Anything is not installed. Run /understand install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`,
-      );
-    }
-    const ok = await ctx.ui.confirm(
-      "Install Understand-Anything?",
-      `Clone ${paths.repoUrl} to ${paths.repoDir} so /understand can load the upstream skills?`,
-    );
-    if (!ok) throw new Error("Understand-Anything install cancelled.");
-  }
-
-  await cloneUnderstandAnything(pi, ctx, paths);
-}
+const understandLifecycle = createRepoBackedSkillBridge({
+  bridgeName: "Understand-Anything",
+  isInstalled,
+  afterInstallOrUpdate: linkPluginRoot,
+  installPromptTitle: "Install Understand-Anything?",
+  installPromptMessage: (paths) => `Clone ${paths.repoUrl} to ${paths.repoDir} so /understand can load the upstream skills?`,
+  installCancelledMessage: "Understand-Anything install cancelled.",
+  notInstalledMessage: (paths) => `Understand-Anything is not installed. Run /understand install first, or clone ${paths.repoUrl} to ${paths.repoDir}.`,
+  buildInvocation: ({ skillName, skillPath, skillContent, args }) => buildSkillInvocation({ skillName, skillPath, skillContent, args }),
+});
 
 async function sendSkillInvocation(pi, ctx, paths, skillName, args) {
-  await ensureInstalled(pi, ctx, paths);
-  const skillPath = join(paths.skillsRoot, skillName, "SKILL.md");
-  const skillContent = await readFile(skillPath, "utf8");
-  const message = buildSkillInvocation({ skillName, skillPath, skillContent, args });
-  if (ctx.isIdle()) {
-    pi.sendUserMessage(message);
-  } else {
-    pi.sendUserMessage(message, { deliverAs: "followUp" });
-  }
+  await understandLifecycle.sendSkillInvocation(pi, ctx, paths, {
+    skillName,
+    skillPath: join(paths.skillsRoot, skillName, "SKILL.md"),
+    args,
+  });
 }
 
 async function postMessage(pi, content, details = {}) {
@@ -964,8 +911,7 @@ async function statusText(pi, ctx, paths) {
   if (!(await isInstalled(paths))) {
     return `Understand-Anything is not installed. Run /understand install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
   }
-  const result = await runGit(pi, ["-C", paths.repoDir, "rev-parse", "--short", "HEAD"], ctx, 30_000);
-  const head = result.stdout.trim();
+  const head = await understandLifecycle.checkoutHead(pi, ctx, paths);
   return `Understand-Anything installed at ${paths.repoDir}\nHEAD: ${head}\nSkills: ${paths.skillsRoot}\nPlugin link: ${paths.pluginLink}`;
 }
 
@@ -1201,13 +1147,13 @@ function registerUnderstandCommand(pi, name, paths) {
       }
 
       if (parsed.type === "install") {
-        await ensureInstalled(pi, ctx, paths, { prompt: false });
+        await understandLifecycle.ensureInstalled(pi, ctx, paths, { prompt: false });
         await postMessage(pi, `Installed Understand-Anything at ${paths.repoDir}. Run /reload to expose upstream /skill:understand commands directly, or keep using /understand.`);
         return;
       }
 
       if (parsed.type === "update") {
-        const action = await updateUnderstandAnything(pi, ctx, paths);
+        const action = await understandLifecycle.update(pi, ctx, paths);
         await postMessage(pi, `${action === "installed" ? "Installed" : "Updated"} Understand-Anything at ${paths.repoDir}.`);
         return;
       }

@@ -44,14 +44,14 @@ This skill is _informed_ by the project's domain model. The domain language give
 
 Start with the repository's own evidence, not generic heuristics. Inspect:
 
-1. repo instructions and git state (`AGENTS.md`, `git status --short --branch`);
+1. repo instructions and git state (`AGENTS.md`, `git status --short --branch`), then classify dirty files as in-scope evidence, unrelated owner work, or blocker before relying on them;
 2. orientation docs (`README.md`, `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `TODO.md`/plans when present);
 3. `codebase-map-understand.md` when present, then the exact files it points to;
 4. Graphify output from the startup gate: architecture paths, callers, hotspots, and cross-module edges, then the exact live files it names;
 5. package/app manifests, validation scripts, and tests for the area;
 6. callers and callees around each suspected seam using `rg`, `find`, and targeted reads.
 
-Build working study notes with domain terms, ADR constraints, hot paths, caller/test evidence, validation commands, and candidate friction. Do not write repo files during exploration unless the user asked for durable docs.
+Build working study notes with domain terms, ADR constraints, hot paths, caller/test evidence, validation commands, dirty-worktree classification, and candidate friction. Do not write repo files during exploration unless the user asked for durable docs.
 
 Explore organically and record where you feel friction:
 
@@ -68,7 +68,8 @@ Study quality gate before reporting:
 - at least two evidence-backed candidates, unless the repo area is too small;
 - no candidate without caller evidence, validation evidence, and deletion-test result;
 - no stale generated map used without checking the live files it names;
-- no production-code edits during exploration.
+- no production-code edits during exploration;
+- no candidate based on uncommitted changes unless those paths are explicitly classified as in-scope evidence or accepted user work.
 
 See [REPO-STUDY.md](REPO-STUDY.md) for the full evidence checklist and confidence rubric.
 
@@ -76,7 +77,7 @@ See [REPO-STUDY.md](REPO-STUDY.md) for the full evidence checklist and confidenc
 
 Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Try to open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and always tell them the absolute path.
 
-The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped, and hand-built divs/SVG when you want something more editorial. Each candidate gets a **before/after visualisation**.
+The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped, and hand-built divs/SVG when you want something more editorial. Each candidate gets a **before/after visualisation**. Be visual: diagrams carry the argument; prose only labels the evidence and tradeoff.
 
 For each candidate, render a card with:
 
@@ -89,7 +90,7 @@ For each candidate, render a card with:
 - **Before / After diagram** — the centrepiece, side-by-side and custom-drawn;
 - **Recommendation strength** — `Strong`, `Worth exploring`, or `Speculative`.
 
-End with a **Top recommendation** section: which candidate to tackle first and why.
+End with a **Top recommendation** section: which candidate to tackle first and why, based on the strongest locality/leverage proof rather than the biggest file or easiest diff.
 
 **Use CONTEXT.md vocabulary for the domain, and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
 

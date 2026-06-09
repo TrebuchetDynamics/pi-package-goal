@@ -18,7 +18,7 @@ Trebuchet Dynamics under the MIT License.
 
 - Source: https://github.com/mattpocock/skills
 - Snapshot inspected: `b8be62f`
-- Latest engineering skills comparison inspected: `e3b90b5` (`skills/grill-with-docs/`, `skills/improve-codebase-architecture/`)
+- Latest engineering skills comparison inspected: `2bf7005` (upstream engineering grill-with-docs and improve-codebase-architecture skills)
 - Bundled paths:
   - `skills/tdd/`
   - `skills/diagnose/`
