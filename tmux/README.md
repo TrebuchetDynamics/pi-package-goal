@@ -114,8 +114,10 @@ The installer creates this file only when missing, so each PC can keep local col
 
 ```text
 $TX_CONFIG
-$XDG_CONFIG_HOME/tx/sessions.conf
-~/.config/tx/sessions.conf
+$XDG_CONFIG_HOME/tx/session.config
+~/.config/tx/session.config
+
+If the legacy `sessions.conf` already exists and `session.config` does not, `tx` keeps using the legacy file.
 ```
 
 Create a starter config:
@@ -124,17 +126,26 @@ Create a starter config:
 tx init
 ```
 
-Add the current directory:
+Add the current directory with an explicit alias:
 
 ```sh
 tx add ga
 ```
 
-Add an explicit directory:
+Add an explicit directory with an explicit alias:
 
 ```sh
 tx add ga ~/git/gormes/gormes-agent
 ```
+
+Prompt for an alias while adding the current directory or another directory:
+
+```sh
+tx add .
+tx add ~/git/gormes/gormes-agent
+```
+
+If the target directory already has a config row, the new alias is appended to that row's comma-separated alias list.
 
 Inspect and use:
 

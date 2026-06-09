@@ -65,6 +65,16 @@ async function testScriptSyntaxAndHelp() {
   assert.match(help, /TX_TMUX/);
 }
 
+async function testTxDefaultConfigPath() {
+  const tmp = tempDir("tx-default-config-");
+  try {
+    const env = { HOME: tmp, XDG_CONFIG_HOME: "" };
+    assert.equal(run(tx, ["config"], { env }).trim(), path.join(tmp, ".config", "tx", "session.config"));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 async function testTxConfigLifecycleWithoutTmuxSessions() {
   const tmp = tempDir("tx-test-");
   try {
@@ -87,6 +97,14 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
 
     const duplicate = runFail(tx, ["add", "ga", project], { env });
     assert.match(duplicate.stderr, /duplicate alias 'ga'/);
+
+    const promptProject = path.join(tmp, "prompt-project");
+    fs.mkdirSync(promptProject);
+    assert.match(run(tx, ["add", promptProject], { env, input: "pp\n" }), /added: pp=/);
+    assert.equal(run(tx, ["which", "pp"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(run(tx, ["add", "."], { env, cwd: promptProject, input: "here\n" }), /updated: pp,here=/);
+    assert.equal(run(tx, ["which", "here"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(fs.readFileSync(config, "utf8"), /pp,here=.*prompt-project/);
 
     const reserved = runFail(tx, ["add", "help", project], { env });
     assert.match(reserved.stderr, /alias 'help' is reserved/);
@@ -214,6 +232,7 @@ async function testTmuxConfigParsesWhenTmuxExists() {
 
 await testPackageManifest();
 await testScriptSyntaxAndHelp();
+await testTxDefaultConfigPath();
 await testTxConfigLifecycleWithoutTmuxSessions();
 await testInstallScript();
 await testKillAllOrdersCurrentSessionLast();
