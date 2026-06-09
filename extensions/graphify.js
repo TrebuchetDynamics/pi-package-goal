@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { commandOutput, createRepoBackedSkillBridge, pathExists } from "../lib/pi-bridge/lifecycle.js";
 import { homedir } from "node:os";
 
@@ -22,7 +23,7 @@ export function splitBridgeArgs(args = "") {
 export function parseBridgeCommand(args = "") {
   const { first, rest } = splitBridgeArgs(args);
   const action = first.toLowerCase();
-  if (["help", "install", "status", "update"].includes(action)) return { action, args: rest };
+  if (["help", "ignore", "install", "status", "update"].includes(action)) return { action, args: rest };
   return { action: "help", args: String(args ?? "").trim() };
 }
 
@@ -61,6 +62,153 @@ export function formatGraphifyInstallMessage(action, paths, hookOutput = "") {
   return `Graphify ${action} at ${paths.repoDir}.${suffix}\nUse /graphify . to build a graph.`;
 }
 
+export function graphifyIgnoreTemplate(mode = "default") {
+  const normalized = String(mode ?? "").trim().toLowerCase();
+  if (["src", "src-only", "source", "source-only"].includes(normalized)) {
+    return [
+      "# .graphifyignore uses .gitignore syntax, including ! negation.",
+      "# Only index src/; ignore everything else.",
+      "*",
+      "!src/",
+      "!src/**",
+      "",
+    ].join("\n");
+  }
+
+  return [
+    "# .graphifyignore uses .gitignore syntax, including ! negation.",
+    "# If this file exists, it takes priority over .gitignore for this subtree.",
+    "node_modules/",
+    "dist/",
+    "*.generated.py",
+    "",
+    "# To index only src/, uncomment these lines:",
+    "# *",
+    "# !src/",
+    "# !src/**",
+    "",
+  ].join("\n");
+}
+
+export function formatGraphifyIgnoreMessage(filePath, action, mode = "default") {
+  const modeText = ["src", "src-only", "source", "source-only"].includes(String(mode ?? "").trim().toLowerCase())
+    ? "src-only template"
+    : "default template";
+  if (action === "exists") {
+    return `.graphifyignore already exists at ${filePath}; leaving it unchanged.`;
+  }
+  return `Created ${filePath} with Graphify ignore ${modeText}. Edit it like .gitignore, including ! negation.`;
+}
+
+export function shouldSkipAutomaticGraphifyUpdate(args = "") {
+  const trimmed = String(args ?? "").trim();
+  if (!trimmed) return false;
+  const lower = trimmed.toLowerCase();
+  if (/(^|\s)--update(\s|$)/.test(lower)) return true;
+  if (/(^|\s)--cluster-only(\s|$)/.test(lower)) return true;
+  const { first } = splitBridgeArgs(trimmed);
+  return ["add", "explain", "path", "query"].includes(first.toLowerCase());
+}
+
+export function getAutomaticUpdateTarget(args = "", cwd = process.cwd()) {
+  if (shouldSkipAutomaticGraphifyUpdate(args)) return undefined;
+  const { first } = splitBridgeArgs(args);
+  if (!first || first.startsWith("-")) return cwd;
+  if (/^https?:\/\//i.test(first)) return undefined;
+  return resolve(cwd, first);
+}
+
+export function appendGraphifyUpdateArg(args = "") {
+  const trimmed = String(args ?? "").trim();
+  return trimmed ? `${trimmed} --update` : ". --update";
+}
+
+export async function applyAutomaticGraphifyUpdate(args = "", cwd = process.cwd(), exists = pathExists) {
+  const target = getAutomaticUpdateTarget(args, cwd);
+  if (!target) return { args: String(args ?? "").trim(), changed: false, target };
+
+  const repoGraphPath = join(cwd, "graphify-out", "graph.json");
+  const targetGraphPath = join(target, "graphify-out", "graph.json");
+  const hasExistingGraph = await exists(repoGraphPath) || (targetGraphPath !== repoGraphPath && await exists(targetGraphPath));
+
+  if (!hasExistingGraph) return { args: String(args ?? "").trim(), changed: false, target };
+  return { args: appendGraphifyUpdateArg(args), changed: true, target };
+}
+
+export function parseGraphifyCliArgs(args = "") {
+  const input = String(args ?? "").trim();
+  const tokens = [];
+  let current = "";
+  let quote = "";
+  let escaped = false;
+
+  for (const char of input) {
+    if (escaped) {
+      current += char;
+      escaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (char === quote) quote = "";
+      else current += char;
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      if (current) {
+        tokens.push(current);
+        current = "";
+      }
+      continue;
+    }
+    current += char;
+  }
+
+  if (escaped) current += "\\";
+  if (quote) throw new Error(`Unclosed quote in Graphify command: ${input}`);
+  if (current) tokens.push(current);
+  return tokens;
+}
+
+export function isGraphifyCliFastPath(args = "") {
+  const { first } = splitBridgeArgs(args);
+  return ["explain", "path", "query"].includes(first.toLowerCase());
+}
+
+export async function runGraphifyCliFastPath(pi, ctx, args = "") {
+  const cliArgs = parseGraphifyCliArgs(args);
+  const result = await pi.exec("graphify", cliArgs, { signal: ctx.signal, timeout: 120_000 });
+  const output = commandOutput(result);
+  if (result.code !== 0 || result.killed) {
+    throw new Error(output || `graphify ${cliArgs.join(" ")} failed`);
+  }
+  await postMessage(pi, output || "Graphify command completed with no output.", {
+    action: cliArgs[0],
+    args: cliArgs.slice(1),
+    exitCode: result.code,
+  });
+}
+
+export async function createGraphifyIgnore(ctx, args = "") {
+  const mode = String(args ?? "").trim() || "default";
+  const filePath = join(ctx.cwd, ".graphifyignore");
+  try {
+    await readFile(filePath, "utf8");
+    return { filePath, action: "exists", mode };
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  await writeFile(filePath, graphifyIgnoreTemplate(mode), "utf8");
+  return { filePath, action: "created", mode };
+}
+
 async function installGraphifyHook(pi, ctx) {
   const result = await pi.exec("graphify", ["hook", "install"], { signal: ctx.signal, timeout: 120_000 });
   if (result.code !== 0 || result.killed) {
@@ -78,12 +226,18 @@ export function isHelpArg(args = "") {
 async function sendGraphifySkillInvocation(pi, ctx, paths, commandName, args) {
   const { first } = splitBridgeArgs(args);
   const localAction = first.toLowerCase();
-  if (isHelpArg(args) || ["install", "status", "update"].includes(localAction)) {
+  if (isHelpArg(args) || ["ignore", "install", "status", "update"].includes(localAction)) {
     await handleBridgeCommand(pi, args, ctx, paths);
     return;
   }
 
-  await graphifyLifecycle.sendSkillInvocation(pi, ctx, paths, { commandName, skillPath: paths.skillPath, args });
+  if (isGraphifyCliFastPath(args)) {
+    await runGraphifyCliFastPath(pi, ctx, args);
+    return;
+  }
+
+  const automaticUpdate = await applyAutomaticGraphifyUpdate(args, ctx.cwd);
+  await graphifyLifecycle.sendSkillInvocation(pi, ctx, paths, { commandName, skillPath: paths.skillPath, args: automaticUpdate.args });
 }
 
 async function postMessage(pi, content, details = {}) {
@@ -96,6 +250,7 @@ function helpText(paths = getGraphifyPaths()) {
     `  /graphify [args]             Load upstream Graphify Pi skill and run it\n` +
     `  /graphify help               Show this help without cloning upstream\n` +
     `  /graphify status             Show checkout status\n` +
+    `  /graphify ignore [src-only]  Create .graphifyignore in the current project\n` +
     `  /graphify install            Clone upstream Graphify skill and install repo hooks\n` +
     `  /graphify update             git pull --ff-only upstream checkout and install repo hooks\n\n` +
     `Upstream: ${paths.repoUrl}\n` +
@@ -123,6 +278,13 @@ async function handleBridgeCommand(pi, args, ctx, paths) {
   if (parsed.action === "status") {
     const message = await statusText(pi, ctx, paths);
     await postMessage(pi, message, { action: "status", paths });
+    return;
+  }
+
+  if (parsed.action === "ignore") {
+    const result = await createGraphifyIgnore(ctx, parsed.args);
+    const message = formatGraphifyIgnoreMessage(result.filePath, result.action, result.mode);
+    await postMessage(pi, message, { action: "ignore", ...result });
     return;
   }
 

@@ -183,10 +183,14 @@ Common commands:
 | `/graphify query "How does auth work?"` | Query an existing `graphify-out/graph.json`. |
 | `/graphify help` | Show local bridge help without cloning upstream. |
 | `/graphify status` | Show the upstream checkout status. |
+| `/graphify ignore` | Create a project-root `.graphifyignore` using `.gitignore` syntax. |
+| `/graphify ignore src-only` | Create a `.graphifyignore` that indexes only `src/`. |
 | `/graphify install` | Clone the upstream Graphify repo and run `graphify hook install` for the current project. |
 | `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
 
 The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install action also installs Graphify's git hooks so commits/checkouts can trigger graph maintenance.
+
+When a target already has `graphify-out/graph.json`, build-style invocations automatically add `--update` (for example `/graphify .` becomes `/graphify . --update`). Existing-graph read commands (`/graphify query`, `/graphify path`, and `/graphify explain`) use direct CLI fast paths instead of injecting the upstream skill into the conversation. Add and explicit `--update`/`--cluster-only` commands are left unchanged.
 
 ### RTK bash command compression
 

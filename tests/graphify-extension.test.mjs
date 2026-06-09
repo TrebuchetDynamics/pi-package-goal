@@ -1,9 +1,22 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
+  appendGraphifyUpdateArg,
+  applyAutomaticGraphifyUpdate,
   buildSkillInvocation,
+  createGraphifyIgnore,
+  getAutomaticUpdateTarget,
+  formatGraphifyIgnoreMessage,
   formatGraphifyInstallMessage,
   getGraphifyPaths,
+  graphifyIgnoreTemplate,
+  isGraphifyCliFastPath,
   isHelpArg,
+  parseGraphifyCliArgs,
+  runGraphifyCliFastPath,
+  shouldSkipAutomaticGraphifyUpdate,
   parseBridgeCommand,
   splitBridgeArgs,
 } from "../extensions/graphify.js";
@@ -24,6 +37,8 @@ assert.deepEqual(splitBridgeArgs("install now"), { first: "install", rest: "now"
 assert.deepEqual(splitBridgeArgs(""), { first: "", rest: "" });
 
 assert.deepEqual(parseBridgeCommand("install"), { action: "install", args: "" });
+assert.deepEqual(parseBridgeCommand("ignore"), { action: "ignore", args: "" });
+assert.deepEqual(parseBridgeCommand("ignore src-only"), { action: "ignore", args: "src-only" });
 assert.deepEqual(parseBridgeCommand("status"), { action: "status", args: "" });
 assert.deepEqual(parseBridgeCommand("update"), { action: "update", args: "" });
 assert.deepEqual(parseBridgeCommand("help"), { action: "help", args: "" });
@@ -52,5 +67,95 @@ const installMessage = formatGraphifyInstallMessage("installed", getGraphifyPath
 assert.match(installMessage, /Graphify installed at \/home\/alice\/\.graphify\/repo\./);
 assert.match(installMessage, /Hook install: installed at \.git\/hooks\/post-commit/);
 assert.match(installMessage, /Use \/graphify \. to build a graph\./);
+
+const defaultIgnore = graphifyIgnoreTemplate();
+assert.match(defaultIgnore, /\.graphifyignore uses \.gitignore syntax/);
+assert.match(defaultIgnore, /node_modules\//);
+assert.match(defaultIgnore, /dist\//);
+assert.match(defaultIgnore, /\*\.generated\.py/);
+assert.match(defaultIgnore, /# \*/);
+assert.match(defaultIgnore, /# !src\/\*\*/);
+
+const srcOnlyIgnore = graphifyIgnoreTemplate("src-only");
+assert.match(srcOnlyIgnore, /^\*/m);
+assert.match(srcOnlyIgnore, /^!src\/$/m);
+assert.match(srcOnlyIgnore, /^!src\/\*\*$/m);
+assert.doesNotMatch(srcOnlyIgnore, /^# \*/m);
+
+assert.match(formatGraphifyIgnoreMessage("/repo/.graphifyignore", "created"), /Created \/repo\/\.graphifyignore/);
+assert.match(formatGraphifyIgnoreMessage("/repo/.graphifyignore", "exists"), /already exists/);
+
+assert.equal(shouldSkipAutomaticGraphifyUpdate("query \"How?\""), true);
+assert.equal(shouldSkipAutomaticGraphifyUpdate("path A B"), true);
+assert.equal(shouldSkipAutomaticGraphifyUpdate(". --update"), true);
+assert.equal(shouldSkipAutomaticGraphifyUpdate("."), false);
+assert.equal(getAutomaticUpdateTarget("", "/repo"), "/repo");
+assert.equal(getAutomaticUpdateTarget("--mode deep", "/repo"), "/repo");
+assert.equal(getAutomaticUpdateTarget("src --no-viz", "/repo"), "/repo/src");
+assert.equal(getAutomaticUpdateTarget("https://github.com/a/b", "/repo"), undefined);
+assert.equal(appendGraphifyUpdateArg(""), ". --update");
+assert.equal(appendGraphifyUpdateArg(". --mode deep"), ". --mode deep --update");
+assert.deepEqual(parseGraphifyCliArgs("query \"How does auth work?\""), ["query", "How does auth work?"]);
+assert.deepEqual(parseGraphifyCliArgs("path AuthModule Database"), ["path", "AuthModule", "Database"]);
+assert.deepEqual(parseGraphifyCliArgs("explain 'Graphify Extension'"), ["explain", "Graphify Extension"]);
+assert.throws(() => parseGraphifyCliArgs("query \"oops"), /Unclosed quote/);
+assert.equal(isGraphifyCliFastPath("query test"), true);
+assert.equal(isGraphifyCliFastPath("path A B"), true);
+assert.equal(isGraphifyCliFastPath("explain A"), true);
+assert.equal(isGraphifyCliFastPath("add https://example.test"), false);
+assert.equal(isGraphifyCliFastPath("."), false);
+
+const tmp = await mkdtemp(join(tmpdir(), "graphify-ignore-"));
+try {
+  const created = await createGraphifyIgnore({ cwd: tmp }, "src-only");
+  assert.equal(created.action, "created");
+  assert.equal(created.filePath, join(tmp, ".graphifyignore"));
+  assert.equal(await readFile(created.filePath, "utf8"), graphifyIgnoreTemplate("src-only"));
+
+  const exists = await createGraphifyIgnore({ cwd: tmp }, "default");
+  assert.equal(exists.action, "exists");
+  assert.equal(await readFile(created.filePath, "utf8"), graphifyIgnoreTemplate("src-only"));
+
+  const autoNoGraph = await applyAutomaticGraphifyUpdate(".", tmp, async () => false);
+  assert.deepEqual(autoNoGraph, { args: ".", changed: false, target: tmp });
+
+  const autoGraph = await applyAutomaticGraphifyUpdate(".", tmp, async (path) => path.endsWith("graphify-out/graph.json"));
+  assert.deepEqual(autoGraph, { args: ". --update", changed: true, target: tmp });
+
+  const autoSubdirWithRepoGraph = await applyAutomaticGraphifyUpdate("src", tmp, async (path) => path === join(tmp, "graphify-out", "graph.json"));
+  assert.deepEqual(autoSubdirWithRepoGraph, { args: "src --update", changed: true, target: join(tmp, "src") });
+
+  const autoQuery = await applyAutomaticGraphifyUpdate("query test", tmp, async () => true);
+  assert.deepEqual(autoQuery, { args: "query test", changed: false, target: undefined });
+
+  const sentMessages = [];
+  const execCalls = [];
+  await runGraphifyCliFastPath({
+    async exec(command, args, options) {
+      execCalls.push({ command, args, options });
+      return { code: 0, stdout: "answer", stderr: "" };
+    },
+    sendMessage(message) {
+      sentMessages.push(message);
+    },
+  }, { signal: "signal" }, "query \"How?\"");
+  assert.deepEqual(execCalls, [{ command: "graphify", args: ["query", "How?"], options: { signal: "signal", timeout: 120_000 } }]);
+  assert.equal(sentMessages[0].content, "answer");
+  assert.deepEqual(sentMessages[0].details, { action: "query", args: ["How?"], exitCode: 0 });
+
+  await assert.rejects(
+    () => runGraphifyCliFastPath({
+      async exec() {
+        return { code: 1, stdout: "", stderr: "bad query" };
+      },
+      sendMessage() {
+        throw new Error("should not send on failure");
+      },
+    }, {}, "query bad"),
+    /bad query/,
+  );
+} finally {
+  await rm(tmp, { recursive: true, force: true });
+}
 
 console.log("graphify-extension ok");
