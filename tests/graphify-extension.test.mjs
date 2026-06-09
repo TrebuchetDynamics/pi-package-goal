@@ -23,7 +23,7 @@ import {
   shouldSkipAutomaticGraphifyUpdate,
   parseBridgeCommand,
   splitBridgeArgs,
-} from "../extensions/graphify.js";
+} from "../extensions/graphify/index.js";
 
 assert.deepEqual(getGraphifyPaths({}, "/home/alice"), {
   repoDir: "/home/alice/.graphify/repo",

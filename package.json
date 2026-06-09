@@ -48,10 +48,10 @@
   "pi": {
     "extensions": [
       "./extensions/goal",
-      "./extensions/understand.js",
-      "./extensions/folder-refactor.js",
-      "./extensions/rtk.js",
-      "./extensions/graphify.js"
+      "./extensions/understand",
+      "./extensions/folder-refactor",
+      "./extensions/rtk",
+      "./extensions/graphify"
     ],
     "skills": [
       "./skills"
@@ -81,8 +81,8 @@
     }
   },
   "scripts": {
-    "test": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
-    "validate": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "test": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/pi-bridge-command-grammar.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "validate": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/pi-bridge-command-grammar.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs && node tests/understand-extension.test.mjs && node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
     "tmux:install": "sh tmux/install.sh"
   }
 }

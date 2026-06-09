@@ -3,26 +3,28 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  appendRefactorIgnoreNote,
-  buildRefactorGrillPrompt,
   buildSkillInvocation,
-  collectLiveRefactorEvidence,
-  extractRefactorCandidateChoices,
-  formatRefactorCommandMessage,
   generateAgentMapMarkdown,
   generateCompareMarkdown,
-  generateRefactorMarkdown,
   getUnderstandPaths,
   handleRefactorCommand,
   normalizeAgentOutputArg,
   parseCompareArgs,
+  parseUnderstandCommand,
+  splitFirstArg,
+} from "../extensions/understand/index.js";
+import {
+  appendRefactorIgnoreNote,
+  buildRefactorGrillPrompt,
+  collectLiveRefactorEvidence,
+  extractRefactorCandidateChoices,
+  formatRefactorCommandMessage,
+  generateRefactorMarkdown,
   parseRefactorArgs,
   parseRefactorInstruction,
-  parseUnderstandCommand,
   splitArgs,
-  splitFirstArg,
   summarizePreviousRefactorPlan,
-} from "../extensions/understand.js";
+} from "../lib/understand/refactor-workflow.js";
 
 assert.deepEqual(splitFirstArg(" chat how does auth work? "), {
   first: "chat",

@@ -196,7 +196,7 @@ When a target already has `graphify-out/graph.json`, build-style invocations aut
 
 ### RTK bash command compression
 
-This package includes `extensions/rtk.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
+This package includes `extensions/rtk/index.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
 
 Setup options:
 
@@ -328,9 +328,11 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
 {
   "pi": {
     "extensions": [
-      "./extensions/understand.js",
-      "./extensions/folder-refactor.js",
-      "./extensions/rtk.js"
+      "./extensions/goal",
+      "./extensions/understand",
+      "./extensions/folder-refactor",
+      "./extensions/rtk",
+      "./extensions/graphify"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { commandOutput, createRepoBackedSkillBridge, pathExists } from "../lib/pi-bridge/lifecycle.js";
+import { commandOutput, createRepoBackedSkillBridge, pathExists } from "../../lib/pi-bridge/lifecycle.js";
+import { parseActionCommand, splitCommandArgs, splitFirstArg as splitBridgeArgs } from "../../lib/pi-bridge/command-grammar.js";
 import { homedir } from "node:os";
 
 const DEFAULT_REPO_URL = "https://github.com/safishamsi/graphify.git";
@@ -13,18 +14,10 @@ export function getGraphifyPaths(env = process.env, home = homedir()) {
   return { repoDir, repoUrl, skillPath };
 }
 
-export function splitBridgeArgs(args = "") {
-  const trimmed = String(args ?? "").trim();
-  if (!trimmed) return { first: "", rest: "" };
-  const match = trimmed.match(/^(\S+)(?:\s+([\s\S]*))?$/);
-  return { first: match?.[1] ?? "", rest: match?.[2]?.trim() ?? "" };
-}
+export { splitFirstArg as splitBridgeArgs } from "../../lib/pi-bridge/command-grammar.js";
 
 export function parseBridgeCommand(args = "") {
-  const { first, rest } = splitBridgeArgs(args);
-  const action = first.toLowerCase();
-  if (["help", "ignore", "install", "status", "update"].includes(action)) return { action, args: rest };
-  return { action: "help", args: String(args ?? "").trim() };
+  return parseActionCommand(args, ["help", "ignore", "install", "status", "update"]);
 }
 
 export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skillPath, skillContent, args = "" }) {
@@ -138,45 +131,7 @@ export async function applyAutomaticGraphifyUpdate(args = "", cwd = process.cwd(
 }
 
 export function parseGraphifyCliArgs(args = "") {
-  const input = String(args ?? "").trim();
-  const tokens = [];
-  let current = "";
-  let quote = "";
-  let escaped = false;
-
-  for (const char of input) {
-    if (escaped) {
-      current += char;
-      escaped = false;
-      continue;
-    }
-    if (char === "\\") {
-      escaped = true;
-      continue;
-    }
-    if (quote) {
-      if (char === quote) quote = "";
-      else current += char;
-      continue;
-    }
-    if (char === "\"" || char === "'") {
-      quote = char;
-      continue;
-    }
-    if (/\s/.test(char)) {
-      if (current) {
-        tokens.push(current);
-        current = "";
-      }
-      continue;
-    }
-    current += char;
-  }
-
-  if (escaped) current += "\\";
-  if (quote) throw new Error(`Unclosed quote in Graphify command: ${input}`);
-  if (current) tokens.push(current);
-  return tokens;
+  return splitCommandArgs(args);
 }
 
 export function isGraphifyCliFastPath(args = "") {

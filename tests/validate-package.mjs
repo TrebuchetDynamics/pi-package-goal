@@ -329,7 +329,12 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/understand.js", "./extensions/folder-refactor.js", "./extensions/rtk.js", "./extensions/graphify.js"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/graphify"]);
+  for (const extensionPath of pkg.pi.extensions) {
+    const absolutePath = path.join(root, extensionPath);
+    assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
+    assert.equal(exists(path.join(extensionPath, "index.js")) || exists(path.join(extensionPath, "index.ts")), true, `${extensionPath} must expose index.js or index.ts`);
+  }
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -366,20 +371,23 @@ async function testUnderstandExtension() {
   assert.match(goalExtension, /@earendil-works\/pi-coding-agent/);
   assert.doesNotMatch(goalExtension, /@mariozechner\//);
 
-  const folderRefactorExtension = read("extensions/folder-refactor.js");
+  const folderRefactorExtension = read("extensions/folder-refactor/index.js");
   assert.match(folderRefactorExtension, /folder_refactor_scan/);
   assert.match(folderRefactorExtension, /folder_refactor_audit/);
   assert.match(folderRefactorExtension, /folder_refactor_state/);
-  assert.match(folderRefactorExtension, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
+  const folderRefactorGuardrail = read("lib/folder-refactor/guardrail.js");
+  assert.match(folderRefactorGuardrail, /FOLDER_REFACTOR_AUDIT:/);
+  assert.match(folderRefactorGuardrail, /scanFolderRefactorTarget/);
+  assert.match(folderRefactorGuardrail, /auditFolderRefactorCompletion/);
 
-  const rtkExtension = read("extensions/rtk.js");
+  const rtkExtension = read("extensions/rtk/index.js");
   assert.match(rtkExtension, /registerCommand\("rtk"/);
   assert.match(rtkExtension, /rtk-ai\/rtk/);
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
 
-  const graphifyExtension = read("extensions/graphify.js");
+  const graphifyExtension = read("extensions/graphify/index.js");
   assert.match(graphifyExtension, /DEFAULT_COMMAND_NAME = "graphify"/);
   assert.doesNotMatch(graphifyExtension, /registerCommand\("graphiphy"/);
   assert.doesNotMatch(graphifyExtension, /registerCommand\("graphphy"/);
@@ -395,7 +403,7 @@ async function testUnderstandExtension() {
   assert.match(lifecycle, /sendSkillInvocation/);
   assert.match(lifecycle, /checkoutHead/);
 
-  const extension = read("extensions/understand.js");
+  const extension = read("extensions/understand/index.js");
   assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
   assert.match(extension, /registerUnderstandCommand\(pi, "understand-refactor", paths\)/);
   assert.match(extension, /generateRefactorMarkdown/);

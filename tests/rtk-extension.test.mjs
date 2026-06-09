@@ -10,7 +10,7 @@ import {
   rtkCommandCandidates,
   shouldSkipRewrite,
   uniquePaths,
-} from "../extensions/rtk.js";
+} from "../extensions/rtk/index.js";
 
 assert.deepEqual(uniquePaths(["a", "", "b", "a"]), ["a", "b"]);
 assert.equal(localRtkBin("/home/alice"), "/home/alice/.local/bin/rtk");

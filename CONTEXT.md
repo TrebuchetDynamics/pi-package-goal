@@ -9,7 +9,7 @@ The npm/Pi package metadata: package name, repository URL, homepage, issue URL, 
 _Avoid_: stale resource manifests, deleted command entrypoints, docs that omit packaged resources
 
 **Understand Extension**:
-The package-local extension at `extensions/understand.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.
+The package-local extension at `extensions/understand/index.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.
 _Avoid_: silent startup network work, shell-injected git commands, bundling upstream code without notices
 
 **Understand Artifacts**:
@@ -49,15 +49,15 @@ The `share-code` skill composes folder-refactor discipline with a stronger reuse
 _Avoid_: speculative utilities, one-call-site abstractions, test-first cleanup unless requested, hiding behavior changes inside refactors, broad repo-wide dedupe sweeps
 
 **Folder Refactor Extension**:
-The package-local extension at `extensions/folder-refactor.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
+The package-local extension at `extensions/folder-refactor/index.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
 **Graphify Extension**:
-The package-local extension at `extensions/graphify.js` registers `/graphify`. It clones/updates `safishamsi/graphify`, loads the upstream Pi skill from the user checkout for skill-backed build workflows, and uses direct CLI fast paths for existing-graph read workflows where upstream procedural instructions are unnecessary. On `/graphify install` it also runs `graphify hook install` so the current project gets Graphify's git hook integration.
+The package-local extension at `extensions/graphify/index.js` registers `/graphify`. It clones/updates `safishamsi/graphify`, loads the upstream Pi skill from the user checkout for skill-backed build workflows, and uses direct CLI fast paths for existing-graph read workflows where upstream procedural instructions are unnecessary. On `/graphify install` it also runs `graphify hook install` so the current project gets Graphify's git hook integration.
 _Avoid_: misspelled command aliases, bundling upstream code without notices, treating graph hooks as installed when the hook command failed, running silent startup network work, injecting the upstream skill for simple existing-graph reads
 
 **RTK Extension**:
-The package-local extension at `extensions/rtk.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
+The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
 _Avoid_: bundling the Rust binary, silently executing remote installers without a user command/confirmation, blocking commands for token optimization, rewriting non-bash Pi tools
 
 **Provider Bridge Pattern**:

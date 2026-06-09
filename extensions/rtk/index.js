@@ -1,3 +1,5 @@
+import { splitCommandArgs } from "../../lib/pi-bridge/command-grammar.js";
+
 const REWRITE_TIMEOUT_MS = 2_000;
 const INSTALL_TIMEOUT_MS = 120_000;
 const MIN_SUPPORTED_RTK = [0, 23, 0];
@@ -57,7 +59,7 @@ export function normalizeRewriteResult(result, originalCommand) {
 }
 
 export function parseRtkCommandArgs(args = "") {
-  const parts = String(args).trim().split(/\s+/).filter(Boolean);
+  const parts = splitCommandArgs(args);
   return {
     action: parts[0] ?? "status",
     yes: parts.includes("--yes") || parts.includes("-y"),

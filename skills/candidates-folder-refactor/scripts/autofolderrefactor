@@ -89,7 +89,7 @@ fi
 # --- Resolve paths ---
 package_root="$(cd -- "${script_dir}/../../.." && pwd)"
 scanner="${script_dir}/find-candidates.mjs"
-extension="${package_root}/extensions/folder-refactor.js"
+extension="${package_root}/extensions/folder-refactor/index.js"
 skills_dir="${package_root}/skills"
 pi_bin="${PI_AUTO_FOLDER_REFACTOR_PI:-pi}"
 

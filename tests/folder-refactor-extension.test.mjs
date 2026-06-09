@@ -4,7 +4,8 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import registerFolderRefactorExtension, {
+import registerFolderRefactorExtension from "../extensions/folder-refactor/index.js";
+import {
   auditFolderRefactorCompletion,
   buildFolderRefactorPrompt,
   formatAuditResult,
@@ -12,7 +13,7 @@ import registerFolderRefactorExtension, {
   scanFolderRefactorTarget,
   stableStringify,
   writeFolderRefactorState,
-} from "../extensions/folder-refactor.js";
+} from "../lib/folder-refactor/guardrail.js";
 
 const execFile = promisify(execFileCallback);
 const git = (cwd, args) => execFile("git", args, { cwd });
