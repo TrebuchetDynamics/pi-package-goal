@@ -38,7 +38,7 @@ Existing targets are backed up as `*.bak.<timestamp>` by default. Disable backup
 TX_INSTALL_BACKUP=0 ./install.sh
 ```
 
-Override install locations when needed:
+Override install locations when needed. When `TMUX_HELPER_DIR` is set, the installed tmux config is rewritten to invoke helper scripts from that directory:
 
 ```sh
 TMUX_CONF_TARGET=/tmp/tmux.conf \
@@ -52,6 +52,26 @@ Reload tmux:
 ```sh
 tmux source-file ~/.tmux.conf
 ```
+
+## Runtime flow
+
+- `install.sh` copies the shared assets into user locations: `tmux.conf`, helper scripts, optional local style, and the `tx` launcher.
+- `tmux.conf` renders the status bar by invoking `short-path.sh` and `git-status.sh` with tmux's `#{pane_current_path}` value.
+- `tx` reads session aliases from its config file, starts or switches to the matching tmux session, and uses the alias as the tmux session name.
+- `style.tmux` stores per-machine colors and is sourced by `tmux.conf` from `~/.tmux/style.tmux`.
+
+## Helper-script contract
+
+`tmux.conf` calls the helper scripts as status commands:
+
+```tmux
+#(~/.tmux/short-path.sh #{q:pane_current_path})
+#(~/.tmux/git-status.sh #{q:pane_current_path})
+```
+
+Each helper takes one argument: the current pane path from `#{pane_current_path}`. The default config expects both scripts to be executable under `~/.tmux`. If you install with a custom `TMUX_HELPER_DIR`, the installer rewrites the installed tmux config to point at that directory.
+
+The status bar refreshes every 120 seconds via `status-interval 120`, so git/path changes may take up to two minutes to appear unless tmux refreshes the status line for another reason.
 
 ## npm/bin install
 

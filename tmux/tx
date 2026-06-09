@@ -34,12 +34,16 @@ script_dir() {
   cd -P "$(dirname -- "$source")" && pwd
 }
 
-run_installer() {
-  [[ $# -eq 0 ]] || die "install: takes no arguments; configure with TMUX_CONF_TARGET, TMUX_HELPER_DIR, TX_BIN_DIR, TX_BIN_NAME, or TX_INSTALL_BACKUP"
+installer_path() {
   local installer
   installer="$(script_dir)/install.sh"
   [[ -f "$installer" ]] || die "install: installer not found next to tx: $installer"
-  exec sh "$installer"
+  printf '%s\n' "$installer"
+}
+
+run_installer() {
+  [[ $# -eq 0 ]] || die "install: takes no arguments; configure with TMUX_CONF_TARGET, TMUX_HELPER_DIR, TX_BIN_DIR, TX_BIN_NAME, or TX_INSTALL_BACKUP"
+  exec sh "$(installer_path)"
 }
 
 print_config_path() {
@@ -58,6 +62,7 @@ Usage:
   tx config               Print the config path.
   tx install              Install tmux.conf, status helpers, and tx for this user.
   tx doctor               Validate tmux availability, config parsing, and target dirs.
+  tx doctor --install     Install/repair tmux assets, then verify installed paths.
   tx kill <alias>         Kill the tmux session for <alias>.
   tx kill-all             Kill all running configured tx sessions.
   tx help                 Show this help.
@@ -80,6 +85,9 @@ Environment:
   TX_CONFIG                         Override config file path.
   TX_TMUX                           Override tmux binary name/path.
   TX_DISPLAY_STRIP_PREFIX           Optional prefix to hide in tx ls paths.
+  TMUX_CONF_TARGET                  Install/doctor target for tmux.conf.
+  TMUX_HELPER_DIR                   Install/doctor target for status helpers.
+  TX_BIN_DIR, TX_BIN_NAME           Install/doctor target for tx.
 EOF
 }
 
@@ -256,6 +264,48 @@ print_alias_path() {
   alias=$(resolve_alias "$1")
   [[ -n "${ALIAS_TO_PATH[$alias]+x}" ]] || die "unknown alias: $alias"
   printf '%s\n' "${ALIAS_TO_PATH[$alias]}"
+}
+
+doctor_install() {
+  sh "$(installer_path)"
+
+  local home=${HOME:?HOME is required}
+  local tmux_conf_target=${TMUX_CONF_TARGET:-$home/.tmux.conf}
+  local tmux_helper_dir=${TMUX_HELPER_DIR:-$home/.tmux}
+  local tx_bin_dir=${TX_BIN_DIR:-$home/.local/bin}
+  local tx_bin_name=${TX_BIN_NAME:-tx}
+  local tx_path="$tx_bin_dir/$tx_bin_name"
+  local ok=1
+
+  [[ -f "$tmux_conf_target" ]] && printf 'tmux.conf: %s\n' "$tmux_conf_target" || { printf 'tmux.conf: missing (%s)\n' "$tmux_conf_target"; ok=0; }
+
+  for helper in git-status.sh short-path.sh; do
+    if [[ -x "$tmux_helper_dir/$helper" ]]; then
+      printf 'helper: %s\n' "$tmux_helper_dir/$helper"
+    else
+      printf 'helper: missing or not executable (%s)\n' "$tmux_helper_dir/$helper"
+      ok=0
+    fi
+  done
+
+  if [[ -x "$tx_path" ]]; then
+    printf 'tx: %s\n' "$tx_path"
+  else
+    printf 'tx: missing or not executable (%s)\n' "$tx_path"
+    ok=0
+  fi
+
+  case ":$PATH:" in
+    *":$tx_bin_dir:"*) printf 'PATH: includes %s\n' "$tx_bin_dir" ;;
+    *) printf 'PATH: missing %s\n' "$tx_bin_dir"; ok=0 ;;
+  esac
+
+  if [[ -f "$tmux_conf_target" ]]; then
+    grep -F -- "$tmux_helper_dir/short-path.sh" "$tmux_conf_target" >/dev/null || { printf 'tmux.conf: does not reference %s/short-path.sh\n' "$tmux_helper_dir"; ok=0; }
+    grep -F -- "$tmux_helper_dir/git-status.sh" "$tmux_conf_target" >/dev/null || { printf 'tmux.conf: does not reference %s/git-status.sh\n' "$tmux_helper_dir"; ok=0; }
+  fi
+
+  (( ok == 1 ))
 }
 
 doctor() {
@@ -526,8 +576,12 @@ main() {
       add_alias "$@"
       ;;
     doctor)
-      [[ $# -eq 1 ]] || die "doctor: takes no arguments"
-      doctor
+      if [[ $# -eq 2 && "$2" == "--install" ]]; then
+        doctor_install
+      else
+        [[ $# -eq 1 ]] || die "doctor: takes no arguments, or exactly --install"
+        doctor
+      fi
       ;;
     which)
       shift

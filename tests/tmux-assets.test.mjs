@@ -78,10 +78,22 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
     assert.ok(fs.existsSync(config));
     assert.match(run(tx, ["add", "ga,gormes", project], { env }), /added: ga,gormes=/);
     assert.equal(run(tx, ["which", "g"], { env }).trim(), fs.realpathSync(project));
-    assert.match(run(tx, ["doctor"], { env }), /targets: ok \(1 configured paths\)/);
+
+    const other = path.join(tmp, "other");
+    fs.mkdirSync(other);
+    assert.match(run(tx, ["add", "aa,ab", other], { env }), /added: aa,ab=/);
+    assert.equal(run(tx, ["which", "a"], { env }).trim(), fs.realpathSync(other));
+    assert.match(run(tx, ["doctor"], { env }), /targets: ok \(2 configured paths\)/);
 
     const duplicate = runFail(tx, ["add", "ga", project], { env });
     assert.match(duplicate.stderr, /duplicate alias 'ga'/);
+
+    const reserved = runFail(tx, ["add", "help", project], { env });
+    assert.match(reserved.stderr, /alias 'help' is reserved/);
+
+    fs.appendFileSync(config, `missing=${path.join(tmp, "missing")}\n`);
+    const missing = runFail(tx, ["doctor"], { env });
+    assert.match(missing.stdout, /missing target: missing ->/);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -100,11 +112,49 @@ async function testInstallScript() {
     fs.symlinkSync(tx, txLink);
     const output = run(txLink, ["install"], { env });
     assert.match(output, /installed: .*\.tmux\.conf/);
-    assert.ok(fs.existsSync(path.join(home, ".tmux.conf")));
+    const installedConfig = path.join(home, ".tmux.conf");
+    assert.ok(fs.existsSync(installedConfig));
     assert.ok(fs.existsSync(path.join(helperDir, "git-status.sh")));
     assert.ok(fs.existsSync(path.join(helperDir, "short-path.sh")));
     assert.ok(fs.existsSync(path.join(bin, "tx")));
-    assert.match(run(path.join(bin, "tx"), ["help"], { env }), /Usage:/);
+    const installedConfigText = fs.readFileSync(installedConfig, "utf8");
+    assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/short-path\\.sh`));
+    assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/git-status\\.sh`));
+    assert.doesNotMatch(installedConfigText, /#\(~\/\.tmux\/(?:short-path|git-status)\.sh/);
+    assert.match(run(path.join(bin, "tx"), ["help"], { env }), /doctor --install/);
+
+    const doctorEnv = { ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
+    const doctor = run(txLink, ["doctor", "--install"], { env: doctorEnv });
+    assert.match(doctor, /PATH: includes/);
+    assert.match(doctor, /helper: .*git-status\.sh/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+async function testKillAllOrdersCurrentSessionLast() {
+  const tmp = tempDir("tx-kill-all-");
+  try {
+    const config = path.join(tmp, "sessions.conf");
+    const fakeTmux = path.join(tmp, "fake-tmux.sh");
+    const log = path.join(tmp, "tmux.log");
+    const one = path.join(tmp, "one");
+    const two = path.join(tmp, "two");
+    fs.mkdirSync(one);
+    fs.mkdirSync(two);
+    fs.writeFileSync(config, `one=${one}\ntwo=${two}\n`);
+    fs.writeFileSync(fakeTmux, `#!/usr/bin/env sh
+case "$1" in
+  list-sessions) printf 'one\\ntwo\\n' ;;
+  display-message) printf 'one\\n' ;;
+  kill-session) printf '%s\\n' "$3" >> "${log}" ;;
+esac
+`);
+    fs.chmodSync(fakeTmux, 0o755);
+
+    const output = run(tx, ["kill-all"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TMUX: "/tmp/tmux-client" } });
+    assert.match(output, /2 killed; 0 not running/);
+    assert.deepEqual(fs.readFileSync(log, "utf8").trim().split("\n"), ["=two", "=one"]);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -166,6 +216,7 @@ await testPackageManifest();
 await testScriptSyntaxAndHelp();
 await testTxConfigLifecycleWithoutTmuxSessions();
 await testInstallScript();
+await testKillAllOrdersCurrentSessionLast();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
 await testTmuxConfigShowsGitBranchStatus();
