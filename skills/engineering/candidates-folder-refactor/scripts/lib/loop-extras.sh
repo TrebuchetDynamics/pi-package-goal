@@ -32,7 +32,9 @@ run_bug_finding_slice() {
   if [[ -n "${outside_scope_changes}" ]]; then
     error "bug-finding changed files outside pwd scope ${run_root}"
     printf '%s\n' "${outside_scope_changes}" >&2
-    rollback_repo_paths "${outside_scope_changes}"
+    if ! rollback_repo_paths "${outside_scope_changes}"; then
+      return 1
+    fi
     rollback_scope_changes "bug-finding changed files outside pwd scope" "."
     return 1
   fi

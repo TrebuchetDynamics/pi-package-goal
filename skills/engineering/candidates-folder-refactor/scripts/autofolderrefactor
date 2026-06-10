@@ -475,7 +475,9 @@ for ((i = 1; i <= loops; i++)); do
   if [[ -n "${outside_scope_changes}" ]]; then
     error "pi changed files outside pwd scope ${run_root}"
     printf '%s\n' "${outside_scope_changes}" >&2
-    rollback_repo_paths "${outside_scope_changes}"
+    if ! rollback_repo_paths "${outside_scope_changes}"; then
+      exit 1
+    fi
     rollback_scope_changes "pi changed files outside pwd scope" "."
     rollback_count=$((rollback_count + 1))
     mark_skipped "${candidate}" "pi failure rollback" "candidate" "0"

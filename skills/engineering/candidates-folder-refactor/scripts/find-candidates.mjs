@@ -641,6 +641,9 @@ function writeScanLog(report) {
 function printReport(report, { fromLog, latestLog } = {}) {
   console.log(`Candidates folder refactor: ${report.target}`);
   if (fromLog) console.log(`From log: ${report.generatedAt} (${path.join(report.targetAbsolute, ".pi", "candidates-folder-refactor", "latest.json")})`);
+  if ((report.contentRead?.skippedLargeFiles || 0) > 0) {
+    console.log(`Scanner content budget: skipped ${report.contentRead.skippedLargeFiles} large/budgeted file(s); structural counts remain, import/symbol evidence may be partial.`);
+  }
   if (report.refactorIgnoreSuggestions?.length) {
     console.log("Suggested .refactorignore entries:");
     for (const suggestion of report.refactorIgnoreSuggestions) {

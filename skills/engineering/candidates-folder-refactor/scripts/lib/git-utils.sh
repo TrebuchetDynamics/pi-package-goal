@@ -175,7 +175,11 @@ git_status_paths() {
       const file = record.slice(3);
       if (!file || file === ".") continue;
       paths.push(file.split(/[\\/]+/).filter(Boolean).join("/"));
-      if (status.includes("R") || status.includes("C")) index += 1;
+      if (status.includes("R") || status.includes("C")) {
+        const source = records[index + 1];
+        if (source) paths.push(source.split(/[\\/]+/).filter(Boolean).join("/"));
+        index += 1;
+      }
     }
     process.stdout.write([...new Set(paths)].join("\n"));
   '
@@ -216,7 +220,7 @@ new_changes_outside_run_root() {
 }
 
 rollback_repo_paths() {
-  local paths_text=${1:-} repo_root
+  local paths_text=${1:-} repo_root remaining
   local -a paths
   [[ -z "${paths_text}" ]] && return 0
   repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
@@ -224,6 +228,12 @@ rollback_repo_paths() {
   (( ${#paths[@]} == 0 )) && return 0
   git -C "${repo_root}" restore --staged --worktree -- "${paths[@]}" >/dev/null 2>&1 || true
   git -C "${repo_root}" clean -fd -- "${paths[@]}" >/dev/null 2>&1 || true
+  remaining="$(git -C "${repo_root}" status --porcelain=v1 -z --untracked-files=all -- "${paths[@]}" 2>/dev/null | git_status_paths)"
+  if [[ -n "${remaining}" ]]; then
+    error "failed to rollback outside-scope paths"
+    printf '%s\n' "${remaining}" >&2
+    return 1
+  fi
 }
 
 assert_changes_within_candidate() {

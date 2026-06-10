@@ -68,7 +68,7 @@ try {
   assert.match(autoHelp, /PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES/);
   assert.match(autoHelp, /AUTO_FOLDER_REFACTOR_INSTALL_FORCE/);
   const parsedStatusPaths = execFileSync("bash", ["-lc", `. ${JSON.stringify(gitUtils)}; printf 'R  renamed file\\0old file\\0 M candidate/file.ts\\0?? other.txt\\0' | git_status_paths`], { cwd: fixture, encoding: "utf8" });
-  assert.deepEqual(parsedStatusPaths.trim().split(/\n/), ["renamed file", "candidate/file.ts", "other.txt"]);
+  assert.deepEqual(parsedStatusPaths.trim().split(/\n/), ["renamed file", "old file", "candidate/file.ts", "other.txt"]);
   const rootHeavyRetryLog = path.join(fixture, "root-heavy-retry-log.json");
   fs.writeFileSync(rootHeavyRetryLog, JSON.stringify({ candidates: [{ relative: ".", direct: 400, files: 531 }, { relative: "small", direct: 5, files: 5 }] }));
   const rootHeavyRetry = execFileSync("bash", ["-lc", `. ${JSON.stringify(scannerUtils)}; root_heavy_retry_candidate_from_log ${JSON.stringify(rootHeavyRetryLog)} . 25`], { cwd: fixture, encoding: "utf8" });
@@ -224,6 +224,7 @@ try {
   const subdirScopeFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-subdir-scope-"));
   const subdirScopeApp = path.join(subdirScopeFixture, "internal/app");
   fs.mkdirSync(path.join(subdirScopeFixture, "internal/sibling"), { recursive: true });
+  fs.writeFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "move me\n");
   for (let n = 0; n < 3; n += 1) writeIn(subdirScopeApp, `root_${n}.ts`, `export const root${n} = ${n};\n`);
   execFileSync("git", ["init"], { cwd: subdirScopeFixture, stdio: "ignore" });
   execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: subdirScopeFixture, stdio: "ignore" });
@@ -238,6 +239,15 @@ try {
   assert.equal(fs.existsSync(path.join(subdirScopeApp, "inside_pwd.txt")), false);
   assert.equal(fs.existsSync(path.join(subdirScopeFixture, "internal/sibling/outside_pwd.txt")), false);
   fs.rmSync(fakePiOutsidePwd, { force: true });
+  fs.rmSync(path.join(subdirScopeApp, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
+  const fakePiMoveOutsidePwd = path.join(os.tmpdir(), `fake-pi-move-outside-pwd-${process.pid}.sh`);
+  fs.writeFileSync(fakePiMoveOutsidePwd, "#!/usr/bin/env bash\necho fake pi move outside pwd\nmv ../sibling/move_me.txt moved_in.txt\n");
+  fs.chmodSync(fakePiMoveOutsidePwd, 0o755);
+  const moveOutsidePwdOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiMoveOutsidePwd, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(moveOutsidePwdOutput, /changed files outside pwd scope/);
+  assert.equal(fs.existsSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt")), true);
+  assert.equal(fs.existsSync(path.join(subdirScopeApp, "moved_in.txt")), false);
+  fs.rmSync(fakePiMoveOutsidePwd, { force: true });
   fs.rmSync(subdirScopeFixture, { recursive: true, force: true });
 
   const nodeValidationFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-node-validation-"));
@@ -345,6 +355,10 @@ try {
   fs.rmSync(installBin, { recursive: true, force: true });
 
   const script = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs");
+  write("src/noisy/large.ts", "export const large = 1;\n".repeat(200));
+  const budgetOutput = execFileSync(process.execPath, [script, ".", "--no-log"], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES: "10" } });
+  assert.match(budgetOutput, /Scanner content budget: skipped/);
+  fs.rmSync(path.join(fixture, "src/noisy/large.ts"), { force: true });
   const repoOutput = execFileSync(process.execPath, [script, "."], { cwd: fixture, encoding: "utf8" });
   assert.match(repoOutput, /src\/noisy/);
   assert.match(repoOutput, /churn [1-9]/);
