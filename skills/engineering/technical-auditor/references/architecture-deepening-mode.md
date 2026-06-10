@@ -69,35 +69,32 @@ Study quality gate before reporting:
 
 See [architecture-repo-study.md](architecture-repo-study.md) for the full evidence checklist and confidence rubric.
 
-### 2. Present candidates as an HTML report
+### 2. Present candidates inline
 
-Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Try to open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and always tell them the absolute path.
+Produce an inline Markdown architecture review. Do not write a separate HTML file and do not create repo artifacts unless the user explicitly asks to save a report.
 
-The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped, and hand-built divs/SVG when you want something more editorial. Each candidate gets a **before/after visualisation**. Be visual: diagrams carry the argument; prose only labels the evidence and tradeoff.
+For each candidate, include:
 
-For each candidate, render a card with:
-
-- **Files** — involved files/modules;
-- **Study evidence** — docs, callers, tests, commands, map facts, and deletion-test result;
+- **Title** — short, names the deepening;
+- **Recommendation strength** — `Strong`, `Worth exploring`, or `Speculative`;
 - **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [architecture-deepening-dependencies.md](architecture-deepening-dependencies.md);
+- **Files** — involved files/modules;
+- **Study evidence** — docs, callers, tests, commands, map facts, dirty-worktree classification, and deletion-test result;
 - **Problem** — one sentence on what hurts;
 - **Solution** — one sentence on what changes;
 - **Wins** — terse bullets naming locality, leverage, and testability gains;
-- **Before / After diagram** — the centrepiece, side-by-side and custom-drawn;
-- **Recommendation strength** — `Strong`, `Worth exploring`, or `Speculative`.
+- **Before / After sketch** — a compact text sketch, bullet list, or Mermaid-style code block when it clarifies the module/seam change.
 
 End with a **Top recommendation** section: which candidate to tackle first and why, based on the strongest locality/leverage proof rather than the biggest file or easiest diff.
 
 **Use CONTEXT.md vocabulary for the domain, and [architecture-language.md](architecture-language.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
 
-**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card. Don't list every theoretical refactor an ADR forbids.
+**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the candidate. Don't list every theoretical refactor an ADR forbids.
 
-See [architecture-html-report.md](architecture-html-report.md) for the full HTML scaffold, diagram patterns, and styling guidance.
-
-Do NOT propose interfaces yet. After the file is written, report:
+Do NOT propose interfaces yet. After the review, report:
 
 ```text
-Architecture review generated: <absolute html path>
+Architecture review: inline
 Evidence base: <docs/tests/commands/maps inspected>
 Top recommendation: <candidate>
 Next question: Which of these would you like to explore?
@@ -109,7 +106,7 @@ If the user replies with `lgtm`, `go ahead`, `approved`, or similar after the re
 
 Continue according to the candidate type:
 
-- **Mechanical cleanup** (delete an unused duplicate Module, remove an obsolete export, move code behind an already-chosen seam): restate the accepted candidate, inspect the exact live files and git diff, make the smallest safe edit, then run the focused validation path from the report plus package/project validation when available.
+- **Mechanical cleanup** (delete an unused duplicate Module, remove an obsolete export, move code behind an already-chosen seam): restate the accepted candidate, inspect the exact live files and git diff, make the smallest safe edit, then run the focused validation path from the review plus package/project validation when available.
 - **Design-bearing refactor** (new Interface, new Adapter, cross-module migration, ADR-sensitive change): restate the accepted candidate and enter the grilling loop before editing production code.
 - **Risky or unclear ownership** (dirty unrelated worktree, destructive deletion without caller/test proof, broad migration): stop and report the blocker or ask one hard ownership question.
 
@@ -131,4 +128,4 @@ Side effects happen inline as decisions crystallize:
 - Do not produce a generic architecture review without repo evidence.
 - Do not include a candidate that only says "make it cleaner" or "split this up" without locality/leverage proof.
 - Do not edit production code during the review phase.
-- Do not write the HTML report into the repository.
+- Do not write architecture report artifacts into the repository unless explicitly asked.

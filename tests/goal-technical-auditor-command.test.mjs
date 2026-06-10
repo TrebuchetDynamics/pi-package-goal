@@ -21,6 +21,8 @@ assert.equal(objective.tokenBudget, "300k");
 assert.match(objective.goalCommand, /^\/goal --tokens 300k Run technical-auditor Full mode for folder\/path `skills\/engineering`/);
 assert.match(objective.goalCommand, /\/skill:technical-auditor/);
 assert.match(objective.goalCommand, /Full mode: broad audit plus architecture-deepening review/);
+assert.match(objective.goalCommand, /inline architecture candidates/);
+assert.doesNotMatch(objective.goalCommand, /HTML|html/);
 assert.match(objective.goalCommand, /Continue autonomously while safe useful slices remain/);
 assert.match(objective.goalCommand, /Do not publish, deploy, spend money, rewrite history, force-push, expose secrets/);
 

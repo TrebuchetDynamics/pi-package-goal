@@ -70,6 +70,12 @@ try {
   assert.match(autoHelp, /AUTO_FOLDER_REFACTOR_INSTALL_FORCE/);
   const parsedStatusPaths = execFileSync("bash", ["-lc", `. ${JSON.stringify(gitUtils)}; printf 'R  renamed file\\0old file\\0 M candidate/file.ts\\0?? other.txt\\0' | git_status_paths`], { cwd: fixture, encoding: "utf8" });
   assert.deepEqual(parsedStatusPaths.trim().split(/\n/), ["renamed file", "old file", "candidate/file.ts", "other.txt"]);
+  const noDebtProgressReason = execFileSync("bash", ["-lc", `. ${JSON.stringify(gitUtils)}; metric_progress_reason '{"debt":30,"root":3,"total":3,"subdirs":1}' '{"debt":30,"root":3,"total":4,"subdirs":2}'`], { cwd: fixture, encoding: "utf8" });
+  assert.equal(noDebtProgressReason, "new source/test files without debt or root-file reduction");
+  assert.throws(
+    () => execFileSync("bash", ["-lc", `. ${JSON.stringify(gitUtils)}; metric_progress_decreased '{"debt":30,"root":3,"total":3,"subdirs":1}' '{"debt":30,"root":3,"total":4,"subdirs":2}'`], { cwd: fixture, encoding: "utf8" }),
+  );
+  assert.doesNotMatch(fs.readFileSync(autoScript, "utf8"), /accepted: debt decrease, root-file decrease, or new responsibility subfolder split/);
   const rootHeavyRetryLog = path.join(fixture, "root-heavy-retry-log.json");
   fs.writeFileSync(rootHeavyRetryLog, JSON.stringify({ candidates: [{ relative: ".", direct: 400, files: 531 }, { relative: "small", direct: 5, files: 5 }] }));
   const rootHeavyRetry = execFileSync("bash", ["-lc", `. ${JSON.stringify(scannerUtils)}; root_heavy_retry_candidate_from_log ${JSON.stringify(rootHeavyRetryLog)} . 25`], { cwd: fixture, encoding: "utf8" });

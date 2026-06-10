@@ -25,7 +25,6 @@ Trebuchet Dynamics under the MIT License.
   - `skills/engineering/improve-codebase-architecture/`
   - `skills/engineering/technical-auditor/references/architecture-deepening-dependencies.md`
   - `skills/engineering/technical-auditor/references/architecture-deepening-mode.md`
-  - `skills/engineering/technical-auditor/references/architecture-html-report.md`
   - `skills/engineering/technical-auditor/references/architecture-interface-design.md`
   - `skills/engineering/technical-auditor/references/architecture-language.md`
   - `skills/engineering/technical-auditor/references/architecture-repo-study.md`

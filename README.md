@@ -253,7 +253,7 @@ Borrowed design rules:
 | `skill-folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |
 | `share-code` | Refactor a bounded folder to extract proven shared code and use the new seams to expose bugs. |
 | `candidates-folder-refactor` | Rank noisy folders/subfolders as the top candidates to hand to `skill-folder-refactor`. |
-| `improve-codebase-architecture` | Produce evidence-backed HTML architecture reviews, then explore deeper seams for testability and AI navigation. |
+| `improve-codebase-architecture` | Produce evidence-backed architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `technical-auditor` | Produce evidence-backed repository health audits with prioritized risk and improvement plans. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs and record decisions. |

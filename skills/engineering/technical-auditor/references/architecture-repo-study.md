@@ -17,7 +17,7 @@ If `CONTEXT-MAP.md` exists, identify the relevant context before reading `CONTEX
 
 ## Candidate evidence requirements
 
-Before a candidate can appear in the HTML report, gather at least:
+Before a candidate can appear in the architecture review, gather at least:
 
 1. **Friction evidence** — a file path, call path, test pain, repeated branch, or coupling point that makes the current module shallow.
 2. **Caller evidence** — at least one caller or entry point that crosses the current interface.
@@ -81,7 +81,7 @@ confidence: <Strong|Worth exploring|Speculative>
 
 ## Review quality gate
 
-Before writing the HTML report, check:
+Before writing the architecture review, check:
 
 - at least two candidates have complete evidence, unless the repo area is genuinely tiny;
 - every `Strong` candidate has caller evidence, validation evidence, and a deletion-test result;
@@ -93,7 +93,7 @@ Before writing the HTML report, check:
 ## Red lines
 
 - Do not edit production code during exploration.
-- Do not write repo artifacts for the report; write HTML to the OS temp directory.
+- Do not write repo artifacts for the review unless explicitly asked.
 - Do not propose a new interface before the user chooses a candidate.
 - Do not contradict an ADR silently; surface real conflicts in the report.
 - Do not treat generated files, vendored code, build output, or local state as architecture evidence unless the repo explicitly owns them.

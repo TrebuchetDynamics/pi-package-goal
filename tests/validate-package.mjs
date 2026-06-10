@@ -516,17 +516,14 @@ async function testSkills() {
   const architectureMode = read("skills/engineering/technical-auditor/references/architecture-deepening-mode.md");
   assert.match(architectureMode, /Study quality gate/);
   assert.match(architectureMode, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
-  assert.match(architectureMode, /diagrams carry the argument/);
   assert.match(architectureMode, /strongest locality\/leverage proof/);
-  assert.match(architectureMode, /Architecture review generated: <absolute html path>/);
+  assert.match(architectureMode, /Architecture review: inline/);
   const repoStudy = read("skills/engineering/technical-auditor/references/architecture-repo-study.md");
   assert.match(repoStudy, /Candidate evidence requirements/);
   assert.match(repoStudy, /Generated map discipline/);
   assert.match(repoStudy, /Dirty-worktree pass/);
   assert.match(repoStudy, /accepted in-scope dirty evidence/);
   assert.match(repoStudy, /Review quality gate/);
-  assert.match(read("skills/engineering/technical-auditor/references/architecture-html-report.md"), /Evidence base/);
-  assert.match(read("skills/engineering/technical-auditor/references/architecture-html-report.md"), /worktree status/);
   assert.match(read("skills/engineering/technical-auditor/references/architecture-interface-design.md"), /If parallel sub-agents are available/);
 
   const tdd = read("skills/engineering/tdd/SKILL.md");
@@ -614,6 +611,8 @@ async function testSkills() {
   assert.match(technicalAuditor, /Full mode/);
   assert.match(technicalAuditor, /default when the user gives no mode argument/);
   assert.match(technicalAuditor, /Run Audit mode and Architecture mode together/);
+  assert.match(technicalAuditor, /Architecture review: inline/);
+  assert.doesNotMatch(technicalAuditor, /Architecture review generated/);
   assert.match(technicalAuditor, /technical audit/);
   assert.match(technicalAuditor, /Repository Map/);
   assert.match(technicalAuditor, /file\/line evidence/);

@@ -38,7 +38,7 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_SHOW_SKIPPED=1     include skipped candidates in ranking table (default: hidden)
   PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT=errors|all  pi stdout mode (default: errors)
   PI_AUTO_FOLDER_REFACTOR_HEARTBEAT_ON_CHANGE=1 only print unchanged heartbeats in debug (default: 1)
-  PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root/subfolder progress (default: 1)
+  PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS=1 rollback validated slices with no debt/root-file reduction (default: 1)
   PI_AUTO_FOLDER_REFACTOR_NO_CHANGE_TIMEOUT_SECONDS kill no-change pi runs after N seconds (default: 0/off)
   PI_AUTO_FOLDER_REFACTOR_MAX_NOOPS          stop after N no-op candidates (default: 0/off)
   PI_AUTO_FOLDER_REFACTOR_MAX_ROLLBACKS      stop after N rollbacks (default: 0/off)
@@ -543,7 +543,7 @@ for ((i = 1; i <= loops; i++)); do
   fi
   LAST_PROGRESS_REASON="$(metric_progress_reason "${progress_metric_args[@]}")"
   if [[ "${PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS:-1}" == "1" ]] && ! metric_progress_decreased "${progress_metric_args[@]}"; then
-    rollback_failed_slice "validated slice lacked accepted progress (${LAST_PROGRESS_REASON}); accepted: debt decrease, root-file decrease, or new responsibility subfolder split with new source/test files" "${candidate}" "${pre_slice_status}"
+    rollback_failed_slice "validated slice lacked accepted progress (${LAST_PROGRESS_REASON}); accepted: debt decrease or root-file decrease" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
     mark_skipped "${candidate}" "no metric progress rollback" "candidate" "1"
     continue
