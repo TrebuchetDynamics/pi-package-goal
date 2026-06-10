@@ -5,7 +5,7 @@ description: Shape rough notes, fragments, transcripts, or drafts into publishab
 
 <what-to-do>
 
-The user has passed (or will pass) a markdown file of raw material. Treat it as the input pile — anything from a tidy list of fragments to a wall of unstructured prose to a transcript. The format does not matter. Read it end-to-end before doing anything else. If the article is about a codebase and `graphify-out/graph.json` exists, query Graphify for relationship/context leads, then verify any cited file or module before using it in prose.
+The user has passed (or will pass) a markdown file of raw material. Treat it as the input pile — anything from a tidy list of fragments to a wall of unstructured prose to a transcript. The format does not matter. Read it end-to-end before doing anything else. If the article is about a codebase and `codebase-map-understand.md` exists, consult the codebase map for relationship/context leads, then verify any cited file or module before using it in prose.
 
 Then run a shaping session that produces a separate article document. Do not edit the raw material file — it is read-only to this skill.
 

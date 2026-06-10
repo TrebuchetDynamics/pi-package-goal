@@ -9,7 +9,7 @@ A prototype is **throwaway code that answers a question**. The question decides 
 
 ## Repo study before building
 
-Before creating prototype files, inspect `git status --short --branch`, repo instructions, local run scripts, nearby domain docs/ADRs, and existing UI/routing or module conventions. If `graphify-out/graph.json` exists and the prototype question depends on code relationships, query Graphify for leads and verify them in source. Do not touch unrelated dirty work. State the prototype question and the evidence that made the chosen branch appropriate.
+Before creating prototype files, inspect `git status --short --branch`, repo instructions, local run scripts, nearby domain docs/ADRs, and existing UI/routing or module conventions. If `codebase-map-understand.md` exists and the prototype question depends on code relationships, consult the codebase map for leads and verify them in source. Do not touch unrelated dirty work. State the prototype question and the evidence that made the chosen branch appropriate.
 
 ## Pick a branch
 

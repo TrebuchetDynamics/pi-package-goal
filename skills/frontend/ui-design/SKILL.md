@@ -38,7 +38,7 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 ## Workflow
 
 1. **Design read**: one line naming surface, audience, vibe, stack, and primary skill.
-2. **Repo/UI study**: inspect existing components, routes, tokens, screenshots, tests, design docs, and `graphify-out/graph.json` when present. Query Graphify for route/component/data-flow leads on broad UI changes, then verify named files.
+2. **Repo/UI study**: inspect existing components, routes, tokens, screenshots, tests, design docs, and `codebase-map-understand.md` when present. Query codebase map for route/component/data-flow leads on broad UI changes, then verify named files.
 3. **Plan**: list exact files expected to change; ask before destructive route/component removal.
 4. **Execute**: load/read the selected skill guidance and apply only relevant checks.
 5. **Verify**: run available tests/build/lint; inspect responsive states, focus/keyboard behavior, contrast, loading/error/empty states, and reduced-motion where applicable.

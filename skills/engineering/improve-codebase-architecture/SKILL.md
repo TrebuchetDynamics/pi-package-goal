@@ -10,7 +10,7 @@ This skill is now a compatibility entry point. Use `technical-auditor` in **Arch
 ## Handoff
 
 1. Inspect `git status --short --branch` and repo instructions before relying on worktree state.
-2. If `graphify-out/graph.json` exists, query Graphify for architecture hotspots, module relationships, callers, tests, and cross-module seams; treat graph facts as leads only.
+2. If `codebase-map-understand.md` exists, consult the codebase map for architecture hotspots, module relationships, callers, tests, and cross-module seams; treat map facts as leads only.
 3. Load `../technical-auditor/SKILL.md` and follow its Architecture mode, including the architecture-deepening references under `../technical-auditor/references/`.
 4. Preserve the architecture vocabulary: module, interface, implementation, depth, seam, adapter, leverage, locality.
 

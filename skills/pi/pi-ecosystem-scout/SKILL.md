@@ -35,7 +35,7 @@ High-value categories from that index:
 
 ## Workflow
 
-1. Classify the requested Pi work: extension, skill, prompt, theme, provider, package, SDK/RPC, safety, or UI. If `graphify-out/graph.json` exists, query Graphify for local package/resource relationships that should constrain the scout.
+1. Classify the requested Pi work: extension, skill, prompt, theme, provider, package, SDK/RPC, safety, or UI. If `codebase-map-understand.md` exists, consult the codebase map for local package/resource relationships that should constrain the scout.
 2. Search local docs first if the Pi package is installed:
    - `docs/extensions.md`
    - `docs/packages.md`

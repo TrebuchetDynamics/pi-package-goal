@@ -1,6 +1,6 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills, Pi UX extensions, a theme, `/understand` bridge commands, and a Graphify `/graphify` bridge.
+A Pi package that bundles curated agent skills, Pi UX extensions, a theme, and `/understand` bridge commands.
 
 Use it when you want Pi to:
 
@@ -8,7 +8,7 @@ Use it when you want Pi to:
 - use safer commit/push discipline;
 - switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
 - build or review Pi package resources; and
-- map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything) or [Graphify](https://github.com/safishamsi/graphify).
+- map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
 
 ## What you get
 
@@ -22,7 +22,6 @@ Use it when you want Pi to:
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
-| Knowledge graphs | Run Graphify from Pi through the Graphify bridge to build/query `graphify-out/` graphs. | `/graphify` |
 
 ## Install
 
@@ -62,7 +61,6 @@ Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill co
 /skill:diagnose debug the failing npm test
 /understand
 /understand agent
-/graphify .
 ```
 
 ## Included tmux helpers
@@ -182,29 +180,6 @@ Notes:
 - `/understand refactor [@folder] [focus] [output.md]` uses the current repo graph by default; with `@folder`, it reads `folder/.understand-anything/knowledge-graph.json`, defaults the plan name from that folder, and if no graph exists, starts `/understand <folder>` directly to build a folder-only graph first.
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
-
-### Graphify `/graphify`
-
-`/graphify` bridges Pi to the upstream [Graphify](https://github.com/safishamsi/graphify) Pi skill (`graphify/skill-pi.md`). On first use it prompts to clone Graphify into `~/.graphify/repo`; override with `GRAPHIFY_DIR`, `GRAPHIFY_REPO_URL`, or optional `GRAPHIFY_REF` for pinned upstream checkouts.
-
-Common commands:
-
-| Command | Use it for |
-| --- | --- |
-| `/graphify .` | Build/update a pure AST/local/no-LLM Graphify code graph for the current project by default. |
-| `/graphify query "How does auth work?"` | Query an existing `graphify-out/graph.json`. |
-| `/graphify help` | Show local bridge help without cloning upstream. |
-| `/graphify status` | Show the upstream checkout status. |
-| `/graphify ignore` | Create a project-root `.graphifyignore` using `.gitignore` syntax. |
-| `/graphify ignore src-only` | Create a `.graphifyignore` that indexes only `src/`. |
-| `/graphify install` | Clone the upstream Graphify repo and run `graphify hook install` for the current project. |
-| `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
-
-The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install and update actions also install Graphify's git hooks so commits/checkouts can trigger graph maintenance.
-
-Pi's `/graphify` bridge defaults to pure AST/local/no-LLM graph maintenance for build and update flows. Normal graph builds do not mutate repo git hooks; use `/graphify install` or pass `--install-hooks` when you explicitly want hook installation. It should not run semantic extraction, dispatch LLM subagents, or ask for API keys unless the user explicitly asks for semantic/doc/PDF/image/video/deep/backend extraction. Markdown and other prose files can be intentionally omitted in this mode.
-
-When a target already has `graphify-out/graph.json`, build-style invocations automatically add `--update` (for example `/graphify .` becomes `/graphify . --update`). Existing-graph read commands (`/graphify query`, `/graphify path`, and `/graphify explain`) use direct CLI fast paths instead of injecting the upstream skill into the conversation. Add and explicit `--update`/`--cluster-only` commands are left unchanged.
 
 ### RTK bash command compression
 
@@ -344,8 +319,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/goal-technical-auditor",
       "./extensions/understand",
       "./extensions/folder-refactor",
-      "./extensions/rtk",
-      "./extensions/graphify"
+      "./extensions/rtk"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

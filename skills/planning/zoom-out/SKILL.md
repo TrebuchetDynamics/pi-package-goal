@@ -4,7 +4,7 @@ description: Tell the agent to zoom out and give broader context or a higher-lev
 disable-model-invocation: true
 ---
 
-I don't know this area of code well. Go up a layer of abstraction. If `graphify-out/graph.json` exists, query Graphify for the relevant modules/callers first, verify named files, then give me the map using the project's domain glossary vocabulary.
+I don't know this area of code well. Go up a layer of abstraction. If `codebase-map-understand.md` exists, consult the codebase map for the relevant modules/callers first, verify named files, then give me the map using the project's domain glossary vocabulary.
 
 ## Shared contract
 

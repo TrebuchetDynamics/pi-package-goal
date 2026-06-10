@@ -9,9 +9,9 @@ Use this contract as the baseline for every packaged skill unless a skill's own 
 - Treat dirty files as evidence, not permission. Do not overwrite unrelated user work.
 - Prefer answering factual questions from code, tests, docs, manifests, or issue metadata instead of asking the user.
 
-## Graphify codebase evidence
+## Codebase map evidence
 
-Before broad codebase exploration, check whether `graphify-out/graph.json` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, query Graphify first and say the query you ran. If no graph exists and the task is broad enough to benefit from one, start `/graphify .` unless the skill is explicitly read-only/status-only or the user asked not to build artifacts. Treat graph facts as leads only: verify named files, callers, and tests against live source before editing or reporting. Full guidance: [Graphify codebase graph](GRAPHIFY-CODEBASE-GRAPH.md).
+Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
 
 ## Bundled resource paths
 
@@ -19,7 +19,7 @@ When a skill references bundled scripts, examples, templates, or other files, re
 
 ## Verification evidence
 
-Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, graph queries used, or explicit owner decisions. If validation is not applicable, say why.
+Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, codebase maps used, or explicit owner decisions. If validation is not applicable, say why.
 
 ## Handoff shape
 

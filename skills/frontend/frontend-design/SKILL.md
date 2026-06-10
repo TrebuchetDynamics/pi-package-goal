@@ -10,7 +10,7 @@ The user provides frontend requirements: a component, page, application, or inte
 
 ## Design Thinking
 
-Before coding, understand the context and commit to a BOLD aesthetic direction. If `graphify-out/graph.json` exists and the work touches existing routes/components/data flows, query Graphify for codebase relationship leads and verify named files before changing UI architecture:
+Before coding, understand the context and commit to a BOLD aesthetic direction. If `codebase-map-understand.md` exists and the work touches existing routes/components/data flows, consult the codebase map for codebase relationship leads and verify named files before changing UI architecture:
 - **Purpose**: What problem does this interface solve? Who uses it?
 - **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
 - **Constraints**: Technical requirements (framework, performance, accessibility).

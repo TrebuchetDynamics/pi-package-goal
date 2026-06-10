@@ -211,7 +211,7 @@ function listPackageSkillRootMarkdownFiles(baseDir = root) {
 function collectForbiddenPackageResourceArtifacts(baseDir = root) {
   const forbidden = [];
   const packageResourceDirs = ["skills", "extensions", "themes", "prompts"];
-  const forbiddenNames = new Set([".pi", "graphify-out", ".understand-anything"]);
+  const forbiddenNames = new Set([".pi", ".understand-anything"]);
   const walk = (relativeDir) => {
     const absoluteDir = path.join(baseDir, relativeDir);
     if (!fs.existsSync(absoluteDir)) return;
@@ -366,7 +366,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/graphify"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -379,7 +379,6 @@ async function testPackageManifest() {
   assert.equal(pkg.files.includes("themes"), true, "package tarball must include theme resources");
   assert.equal(pkg.files.includes("tmux"), true, "package tarball must include tmux helpers and tx bin");
   assert.equal(pkg.files.includes("!**/.pi/**"), true, "package tarball must exclude local Pi artifacts");
-  assert.equal(pkg.files.includes("!**/graphify-out/**"), true, "package tarball must exclude generated Graphify artifacts");
   assert.equal(pkg.files.includes("!**/.understand-anything/**"), true, "package tarball must exclude generated Understand artifacts");
   assert.ok(exists(".github/workflows/ci.yml"), "CI must run package validation");
   const ci = read(".github/workflows/ci.yml");
@@ -388,7 +387,6 @@ async function testPackageManifest() {
   assert.match(ci, /actions\/setup-node@[a-f0-9]{40}/);
   assert.match(ci, /git diff --check/);
   assert.match(ci, /npm pack --dry-run/);
-  assert.match(ci, /graphify-out/);
   assert.match(ci, /\.understand-anything/);
   assert.match(ci, /npm --prefix skills\/frontend\/stitch-react-components audit/);
   for (const file of fs.readdirSync(path.join(root, "tests")).filter((name) => name.endsWith(".mjs"))) {
@@ -450,15 +448,6 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
 
-  const graphifyExtension = read("extensions/graphify/index.js");
-  assert.match(graphifyExtension, /DEFAULT_COMMAND_NAME = "graphify"/);
-  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphiphy"/);
-  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphphy"/);
-  assert.doesNotMatch(graphifyExtension, /registerCommand\("graphify-bridge"/);
-  assert.match(graphifyExtension, /https:\/\/github\.com\/safishamsi\/graphify\.git/);
-  assert.match(graphifyExtension, /skill-pi\.md/);
-  assert.match(graphifyExtension, /isHelpArg/);
-  assert.match(graphifyExtension, /createRepoBackedSkillBridge/);
 
   const lifecycle = read("lib/pi-bridge/lifecycle.js");
   assert.match(lifecycle, /createRepoBackedSkillBridge/);
@@ -522,13 +511,9 @@ async function testSkills() {
   assert.match(architecture, /Architecture mode/);
   assert.match(architecture, /Full mode/);
   assert.match(architecture, /git status --short --branch/);
-  assert.match(architecture, /graphify-out\/graph\.json/);
   assert.match(architecture, /module, interface, implementation, depth, seam, adapter, leverage, locality/);
   assert.doesNotMatch(architecture, /subagent_type=Explore/);
   const architectureMode = read("skills/engineering/technical-auditor/references/architecture-deepening-mode.md");
-  assert.match(architectureMode, /Graphify startup gate/);
-  assert.match(architectureMode, /graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500/);
-  assert.match(architectureMode, /start `\/graphify \.` before the manual study/);
   assert.match(architectureMode, /Study quality gate/);
   assert.match(architectureMode, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
   assert.match(architectureMode, /diagrams carry the argument/);
@@ -618,18 +603,11 @@ async function testSkills() {
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
   assert.match(commonContract, /Repo and ownership check/);
   assert.match(commonContract, /Verification evidence/);
-  assert.match(commonContract, /Graphify codebase evidence/);
-  assert.match(commonContract, /Before broad codebase exploration, check whether `graphify-out\/graph\.json` exists/);
-  assert.match(commonContract, /query Graphify first and say the query you ran/);
-  assert.match(commonContract, /start `\/graphify \.`/);
-  assert.match(read("skills/shared/GRAPHIFY-CODEBASE-GRAPH.md"), /Query patterns by task/);
-  assert.match(read("skills/shared/GRAPHIFY-CODEBASE-GRAPH.md"), /architecture hotspots, module relationships, callers, tests, and cross-module seams/);
   assert.match(commonContract, /Handoff shape/);
   assert.match(commonContract, /Safety defaults/);
   for (const file of listSkillFiles(root)) {
     assert.doesNotMatch(read(file), /setup-matt-pocock-skills/, `${file} should not reference upstream setup skill`);
     assert.match(read(file), /COMMON-CONTRACT\.md/, `${file} should reference the shared skill contract`);
-    assert.match(read(file), /Graphify|graphify-out\/graph\.json/, `${file} should name when Graphify evidence applies or is intentionally checked`);
   }
 
   const technicalAuditor = read("skills/engineering/technical-auditor/SKILL.md");
@@ -640,8 +618,6 @@ async function testSkills() {
   assert.match(technicalAuditor, /Repository Map/);
   assert.match(technicalAuditor, /file\/line evidence/);
   assert.match(technicalAuditor, /Do not edit code during the audit/);
-  assert.match(technicalAuditor, /Graphify/);
-  assert.match(technicalAuditor, /Graphify is unavailable or fails/);
   assert.match(technicalAuditor, /Fact` or `Judgment/);
   assert.match(technicalAuditor, /Critical, High, Medium, or Low/);
   assert.match(technicalAuditor, /Milestone 0: safety net before refactoring/);
@@ -649,7 +625,7 @@ async function testSkills() {
   assert.match(technicalAuditor, /Milestone 2: high-impact improvements/);
   assert.match(technicalAuditor, /Milestone 3: quality and polish/);
   assert.match(technicalAuditor, /Verification Evidence/);
-  assert.match(technicalAuditor, /inspected files, commands\/tests run, Graphify query status/);
+  assert.match(technicalAuditor, /inspected files, commands\/tests run, codebase map status/);
   assert.match(technicalAuditor, /docs\/audits\/<scope-slug>-YYYY-MM-DD\.md/);
   assert.match(read("skills/engineering/technical-auditor/references/audit-dimensions.md"), /Severity calibration/);
 

@@ -32,7 +32,7 @@ Treat `/goal ...`, `/skill:goal ...`, and plain language as intent:
 
 When no-arg `goal` should start work, do not stop at `status: cleared`. Find a useful objective, record discovery evidence, and take the first concrete action.
 
-Prefer documented work from task docs, unchecked markdown tasks, issue/plan docs, repo validation signals, package/docs drift, `codebase-map-understand.md` seams, or `graphify-out/graph.json` relationship/hotspot leads that you verify against live files.
+Prefer documented work from task docs, unchecked markdown tasks, issue/plan docs, repo validation signals, package/docs drift, `codebase-map-understand.md` seams, or `codebase-map-understand.md` relationship/hotspot leads that you verify against live files.
 
 Guardrails: prefer documented work over invented improvements; treat dirty worktree changes as evidence, not permission; do not edit unrelated user work; ask if ownership is unclear; avoid destructive, publishing, credential, deploy, or history-rewriting work.
 

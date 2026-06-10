@@ -9,7 +9,7 @@ Find the top five noisy folders that are good candidates for `skill-folder-refac
 
 ## Quick start
 
-1. Inspect `git status --short --branch`, repo instructions, and existing maps such as `codebase-map-understand.md` and `graphify-out/graph.json` when present. Query Graphify for relationship/hotspot leads before ranking broad codebase candidates, then verify with scanner metrics and live files.
+1. Inspect `git status --short --branch`, repo instructions, and existing maps such as `codebase-map-understand.md` when present. Use existing codebase maps for relationship/hotspot leads before ranking broad codebase candidates, then verify with scanner metrics and live files.
 2. Run the scanner from the repo root, optionally with a target folder. It writes a local reuse log under the target folder:
 
 ```bash

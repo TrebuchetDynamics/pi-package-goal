@@ -11,7 +11,7 @@ Refactor one explicitly named folder into coherent subfolders and shared modules
 
 1. Identify the target folder and scope boundary. If no folder is named, ask for it; if the target is repo root, treat it as high risk and recommend narrowing to one folder.
 2. When available, call `folder_refactor_scan` for the target folder and use `folder_refactor_state` to read/write continuation state for long refactors.
-3. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` and `graphify-out/graph.json` when present), folder tree, imports/exports, callers, related tests, package manifests, and language module boundaries. Use Graphify queries for cross-folder caller/edge leads, then verify against live files.
+3. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/exports, callers, related tests, package manifests, and language module boundaries. Use existing codebase maps for caller/edge leads, then verify against live files.
 4. If no target is named and the user wants discovery, run `candidates-folder-refactor` first and use its top-five evidence to pick one bounded folder.
 5. Propose the smallest safe folder topology, then implement in explicit move-only, extraction, and cleanup phases.
 6. Treat the refactor as an active objective: keep taking bounded slices until the named folder reaches the planned topology, validation fails, ownership/risk is unclear, or context budget requires a handoff. Default to doing more work, not reporting a next step.

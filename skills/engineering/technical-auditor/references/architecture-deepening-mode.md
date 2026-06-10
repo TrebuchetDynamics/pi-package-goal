@@ -36,14 +36,14 @@ Architecture mode is _informed_ by the project's domain model. The domain langua
 
 ### 1. Study the repo before proposing architecture
 
-**Graphify startup gate:** architecture mode must visibly activate Graphify before broad architecture study. First check for `graphify-out/graph.json`. If it exists, run `graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500` (or `/graphify query ...`) and record the query in study evidence. If it does not exist and the repo is not tiny, start `/graphify .` before the manual study; if Graphify cannot build because credentials/backend are missing, record that blocker and continue with direct repo study. Graph facts are leads only: verify every named file, caller, and test against live source before reporting.
+**Codebase map startup gate:** architecture mode must check for `codebase-map-understand.md` before broad architecture study. If it exists, read it first and record the map path in study evidence. If it does not exist and the repo is not tiny, ask before generating `/understand agent` artifacts unless the user already requested map generation. Map facts are leads only: verify every named file, caller, and test against live source before reporting.
 
 Start with the repository's own evidence, not generic heuristics. Inspect:
 
 1. repo instructions and git state (`AGENTS.md`, `git status --short --branch`), then classify dirty files as in-scope evidence, unrelated owner work, or blocker before relying on them;
 2. orientation docs (`README.md`, `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `TODO.md`/plans when present);
 3. `codebase-map-understand.md` when present, then the exact files it points to;
-4. Graphify output from the startup gate: architecture paths, callers, hotspots, and cross-module edges, then the exact live files it names;
+4. codebase map evidence from the startup gate: architecture paths, callers, hotspots, and cross-module edges, then the exact live files it names;
 5. package/app manifests, validation scripts, and tests for the area;
 6. callers and callees around each suspected seam using `rg`, `find`, and targeted reads.
 
@@ -78,7 +78,7 @@ The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via C
 For each candidate, render a card with:
 
 - **Files** — involved files/modules;
-- **Study evidence** — docs, callers, tests, commands, graph facts, and deletion-test result;
+- **Study evidence** — docs, callers, tests, commands, map facts, and deletion-test result;
 - **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [architecture-deepening-dependencies.md](architecture-deepening-dependencies.md);
 - **Problem** — one sentence on what hurts;
 - **Solution** — one sentence on what changes;

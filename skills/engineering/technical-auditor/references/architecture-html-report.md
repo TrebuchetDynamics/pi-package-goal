@@ -35,7 +35,7 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, graph, tests, commands, and worktree status inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `graphify query ...`, `git status --short --branch`, `npm test`). Include a small note if generated graph evidence was verified against live files. No introduction paragraph — straight into the candidates.
+Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. Include a short **Evidence base** row listing the docs, codebase maps, tests, commands, and worktree status inspected (for example `CONTEXT.md`, `docs/adr/`, `codebase-map-understand.md`, `git status --short --branch`, `npm test`). Include a small note if generated map evidence was verified against live files. No introduction paragraph — straight into the candidates.
 
 ## Candidate card
 

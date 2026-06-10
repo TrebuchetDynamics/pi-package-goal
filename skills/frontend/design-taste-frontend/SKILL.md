@@ -20,7 +20,7 @@ Before touching code or tweaking dials, **infer what the user actually wants**. 
 3. **Reference signals** - URLs they linked, screenshots they pasted, products they named, brands they're competing with.
 4. **Audience** - B2B procurement panel vs. design-conscious consumer vs. recruiter scanning a portfolio. The audience picks the aesthetic, not your taste.
 5. **Brand assets that already exist** - logo, color, type, photography. For redesigns, these are starting material, not optional input (see Section 11).
-6. **Existing code graph** - when `graphify-out/graph.json` exists and the redesign touches established routes/components/data flows, query Graphify for relationship leads, then verify named files before changing architecture.
+6. **Existing code graph** - when `codebase-map-understand.md` exists and the redesign touches established routes/components/data flows, consult the codebase map for relationship leads, then verify named files before changing architecture.
 7. **Quiet constraints** - accessibility-first audiences, public-sector, regulated industries, trust-first commerce, kids' products. These constraints OVERRIDE aesthetic preference.
 
 ### 0.B Output a one-line "Design Read" before generating

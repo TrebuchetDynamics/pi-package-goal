@@ -9,7 +9,7 @@ description: >
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
-When exploring the codebase, use the project's domain glossary to get a clear mental model of the relevant modules, and check ADRs in the area you're touching. If `graphify-out/graph.json` exists and the bug crosses module boundaries, query Graphify for likely paths/callers before broad grepping, then verify every lead in live files.
+When exploring the codebase, use the project's domain glossary to get a clear mental model of the relevant modules, and check ADRs in the area you're touching. If `codebase-map-understand.md` exists and the bug crosses module boundaries, consult the codebase map for likely paths/callers before broad grepping, then verify every lead in live files.
 
 ## Quick references
 

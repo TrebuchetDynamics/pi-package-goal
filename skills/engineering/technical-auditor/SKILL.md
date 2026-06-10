@@ -17,7 +17,7 @@ Act as a principal engineer auditing the requested scope: a named folder/path wh
 
 1. Set the audit scope. If the user names a folder/path, audit that scope. Otherwise audit the current working directory where Pi is running. Still read enough repo-level instructions/manifests/CI to understand ownership and validation. Only default to a whole-repository audit when the current working directory is the repo root.
 2. Read repo instructions and state: `AGENTS.md`, `git status --short --branch`, README/CONTEXT/docs, manifests, lockfiles, build/CI config, tests relevant to the scope.
-3. If `graphify-out/graph.json` exists, query Graphify first for broad audit leads scoped to the audit root, e.g. `graphify query "architecture hotspots, entry points, dependencies, tests, and risk areas in <scope>" --budget 2500`; verify every lead in live files. If Graphify is unavailable or fails, state that as `Unverified`, include the failed command/error summary in Verification Evidence, and continue from live-file evidence without rebuilding artifacts unless the user explicitly approves artifact generation.
+3. If `codebase-map-understand.md` exists, read it first for broad audit leads scoped to the audit root, then verify every lead in live files. If no codebase map is available, state that in Verification Evidence and continue from live-file evidence without generating artifacts unless the user explicitly approves artifact generation.
 4. Select Full, Audit, or Architecture mode from the request. If the user provides no mode argument, run Full mode. For Architecture mode or the architecture portion of Full mode, load [architecture-deepening-mode.md](references/architecture-deepening-mode.md), [architecture-repo-study.md](references/architecture-repo-study.md), [architecture-language.md](references/architecture-language.md), [architecture-deepening-dependencies.md](references/architecture-deepening-dependencies.md), and [architecture-html-report.md](references/architecture-html-report.md).
 5. In Audit mode or the audit portion of Full mode, build the markdown report in four phases, in order: Scope Map → Audit Report → Improvement Strategy → Task Plan.
 
@@ -66,12 +66,12 @@ Each task needs title, description, affected files/areas, acceptance criteria, e
 
 - Ground every substantive claim in real files with line numbers. Use `rg -n`, `nl -ba`, targeted reads, test output, manifests, lockfiles, and CI files.
 - If a claim cannot be verified, say `Unverified` and explain what evidence is missing.
-- Treat Graphify as a lead source only; cite live source lines, not just graph output.
+- Treat codebase map as a lead source only; cite live source lines, not just generated map output.
 - Separate facts from judgments.
 
 ### Verification gate
 
-Before final response, verify: all four phases are present; every finding has severity and file/line evidence or is explicitly `Unverified`; no code was modified; recommendations match project maturity; ugly high-priority issues are not softened; Verification Evidence lists inspected files, commands/tests run, Graphify query status, and clean-worktree/no-modification confirmation.
+Before final response, verify: all four phases are present; every finding has severity and file/line evidence or is explicitly `Unverified`; no code was modified; recommendations match project maturity; ugly high-priority issues are not softened; Verification Evidence lists inspected files, commands/tests run, codebase map status, and clean-worktree/no-modification confirmation.
 
 ### Red lines
 

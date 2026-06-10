@@ -30,7 +30,7 @@ Based on the OpenClaw `autoreview` skill; this package bundles the workflow, not
 ## Contract
 
 - Treat findings as advisory. Never blindly apply them.
-- Verify every accepted finding by reading the real code path and adjacent files; when `graphify-out/graph.json` exists and a finding depends on cross-module impact, query Graphify for caller/path leads and verify them in source.
+- Verify every accepted finding by reading the real code path and adjacent files; when `codebase-map-understand.md` exists and a finding depends on cross-module impact, consult the codebase map for caller/path leads and verify them in source.
 - Read dependency docs/source/types when a finding depends on external behavior.
 - Reject speculative edge cases, broad rewrites, and fixes that over-complicate the codebase.
 - Prefer small fixes at the right ownership boundary.

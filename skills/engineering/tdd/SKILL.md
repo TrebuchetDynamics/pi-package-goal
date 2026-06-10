@@ -44,7 +44,7 @@ RIGHT (vertical):
 
 ### Repo study before RED
 
-Before writing the first test, inspect `git status --short --branch`, repo instructions, nearby domain docs/ADRs, existing tests, the public interface callers use, and the likely validation command. If `graphify-out/graph.json` exists and the behavior crosses multiple modules, query Graphify for callers/paths first, then verify the named files in source. Answer easy scope/test questions from repo evidence; ask the user only for owner priorities or behavior choices that remain unclear.
+Before writing the first test, inspect `git status --short --branch`, repo instructions, nearby domain docs/ADRs, existing tests, the public interface callers use, and the likely validation command. If `codebase-map-understand.md` exists and the behavior crosses multiple modules, consult the codebase map for callers/paths first, then verify the named files in source. Answer easy scope/test questions from repo evidence; ask the user only for owner priorities or behavior choices that remain unclear.
 
 ### Skill handoffs
 

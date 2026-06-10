@@ -50,7 +50,7 @@ Before blocking on validation, prove at least one of:
 
 1. Read repo instructions (`AGENTS.md`, package scripts, relevant docs) and inspect `git status --short --branch`.
 2. Inspect diffs for every changed and untracked path. For untracked files, inspect names, type/size, and contents when text.
-3. If the patch claims architecture/refactor/codebase-impact evidence and `graphify-out/graph.json` exists, query Graphify for the touched modules/callers and verify the named files before classifying the patch. Do not build or refresh Graphify during delivery unless validation or the accepted scope requires it.
+3. If the patch claims architecture/refactor/codebase-impact evidence and `codebase-map-understand.md` exists, consult the codebase map for the touched modules/callers and verify the named files before classifying the patch. Do not build or refresh codebase map during delivery unless validation or the accepted scope requires it.
 4. Check whether generated junk, local state, logs, caches, temp files, or tool outputs should be ignored. In ship mode, fix safe hygiene directly: tighten `.gitignore`, remove/leave unstaged generated junk, run formatters already declared by the repo, update imports, and apply small mechanical fixes from validation.
 5. Classify each path:
    - **safe in-scope** — directly belongs to the requested work, including safe polish, formatting, import cleanup, and `.gitignore` hygiene;
@@ -71,7 +71,7 @@ Before blocking on validation, prove at least one of:
 ## Red lines
 
 - Do not commit secrets, `.env` files, private keys, credentials, or personal machine state.
-- Do not include `.pi/*/logs.jsonl`, caches, build output, generated Understand artifacts, generated Graphify artifacts (`graphify-out/`), or unrelated user edits unless explicitly requested.
+- Do not include `.pi/*/logs.jsonl`, caches, build output, generated Understand artifacts, generated codebase map artifacts, or unrelated user edits unless explicitly requested.
 - Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes, change remotes, or delete branches unless explicitly requested.
 - Do not make product/architecture changes, dependency upgrades, lockfile churn, or broad rewrites under the label of polish unless explicitly in scope.
 - Do not stage broadly before every path has been inspected.

@@ -10,7 +10,7 @@ Refactor one bounded folder to discover real shared-code opportunities and bug-r
 ## Quick start
 
 1. Identify the target folder. If none is named, pick smartly instead of asking by running `candidates-folder-refactor` (or reading its latest log) and selecting the highest-signal bounded candidate with duplicate/reuse evidence, real callers, and non-generated source files; do not start at repo root.
-2. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` and `graphify-out/graph.json` when present), folder tree, imports/callers, package/module boundaries, and related tests only when they already exist or the user asked for test work. Use Graphify to spot cross-file reuse/caller leads, then prove duplicates in source.
+2. Inspect `git status --short --branch`, repo instructions, existing maps (`codebase-map-understand.md` when present), folder tree, imports/callers, package/module boundaries, and related tests only when they already exist or the user asked for test work. Use codebase map to spot cross-file reuse/caller leads, then prove duplicates in source.
 3. Baseline behavior before edits with the lightest existing validation seam (typecheck/build/lint/smoke/related tests). Do not add tests just to enable a refactor unless the user explicitly asked for tests or a behavior bug needs a focused assertion.
 4. Use `skill-folder-refactor` mechanics for safe move-only slices, then run a reuse-and-bug pass over the new seams.
 

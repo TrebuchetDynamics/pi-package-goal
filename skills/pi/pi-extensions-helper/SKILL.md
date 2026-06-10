@@ -17,7 +17,7 @@ Read current docs first; Pi extension APIs move quickly.
 4. For packaged extensions, also read `docs/packages.md`.
 5. For custom UI/components, also read `docs/tui.md` and a relevant UI example.
 
-Do not rely on memory when writing API signatures. If `graphify-out/graph.json` exists for the package/repo, query Graphify for extension/resource relationships before broad manual exploration, then verify named files directly.
+Do not rely on memory when writing API signatures. If `codebase-map-understand.md` exists for the package/repo, consult the codebase map for extension/resource relationships before broad manual exploration, then verify named files directly.
 
 ## Skill composition
 
