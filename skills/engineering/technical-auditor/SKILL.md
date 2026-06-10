@@ -1,23 +1,24 @@
 ---
 name: technical-auditor
-description: Produce evidence-backed repository technical audits and prioritized improvement plans. Use when asked for a technical audit, repo health review, risk assessment, quality/security/testing audit, or actionable modernization plan.
+description: Produce evidence-backed repository or folder-scoped technical audits and prioritized improvement plans. Use when asked for a technical audit, repo/folder health review, risk assessment, quality/security/testing audit, or actionable modernization plan.
 ---
 
 # Technical Auditor
 
-Act as a principal engineer auditing the repository. Analysis only: do not modify code, configs, generated artifacts, or docs during the audit unless the user separately asks to save the report.
+Act as a principal engineer auditing the requested scope: a named folder/path when the user gives one; otherwise the current working directory where Pi is running. If the current working directory is the repo root, this becomes a whole-repository audit; if Pi was opened inside a subfolder, default to that folder. Analysis only: do not modify code, configs, generated artifacts, or docs during the audit unless the user separately asks to save the report.
 
 ## Quick start
 
-1. Read repo instructions and state: `AGENTS.md`, `git status --short --branch`, README/CONTEXT/docs, manifests, lockfiles, build/CI config, tests.
-2. If `graphify-out/graph.json` exists, query Graphify first for broad audit leads, e.g. `graphify query "architecture hotspots, entry points, dependencies, tests, and risk areas" --budget 2500`; verify every lead in live files.
-3. Build the report in four phases, in order: Repository Map → Audit Report → Improvement Strategy → Task Plan.
+1. Set the audit scope. If the user names a folder/path, audit that scope. Otherwise audit the current working directory where Pi is running. Still read enough repo-level instructions/manifests/CI to understand ownership and validation. Only default to a whole-repository audit when the current working directory is the repo root.
+2. Read repo instructions and state: `AGENTS.md`, `git status --short --branch`, README/CONTEXT/docs, manifests, lockfiles, build/CI config, tests relevant to the scope.
+3. If `graphify-out/graph.json` exists, query Graphify first for broad audit leads scoped to the audit root, e.g. `graphify query "architecture hotspots, entry points, dependencies, tests, and risk areas in <scope>" --budget 2500`; verify every lead in live files.
+4. Build the report in four phases, in order: Scope Map → Audit Report → Improvement Strategy → Task Plan.
 
 ## Workflow
 
 ### Phase 1 — Discovery and mapping
 
-Read before judging. Map purpose, maturity, tech stack, runtime targets, entry points, control/data flow, key directories, conventions, test style, package/build/CI/docs/env config, and anything surprising. Use file citations for important claims.
+Read before judging. Map purpose, maturity, tech stack, runtime targets, entry points, control/data flow, key directories, conventions, test style, package/build/CI/docs/env config, and anything surprising inside the requested scope. For folder audits, also map public imports/callers, nearby tests, generated/vendor boundaries, and parent package/module ownership. Use file citations for important claims.
 
 ### Phase 2 — Audit
 
@@ -50,7 +51,7 @@ Each task needs title, description, affected files/areas, acceptance criteria, e
 
 ### Entry protocol
 
-- Trivial/small repo: proceed directly with a compact audit.
+- Trivial/small repo or clearly named folder: proceed directly with a compact scoped audit.
 - Medium ambiguity: infer project maturity from repo evidence, then ask only one missing owner-decision question if it changes recommendations.
 - High ambiguity/risk: stop when required access, product intent, or legal/security ownership is unknown.
 
@@ -74,7 +75,7 @@ Before final response, verify: all four phases are present; every finding has se
 
 ### Output contract
 
-Produce one document with: Executive Summary (≤10 sentences, A–F grade, top 3 risks, top 3 opportunities), Repository Map, Audit Report, Improvement Strategy, Task Plan, and Open Questions.
+Produce one document with: Executive Summary (≤10 sentences, A–F grade for the audited scope, top 3 risks, top 3 opportunities), Scope Map (Repository Map for whole-repo audits or Folder Map for folder audits), Audit Report, Improvement Strategy, Task Plan, and Open Questions.
 
 ## Shared contract
 
