@@ -171,3 +171,5 @@ assert.deepEqual(gateMod.evaluateFinalReportGate("No markers", { usedReportRepai
     ],
   },
 });
+
+console.log("development-goal-final-report-gate ok");

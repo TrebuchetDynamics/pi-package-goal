@@ -1,9 +1,8 @@
 import { splitCommandArgs } from "../../lib/pi-bridge/command-grammar.js";
 
 const REWRITE_TIMEOUT_MS = 2_000;
-const INSTALL_TIMEOUT_MS = 120_000;
 const MIN_SUPPORTED_RTK = [0, 23, 0];
-const RTK_INSTALL_COMMAND = "curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh";
+export const RTK_INSTALL_COMMAND = "brew install rtk";
 
 export function uniquePaths(paths) {
   return [...new Set(paths.filter(Boolean))];
@@ -60,10 +59,7 @@ export function normalizeRewriteResult(result, originalCommand) {
 
 export function parseRtkCommandArgs(args = "") {
   const parts = splitCommandArgs(args);
-  return {
-    action: parts[0] ?? "status",
-    yes: parts.includes("--yes") || parts.includes("-y"),
-  };
+  return { action: parts[0] ?? "status" };
 }
 
 async function execRtk(pi, args, options = {}) {
@@ -112,7 +108,7 @@ function report(ctx, message, level = "info") {
 
 function formatStatus(status) {
   if (status.ok) return `RTK enabled for Pi bash tool calls (${status.version}, ${status.command}). Set RTK_DISABLED=1 to bypass.`;
-  return `RTK not active: ${status.reason}. Install with /rtk install or run: ${RTK_INSTALL_COMMAND}`;
+  return `RTK not active: ${status.reason}. Review and run manually: ${RTK_INSTALL_COMMAND}`;
 }
 
 async function handleRtkCommand(pi, args, ctx) {
@@ -122,7 +118,7 @@ async function handleRtkCommand(pi, args, ctx) {
     report(ctx, [
       "RTK Pi integration commands:",
       "/rtk status — check whether rtk-ai/rtk is available",
-      "/rtk install [--yes] — install rtk-ai/rtk to ~/.local/bin after confirmation",
+      "/rtk install — show the manual rtk-ai/rtk install command; remote installers are not executed by this extension",
       "RTK rewrites eligible bash tool calls through `rtk rewrite`; it never blocks commands.",
     ].join("\n"));
     return;
@@ -135,33 +131,7 @@ async function handleRtkCommand(pi, args, ctx) {
       return;
     }
 
-    if (!parsed.yes) {
-      if (!ctx?.hasUI) {
-        report(ctx, `Manual RTK install required: ${RTK_INSTALL_COMMAND}`, "warning");
-        return;
-      }
-      const confirmed = await ctx.ui.confirm(
-        "Install RTK?",
-        `This will run the upstream rtk-ai installer:\n${RTK_INSTALL_COMMAND}\n\nReview source first: https://github.com/rtk-ai/rtk`,
-      );
-      if (!confirmed) {
-        report(ctx, `RTK install skipped. Manual command: ${RTK_INSTALL_COMMAND}`, "warning");
-        return;
-      }
-    }
-
-    report(ctx, "Installing rtk-ai/rtk...");
-    const install = await pi.exec("sh", ["-c", RTK_INSTALL_COMMAND], {
-      timeout: INSTALL_TIMEOUT_MS,
-      env: { ...process.env, PATH: pathWithLocalBin(process.env) },
-    });
-    if (install.code !== 0 || install.killed) {
-      report(ctx, `RTK install failed. Exit ${install.code}; stderr: ${String(install.stderr ?? "").trim()}`, "error");
-      return;
-    }
-
-    const after = await checkRtk(pi).catch((error) => ({ ok: false, reason: error.message, version: "" }));
-    report(ctx, formatStatus(after), after.ok ? "info" : "warning");
+    report(ctx, `Manual RTK install required. Review and run yourself: ${RTK_INSTALL_COMMAND}`, "warning");
     return;
   }
 

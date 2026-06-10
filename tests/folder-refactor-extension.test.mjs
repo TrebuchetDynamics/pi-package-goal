@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile as execFileCallback } from "node:child_process";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -31,6 +31,18 @@ try {
   const scan = await scanFolderRefactorTarget(fixture, "internal/config");
   assert.deepEqual(scan.rootFiles, ["config.go", "schema_test.go", "slash_title.go"]);
   assert.deepEqual(scan.rootDirs, ["auth"]);
+  await assert.rejects(
+    () => scanFolderRefactorTarget(fixture, join(tmpdir(), `folder-refactor-outside-${process.pid}`)),
+    /folder-refactor target must be inside cwd/,
+  );
+  const outside = await mkdtemp(join(tmpdir(), "folder-refactor-outside-real-"));
+  await writeFile(join(outside, "outside.go"), "package outside\n");
+  await symlink(outside, join(fixture, "outside-link"), "dir");
+  await assert.rejects(
+    () => scanFolderRefactorTarget(fixture, "outside-link"),
+    /folder-refactor target must be inside cwd/,
+  );
+  await rm(outside, { recursive: true, force: true });
 
   const failingAudit = auditFolderRefactorCompletion(scan, {
     plannedTopologyComplete: true,

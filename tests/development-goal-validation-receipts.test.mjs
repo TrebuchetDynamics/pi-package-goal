@@ -41,3 +41,5 @@ assert.equal(failingReceipt.passed, false);
 assert.equal(receiptsMod.validationReceiptsPassed([passingReceipt, failingReceipt], ["npm test", "git diff --check"]), false);
 assert.equal(receiptsMod.validationReceiptsPassed([passingReceipt], ["npm test", "git diff --check"]), false);
 assert.equal(receiptsMod.validationReceiptsPassed([passingReceipt], ["npm test"]), true);
+
+console.log("development-goal-validation-receipts ok");

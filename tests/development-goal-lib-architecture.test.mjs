@@ -29,3 +29,5 @@ assert.equal(typeof validationReceipts.recordValidationReceipt, "function");
 
 const terminalAudit = await jiti.import(path.join(root, "lib", "goal", "terminal-audit.ts"));
 assert.equal(typeof terminalAudit.terminalAuditEvent, "function");
+
+console.log("development-goal-lib-architecture ok");

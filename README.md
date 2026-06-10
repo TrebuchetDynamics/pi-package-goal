@@ -129,7 +129,7 @@ Common commands:
 | --- | --- |
 | `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
 | `/rtk status` | Check whether [rtk-ai/rtk](https://github.com/rtk-ai/rtk) is installed and active for Pi bash command rewriting. |
-| `/rtk install` | After confirmation, install the upstream `rtk` binary so this package's Pi extension can rewrite eligible bash tool calls through `rtk rewrite`. |
+| `/rtk install` | Show the upstream `rtk` installer command. The extension does not execute remote installers; review and run the command yourself. |
 | `autofolderrefactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
 | `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
@@ -205,15 +205,15 @@ Setup options:
 /rtk install
 ```
 
-Or install RTK yourself, then reload Pi:
+Review and install RTK yourself, then reload Pi:
 
 ```bash
 brew install rtk
-# or
-curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
 ```
 
-Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
+For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer.
+
+The extension never executes the remote installer for you. Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
 
 ## Included theme: `trebuchet-neon`
 
@@ -366,6 +366,13 @@ Run validation before committing changes:
 ```bash
 npm test
 git diff --check
+npm pack --dry-run
+```
+
+The root package intentionally has no runtime dependencies. Audit bundled nested tooling separately when it changes:
+
+```bash
+npm --prefix skills/frontend/stitch-react-components audit --omit=dev --audit-level=moderate
 ```
 
 Preserve third-party notices and license copies when updating bundled skills.

@@ -269,3 +269,5 @@ assert.deepEqual(proveAndIsolateReport.quality.issues, [
     value: "Prove router.push('/unidades/detail/42') works in same test harness.",
   },
 ]);
+
+console.log("development-goal-report-parser ok");

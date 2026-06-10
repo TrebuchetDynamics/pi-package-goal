@@ -27,7 +27,7 @@ export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skill
     `<skill name="graphify" location="${skillPath}">`,
     `User invoked ${invocation}. Follow the Graphify Pi skill below exactly.`,
     `Pi bridge policy: default graph builds and updates in Pi are pure AST/local/no-LLM. For bare path invocations such as /graphify ., /graphify src, or /graphify . --update, run Graphify's no-LLM code path (graphify update <path>, using --force when needed) and do not run semantic extraction, do not dispatch subagents, and do not ask for or suggest API keys. Only use semantic/LLM extraction when the user explicitly asks for semantic, docs, PDFs, images, video, deep mode, or an LLM/backend.`,
-    `Pi bridge policy: before any repo graph build, update, query, path, or explain run, ensure Graphify's git hooks are active in the current target repo by running graphify hook install after graphifyy is available. If the hook is already installed, continue without asking.`,
+    `Pi bridge policy: before any repo graph build or update run, ensure Graphify's git hooks are active in the current target repo by running graphify hook install after graphifyy is available. Existing-graph read commands (query, path, explain) may use direct CLI fast paths without installing hooks. If the hook is already installed, continue without asking.`,
     `Pi bridge policy: when Graphify detects a large corpus and lists top first-level subdirectories, do not ask the user which one to run. Automatically continue with the listed top subdirectories as a multi-path run, preserving their order, unless the user already named a narrower path or explicitly asked to choose manually.`,
     `Pi bridge policy: if pure AST mode omits markdown or other prose files, report that as an intentional no-LLM tradeoff rather than a failure.`,
     "",
@@ -192,6 +192,7 @@ export function buildGraphifyAstOnlyUpdateArgs(args = "") {
   const target = tokens.find((token) => !token.startsWith("-")) ?? ".";
   const updateArgs = ["GRAPHIFY_NO_TIPS=1", "graphify", "update", target, "--force"];
   if (tokens.includes("--no-cluster")) updateArgs.push("--no-cluster");
+  if (tokens.includes("--no-viz")) updateArgs.push("--no-viz");
   return updateArgs;
 }
 

@@ -174,6 +174,7 @@ function descendantFiles(start, name) {
     try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
     for (const entry of entries) {
       const full = path.join(dir, entry.name);
+      if (entry.isDirectory() && shouldIgnoreDir(entry.name)) continue;
       if (entry.isFile() && entry.name === name) {
         files.push(full);
         continue;

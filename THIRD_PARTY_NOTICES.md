@@ -134,7 +134,7 @@ Trebuchet Dynamics under the MIT License.
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk
-- Snapshot inspected: current `master` clone on 2026-06-07
+- Snapshot inspected: `6785a6c7695d7273e722214a295249a84819b6f0` (HEAD observed 2026-06-10)
 - Usage: source evidence for the package-local `extensions/rtk/index.js` Pi command-rewrite integration; the Rust RTK binary is not bundled in this package tarball.
 - License: Apache-2.0
 - Full license copy: `licenses/rtk-ai-rtk-LICENSE`

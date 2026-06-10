@@ -153,6 +153,23 @@ const piCorePackages = new Set([
   "typebox",
 ]);
 
+function collectNestedPackageLockNameIssues(baseDir) {
+  const issues = [];
+  const packageFiles = ["skills/frontend/stitch-react-components/package.json"];
+  for (const packageFile of packageFiles) {
+    const packagePath = path.join(baseDir, packageFile);
+    const lockPath = path.join(path.dirname(packagePath), "package-lock.json");
+    if (!fs.existsSync(packagePath) || !fs.existsSync(lockPath)) continue;
+    const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+    const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+    const lockRootName = lock.packages?.[""]?.name;
+    if (lock.name !== pkg.name || lockRootName !== pkg.name) {
+      issues.push(`${packageFile}: package-lock root name must match package.json name`);
+    }
+  }
+  return issues;
+}
+
 function collectPiCoreDependencyIssues(pkg) {
   const issues = [];
   for (const packageName of Object.keys(pkg.dependencies ?? {})) {
@@ -342,6 +359,19 @@ async function testPackageManifest() {
   assert.equal(pkg.files.includes("skills"), true);
   assert.equal(pkg.files.includes("themes"), true, "package tarball must include theme resources");
   assert.equal(pkg.files.includes("tmux"), true, "package tarball must include tmux helpers and tx bin");
+  assert.equal(pkg.files.includes("!**/.pi/**"), true, "package tarball must exclude local Pi artifacts");
+  assert.equal(pkg.files.includes("!**/graphify-out/**"), true, "package tarball must exclude generated Graphify artifacts");
+  assert.equal(pkg.files.includes("!**/.understand-anything/**"), true, "package tarball must exclude generated Understand artifacts");
+  assert.ok(exists(".github/workflows/ci.yml"), "CI must run package validation");
+  const ci = read(".github/workflows/ci.yml");
+  assert.match(ci, /npm test/);
+  assert.match(ci, /actions\/checkout@[a-f0-9]{40}/);
+  assert.match(ci, /actions\/setup-node@[a-f0-9]{40}/);
+  assert.match(ci, /git diff --check/);
+  assert.match(ci, /npm pack --dry-run/);
+  assert.match(ci, /graphify-out/);
+  assert.match(ci, /\.understand-anything/);
+  assert.match(ci, /npm --prefix skills\/frontend\/stitch-react-components audit/);
   const gitignore = read(".gitignore");
   assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
   assert.match(gitignore, /\*\*\/\.pi\/\*\/logs\.jsonl/);
@@ -366,6 +396,10 @@ async function testPackageManifestPaths() {
 async function testUnderstandExtension() {
   const goalExtension = read("extensions/goal/index.ts");
   assert.match(goalExtension, /registerCommand\("goal"/);
+  assert.match(goalExtension, /emptyGoalCommandAction/);
+  assert.match(goalExtension, /sendUserMessage\("\/skill:goal"\)/);
+  assert.ok(exists("lib/goal/command.js"), "goal command helper must exist");
+  assert.ok(exists("tests/goal-extension-command.test.mjs"), "goal command helper test must exist");
   assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
@@ -421,6 +455,7 @@ async function testUnderstandExtension() {
 
 async function testPiCoreDependencies() {
   assert.deepEqual(collectPiCoreDependencyIssues(readJson("package.json")), []);
+  assert.deepEqual(collectNestedPackageLockNameIssues(root), []);
 }
 
 async function testSkills() {
@@ -613,6 +648,8 @@ async function testDocsAndNotices() {
   assert.match(readme, /\/understand-refactor grill N/);
   assert.match(readme, /pi\.extensions/);
   assert.match(readme, /pi\.themes/);
+  assert.match(readme, /npm pack --dry-run/);
+  assert.match(readme, /npm --prefix skills\/frontend\/stitch-react-components audit/);
 }
 
 await testPackageManifest();

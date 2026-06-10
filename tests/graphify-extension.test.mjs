@@ -66,6 +66,7 @@ assert.match(invocation, /do not ask for or suggest API keys/);
 assert.match(invocation, /Only use semantic\/LLM extraction when the user explicitly asks/);
 assert.match(invocation, /ensure Graphify's git hooks are active/);
 assert.match(invocation, /graphify hook install after graphifyy is available/);
+assert.match(invocation, /Existing-graph read commands/);
 assert.match(invocation, /large corpus and lists top first-level subdirectories/);
 assert.match(invocation, /Automatically continue with the listed top subdirectories as a multi-path run/);
 assert.match(invocation, /# \/graphify/);
@@ -124,6 +125,7 @@ assert.equal(isGraphifyAstOnlyBuildArgs("query test"), false);
 assert.equal(isGraphifyAstOnlyBuildArgs("https://github.com/a/b"), false);
 assert.deepEqual(buildGraphifyAstOnlyUpdateArgs(""), ["GRAPHIFY_NO_TIPS=1", "graphify", "update", ".", "--force"]);
 assert.deepEqual(buildGraphifyAstOnlyUpdateArgs("src --update --no-cluster"), ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force", "--no-cluster"]);
+assert.deepEqual(buildGraphifyAstOnlyUpdateArgs("src --update --no-viz"), ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force", "--no-viz"]);
 
 const tmp = await mkdtemp(join(tmpdir(), "graphify-ignore-"));
 try {
@@ -174,17 +176,17 @@ try {
     sendMessage(message) {
       astOnlyMessages.push(message);
     },
-  }, { signal: "signal" }, "src --update");
+  }, { signal: "signal" }, "src --update --no-viz");
   assert.deepEqual(astOnlyExecCalls, [
     { command: "graphify", args: ["hook", "install"], options: { signal: "signal", timeout: 120_000 } },
     {
       command: "env",
-      args: ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force"],
+      args: ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force", "--no-viz"],
       options: { signal: "signal", timeout: 300_000 },
     },
   ]);
   assert.equal(astOnlyMessages[0].content, "ast updated");
-  assert.deepEqual(astOnlyMessages[0].details, { action: "update", mode: "ast-only", args: ["src", "--force"], exitCode: 0 });
+  assert.deepEqual(astOnlyMessages[0].details, { action: "update", mode: "ast-only", args: ["src", "--force", "--no-viz"], exitCode: 0 });
 
   await assert.rejects(
     () => runGraphifyCliFastPath({

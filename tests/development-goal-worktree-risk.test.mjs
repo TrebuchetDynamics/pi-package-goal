@@ -55,3 +55,5 @@ assert.deepEqual(riskMod.evaluateWorktreeRisk({
   finalStatus: "review_needed",
   reasons: ["insertions 501 exceeds max 500"],
 });
+
+console.log("development-goal-worktree-risk ok");

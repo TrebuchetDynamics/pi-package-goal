@@ -1,5 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Box, Spacer, Text } from "@earendil-works/pi-tui";
+import { emptyGoalCommandAction } from "../../lib/goal/command.js";
 import { tokenDeltaFromUsage } from "./usage";
 import type { UsageSnapshot } from "./usage";
 
@@ -331,7 +332,16 @@ export default function piGoal(pi: ExtensionAPI) {
 			const trimmed = args.trim();
 			const now = Date.now();
 
-			if (!trimmed || trimmed === "status") {
+			if (!trimmed) {
+				if (emptyGoalCommandAction(goal) === "start-skill") {
+					pi.sendUserMessage("/skill:goal");
+				} else {
+					ctx.ui.notify(`${statusLine(goal)}\nObjective: ${goal.objective}\nStatus bar: ${statusBarEnabled ? "on" : "off"}`, "info");
+				}
+				return;
+			}
+
+			if (trimmed === "status") {
 				if (!goal) ctx.ui.notify("Usage: /goal [--tokens 50k] <objective>", "info");
 				else ctx.ui.notify(`${statusLine(goal)}\nObjective: ${goal.objective}\nStatus bar: ${statusBarEnabled ? "on" : "off"}`, "info");
 				return;

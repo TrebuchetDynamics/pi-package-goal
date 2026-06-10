@@ -8,6 +8,7 @@ import {
   parseRtkVersion,
   pathWithLocalBin,
   rtkCommandCandidates,
+  RTK_INSTALL_COMMAND,
   shouldSkipRewrite,
   uniquePaths,
 } from "../extensions/rtk/index.js";
@@ -40,8 +41,8 @@ assert.equal(normalizeRewriteResult({ code: 1, stdout: "", killed: false }, "ech
 assert.equal(normalizeRewriteResult({ code: 0, stdout: "git status\n", killed: false }, "git status"), null);
 assert.equal(normalizeRewriteResult({ code: 0, stdout: "rtk git status\n", killed: true }, "git status"), null);
 
-assert.deepEqual(parseRtkCommandArgs(""), { action: "status", yes: false });
-assert.deepEqual(parseRtkCommandArgs("install --yes"), { action: "install", yes: true });
-assert.deepEqual(parseRtkCommandArgs("install -y"), { action: "install", yes: true });
+assert.deepEqual(parseRtkCommandArgs(""), { action: "status" });
+assert.deepEqual(parseRtkCommandArgs("install"), { action: "install" });
+assert.doesNotMatch(RTK_INSTALL_COMMAND, /refs\/heads\/master|\|\s*sh/);
 
 console.log("rtk-extension ok");

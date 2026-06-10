@@ -3,6 +3,7 @@ node_modules/
 
 # Package-manager generated files
 package-lock.json
+!skills/frontend/stitch-react-components/package-lock.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -18,6 +19,7 @@ dist/
 # Local Understand/Graphify agent artifacts
 .understand-anything/
 graphify-out/
+**/graphify-out/
 *-codebase-map-understand.md
 *-understand-compare.md
 *-understand-refactor.md

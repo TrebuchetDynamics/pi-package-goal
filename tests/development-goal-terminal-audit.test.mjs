@@ -68,3 +68,5 @@ assert.deepEqual(auditMod.terminalAuditEvent({
   reason: "review_needed",
   summary: "human review required",
 });
+
+console.log("development-goal-terminal-audit ok");
