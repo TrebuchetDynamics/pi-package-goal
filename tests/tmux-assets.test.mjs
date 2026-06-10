@@ -45,7 +45,7 @@ function tempDir(name) {
 
 async function testPackageManifest() {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
+  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
   assert.ok(pkg.files.includes("tmux"));
   assert.equal(pkg.scripts["tmux:install"], "sh tmux/install.sh");
 }

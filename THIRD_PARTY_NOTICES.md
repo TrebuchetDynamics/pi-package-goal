@@ -9,8 +9,8 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/GoogleChrome/modern-web-guidance
 - Snapshot inspected: `1dee00c`
 - Bundled paths:
-  - `skills/modern-web-guidance/`
-  - `skills/chrome-extensions/`
+  - `skills/frontend/modern-web-guidance/`
+  - `skills/frontend/chrome-extensions/`
 - License: Apache-2.0
 - Full license copy: `licenses/GoogleChrome-modern-web-guidance-LICENSE`
 
@@ -20,20 +20,20 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `b8be62f`
 - Latest engineering skills comparison inspected: `2bf7005` (upstream engineering grill-with-docs and improve-codebase-architecture skills)
 - Bundled paths:
-  - `skills/tdd/`
-  - `skills/diagnose/`
-  - `skills/improve-codebase-architecture/`
-  - `skills/grill-me/`
-  - `skills/grill-with-docs/`
-  - `skills/prototype/`
-  - `skills/zoom-out/`
-  - `skills/to-issues/`
-  - `skills/to-prd/`
-  - `skills/triage/`
-  - `skills/writing-shape/`
-  - `skills/handoff/`
-  - `skills/caveman/`
-  - `skills/write-a-skill/`
+  - `skills/engineering/tdd/`
+  - `skills/engineering/diagnose/`
+  - `skills/engineering/improve-codebase-architecture/`
+  - `skills/planning/grill-me/`
+  - `skills/planning/grill-with-docs/`
+  - `skills/engineering/prototype/`
+  - `skills/planning/zoom-out/`
+  - `skills/planning/to-issues/`
+  - `skills/planning/to-prd/`
+  - `skills/planning/triage/`
+  - `skills/communication/writing-shape/`
+  - `skills/planning/handoff/`
+  - `skills/communication/caveman/`
+  - `skills/pi/write-a-skill/`
 - License: MIT
 - Full license copy: `licenses/mattpocock-skills-LICENSE`
 
@@ -50,7 +50,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
 - Snapshot inspected: `b7e3af8`
 - Bundled paths:
-  - `skills/ui-ux-pro-max/`
+  - `skills/frontend/ui-ux-pro-max/`
 - License: MIT
 - Full license copy: `licenses/nextlevelbuilder-ui-ux-pro-max-skill-LICENSE`
 
@@ -59,7 +59,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/anthropics/claude-code
 - Snapshot inspected: `7228175`
 - Bundled paths:
-  - `skills/frontend-design/`
+  - `skills/frontend/frontend-design/`
 - License: Anthropic commercial terms
 - Full license copy: `licenses/anthropics-claude-code-LICENSE.md`
 
@@ -68,7 +68,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/wzx2002/codex-frontend-skill
 - Snapshot inspected: `3c3a7c4`
 - Bundled paths:
-  - `skills/frontend-production-shadcn/`
+  - `skills/frontend/frontend-production-shadcn/`
 - License: no license file found in upstream snapshot.
 
 ## Leonxlnx/taste-skill
@@ -76,7 +76,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/Leonxlnx/taste-skill
 - Snapshot inspected: `3c7017d`
 - Bundled paths:
-  - `skills/design-taste-frontend/`
+  - `skills/frontend/design-taste-frontend/`
 - License: MIT
 - Full license copy: `licenses/Leonxlnx-taste-skill-LICENSE`
 
@@ -85,7 +85,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/Nutlope/hallmark
 - Snapshot inspected: `aeb42fb`
 - Bundled paths:
-  - `skills/hallmark/`
+  - `skills/frontend/hallmark/`
 - License: MIT
 - Full license copy: `licenses/Nutlope-hallmark-LICENSE`
 
@@ -94,7 +94,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/google-labs-code/stitch-skills
 - Snapshot inspected: `1544aa4`
 - Bundled paths:
-  - `skills/stitch-react-components/`
+  - `skills/frontend/stitch-react-components/`
 - License: Apache-2.0
 - Full license copy: `licenses/google-labs-code-stitch-skills-LICENSE`
 
@@ -103,7 +103,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/greptileai/skills
 - Snapshot inspected: `4ae5198`
 - Bundled paths:
-  - `skills/greploop/`
+  - `skills/delivery/greploop/`
 - License: MIT
 - Full license copy: `licenses/greptileai-skills-LICENSE`
 
@@ -112,7 +112,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/openclaw/agent-skills
 - Snapshot inspected: `c06e64114b3e71f3aefa1f29f5fff6a43f040888`
 - Bundled paths:
-  - `skills/autoreview/`
+  - `skills/delivery/autoreview/`
 - License: MIT
 - Full license copy: `licenses/openclaw-agent-skills-LICENSE`
 
@@ -121,7 +121,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/OnlyTerp/prompt-cache-skills
 - Snapshot inspected: `dde837e`
 - Bundled paths:
-  - `skills/prompt-cache-auditor/`
+  - `skills/engineering/prompt-cache-auditor/`
 - License: MIT; skills/docs prose is also available under CC-BY-4.0
 - Full license copy: `licenses/OnlyTerp-prompt-cache-skills-LICENSE`
 
@@ -152,7 +152,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/jthack/claude-goal
 - Snapshot inspected: `cacea1bbe7c5221a2197559313e1e464d48a3c90`
 - Bundled paths:
-  - `skills/goal/`
+  - `skills/planning/goal/`
 - License: MIT
 - Full license copy: `licenses/jthack-claude-goal-LICENSE`
 

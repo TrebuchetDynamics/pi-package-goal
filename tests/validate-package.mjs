@@ -194,7 +194,7 @@ function listPackageSkillRootMarkdownFiles(baseDir = root) {
 function collectSkillInventoryIssues(baseDir, expectedNames) {
   const expected = new Set(expectedNames);
   const actual = new Set(listSkillFiles(baseDir)
-    .map((file) => file.match(/^skills\/([^/]+)\/SKILL\.md$/)?.[1])
+    .map((file) => parseFrontmatter(fs.readFileSync(path.join(baseDir, file), "utf8")).name)
     .filter(Boolean));
 
   const issues = [];
@@ -328,7 +328,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("pi-package"));
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
-  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/candidates-folder-refactor/scripts/autofolderrefactor" });
+  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
   assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/graphify"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
@@ -428,7 +428,7 @@ async function testSkills() {
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
   assert.deepEqual(listPackageSkillRootMarkdownFiles(root), [], "root markdown files under pi.skills are loaded as file skills and must move under a non-skill subdirectory");
 
-  const goal = read("skills/goal/SKILL.md");
+  const goal = read("skills/planning/goal/SKILL.md");
   const goalLines = goal.trimEnd().split(/\r?\n/).length;
   assert.ok(goalLines <= 100, `goal SKILL.md should stay compact; got ${goalLines} lines`);
   assert.match(goal, /auto-discovered useful repo work/);
@@ -442,12 +442,12 @@ async function testSkills() {
   assert.match(goal, /skill creation or skill improvement → `write-a-skill`/);
   assert.match(goal, /Pi extension or package resource work → `pi-extensions-helper`/);
   assert.match(goal, /Do not convert a learn, study, or scout request into repo edits/);
-  const goalContract = read("skills/goal/references/operating-contract.md");
+  const goalContract = read("skills/planning/goal/references/operating-contract.md");
   assert.match(goalContract, /No-arg status semantics/);
   assert.match(goalContract, /Multi-slice continuation/);
   assert.match(goalContract, /DEV_GOAL_DECISION: continue_next_slice/);
 
-  const architecture = read("skills/improve-codebase-architecture/SKILL.md");
+  const architecture = read("skills/engineering/improve-codebase-architecture/SKILL.md");
   assert.match(architecture, /repo study/);
   assert.match(architecture, /git status --short --branch/);
   assert.match(architecture, /codebase-map-understand\.md/);
@@ -461,21 +461,21 @@ async function testSkills() {
   assert.match(architecture, /strongest locality\/leverage proof/);
   assert.match(architecture, /Architecture review generated: <absolute html path>/);
   assert.doesNotMatch(architecture, /subagent_type=Explore/);
-  const repoStudy = read("skills/improve-codebase-architecture/REPO-STUDY.md");
+  const repoStudy = read("skills/engineering/improve-codebase-architecture/REPO-STUDY.md");
   assert.match(repoStudy, /Candidate evidence requirements/);
   assert.match(repoStudy, /Generated map discipline/);
   assert.match(repoStudy, /Dirty-worktree pass/);
   assert.match(repoStudy, /accepted in-scope dirty evidence/);
   assert.match(repoStudy, /Review quality gate/);
-  assert.match(read("skills/improve-codebase-architecture/HTML-REPORT.md"), /Evidence base/);
-  assert.match(read("skills/improve-codebase-architecture/HTML-REPORT.md"), /worktree status/);
-  assert.match(read("skills/improve-codebase-architecture/INTERFACE-DESIGN.md"), /If parallel sub-agents are available/);
+  assert.match(read("skills/engineering/improve-codebase-architecture/HTML-REPORT.md"), /Evidence base/);
+  assert.match(read("skills/engineering/improve-codebase-architecture/HTML-REPORT.md"), /worktree status/);
+  assert.match(read("skills/engineering/improve-codebase-architecture/INTERFACE-DESIGN.md"), /If parallel sub-agents are available/);
 
-  const tdd = read("skills/tdd/SKILL.md");
+  const tdd = read("skills/engineering/tdd/SKILL.md");
   assert.match(tdd, /Repo study before RED/);
   assert.match(tdd, /git status --short --branch/);
-  assert.match(read("skills/prototype/SKILL.md"), /Repo study before building/);
-  const candidatesFolderRefactor = read("skills/candidates-folder-refactor/SKILL.md");
+  assert.match(read("skills/engineering/prototype/SKILL.md"), /Repo study before building/);
+  const candidatesFolderRefactor = read("skills/engineering/candidates-folder-refactor/SKILL.md");
   assert.match(candidatesFolderRefactor, /Top candidates/);
   assert.match(candidatesFolderRefactor, /skill-folder-refactor/);
   assert.match(candidatesFolderRefactor, /Do not recommend repo-root refactors/);
@@ -485,15 +485,15 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /--from-log/);
   assert.match(candidatesFolderRefactor, /autofolderrefactor ignore \[folder\]/);
   assert.match(candidatesFolderRefactor, /autofolderrefactor <loops> \[folder\]/);
-  const lgtm = read("skills/lgtm/SKILL.md");
+  const lgtm = read("skills/planning/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
   assert.match(lgtm, /selecting the #1 top candidate/);
   assert.match(lgtm, /immediately run `\/folder-refactor <candidate #1>`/);
   assert.match(lgtm, /extension invokes `skill-folder-refactor`/);
-  const shareCode = read("skills/share-code/SKILL.md");
+  const shareCode = read("skills/engineering/share-code/SKILL.md");
   assert.match(shareCode, /pick smartly instead of asking/);
   assert.match(shareCode, /selecting the highest-signal bounded candidate/);
-  const folderRefactor = read("skills/skill-folder-refactor/SKILL.md");
+  const folderRefactor = read("skills/engineering/skill-folder-refactor/SKILL.md");
   assert.match(folderRefactor, /repo root, treat it as high risk/);
   assert.match(folderRefactor, /For Go, inspect `go\.mod`/);
   assert.match(folderRefactor, /folder_refactor_scan/);
@@ -531,16 +531,16 @@ async function testSkills() {
   assert.match(folderRefactor, /Do not end with "Next candidate: <x>"/);
   assert.match(folderRefactor, /candidates-folder-refactor/);
   assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
-  assert.match(read("skills/write-a-skill/SKILL.md"), /Repo study before drafting/);
-  const grillWithDocs = read("skills/grill-with-docs/SKILL.md");
+  assert.match(read("skills/pi/write-a-skill/SKILL.md"), /Repo study before drafting/);
+  const grillWithDocs = read("skills/planning/grill-with-docs/SKILL.md");
   assert.match(grillWithDocs, /codebase-map-understand\.md when present/);
   assert.match(grillWithDocs, /resolving dependencies between decisions one-by-one/);
   assert.match(grillWithDocs, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
   assert.match(grillWithDocs, /state which prior decision this branch depends on/);
   assert.match(grillWithDocs, /If the user has not accepted the canonical term, keep grilling instead of writing/);
-  assert.match(read("skills/to-prd/SKILL.md"), /codebase-map-understand\.md/);
-  assert.match(read("skills/to-issues/SKILL.md"), /codebase-map-understand\.md/);
-  assert.match(read("skills/triage/SKILL.md"), /codebase-map-understand\.md/);
+  assert.match(read("skills/planning/to-prd/SKILL.md"), /codebase-map-understand\.md/);
+  assert.match(read("skills/planning/to-issues/SKILL.md"), /codebase-map-understand\.md/);
+  assert.match(read("skills/planning/triage/SKILL.md"), /codebase-map-understand\.md/);
   assert.ok(exists("skills/shared/COMMON-CONTRACT.md"), "shared skill contract must exist");
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
   assert.match(commonContract, /Repo and ownership check/);
@@ -559,25 +559,25 @@ async function testSkills() {
     assert.match(read(file), /Graphify|graphify-out\/graph\.json/, `${file} should name when Graphify evidence applies or is intentionally checked`);
   }
 
-  const promptCacheAuditor = read("skills/prompt-cache-auditor/SKILL.md");
+  const promptCacheAuditor = read("skills/engineering/prompt-cache-auditor/SKILL.md");
   assert.match(promptCacheAuditor, /prompt_cache_key/);
   assert.match(promptCacheAuditor, /cache_control/);
   assert.match(promptCacheAuditor, /cache-read counters/);
-  assert.match(read("skills/prompt-cache-auditor/references/provider-patterns.md"), /OnlyTerp\/prompt-cache-skills/);
-  assert.match(read("skills/prompt-cache-auditor/references/provider-patterns.md"), /cache_read_input_tokens/);
-  assert.ok(exists("skills/prompt-cache-auditor/scripts/summarize-cache-usage.mjs"), "prompt cache skill helper must exist");
+  assert.match(read("skills/engineering/prompt-cache-auditor/references/provider-patterns.md"), /OnlyTerp\/prompt-cache-skills/);
+  assert.match(read("skills/engineering/prompt-cache-auditor/references/provider-patterns.md"), /cache_read_input_tokens/);
+  assert.ok(exists("skills/engineering/prompt-cache-auditor/scripts/summarize-cache-usage.mjs"), "prompt cache skill helper must exist");
 
-  const piEcosystemScout = read("skills/pi-ecosystem-scout/SKILL.md");
+  const piEcosystemScout = read("skills/pi/pi-ecosystem-scout/SKILL.md");
   assert.match(piEcosystemScout, /translate the external pattern into a local requirement before editing/);
   assert.match(piEcosystemScout, /pattern-only inspiration belongs in the scout report, not package notices/);
-  const piExtensionsHelper = read("skills/pi-extensions-helper/SKILL.md");
+  const piExtensionsHelper = read("skills/pi/pi-extensions-helper/SKILL.md");
   assert.match(piExtensionsHelper, /write the local design rule first/);
   assert.match(piExtensionsHelper, /Provider\/CLI bridge rule/);
   assert.match(piExtensionsHelper, /Pi owns tool execution/);
   assert.match(piExtensionsHelper, /Keep guardrail logic in pure helpers with focused tests/);
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
 
-  const gitCommitPush = read("skills/git-commit-push/SKILL.md");
+  const gitCommitPush = read("skills/delivery/git-commit-push/SKILL.md");
   assert.match(gitCommitPush, /Polish, validate, commit, and push safe git worktree changes/);
   assert.match(gitCommitPush, /safely polish, validate, intentionally stage, commit, and push/);
   assert.match(gitCommitPush, /fix safe in-scope issues directly and rerun validation/);

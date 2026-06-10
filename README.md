@@ -88,12 +88,12 @@ tx install
 The `tx` and `autofolderrefactor` commands are declared in `package.json` as package bins. To install the command globally from a checkout:
 
 ```bash
-sh skills/candidates-folder-refactor/scripts/install.sh
+sh skills/engineering/candidates-folder-refactor/scripts/install.sh
 autofolderrefactor 10
 ```
 
 ```json
-{ "bin": { "tx": "./tmux/tx", "autofolderrefactor": "./skills/candidates-folder-refactor/scripts/autofolderrefactor" } }
+{ "bin": { "tx": "./tmux/tx", "autofolderrefactor": "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" } }
 ```
 
 Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.

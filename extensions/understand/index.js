@@ -464,8 +464,13 @@ async function postMessage(pi, content, details = {}) {
   pi.sendMessage({ customType: "understand", content, display: true, details });
 }
 
+const bundledSkillCategories = {
+  "grill-with-docs": "planning",
+};
+
 async function sendBundledSkillInvocation(pi, ctx, skillName, args) {
-  const skillUrl = new URL(`../../skills/${skillName}/SKILL.md`, import.meta.url);
+  const skillCategory = bundledSkillCategories[skillName];
+  const skillUrl = new URL(`../../skills/${skillCategory ? `${skillCategory}/` : ""}${skillName}/SKILL.md`, import.meta.url);
   const skillPath = fileURLToPath(skillUrl);
   let skillContent;
   try {

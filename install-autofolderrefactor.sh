@@ -10,7 +10,7 @@ set -eu
 # Override with: AUTO_FOLDER_REFACTOR_BIN_DIR=/usr/local/bin sh install-autofolderrefactor.sh
 
 script_dir="$(CDPATH= cd "$(dirname "$0")" && pwd)"
-src="${script_dir}/skills/candidates-folder-refactor/scripts/autofolderrefactor"
+src="${script_dir}/skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor"
 
 : "${HOME:?HOME is required}"
 

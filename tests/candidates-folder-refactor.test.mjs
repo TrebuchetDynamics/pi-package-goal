@@ -52,14 +52,46 @@ try {
   write("src/noisy/api/handler.ts", "export function duplicateThing() { return 3; }\n");
   git("add", "src/noisy/api/handler.ts");
   git("commit", "-m", "touch noisy handler");
+  write("src-other/prefix-leak/a.ts", "export const prefixLeak = 1;\n");
+  git("add", "src-other/prefix-leak/a.ts");
+  git("commit", "-m", "touch sibling prefix path");
 
-  const autoScript = path.join(root, "skills/candidates-folder-refactor/scripts/autofolderrefactor");
-  const autoInstaller = path.join(root, "skills/candidates-folder-refactor/scripts/install.sh");
+  const autoScript = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor");
+  const autoInstaller = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/install.sh");
+  const scannerUtils = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/scanner-utils.sh");
   accessSync(autoScript, constants.X_OK);
   accessSync(autoInstaller, constants.X_OK);
   const autoHelp = execFileSync(autoScript, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(autoHelp, /autofolderrefactor <loops> \[scan-root\]/);
   assert.match(autoHelp, /PI_AUTO_FOLDER_REFACTOR_PI_ARGS/);
+  const rootHeavyRetryLog = path.join(fixture, "root-heavy-retry-log.json");
+  fs.writeFileSync(rootHeavyRetryLog, JSON.stringify({ candidates: [{ relative: ".", direct: 400, files: 531 }, { relative: "small", direct: 5, files: 5 }] }));
+  const rootHeavyRetry = execFileSync("bash", ["-lc", `. ${JSON.stringify(scannerUtils)}; root_heavy_retry_candidate_from_log ${JSON.stringify(rootHeavyRetryLog)} . 25`], { cwd: fixture, encoding: "utf8" });
+  assert.equal(rootHeavyRetry, ".");
+  const rootHeavyRetryFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-root-heavy-retry-"));
+  const rootHeavyRetryApp = path.join(rootHeavyRetryFixture, "internal/app");
+  for (let n = 0; n < 25; n += 1) writeIn(rootHeavyRetryApp, `root_${n}.go`, `package app\n\nconst Root${n} = ${n}\n`);
+  writeIn(rootHeavyRetryApp, "child/a.go", "package child\n\nconst A = 1\n");
+  writeIn(rootHeavyRetryApp, "child/b.go", "package child\n\nconst B = 2\n");
+  execFileSync("git", ["init"], { cwd: rootHeavyRetryFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: rootHeavyRetryFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: rootHeavyRetryFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: rootHeavyRetryFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial root-heavy retry fixture"], { cwd: rootHeavyRetryFixture, stdio: "ignore" });
+  const fakePiRootHeavy = path.join(os.tmpdir(), `fake-pi-root-heavy-retry-${process.pid}.sh`);
+  fs.writeFileSync(fakePiRootHeavy, "#!/usr/bin/env bash\necho fake pi root-heavy retry noop\n");
+  fs.chmodSync(fakePiRootHeavy, 0o755);
+  execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: rootHeavyRetryApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiRootHeavy, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  const rootHeavyStateDir = path.join(rootHeavyRetryApp, ".pi/autofolderrefactor-state");
+  const rootHeavyStateFile = fs.readdirSync(rootHeavyStateDir).find((name) => name.startsWith("state.") && name.endsWith(".jsonl"));
+  assert.ok(rootHeavyStateFile);
+  fs.appendFileSync(path.join(rootHeavyStateDir, rootHeavyStateFile), `${JSON.stringify({ ts: new Date().toISOString(), candidate: "child", state: "cooldown", reason: "no changes", until: "2999-01-01T00:00:00Z" })}\n`);
+  const rootHeavyRetryOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: rootHeavyRetryApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiRootHeavy, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(rootHeavyRetryOutput, /top candidate \. is root-file-heavy but skipped\/cooldown; retrying/);
+  assert.doesNotMatch(rootHeavyRetryOutput, /all sub-candidates of \. exhausted/);
+  assert.match(rootHeavyRetryOutput, /fake pi root-heavy retry noop/);
+  fs.rmSync(fakePiRootHeavy, { force: true });
+  fs.rmSync(rootHeavyRetryFixture, { recursive: true, force: true });
   assert.throws(() => execFileSync(autoScript, ["1", ".."], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-autofolderrefactor-"));
   fs.symlinkSync(outside, path.join(fixture, "outside-link"), "dir");
@@ -143,10 +175,31 @@ try {
   execFileSync("git", ["config", "user.name", "Test User"], { cwd: goValidationFixture, stdio: "ignore" });
   execFileSync("git", ["add", "."], { cwd: goValidationFixture, stdio: "ignore" });
   execFileSync("git", ["commit", "-m", "initial go fixture"], { cwd: goValidationFixture, stdio: "ignore" });
-  const goValidationScript = `set -euo pipefail\n. ${JSON.stringify(path.join(root, "skills/candidates-folder-refactor/scripts/lib/colors.sh"))}\n. ${JSON.stringify(path.join(root, "skills/candidates-folder-refactor/scripts/lib/git-utils.sh"))}\nrun_root=${JSON.stringify(path.join(goValidationFixture, "internal/tools"))}\nrun_candidate_validation pkg 2>&1\n`;
+  const goValidationScript = `set -euo pipefail\n. ${JSON.stringify(path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/colors.sh"))}\n. ${JSON.stringify(path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/git-utils.sh"))}\nrun_root=${JSON.stringify(path.join(goValidationFixture, "internal/tools"))}\nrun_candidate_validation pkg 2>&1\n`;
   const goValidationOutput = execFileSync("bash", ["-lc", goValidationScript], { cwd: path.join(goValidationFixture, "internal/tools"), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   assert.match(goValidationOutput, /go test \.\/internal\/tools\/pkg\/\.\.\. -count=1/);
   fs.rmSync(goValidationFixture, { recursive: true, force: true });
+
+  const absoluteBugfindFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-absolute-bugfind-"));
+  fs.mkdirSync(path.join(absoluteBugfindFixture, "src/pkg"), { recursive: true });
+  fs.writeFileSync(path.join(absoluteBugfindFixture, "src/go.mod"), "module example.com/absolute-bugfind\n\ngo 1.22\n");
+  fs.writeFileSync(path.join(absoluteBugfindFixture, "src/pkg/pkg.go"), "package pkg\n\nfunc Value() int { return 1 }\n");
+  fs.writeFileSync(path.join(absoluteBugfindFixture, "src/pkg/pkg_test.go"), "package pkg\n\nimport \"testing\"\n\nfunc TestValue(t *testing.T) { if Value() != 1 { t.Fatal(Value()) } }\n");
+  execFileSync("git", ["init"], { cwd: absoluteBugfindFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: absoluteBugfindFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: absoluteBugfindFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: absoluteBugfindFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial absolute bugfind fixture"], { cwd: absoluteBugfindFixture, stdio: "ignore" });
+  const fakePiAbsoluteBugfind = path.join(os.tmpdir(), `fake-pi-absolute-bugfind-${process.pid}.sh`);
+  fs.writeFileSync(fakePiAbsoluteBugfind, "#!/usr/bin/env bash\necho fake pi absolute bugfind\nprintf 'package pkg\\n\\nfunc Value() int { return 2 }\\n' > src/pkg/pkg.go\n");
+  fs.chmodSync(fakePiAbsoluteBugfind, 0o755);
+  const absoluteBugfindOutput = execFileSync(autoScript, ["1", path.join(absoluteBugfindFixture, "src")], { cwd: absoluteBugfindFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiAbsoluteBugfind, PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD: "999", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(absoluteBugfindOutput, /fake pi absolute bugfind/);
+  assert.match(absoluteBugfindOutput, /FAIL\s+example\.com\/absolute-bugfind\/pkg/);
+  assert.match(fs.readFileSync(path.join(absoluteBugfindFixture, "src/pkg/pkg.go"), "utf8"), /return 1/);
+  assert.equal(execFileSync("git", ["status", "--porcelain", "--", ".", ":(exclude)src/.pi/**"], { cwd: absoluteBugfindFixture, encoding: "utf8" }), "");
+  fs.rmSync(fakePiAbsoluteBugfind, { force: true });
+  fs.rmSync(absoluteBugfindFixture, { recursive: true, force: true });
 
   const fakePiBadDiff = path.join(os.tmpdir(), `fake-pi-bad-diff-${process.pid}.sh`);
   fs.writeFileSync(fakePiBadDiff, "#!/usr/bin/env bash\necho fake pi bad diff\nprintf 'bad trailing whitespace  \\n' >> src/noisy/index.ts\n");
@@ -192,7 +245,7 @@ try {
   fs.rmSync(fakePiBugfind, { force: true });
   fs.rmSync(installBin, { recursive: true, force: true });
 
-  const script = path.join(root, "skills/candidates-folder-refactor/scripts/find-candidates.mjs");
+  const script = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs");
   const repoOutput = execFileSync(process.execPath, [script, "."], { cwd: fixture, encoding: "utf8" });
   assert.match(repoOutput, /src\/noisy/);
   assert.match(repoOutput, /churn [1-9]/);
@@ -246,7 +299,39 @@ try {
 
   const folderOutput = execFileSync(process.execPath, [script, "src"], { cwd: fixture, encoding: "utf8" });
   assert.match(folderOutput, /src\/noisy/);
+  assert.doesNotMatch(folderOutput, /src-other/);
   assert.doesNotMatch(folderOutput.split("\n").slice(1).join("\n"), /\.\.\/src/);
+
+  const parentIgnoreFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-parent-ignore-"));
+  const nestedCwd = path.join(parentIgnoreFixture, "repo/work/a/b");
+  fs.mkdirSync(path.join(nestedCwd, "src/noisy"), { recursive: true });
+  fs.mkdirSync(path.join(nestedCwd, "src/ignored-parent"), { recursive: true });
+  fs.writeFileSync(path.join(parentIgnoreFixture, "repo/work/.refactorignore"), "a/b/src/ignored-parent/\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/noisy/one.ts"), "export const one = 1;\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/noisy/two.ts"), "export const two = 2;\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/noisy/three.ts"), "export const three = 3;\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/ignored-parent/a.ts"), "export const ignoredA = 1;\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/ignored-parent/b.ts"), "export const ignoredB = 2;\n");
+  fs.writeFileSync(path.join(nestedCwd, "src/ignored-parent/c.ts"), "export const ignoredC = 3;\n");
+  const parentIgnoreOutput = execFileSync(process.execPath, [script, "."], { cwd: nestedCwd, encoding: "utf8" });
+  assert.match(parentIgnoreOutput, /src\/noisy/);
+  assert.doesNotMatch(parentIgnoreOutput, /ignored-parent/);
+  fs.rmSync(parentIgnoreFixture, { recursive: true, force: true });
+
+  const childIgnoreFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-child-ignore-"));
+  fs.mkdirSync(path.join(childIgnoreFixture, "src/noisy"), { recursive: true });
+  fs.mkdirSync(path.join(childIgnoreFixture, "src/feature/generated"), { recursive: true });
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/feature/.refactorignore"), "generated/\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/noisy/one.ts"), "export const one = 1;\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/noisy/two.ts"), "export const two = 2;\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/noisy/three.ts"), "export const three = 3;\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/feature/generated/a.ts"), "export const ignoredA = 1;\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/feature/generated/b.ts"), "export const ignoredB = 2;\n");
+  fs.writeFileSync(path.join(childIgnoreFixture, "src/feature/generated/c.ts"), "export const ignoredC = 3;\n");
+  const childIgnoreOutput = execFileSync(process.execPath, [script, "."], { cwd: childIgnoreFixture, encoding: "utf8" });
+  assert.match(childIgnoreOutput, /src\/noisy/);
+  assert.doesNotMatch(childIgnoreOutput, /generated/);
+  fs.rmSync(childIgnoreFixture, { recursive: true, force: true });
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }
@@ -254,7 +339,11 @@ try {
 console.log("candidates-folder-refactor ok");
 
 function write(relativePath, content) {
-  const file = path.join(fixture, relativePath);
+  writeIn(fixture, relativePath, content);
+}
+
+function writeIn(baseDir, relativePath, content) {
+  const file = path.join(baseDir, relativePath);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content);
 }
