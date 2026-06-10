@@ -13,6 +13,7 @@ const expectedSkills = [
   "tdd",
   "diagnose",
   "improve-codebase-architecture",
+  "technical-auditor",
   "grill-me",
   "grill-with-docs",
   "prototype",
@@ -558,6 +559,14 @@ async function testSkills() {
     assert.match(read(file), /COMMON-CONTRACT\.md/, `${file} should reference the shared skill contract`);
     assert.match(read(file), /Graphify|graphify-out\/graph\.json/, `${file} should name when Graphify evidence applies or is intentionally checked`);
   }
+
+  const technicalAuditor = read("skills/engineering/technical-auditor/SKILL.md");
+  assert.match(technicalAuditor, /technical audit/);
+  assert.match(technicalAuditor, /Repository Map/);
+  assert.match(technicalAuditor, /file\/line evidence/);
+  assert.match(technicalAuditor, /Do not edit code during the audit/);
+  assert.match(technicalAuditor, /Graphify/);
+  assert.match(read("skills/engineering/technical-auditor/references/audit-dimensions.md"), /Severity calibration/);
 
   const promptCacheAuditor = read("skills/engineering/prompt-cache-auditor/SKILL.md");
   assert.match(promptCacheAuditor, /prompt_cache_key/);
