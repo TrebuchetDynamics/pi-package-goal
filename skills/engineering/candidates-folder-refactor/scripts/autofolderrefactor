@@ -450,6 +450,12 @@ for ((i = 1; i <= loops; i++)); do
   commit_preexisting_changes
   pre_slice_status="$(git_scope_status)"
   before_repo_status="$(git_repo_status_paths)"
+  preexisting_outside_scope="$(changes_outside_run_root)"
+  if [[ -n "${preexisting_outside_scope}" ]]; then
+    error "pre-existing changes outside pwd scope ${run_root}; refusing autonomous refactor to avoid clobbering user work"
+    printf '%s\n' "${preexisting_outside_scope}" >&2
+    exit 1
+  fi
   before_snapshot="$(snapshot_scope)"
   before_candidate_metrics="$(folder_debt_metrics "${candidate}")"
   before_parent_metrics=""

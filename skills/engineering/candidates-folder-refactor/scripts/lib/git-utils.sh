@@ -204,19 +204,29 @@ changed_paths_outside_candidate() {
   ' "${candidate}"
 }
 
-new_changes_outside_run_root() {
-  local before=${1:-} repo_root run_root_rel
+changes_outside_run_root() {
+  local repo_root run_root_rel
   repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
   run_root_rel="$(node -e 'const path=require("node:path"); process.stdout.write(path.relative(process.argv[1], process.argv[2]).split(path.sep).join("/") || ".");' "${repo_root}" "${run_root}")"
   git_repo_status_paths | node -e '
     const fs = require("node:fs");
-    const before = new Set((process.argv[1] || "").split(/\r?\n/).filter(Boolean));
-    const root = process.argv[2];
+    const root = process.argv[1];
     const current = fs.readFileSync(0, "utf8").split(/\r?\n/).filter(Boolean);
     const inside = (file) => root === "." || file === root || file.startsWith(`${root}/`);
-    const outside = current.filter((file) => !inside(file) && !before.has(file));
+    const outside = current.filter((file) => !inside(file));
     process.stdout.write([...new Set(outside)].join("\n"));
-  ' "${before}" "${run_root_rel}"
+  ' "${run_root_rel}"
+}
+
+new_changes_outside_run_root() {
+  local before=${1:-} current
+  current="$(changes_outside_run_root)"
+  node -e '
+    const before = new Set((process.argv[1] || "").split(/\r?\n/).filter(Boolean));
+    const current = (process.argv[2] || "").split(/\r?\n/).filter(Boolean);
+    const outside = current.filter((file) => !before.has(file));
+    process.stdout.write([...new Set(outside)].join("\n"));
+  ' "${before}" "${current}"
 }
 
 rollback_repo_paths() {

@@ -240,6 +240,23 @@ try {
   assert.equal(fs.existsSync(path.join(subdirScopeFixture, "internal/sibling/outside_pwd.txt")), false);
   fs.rmSync(fakePiOutsidePwd, { force: true });
   fs.rmSync(path.join(subdirScopeApp, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
+  fs.writeFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "dirty before\n");
+  const fakePiMutatePreexistingOutside = path.join(os.tmpdir(), `fake-pi-mutate-preexisting-outside-${process.pid}.sh`);
+  fs.writeFileSync(fakePiMutatePreexistingOutside, "#!/usr/bin/env bash\necho should not run\necho dirty after > ../sibling/move_me.txt\n");
+  fs.chmodSync(fakePiMutatePreexistingOutside, 0o755);
+  let preexistingOutsideOutput = "";
+  assert.throws(() => {
+    try {
+      execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiMutatePreexistingOutside, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+    } catch (error) {
+      preexistingOutsideOutput = error.stdout || String(error);
+      throw error;
+    }
+  });
+  assert.match(preexistingOutsideOutput, /pre-existing changes outside pwd scope/);
+  assert.equal(fs.readFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "utf8"), "dirty before\n");
+  execFileSync("git", ["restore", "--", "internal/sibling/move_me.txt"], { cwd: subdirScopeFixture, stdio: "ignore" });
+  fs.rmSync(fakePiMutatePreexistingOutside, { force: true });
   const fakePiMoveOutsidePwd = path.join(os.tmpdir(), `fake-pi-move-outside-pwd-${process.pid}.sh`);
   fs.writeFileSync(fakePiMoveOutsidePwd, "#!/usr/bin/env bash\necho fake pi move outside pwd\nmv ../sibling/move_me.txt moved_in.txt\n");
   fs.chmodSync(fakePiMoveOutsidePwd, 0o755);

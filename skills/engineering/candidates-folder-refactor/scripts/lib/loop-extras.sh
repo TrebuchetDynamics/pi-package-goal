@@ -3,7 +3,7 @@
 # Provides: run_bug_finding_slice
 
 run_bug_finding_slice() {
-  local loop_label=$1 target_label before after prompt pre_slice_status before_repo_status outside_scope_changes pi_exit validation_exit
+  local loop_label=$1 target_label before after prompt pre_slice_status before_repo_status preexisting_outside_scope outside_scope_changes pi_exit validation_exit
   target_label="${scan_root_rel:-${scan_root}}"
   section "bug-finding refactor ${loop_label}"
   kv "target" "${target_label}"
@@ -22,6 +22,12 @@ run_bug_finding_slice() {
     "Report changed contracts/helpers, bug found or ruled out, tests added, validation receipts, and next likely bug-finding seam.")"
   pre_slice_status="$(git_scope_status)"
   before_repo_status="$(git_repo_status_paths)"
+  preexisting_outside_scope="$(changes_outside_run_root)"
+  if [[ -n "${preexisting_outside_scope}" ]]; then
+    error "pre-existing changes outside pwd scope ${run_root}; refusing bug-finding refactor to avoid clobbering user work"
+    printf '%s\n' "${preexisting_outside_scope}" >&2
+    return 1
+  fi
   before="$(snapshot_scope)"
   set +e
   run_pi_prompt "${prompt}"
