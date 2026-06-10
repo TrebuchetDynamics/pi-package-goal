@@ -87,9 +87,13 @@ try {
   assert.ok(rootHeavyStateFile);
   fs.appendFileSync(path.join(rootHeavyStateDir, rootHeavyStateFile), `${JSON.stringify({ ts: new Date().toISOString(), candidate: "child", state: "cooldown", reason: "no changes", until: "2999-01-01T00:00:00Z" })}\n`);
   const rootHeavyRetryOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: rootHeavyRetryApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiRootHeavy, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
-  assert.match(rootHeavyRetryOutput, /top candidate \. is root-file-heavy but skipped\/cooldown; retrying/);
+  assert.match(rootHeavyRetryOutput, /top candidate \. is root-file-heavy but cooling down; retrying/);
   assert.doesNotMatch(rootHeavyRetryOutput, /all sub-candidates of \. exhausted/);
   assert.match(rootHeavyRetryOutput, /fake pi root-heavy retry noop/);
+  fs.appendFileSync(path.join(rootHeavyStateDir, rootHeavyStateFile), `${JSON.stringify({ ts: new Date().toISOString(), candidate: ".", state: "blocked", reason: "validation rollback" })}\n`);
+  const rootHeavyBlockedOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: rootHeavyRetryApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiRootHeavy, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.doesNotMatch(rootHeavyBlockedOutput, /top candidate \. is root-file-heavy .* retrying/);
+  assert.doesNotMatch(rootHeavyBlockedOutput, /selected \[candidate\] \./);
   fs.rmSync(fakePiRootHeavy, { force: true });
   fs.rmSync(rootHeavyRetryFixture, { recursive: true, force: true });
   assert.throws(() => execFileSync(autoScript, ["1", ".."], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
@@ -99,17 +103,30 @@ try {
   fs.rmSync(path.join(fixture, "outside-link"), { force: true });
   fs.rmSync(outside, { recursive: true, force: true });
   const installBin = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-bin-"));
+  const installApp = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-app-"));
   const installOutput = execFileSync("sh", [autoInstaller], {
     cwd: fixture,
     encoding: "utf8",
-    env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin },
+    env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin, AUTO_FOLDER_REFACTOR_INSTALL_DIR: installApp },
   });
   assert.match(installOutput, /installed wrapper:/);
   assert.match(installOutput, /example: autofolderrefactor 10/);
   const installedAuto = path.join(installBin, "autofolderrefactor");
   accessSync(installedAuto, constants.X_OK);
+  accessSync(path.join(installApp, "autofolderrefactor"), constants.X_OK);
+  assert.doesNotMatch(fs.readFileSync(installedAuto, "utf8"), new RegExp(escapeRegExp(root)));
   const installedHelp = execFileSync(installedAuto, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(installedHelp, /autofolderrefactor <loops> \[scan-root\]/);
+  const portableScripts = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-install-source-"));
+  fs.cpSync(path.join(root, "skills/engineering/candidates-folder-refactor/scripts"), portableScripts, { recursive: true });
+  const portableBin = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-portable-bin-"));
+  const portableApp = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-portable-app-"));
+  execFileSync("sh", [path.join(portableScripts, "install.sh")], { cwd: fixture, encoding: "utf8", env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: portableBin, AUTO_FOLDER_REFACTOR_INSTALL_DIR: portableApp } });
+  fs.rmSync(portableScripts, { recursive: true, force: true });
+  const portableHelp = execFileSync(path.join(portableBin, "autofolderrefactor"), ["--help"], { cwd: fixture, encoding: "utf8" });
+  assert.match(portableHelp, /autofolderrefactor <loops> \[scan-root\]/);
+  fs.rmSync(portableApp, { recursive: true, force: true });
+  fs.rmSync(portableBin, { recursive: true, force: true });
 
   const ignoreFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-ignore-"));
   fs.mkdirSync(path.join(ignoreFixture, "artifacts/run"), { recursive: true });
@@ -354,6 +371,10 @@ function initGitFixture() {
   git("config", "user.name", "Test User");
   git("add", ".");
   git("commit", "-m", "initial fixture");
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
 
 function git(...args) {

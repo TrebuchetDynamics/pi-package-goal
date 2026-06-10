@@ -199,7 +199,7 @@ print_candidate_table() {
       .sort((a, b) => depthOf(a) - depthOf(b) || (b.direct || 0) - (a.direct || 0) || (a.files || 0) - (b.files || 0) || (b.score || 0) - (a.score || 0) || a.relative.localeCompare(b.relative))[0];
     const debtBest = rows.find((item) => !skipped.has(item.relative));
     if (debtBest) console.error(`${c.green}top open debt:${c.reset} ${c.bold}${debtBest.relative}${c.reset} ${c.dim}(score ${debtBest.score})${c.reset}`);
-    if (rootCandidate && skipped.has(rootCandidate.relative)) console.error(`${c.yellow}root priority:${c.reset} ${c.bold}${rootCandidate.relative}${c.reset} ${c.dim}(skipped/cooldown in table, but root-first retry may select it; depth ${depthOf(rootCandidate)}, root ${rootCandidate.direct}, total ${rootCandidate.files})${c.reset}`);
+    if (rootCandidate && skipped.has(rootCandidate.relative)) console.error(`${c.yellow}root priority:${c.reset} ${c.bold}${rootCandidate.relative}${c.reset} ${c.dim}(not currently open; cooldown roots may be retried, blocked/done/exhausted roots will not; depth ${depthOf(rootCandidate)}, root ${rootCandidate.direct}, total ${rootCandidate.files})${c.reset}`);
     if (rootPriority && (!debtBest || rootPriority.relative !== debtBest.relative)) console.error(`${c.green}picker:${c.reset} ${c.bold}${rootPriority.relative}${c.reset} ${c.dim}(root-first: depth ${depthOf(rootPriority)}, root ${rootPriority.direct}, total ${rootPriority.files})${c.reset}`);
     if (manageable && rootPriority && manageable.relative !== rootPriority.relative) console.error(`${c.dim}manageable fallback: ${manageable.relative} (root ${manageable.direct}, total ${manageable.files}; limits root≤${maxRoot}, files≤${maxFiles})${c.reset}`);
     if (suggestedIgnores.size) {

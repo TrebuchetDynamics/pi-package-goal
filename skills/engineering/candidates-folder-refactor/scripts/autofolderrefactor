@@ -126,6 +126,7 @@ fi
 
 # --- Config defaults ---
 skipped_candidates=()
+root_retryable_candidates=()
 landed_count=0
 rollback_count=0
 noop_count=0
@@ -180,6 +181,7 @@ fi
 refresh_skipped_candidates() {
   if [[ ! -f "${state_file}" ]]; then
     skipped_candidates=()
+    root_retryable_candidates=()
     return 0
   fi
   mapfile -t skipped_candidates < <(node -e '
@@ -192,6 +194,18 @@ refresh_skipped_candidates() {
     }
     for (const [candidate, rec] of latest) {
       if (rec.state === "blocked" || rec.state === "done" || rec.state === "exhausted") console.log(candidate);
+      if (rec.state === "cooldown" && Date.parse(rec.until || "") > now) console.log(candidate);
+    }
+  ' "${state_file}" | sort -u)
+  mapfile -t root_retryable_candidates < <(node -e '
+    const fs = require("node:fs");
+    const file = process.argv[1];
+    const now = Date.now();
+    const latest = new Map();
+    for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean)) {
+      try { const rec = JSON.parse(line); latest.set(rec.candidate, rec); } catch {}
+    }
+    for (const [candidate, rec] of latest) {
       if (rec.state === "cooldown" && Date.parse(rec.until || "") > now) console.log(candidate);
     }
   ' "${state_file}" | sort -u)
@@ -273,10 +287,11 @@ for ((i = 1; i <= loops; i++)); do
     exit 1
   fi
   skipped_text="$(printf '%s\n' "${skipped_candidates[@]:-}")"
+  root_retryable_text="$(printf '%s\n' "${root_retryable_candidates[@]:-}")"
   print_candidate_table "${latest_log}" "${skipped_text}"
   root_heavy_retry_candidate=""
-  if root_heavy_retry_candidate="$(root_heavy_retry_candidate_from_log "${latest_log}" "${skipped_text}" "${drilldown_root_files}" 2>/dev/null)"; then
-    warn "top candidate ${root_heavy_retry_candidate} is root-file-heavy but skipped/cooldown; retrying it because root files remain the primary debt"
+  if root_heavy_retry_candidate="$(root_heavy_retry_candidate_from_log "${latest_log}" "${root_retryable_text}" "${drilldown_root_files}" 2>/dev/null)"; then
+    warn "top candidate ${root_heavy_retry_candidate} is root-file-heavy but cooling down; retrying it because root files remain the primary debt"
   else
     root_heavy_retry_candidate=""
   fi
