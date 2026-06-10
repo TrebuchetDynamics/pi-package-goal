@@ -23,7 +23,7 @@ Fully automatic loop:
   1. run candidates-folder-refactor scanner
   2. pick current top #1 candidate
   3. run a smart share-code + folder-refactor prompt for <top-candidate> through pi print mode
-  4. refuse pre-existing dirty work unless explicitly checkpointed, run relevant validation, commit loop changes, repeat N times
+  4. tolerate unrelated dirty work outside pwd, checkpoint/block pwd dirty work as configured, run relevant validation, commit loop changes, repeat N times
 
 Options via env:
   PI_AUTO_FOLDER_REFACTOR_PI       pi binary (default: pi)
@@ -54,6 +54,7 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1        explicitly commit/deliver pre-existing pwd changes before loops (default: block)
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     legacy alias to skip pre-existing change delivery
+  PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY=1 block pre-existing dirty paths outside pwd (default: allow)
   PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery when PRECOMMIT=1 (default: local)
   PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 5)
@@ -452,9 +453,13 @@ for ((i = 1; i <= loops; i++)); do
   before_repo_status="$(git_repo_status_paths)"
   preexisting_outside_scope="$(changes_outside_run_root)"
   if [[ -n "${preexisting_outside_scope}" ]]; then
-    error "pre-existing changes outside pwd scope ${run_root}; refusing autonomous refactor to avoid clobbering user work"
+    if [[ "${PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY:-0}" == "1" ]]; then
+      error "pre-existing changes outside pwd scope ${run_root}; refusing autonomous refactor because PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY=1"
+      printf '%s\n' "${preexisting_outside_scope}" >&2
+      exit 1
+    fi
+    warn "pre-existing changes outside pwd scope ${run_root}; leaving them alone and continuing"
     printf '%s\n' "${preexisting_outside_scope}" >&2
-    exit 1
   fi
   before_snapshot="$(snapshot_scope)"
   before_candidate_metrics="$(folder_debt_metrics "${candidate}")"

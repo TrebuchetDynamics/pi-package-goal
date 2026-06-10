@@ -259,13 +259,23 @@ try {
   fs.rmSync(fakePiOutsidePwd, { force: true });
   fs.rmSync(path.join(subdirScopeApp, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
   fs.writeFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "dirty before\n");
+  const fakePiAllowPreexistingOutside = path.join(os.tmpdir(), `fake-pi-allow-preexisting-outside-${process.pid}.sh`);
+  fs.writeFileSync(fakePiAllowPreexistingOutside, "#!/usr/bin/env bash\necho fake pi allow preexisting outside\necho changed > inside_allowed.txt\n");
+  fs.chmodSync(fakePiAllowPreexistingOutside, 0o755);
+  const allowPreexistingOutsideOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiAllowPreexistingOutside, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_REQUIRE_PROGRESS: "0", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(allowPreexistingOutsideOutput, /pre-existing changes outside pwd scope/);
+  assert.match(allowPreexistingOutsideOutput, /fake pi allow preexisting outside/);
+  assert.equal(fs.readFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "utf8"), "dirty before\n");
+  fs.rmSync(fakePiAllowPreexistingOutside, { force: true });
+  fs.rmSync(path.join(subdirScopeApp, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
+  fs.writeFileSync(path.join(subdirScopeFixture, "internal/sibling/move_me.txt"), "dirty before\n");
   const fakePiMutatePreexistingOutside = path.join(os.tmpdir(), `fake-pi-mutate-preexisting-outside-${process.pid}.sh`);
   fs.writeFileSync(fakePiMutatePreexistingOutside, "#!/usr/bin/env bash\necho should not run\necho dirty after > ../sibling/move_me.txt\n");
   fs.chmodSync(fakePiMutatePreexistingOutside, 0o755);
   let preexistingOutsideOutput = "";
   assert.throws(() => {
     try {
-      execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiMutatePreexistingOutside, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+      execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiMutatePreexistingOutside, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY: "1", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
     } catch (error) {
       preexistingOutsideOutput = error.stdout || String(error);
       throw error;

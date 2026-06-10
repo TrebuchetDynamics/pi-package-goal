@@ -24,9 +24,13 @@ run_bug_finding_slice() {
   before_repo_status="$(git_repo_status_paths)"
   preexisting_outside_scope="$(changes_outside_run_root)"
   if [[ -n "${preexisting_outside_scope}" ]]; then
-    error "pre-existing changes outside pwd scope ${run_root}; refusing bug-finding refactor to avoid clobbering user work"
+    if [[ "${PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY:-0}" == "1" ]]; then
+      error "pre-existing changes outside pwd scope ${run_root}; refusing bug-finding refactor because PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY=1"
+      printf '%s\n' "${preexisting_outside_scope}" >&2
+      return 1
+    fi
+    warn "pre-existing changes outside pwd scope ${run_root}; leaving them alone and continuing"
     printf '%s\n' "${preexisting_outside_scope}" >&2
-    return 1
   fi
   before="$(snapshot_scope)"
   set +e
