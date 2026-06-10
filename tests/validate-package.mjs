@@ -37,7 +37,6 @@ const expectedSkills = [
   "ui-ux-pro-max",
   "ui-design",
   "frontend-design",
-  "frontend-production-shadcn",
   "design-taste-frontend",
   "hallmark",
   "stitch-react-components",
@@ -351,7 +350,7 @@ async function testPackageManifest() {
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
-    assert.equal(exists(path.join(extensionPath, "index.js")) || exists(path.join(extensionPath, "index.ts")), true, `${extensionPath} must expose index.js or index.ts`);
+    assert.equal(exists(path.join(extensionPath, "index.js")), true, `${extensionPath} must expose runtime-loadable index.js`);
   }
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
@@ -372,6 +371,9 @@ async function testPackageManifest() {
   assert.match(ci, /graphify-out/);
   assert.match(ci, /\.understand-anything/);
   assert.match(ci, /npm --prefix skills\/frontend\/stitch-react-components audit/);
+  for (const file of fs.readdirSync(path.join(root, "tests")).filter((name) => name.endsWith(".mjs"))) {
+    assert.doesNotMatch(read(path.join("tests", file)), /\/home\/xel\/\.nvm\/.*pi-coding-agent/, `${file} must not depend on a machine-local global Pi install`);
+  }
   const gitignore = read(".gitignore");
   assert.match(gitignore, /\.pi\/\*\/logs\.jsonl/);
   assert.match(gitignore, /\*\*\/\.pi\/\*\/logs\.jsonl/);
@@ -394,7 +396,7 @@ async function testPackageManifestPaths() {
 }
 
 async function testUnderstandExtension() {
-  const goalExtension = read("extensions/goal/index.ts");
+  const goalExtension = read("extensions/goal/index.js");
   assert.match(goalExtension, /registerCommand\("goal"/);
   assert.match(goalExtension, /emptyGoalCommandAction/);
   assert.match(goalExtension, /sendUserMessage\("\/skill:goal"\)/);
@@ -403,7 +405,7 @@ async function testUnderstandExtension() {
   assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
-  assert.match(goalExtension, /@earendil-works\/pi-coding-agent/);
+  assert.match(goalExtension, /@earendil-works\/pi-tui/);
   assert.doesNotMatch(goalExtension, /@mariozechner\//);
 
   const folderRefactorExtension = read("extensions/folder-refactor/index.js");
@@ -454,7 +456,11 @@ async function testUnderstandExtension() {
 }
 
 async function testPiCoreDependencies() {
-  assert.deepEqual(collectPiCoreDependencyIssues(readJson("package.json")), []);
+  const pkg = readJson("package.json");
+  assert.deepEqual(collectPiCoreDependencyIssues(pkg), []);
+  if (Object.keys(pkg.dependencies ?? {}).length) {
+    assert.ok(exists("package-lock.json"), "root runtime dependencies require a root package-lock.json so npm audit can run");
+  }
   assert.deepEqual(collectNestedPackageLockNameIssues(root), []);
 }
 

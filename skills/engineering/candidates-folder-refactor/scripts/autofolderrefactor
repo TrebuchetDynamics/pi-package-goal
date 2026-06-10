@@ -23,7 +23,7 @@ Fully automatic loop:
   1. run candidates-folder-refactor scanner
   2. pick current top #1 candidate
   3. run a smart share-code + folder-refactor prompt for <top-candidate> through pi print mode
-  4. commit current pwd changes, run relevant validation, commit loop changes, repeat N times
+  4. refuse pre-existing dirty work unless explicitly checkpointed, run relevant validation, commit loop changes, repeat N times
 
 Options via env:
   PI_AUTO_FOLDER_REFACTOR_PI       pi binary (default: pi)
@@ -52,8 +52,9 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_ARTIFACT_GUARD=0   disable runtime/generated artifact revert guard (default: on)
   PI_AUTO_FOLDER_REFACTOR_ARTIFACT_REGEX     extra regex for changed runtime artifacts to revert before commit
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
-  PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     do not auto-deliver pre-existing pwd changes before loops
-  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery (default: local)
+  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1        explicitly commit/deliver pre-existing pwd changes before loops (default: block)
+  PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     legacy alias to skip pre-existing change delivery
+  PI_AUTO_FOLDER_REFACTOR_PRECOMMIT_DELIVERY=local|git-commit-push  pre-existing change delivery when PRECOMMIT=1 (default: local)
   PI_AUTO_FOLDER_REFACTOR_DELIVERY=local     use local git commit only instead of git-commit-push skill
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_SUBDIRS  max subdirs before auto drill-down into sub-candidates (default: 5)
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_MAX_FILES    max files for drilled candidate (default: 30)

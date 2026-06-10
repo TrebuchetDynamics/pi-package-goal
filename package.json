@@ -16,6 +16,9 @@
   "bugs": {
     "url": "https://github.com/TrebuchetDynamics/pi-package-goal/issues"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "keywords": [
     "pi-package",
     "pi",
@@ -92,6 +95,7 @@
     "test:extensions": "node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/understand-extension.test.mjs && node tests/goal-extension-command.test.mjs",
     "test:assets": "node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs",
     "test:goal": "node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
+    "prepublishOnly": "node scripts/ensure-clean-worktree.mjs && npm test",
     "validate": "npm test",
     "tmux:install": "sh tmux/install.sh"
   }

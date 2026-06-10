@@ -46,16 +46,21 @@ await bridge.update(pi, ctx, paths);
 assert.deepEqual(execCalls[1].args, ["-C", "/tmp/demo-repo", "pull", "--ff-only"]);
 assert.deepEqual(afterEvents, ["installed", "updated"]);
 
+await bridge.update(pi, ctx, { ...paths, repoRef: "v1.2.3" });
+assert.deepEqual(execCalls[2].args, ["-C", "/tmp/demo-repo", "fetch", "--depth", "1", "origin", "v1.2.3"]);
+assert.deepEqual(execCalls[3].args, ["-C", "/tmp/demo-repo", "checkout", "--detach", "FETCH_HEAD"]);
+assert.deepEqual(afterEvents, ["installed", "updated", "updated"]);
+
 assert.equal(await bridge.checkoutHead(pi, ctx, paths), "abc123");
-assert.deepEqual(execCalls[2].args, ["-C", "/tmp/demo-repo", "rev-parse", "--short", "HEAD"]);
-assert.equal(execCalls[2].timeout, 30_000);
+assert.deepEqual(execCalls[4].args, ["-C", "/tmp/demo-repo", "rev-parse", "--short", "HEAD"]);
+assert.equal(execCalls[4].timeout, 30_000);
 
 await bridge.sendSkillInvocation(pi, ctx, paths, {
   skillPath: "/tmp/demo-repo/skill.md",
   skillContent: "# Demo Skill",
   args: "run it",
 });
-assert.deepEqual(afterEvents, ["installed", "updated", "present"]);
+assert.deepEqual(afterEvents, ["installed", "updated", "updated", "present"]);
 assert.deepEqual(sentMessages, [{ content: "/tmp/demo-repo/skill.md\n# Demo Skill\nARGS:run it", options: undefined }]);
 
 console.log("pi-bridge-lifecycle ok");

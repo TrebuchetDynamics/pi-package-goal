@@ -46,13 +46,15 @@ install_tmux_conf() {
   src=$1
   dest=$2
   helper_dir_escaped=$(printf '%s' "$TMUX_HELPER_DIR" | sed 's/[&|\\]/\\&/g')
-  tmp=${TMPDIR:-/tmp}/tx-tmux.conf.$$
+  tmp=$(mktemp "${TMPDIR:-/tmp}/tx-tmux.conf.XXXXXX")
+  trap 'rm -f "$tmp"' EXIT HUP INT TERM
   sed \
     -e "s|~/.tmux/short-path.sh|$helper_dir_escaped/short-path.sh|g" \
     -e "s|~/.tmux/git-status.sh|$helper_dir_escaped/git-status.sh|g" \
     "$src" > "$tmp"
   install_file 0644 "$tmp" "$dest"
   rm -f "$tmp"
+  trap - EXIT HUP INT TERM
 }
 
 mkdir -p "$(dirname "$TMUX_CONF_TARGET")" "$HOME/.tmux" "$TMUX_HELPER_DIR" "$TX_BIN_DIR"

@@ -1,12 +1,4 @@
-export type UsageSnapshot = {
-	totalTokens?: number;
-	input?: number;
-	output?: number;
-	cacheRead?: number;
-	cacheWrite?: number;
-} | null | undefined;
-
-export function tokenDeltaFromUsage(usage: UsageSnapshot): number {
+export function tokenDeltaFromUsage(usage) {
 	if (!usage) return 0;
 	if (typeof usage.totalTokens === "number") return Math.max(0, usage.totalTokens);
 	const input = Number(usage.input) || 0;

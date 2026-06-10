@@ -10,8 +10,9 @@ const DEFAULT_COMMAND_NAME = "graphify";
 export function getGraphifyPaths(env = process.env, home = homedir()) {
   const repoDir = env.GRAPHIFY_DIR?.trim() || join(home, ".graphify", "repo");
   const repoUrl = env.GRAPHIFY_REPO_URL?.trim() || DEFAULT_REPO_URL;
+  const repoRef = env.GRAPHIFY_REF?.trim() || "";
   const skillPath = join(repoDir, "graphify", "skill-pi.md");
-  return { repoDir, repoUrl, skillPath };
+  return { repoDir, repoUrl, repoRef, skillPath };
 }
 
 export { splitFirstArg as splitBridgeArgs } from "../../lib/pi-bridge/command-grammar.js";
@@ -27,7 +28,7 @@ export function buildSkillInvocation({ commandName = DEFAULT_COMMAND_NAME, skill
     `<skill name="graphify" location="${skillPath}">`,
     `User invoked ${invocation}. Follow the Graphify Pi skill below exactly.`,
     `Pi bridge policy: default graph builds and updates in Pi are pure AST/local/no-LLM. For bare path invocations such as /graphify ., /graphify src, or /graphify . --update, run Graphify's no-LLM code path (graphify update <path>, using --force when needed) and do not run semantic extraction, do not dispatch subagents, and do not ask for or suggest API keys. Only use semantic/LLM extraction when the user explicitly asks for semantic, docs, PDFs, images, video, deep mode, or an LLM/backend.`,
-    `Pi bridge policy: before any repo graph build or update run, ensure Graphify's git hooks are active in the current target repo by running graphify hook install after graphifyy is available. Existing-graph read commands (query, path, explain) may use direct CLI fast paths without installing hooks. If the hook is already installed, continue without asking.`,
+    `Pi bridge policy: default graph builds and updates must not mutate the target repo's git hooks. Existing-graph read commands (query, path, explain) may use direct CLI fast paths. Install hooks only for /graphify install or when the user explicitly passes --install-hooks.`,
     `Pi bridge policy: when Graphify detects a large corpus and lists top first-level subdirectories, do not ask the user which one to run. Automatically continue with the listed top subdirectories as a multi-path run, preserving their order, unless the user already named a narrower path or explicitly asked to choose manually.`,
     `Pi bridge policy: if pure AST mode omits markdown or other prose files, report that as an intentional no-LLM tradeoff rather than a failure.`,
     "",
@@ -180,11 +181,15 @@ export function isGraphifyAstOnlyBuildArgs(args = "") {
   const first = tokens[0] ?? "";
   if (["add", "explain", "path", "query"].includes(first.toLowerCase())) return false;
   if (/^https?:\/\//i.test(first)) return false;
-  const allowedFlags = new Set(["--update", "--force", "--no-cluster", "--no-viz"]);
+  const allowedFlags = new Set(["--update", "--force", "--no-cluster", "--no-viz", "--install-hooks"]);
   return tokens.every((token, index) => {
     if (index === 0 && token && !token.startsWith("-")) return true;
     return allowedFlags.has(token);
   });
+}
+
+export function shouldInstallGraphifyHooks(args = "") {
+  return parseGraphifyCliArgs(args).includes("--install-hooks");
 }
 
 export function buildGraphifyAstOnlyUpdateArgs(args = "") {
@@ -197,7 +202,7 @@ export function buildGraphifyAstOnlyUpdateArgs(args = "") {
 }
 
 export async function runGraphifyAstOnlyBuild(pi, ctx, args = "") {
-  await installGraphifyHook(pi, ctx);
+  if (shouldInstallGraphifyHooks(args)) await installGraphifyHook(pi, ctx);
   const cliArgs = buildGraphifyAstOnlyUpdateArgs(args);
   const result = await pi.exec("env", cliArgs, { signal: ctx.signal, timeout: 300_000 });
   const output = commandOutput(result);
@@ -299,7 +304,8 @@ async function statusText(pi, ctx, paths) {
     return `Graphify is not installed. Run /graphify install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
   }
   const head = await graphifyLifecycle.checkoutHead(pi, ctx, paths);
-  return `Graphify installed at ${paths.repoDir}\nHEAD: ${head}\nPi skill: ${paths.skillPath}`;
+  const ref = paths.repoRef ? `\nPinned ref: ${paths.repoRef}` : "";
+  return `Graphify installed at ${paths.repoDir}\nHEAD: ${head}${ref}\nPi skill: ${paths.skillPath}`;
 }
 
 async function handleBridgeCommand(pi, args, ctx, paths) {

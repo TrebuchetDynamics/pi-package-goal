@@ -172,13 +172,14 @@ stage_scope_changes() {
 }
 
 run_candidate_validation() {
-  local candidate=$1 candidate_dir module_dir rel pattern repo_root
+  local candidate=$1 candidate_dir module_dir rel pattern repo_root package_dir package_script validation_ran
   LAST_VALIDATION_RECEIPT=""
   section "validation ${candidate}"
   candidate_dir="${run_root}/${candidate}"
+  validation_ran=0
+  repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
   if [[ -d "${candidate_dir}" ]] && find "${candidate_dir}" -type f -name '*.go' -print -quit | grep -q .; then
     module_dir="${candidate_dir}"
-    repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
     while [[ "${module_dir}" == "${repo_root}" || "${module_dir}" == "${repo_root}"/* ]]; do
       if [[ -f "${module_dir}/go.mod" ]]; then
         break
@@ -194,10 +195,43 @@ run_candidate_validation() {
       info "go test ${pattern} -count=1 (from ${module_dir})"
       (cd "${module_dir}" && go test "${pattern}" -count=1) || return $?
       LAST_VALIDATION_RECEIPT="go test ${pattern} -count=1 from ${module_dir}: pass"
+      validation_ran=1
       success "go test passed"
     fi
-  else
-    info "no Go package validation inferred for ${candidate}"
+  fi
+  if (( validation_ran == 0 )); then
+    package_dir="$(node -e '
+      const fs = require("node:fs");
+      const path = require("node:path");
+      let dir = path.resolve(process.argv[1]);
+      const root = path.resolve(process.argv[2]);
+      while (dir === root || dir.startsWith(root + path.sep)) {
+        if (fs.existsSync(path.join(dir, "package.json"))) { process.stdout.write(dir); process.exit(0); }
+        const parent = path.dirname(dir);
+        if (parent === dir) break;
+        dir = parent;
+      }
+    ' "${candidate_dir}" "${repo_root}")"
+    if [[ -n "${package_dir}" ]]; then
+      package_script="$(node -e '
+        const fs = require("node:fs");
+        const pkg = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+        if (pkg.scripts?.test) process.stdout.write("test");
+        else if (pkg.scripts?.validate) process.stdout.write("validate");
+      ' "${package_dir}/package.json")"
+      if [[ -n "${package_script}" ]]; then
+        info "npm run ${package_script} (from ${package_dir})"
+        (cd "${package_dir}" && npm run "${package_script}") || return $?
+        LAST_VALIDATION_RECEIPT="${LAST_VALIDATION_RECEIPT:+${LAST_VALIDATION_RECEIPT}; }npm run ${package_script} from ${package_dir}: pass"
+        validation_ran=1
+        success "npm run ${package_script} passed"
+      else
+        info "package.json found at ${package_dir} but no test/validate script is defined"
+      fi
+    fi
+  fi
+  if (( validation_ran == 0 )); then
+    info "no language-specific validation inferred for ${candidate}"
   fi
   info "git diff --check"
   git -C "${run_root}" diff --check -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' || return $?
@@ -231,9 +265,14 @@ commit_preexisting_changes() {
   if [[ -z "${status}" ]]; then
     return 0
   fi
-  section "pre-commit existing changes"
-  warn "delivering pre-existing changes under pwd so auto refactor can continue"
+  section "pre-existing changes"
   printf '%s\n' "${status}" >&2
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_PRECOMMIT:-}" != "1" ]]; then
+    error "pre-existing changes detected under pwd; refusing to auto-commit user work by default"
+    warn "commit/stash/revert these changes first, or rerun with PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1 to checkpoint them explicitly"
+    return 1
+  fi
+  warn "delivering pre-existing changes under pwd because PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1"
   if printf '%s\n' "${status}" | grep -Eq '^[ MADRCU?!]{1,2} [^/]+$'; then
     warn "top-level dirty entry detected; if this is a nested git checkout/submodule, run 'autofolderrefactor ignore' to add it to .refactorignore"
   fi

@@ -20,16 +20,16 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 | --- | --- | --- |
 | Broad UI/UX decision, visual system, colors, typography, layout, accessibility, motion | `ui-ux-pro-max` | `modern-web-guidance` for browser APIs/perf |
 | Fresh distinctive web UI, page, component, or app | `frontend-design` | `hallmark` for anti-slop structure; `ui-ux-pro-max` for checks |
-| React + TypeScript + Tailwind + shadcn product UI | `frontend-production-shadcn` | `ui-ux-pro-max`; `modern-web-guidance` |
+| React + TypeScript + Tailwind product UI, including shadcn-style systems | `frontend-design` | `ui-ux-pro-max`; `modern-web-guidance` |
 | Landing page, portfolio, or marketing redesign where taste matters | `design-taste-frontend` | `hallmark`; `frontend-design` |
 | Anti-AI-slop build, audit, redesign, or study from URL/screenshot | `hallmark` | `design-taste-frontend`; `ui-ux-pro-max` |
-| Convert Stitch designs into Vite/React components | `stitch-react-components` | `frontend-production-shadcn`; `ui-ux-pro-max` |
+| Convert Stitch designs into Vite/React components | `stitch-react-components` | `frontend-design`; `ui-ux-pro-max` |
 | Browser UX behavior, HTML/CSS/Web APIs, performance, forms, or accessibility details | `modern-web-guidance` | `ui-ux-pro-max` |
 | Chrome/browser extension UI or extension APIs | `chrome-extensions` | `modern-web-guidance`; `ui-ux-pro-max` |
 
 ## Conflict rules
 
-- Product app/dashboard beats marketing taste: prefer `frontend-production-shadcn` over `design-taste-frontend`.
+- Product app/dashboard beats marketing taste: prefer `frontend-design` with existing system conventions over `design-taste-frontend`.
 - Existing brand/system beats novelty: preserve tokens, routes, components, content intent, and accessibility before adding flair.
 - Stitch fidelity beats reinvention: for Stitch inputs, use `stitch-react-components` first, then polish.
 - Anti-slop does not mean maximalism: choose a clear aesthetic, then execute consistently.

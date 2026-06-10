@@ -46,6 +46,13 @@ export function shouldSkipRewrite(command, env = process.env) {
   if (!trimmed) return true;
   if (trimmed.startsWith("rtk ")) return true;
   if (env.RTK_DISABLED === "1") return true;
+  if (env.RTK_REWRITE_UNSAFE === "1") return false;
+  if (/[\n\r]/.test(trimmed)) return true;
+  if (/^(?:find|rg|grep)\b/.test(trimmed)) return true;
+  if (/(^|\s)(?:rm|mv|cp|chmod|chown|sudo)\b/.test(trimmed)) return true;
+  if (/\b(?:git\s+(?:reset|clean|checkout|switch|restore|rebase|merge|push)|npm\s+publish)\b/.test(trimmed)) return true;
+  if (/[|;&<>`]|\$\(/.test(trimmed)) return true;
+  if (/\b(?:TOKEN|SECRET|PASSWORD|API[_-]?KEY)\b/i.test(trimmed)) return true;
   return false;
 }
 

@@ -53,8 +53,8 @@ The package-local extension at `extensions/folder-refactor/index.js` registers `
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
 **Graphify Extension**:
-The package-local extension at `extensions/graphify/index.js` registers `/graphify`. It clones/updates `safishamsi/graphify`, loads the upstream Pi skill from the user checkout for skill-backed build workflows, and uses direct CLI fast paths for existing-graph read workflows where upstream procedural instructions are unnecessary. On `/graphify install` it also runs `graphify hook install` so the current project gets Graphify's git hook integration.
-_Avoid_: misspelled command aliases, bundling upstream code without notices, treating graph hooks as installed when the hook command failed, running silent startup network work, injecting the upstream skill for simple existing-graph reads
+The package-local extension at `extensions/graphify/index.js` registers `/graphify`. It clones/updates `safishamsi/graphify`, loads the upstream Pi skill from the user checkout for skill-backed build workflows, and uses direct CLI fast paths for existing-graph read workflows where upstream procedural instructions are unnecessary. Normal graph builds do not mutate git hooks; `/graphify install`, `/graphify update`, or an explicit `--install-hooks` graph build run `graphify hook install` for the current project.
+_Avoid_: misspelled command aliases, bundling upstream code without notices, treating graph hooks as installed when the hook command failed, running silent startup network work, injecting the upstream skill for simple existing-graph reads, installing hooks during ordinary graph builds without explicit user intent
 
 **RTK Extension**:
 The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.

@@ -63,14 +63,6 @@ Trebuchet Dynamics under the MIT License.
 - License: Anthropic commercial terms
 - Full license copy: `licenses/anthropics-claude-code-LICENSE.md`
 
-## wzx2002/codex-frontend-skill
-
-- Source: https://github.com/wzx2002/codex-frontend-skill
-- Snapshot inspected: `3c3a7c4`
-- Bundled paths:
-  - `skills/frontend/frontend-production-shadcn/`
-- License: no license file found in upstream snapshot.
-
 ## Leonxlnx/taste-skill
 
 - Source: https://github.com/Leonxlnx/taste-skill

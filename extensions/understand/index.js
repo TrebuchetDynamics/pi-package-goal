@@ -58,10 +58,11 @@ const DIRECT_META_COMMANDS = new Map([
 export function getUnderstandPaths(env = process.env, home = homedir()) {
   const repoDir = env.UA_DIR?.trim() || join(home, ".understand-anything", "repo");
   const repoUrl = env.UA_REPO_URL?.trim() || DEFAULT_REPO_URL;
+  const repoRef = env.UA_REF?.trim() || "";
   const pluginDir = join(repoDir, "understand-anything-plugin");
   const skillsRoot = join(pluginDir, "skills");
   const pluginLink = join(home, ".understand-anything-plugin");
-  return { repoDir, repoUrl, pluginDir, skillsRoot, pluginLink };
+  return { repoDir, repoUrl, repoRef, pluginDir, skillsRoot, pluginLink };
 }
 
 export function parseUnderstandCommand(commandName, args = "") {
@@ -436,7 +437,8 @@ async function linkPluginRoot(paths) {
   try {
     await lstat(paths.pluginLink);
     return;
-  } catch {
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
     await symlink(paths.pluginDir, paths.pluginLink, "dir");
   }
 }
@@ -517,13 +519,14 @@ async function statusText(pi, ctx, paths) {
     return `Understand-Anything is not installed. Run /understand install to clone ${paths.repoUrl} to ${paths.repoDir}.`;
   }
   const head = await understandLifecycle.checkoutHead(pi, ctx, paths);
-  return `Understand-Anything installed at ${paths.repoDir}\nHEAD: ${head}\nSkills: ${paths.skillsRoot}\nPlugin link: ${paths.pluginLink}`;
+  const ref = paths.repoRef ? `\nPinned ref: ${paths.repoRef}` : "";
+  return `Understand-Anything installed at ${paths.repoDir}\nHEAD: ${head}${ref}\nSkills: ${paths.skillsRoot}\nPlugin link: ${paths.pluginLink}`;
 }
 
 async function writeAgentMap(ctx, args) {
   const graphPath = resolve(ctx.cwd, ".understand-anything", "knowledge-graph.json");
   const outputArg = normalizeAgentOutputArg(args);
-  const outputPath = isAbsolute(outputArg) ? outputArg : resolve(ctx.cwd, outputArg);
+  const outputPath = resolveContainedOutputPath(ctx.cwd, outputArg);
 
   let graph;
   try {
@@ -549,6 +552,19 @@ async function writeAgentMap(ctx, args) {
   };
 }
 
+function isPathInside(parent, child) {
+  const rel = relative(parent, child);
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+}
+
+export function resolveContainedOutputPath(cwd, outputArg) {
+  const outputPath = isAbsolute(outputArg) ? resolve(outputArg) : resolve(cwd, outputArg);
+  if (!isPathInside(resolve(cwd), outputPath)) {
+    throw new Error(`Understand output path must stay inside the current repo: ${outputArg}`);
+  }
+  return outputPath;
+}
+
 function resolveFolderArg(cwd, folder) {
   const cleaned = folder.replace(/^@/, "");
   return isAbsolute(cleaned) ? cleaned : resolve(cwd, cleaned);
@@ -565,7 +581,7 @@ async function writeCompareMap(ctx, args) {
 
   const folderA = resolveFolderArg(ctx.cwd, parsed.folderA);
   const folderB = resolveFolderArg(ctx.cwd, parsed.folderB);
-  const outputPath = isAbsolute(parsed.output) ? parsed.output : resolve(ctx.cwd, parsed.output);
+  const outputPath = resolveContainedOutputPath(ctx.cwd, parsed.output);
 
   let a;
   let b;

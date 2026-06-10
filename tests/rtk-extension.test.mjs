@@ -34,6 +34,14 @@ assert.equal(shouldSkipRewrite(""), true);
 assert.equal(shouldSkipRewrite("rtk git status"), true);
 assert.equal(shouldSkipRewrite("git status", { RTK_DISABLED: "1" }), true);
 assert.equal(shouldSkipRewrite("git status", {}), false);
+assert.equal(shouldSkipRewrite("git status && npm test", {}), true);
+assert.equal(shouldSkipRewrite("find . -maxdepth 2 -type f -print", {}), true);
+assert.equal(shouldSkipRewrite("find . -name '*.js' -exec grep -n TODO {} \\;", {}), true);
+assert.equal(shouldSkipRewrite("rg -n TODO . -g '*.js'", {}), true);
+assert.equal(shouldSkipRewrite("rm -rf dist", {}), true);
+assert.equal(shouldSkipRewrite("git reset --hard HEAD", {}), true);
+assert.equal(shouldSkipRewrite("echo $API_KEY", {}), true);
+assert.equal(shouldSkipRewrite("git reset --hard HEAD", { RTK_REWRITE_UNSAFE: "1" }), false);
 
 assert.equal(normalizeRewriteResult({ code: 0, stdout: "rtk git status\n", killed: false }, "git status"), "rtk git status");
 assert.equal(normalizeRewriteResult({ code: 3, stdout: "rtk npm test\n", killed: false }, "npm test"), "rtk npm test");

@@ -16,6 +16,7 @@ import {
   isGraphifyAstOnlyBuildArgs,
   isExplicitSemanticGraphifyArgs,
   buildGraphifyAstOnlyUpdateArgs,
+  shouldInstallGraphifyHooks,
   isHelpArg,
   parseGraphifyCliArgs,
   runGraphifyAstOnlyBuild,
@@ -28,12 +29,14 @@ import {
 assert.deepEqual(getGraphifyPaths({}, "/home/alice"), {
   repoDir: "/home/alice/.graphify/repo",
   repoUrl: "https://github.com/safishamsi/graphify.git",
+  repoRef: "",
   skillPath: "/home/alice/.graphify/repo/graphify/skill-pi.md",
 });
 
-assert.deepEqual(getGraphifyPaths({ GRAPHIFY_DIR: "/tmp/graphify", GRAPHIFY_REPO_URL: "https://example.test/g.git" }, "/home/alice"), {
+assert.deepEqual(getGraphifyPaths({ GRAPHIFY_DIR: "/tmp/graphify", GRAPHIFY_REPO_URL: "https://example.test/g.git", GRAPHIFY_REF: "v1.2.3" }, "/home/alice"), {
   repoDir: "/tmp/graphify",
   repoUrl: "https://example.test/g.git",
+  repoRef: "v1.2.3",
   skillPath: "/tmp/graphify/graphify/skill-pi.md",
 });
 
@@ -64,8 +67,8 @@ assert.match(invocation, /default graph builds and updates in Pi are pure AST\/l
 assert.match(invocation, /do not run semantic extraction/);
 assert.match(invocation, /do not ask for or suggest API keys/);
 assert.match(invocation, /Only use semantic\/LLM extraction when the user explicitly asks/);
-assert.match(invocation, /ensure Graphify's git hooks are active/);
-assert.match(invocation, /graphify hook install after graphifyy is available/);
+assert.match(invocation, /default graph builds and updates must not mutate/);
+assert.match(invocation, /explicitly passes --install-hooks/);
 assert.match(invocation, /Existing-graph read commands/);
 assert.match(invocation, /large corpus and lists top first-level subdirectories/);
 assert.match(invocation, /Automatically continue with the listed top subdirectories as a multi-path run/);
@@ -120,6 +123,9 @@ assert.equal(isExplicitSemanticGraphifyArgs(". --wiki"), true);
 assert.equal(isGraphifyAstOnlyBuildArgs(""), true);
 assert.equal(isGraphifyAstOnlyBuildArgs("."), true);
 assert.equal(isGraphifyAstOnlyBuildArgs("src --update --no-viz"), true);
+assert.equal(isGraphifyAstOnlyBuildArgs("src --install-hooks --no-viz"), true);
+assert.equal(shouldInstallGraphifyHooks("src --install-hooks --no-viz"), true);
+assert.equal(shouldInstallGraphifyHooks("src --no-viz"), false);
 assert.equal(isGraphifyAstOnlyBuildArgs(". --mode deep"), false);
 assert.equal(isGraphifyAstOnlyBuildArgs("query test"), false);
 assert.equal(isGraphifyAstOnlyBuildArgs("https://github.com/a/b"), false);
@@ -170,7 +176,6 @@ try {
   await runGraphifyAstOnlyBuild({
     async exec(command, args, options) {
       astOnlyExecCalls.push({ command, args, options });
-      if (command === "graphify") return { code: 0, stdout: "hooks installed", stderr: "" };
       return { code: 0, stdout: "ast updated", stderr: "" };
     },
     sendMessage(message) {
@@ -178,7 +183,6 @@ try {
     },
   }, { signal: "signal" }, "src --update --no-viz");
   assert.deepEqual(astOnlyExecCalls, [
-    { command: "graphify", args: ["hook", "install"], options: { signal: "signal", timeout: 120_000 } },
     {
       command: "env",
       args: ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force", "--no-viz"],
@@ -187,6 +191,24 @@ try {
   ]);
   assert.equal(astOnlyMessages[0].content, "ast updated");
   assert.deepEqual(astOnlyMessages[0].details, { action: "update", mode: "ast-only", args: ["src", "--force", "--no-viz"], exitCode: 0 });
+
+  const hookExecCalls = [];
+  await runGraphifyAstOnlyBuild({
+    async exec(command, args, options) {
+      hookExecCalls.push({ command, args, options });
+      if (command === "graphify") return { code: 0, stdout: "hooks installed", stderr: "" };
+      return { code: 0, stdout: "ast updated", stderr: "" };
+    },
+    sendMessage() {},
+  }, { signal: "signal" }, "src --install-hooks --no-viz");
+  assert.deepEqual(hookExecCalls, [
+    { command: "graphify", args: ["hook", "install"], options: { signal: "signal", timeout: 120_000 } },
+    {
+      command: "env",
+      args: ["GRAPHIFY_NO_TIPS=1", "graphify", "update", "src", "--force", "--no-viz"],
+      options: { signal: "signal", timeout: 300_000 },
+    },
+  ]);
 
   await assert.rejects(
     () => runGraphifyCliFastPath({

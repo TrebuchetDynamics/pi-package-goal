@@ -1,13 +1,8 @@
 import assert from "node:assert/strict";
 import path from "node:path";
-import { createRequire } from "node:module";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const require = createRequire(import.meta.url);
-const jitiEntry = "/home/xel/.nvm/versions/node/v22.21.1/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/jiti/lib/jiti.cjs";
-const { createJiti } = require(jitiEntry);
-const jiti = createJiti(import.meta.url, { interopDefault: true });
-const gateMod = await jiti.import(path.join(root, "lib", "goal", "final-report-gate.ts"));
+const gateMod = await import(path.join(root, "lib", "goal", "final-report-gate.ts"));
 
 assert.equal(typeof gateMod.evaluateFinalReportGate, "function");
 

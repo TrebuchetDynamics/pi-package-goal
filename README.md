@@ -19,7 +19,7 @@ Use it when you want Pi to:
 | Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
-| Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `frontend-production-shadcn`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
+| Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 | Knowledge graphs | Run Graphify from Pi through the Graphify bridge to build/query `graphify-out/` graphs. | `/graphify` |
@@ -121,7 +121,7 @@ While active, the extension exposes `get_goal` and `update_goal` tools so the ag
 
 `/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.
 
-On first use it prompts to clone Understand-Anything into `~/.understand-anything/repo`, then dispatches to the upstream workflows. It honors `UA_DIR` and `UA_REPO_URL`, matching the upstream installer defaults.
+On first use it prompts to clone Understand-Anything into `~/.understand-anything/repo`, then dispatches to the upstream workflows. It honors `UA_DIR`, `UA_REPO_URL`, and optional `UA_REF` for pinned upstream checkouts.
 
 Common commands:
 
@@ -131,7 +131,7 @@ Common commands:
 | `/rtk status` | Check whether [rtk-ai/rtk](https://github.com/rtk-ai/rtk) is installed and active for Pi bash command rewriting. |
 | `/rtk install` | Show the upstream `rtk` installer command. The extension does not execute remote installers; review and run the command yourself. |
 | `autofolderrefactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
-| `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
+| `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, refuse pre-existing dirty work unless `PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1` is set, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |
@@ -173,7 +173,7 @@ Notes:
 
 ### Graphify `/graphify`
 
-`/graphify` bridges Pi to the upstream [Graphify](https://github.com/safishamsi/graphify) Pi skill (`graphify/skill-pi.md`). On first use it prompts to clone Graphify into `~/.graphify/repo`; override with `GRAPHIFY_DIR` or `GRAPHIFY_REPO_URL`.
+`/graphify` bridges Pi to the upstream [Graphify](https://github.com/safishamsi/graphify) Pi skill (`graphify/skill-pi.md`). On first use it prompts to clone Graphify into `~/.graphify/repo`; override with `GRAPHIFY_DIR`, `GRAPHIFY_REPO_URL`, or optional `GRAPHIFY_REF` for pinned upstream checkouts.
 
 Common commands:
 
@@ -188,9 +188,9 @@ Common commands:
 | `/graphify install` | Clone the upstream Graphify repo and run `graphify hook install` for the current project. |
 | `/graphify update` | Pull the upstream checkout with `git pull --ff-only`. |
 
-The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install action also installs Graphify's git hooks so commits/checkouts can trigger graph maintenance.
+The upstream skill installs or uses the Python CLI package `graphifyy` when the Graphify workflow runs. The package bridge's install and update actions also install Graphify's git hooks so commits/checkouts can trigger graph maintenance.
 
-Pi's `/graphify` bridge defaults to pure AST/local/no-LLM graph maintenance for build and update flows. It should not run semantic extraction, dispatch LLM subagents, or ask for API keys unless the user explicitly asks for semantic/doc/PDF/image/video/deep/backend extraction. Markdown and other prose files can be intentionally omitted in this mode.
+Pi's `/graphify` bridge defaults to pure AST/local/no-LLM graph maintenance for build and update flows. Normal graph builds do not mutate repo git hooks; use `/graphify install` or pass `--install-hooks` when you explicitly want hook installation. It should not run semantic extraction, dispatch LLM subagents, or ask for API keys unless the user explicitly asks for semantic/doc/PDF/image/video/deep/backend extraction. Markdown and other prose files can be intentionally omitted in this mode.
 
 When a target already has `graphify-out/graph.json`, build-style invocations automatically add `--update` (for example `/graphify .` becomes `/graphify . --update`). Existing-graph read commands (`/graphify query`, `/graphify path`, and `/graphify explain`) use direct CLI fast paths instead of injecting the upstream skill into the conversation. Add and explicit `--update`/`--cluster-only` commands are left unchanged.
 
@@ -294,7 +294,6 @@ Borrowed design rules:
 | `ui-design` | Orchestrate the UI/UX skills and pick the right frontend/design workflow for the task. |
 | `ui-ux-pro-max` | Apply broad UI/UX design-system, typography, color, layout, accessibility, and motion guidance. |
 | `frontend-design` | Create distinctive production-grade frontend interfaces that avoid generic AI aesthetics. |
-| `frontend-production-shadcn` | Build polished React/TypeScript/Tailwind/shadcn product UI for dashboards, app shells, forms, and redesigns. |
 | `design-taste-frontend` | Use anti-slop taste rules for landing pages, portfolios, and redesigns. |
 | `hallmark` | Apply Hallmark's anti-AI-slop design flows for builds, audits, redesigns, and design extraction. |
 | `stitch-react-components` | Convert Stitch designs into modular Vite/React components with validation. |

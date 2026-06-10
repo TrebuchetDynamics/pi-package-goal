@@ -11,6 +11,7 @@ import {
   normalizeAgentOutputArg,
   parseCompareArgs,
   parseUnderstandCommand,
+  resolveContainedOutputPath as resolveContainedUnderstandOutputPath,
   splitFirstArg,
 } from "../extensions/understand/index.js";
 import {
@@ -22,6 +23,7 @@ import {
   generateRefactorMarkdown,
   parseRefactorArgs,
   parseRefactorInstruction,
+  resolveContainedOutputPath as resolveContainedRefactorOutputPath,
   splitArgs,
   summarizePreviousRefactorPlan,
 } from "../lib/understand/refactor-workflow.js";
@@ -123,10 +125,16 @@ assert.deepEqual(parseRefactorInstruction("regenerate with focus services state"
 assert.equal(normalizeAgentOutputArg("@frontend"), "frontend-codebase-map-understand.md");
 assert.equal(normalizeAgentOutputArg("@packages/api/"), "api-codebase-map-understand.md");
 assert.equal(normalizeAgentOutputArg("and codebase-map-understand.md"), "codebase-map-understand.md");
+assert.equal(resolveContainedUnderstandOutputPath("/repo", "reports/map.md"), "/repo/reports/map.md");
+assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "../outside.md"), /must stay inside/);
+assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "/tmp/outside.md"), /must stay inside/);
+assert.equal(resolveContainedRefactorOutputPath("/repo", "plans/refactor.md"), "/repo/plans/refactor.md");
+assert.throws(() => resolveContainedRefactorOutputPath("/repo", "../outside.md"), /must stay inside/);
 
-const paths = getUnderstandPaths({ UA_DIR: "/tmp/ua", UA_REPO_URL: "git@example.com:ua.git" }, "/home/example");
+const paths = getUnderstandPaths({ UA_DIR: "/tmp/ua", UA_REPO_URL: "git@example.com:ua.git", UA_REF: "abc123" }, "/home/example");
 assert.equal(paths.repoDir, "/tmp/ua");
 assert.equal(paths.repoUrl, "git@example.com:ua.git");
+assert.equal(paths.repoRef, "abc123");
 assert.equal(paths.skillsRoot, "/tmp/ua/understand-anything-plugin/skills");
 assert.equal(paths.pluginLink, "/home/example/.understand-anything-plugin");
 

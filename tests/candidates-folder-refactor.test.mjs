@@ -94,6 +94,7 @@ try {
   const rootHeavyBlockedOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: rootHeavyRetryApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiRootHeavy, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.doesNotMatch(rootHeavyBlockedOutput, /top candidate \. is root-file-heavy .* retrying/);
   assert.doesNotMatch(rootHeavyBlockedOutput, /selected \[candidate\] \./);
+  fs.rmSync(rootHeavyRetryLog, { force: true });
   fs.rmSync(fakePiRootHeavy, { force: true });
   fs.rmSync(rootHeavyRetryFixture, { recursive: true, force: true });
   assert.throws(() => execFileSync(autoScript, ["1", ".."], { cwd: fixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /scan-root must be pwd or a subfolder of pwd/);
@@ -142,6 +143,20 @@ try {
   assert.match(fs.readFileSync(path.join(ignoreFixture, ".refactorignore"), "utf8"), /scan-here\/artifacts\//);
   fs.rmSync(ignoreFixture, { recursive: true, force: true });
 
+  const dirtyPrecommitFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-dirty-precommit-"));
+  fs.writeFileSync(path.join(dirtyPrecommitFixture, "README.md"), "initial\n");
+  execFileSync("git", ["init"], { cwd: dirtyPrecommitFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: dirtyPrecommitFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: dirtyPrecommitFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "README.md"], { cwd: dirtyPrecommitFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial fixture"], { cwd: dirtyPrecommitFixture, stdio: "ignore" });
+  fs.writeFileSync(path.join(dirtyPrecommitFixture, "README.md"), "dirty\n");
+  assert.throws(
+    () => execFileSync(autoScript, ["1", "."], { cwd: dirtyPrecommitFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: process.execPath, NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] }),
+    /refusing to auto-commit user work by default/,
+  );
+  fs.rmSync(dirtyPrecommitFixture, { recursive: true, force: true });
+
   const ignoredAddFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-ignored-add-"));
   fs.writeFileSync(path.join(ignoredAddFixture, ".gitignore"), ".pi/\n.understand-anything/\n");
   fs.mkdirSync(path.join(ignoredAddFixture, "src/noisy"), { recursive: true });
@@ -159,7 +174,7 @@ try {
   const ignoredAddFakePi = path.join(os.tmpdir(), `fake-pi-ignored-add-${process.pid}.sh`);
   fs.writeFileSync(ignoredAddFakePi, "#!/usr/bin/env bash\necho ignored add fake pi\n");
   fs.chmodSync(ignoredAddFakePi, 0o755);
-  const ignoredAddOutput = execFileSync(autoScript, ["1", "src"], { cwd: ignoredAddFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: ignoredAddFakePi, PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT: "0", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  const ignoredAddOutput = execFileSync(autoScript, ["1", "src"], { cwd: ignoredAddFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: ignoredAddFakePi, PI_AUTO_FOLDER_REFACTOR_PRECOMMIT: "1", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
   assert.doesNotMatch(ignoredAddOutput, /The following paths are ignored/);
   assert.doesNotMatch(execFileSync("git", ["show", "--name-only", "--pretty=", "HEAD"], { cwd: ignoredAddFixture, encoding: "utf8" }), /^\.pi\//m);
   fs.rmSync(ignoredAddFakePi, { force: true });
@@ -181,6 +196,21 @@ try {
   assert.match(git("log", "-1", "--pretty=%s"), /Refactor src\/noisy topology/);
   assert.equal(git("status", "--porcelain", "--", "src/noisy/auto_refactor_marker.txt"), "");
   fs.rmSync(fakePiChange, { force: true });
+
+  const nodeValidationFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-node-validation-"));
+  fs.mkdirSync(path.join(nodeValidationFixture, "src/pkg"), { recursive: true });
+  fs.writeFileSync(path.join(nodeValidationFixture, "package.json"), JSON.stringify({ type: "module", scripts: { test: "node -e \"console.log('node validation ok')\"" } }, null, 2));
+  fs.writeFileSync(path.join(nodeValidationFixture, "src/pkg/index.js"), "export const value = 1;\n");
+  execFileSync("git", ["init"], { cwd: nodeValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: nodeValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: nodeValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: nodeValidationFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial node fixture"], { cwd: nodeValidationFixture, stdio: "ignore" });
+  const nodeValidationScript = `set -euo pipefail\n. ${JSON.stringify(path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/colors.sh"))}\n. ${JSON.stringify(path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/git-utils.sh"))}\nrun_root=${JSON.stringify(nodeValidationFixture)}\nrun_candidate_validation src/pkg 2>&1\n`;
+  const nodeValidationOutput = execFileSync("bash", ["-lc", nodeValidationScript], { cwd: nodeValidationFixture, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(nodeValidationOutput, /npm run test/);
+  assert.match(nodeValidationOutput, /node validation ok/);
+  fs.rmSync(nodeValidationFixture, { recursive: true, force: true });
 
   const goValidationFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-go-validation-"));
   fs.mkdirSync(path.join(goValidationFixture, "internal/tools/pkg"), { recursive: true });
