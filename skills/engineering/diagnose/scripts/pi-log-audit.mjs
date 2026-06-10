@@ -191,9 +191,20 @@ function readConfigDetails(piDir, configNames) {
   return details;
 }
 
+function redactSensitiveText(text) {
+  return String(text)
+    .replace(/\b(Bearer\s+)[A-Za-z0-9._~+/=-]{12,}/gi, "$1[REDACTED]")
+    .replace(/\b(sk-[A-Za-z0-9_-]{8,})\b/g, "[REDACTED]")
+    .replace(/\b(gh[pousr]_[A-Za-z0-9_]{12,})\b/g, "[REDACTED]")
+    .replace(/\b[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g, "[REDACTED]")
+    .replace(/\b[A-Fa-f0-9]{32,}\b/g, "[REDACTED]")
+    .replace(/\b[A-Za-z0-9+/]{40,}={0,2}\b/g, "[REDACTED]")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[REDACTED_EMAIL]");
+}
+
 function formatValue(value) {
   if (value === undefined || value === null || value === "") return "-";
-  return String(value).replace(/\s+/g, " ").slice(0, 180);
+  return redactSensitiveText(value).replace(/\s+/g, " ").slice(0, 180);
 }
 
 function stringField(record, fieldName) {

@@ -208,6 +208,26 @@ function listPackageSkillRootMarkdownFiles(baseDir = root) {
     .sort();
 }
 
+function collectForbiddenPackageResourceArtifacts(baseDir = root) {
+  const forbidden = [];
+  const packageResourceDirs = ["skills", "extensions", "themes", "prompts"];
+  const forbiddenNames = new Set([".pi", "graphify-out", ".understand-anything"]);
+  const walk = (relativeDir) => {
+    const absoluteDir = path.join(baseDir, relativeDir);
+    if (!fs.existsSync(absoluteDir)) return;
+    for (const entry of fs.readdirSync(absoluteDir, { withFileTypes: true })) {
+      const relativePath = path.join(relativeDir, entry.name).split(path.sep).join("/");
+      if (entry.isDirectory() && forbiddenNames.has(entry.name)) {
+        forbidden.push(relativePath);
+        continue;
+      }
+      if (entry.isDirectory()) walk(relativePath);
+    }
+  };
+  for (const dir of packageResourceDirs) walk(dir);
+  return forbidden.sort();
+}
+
 function collectSkillInventoryIssues(baseDir, expectedNames) {
   const expected = new Set(expectedNames);
   const actual = new Set(listSkillFiles(baseDir)
@@ -346,7 +366,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/graphify"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/graphify"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -402,6 +422,12 @@ async function testUnderstandExtension() {
   assert.match(goalExtension, /sendUserMessage\("\/skill:goal"\)/);
   assert.ok(exists("lib/goal/command.js"), "goal command helper must exist");
   assert.ok(exists("tests/goal-extension-command.test.mjs"), "goal command helper test must exist");
+  const goalTechnicalAuditorExtension = read("extensions/goal-technical-auditor/index.js");
+  assert.match(goalTechnicalAuditorExtension, /registerCommand\("goal-technical-auditor"/);
+  assert.match(goalTechnicalAuditorExtension, /buildGoalTechnicalAuditorObjective/);
+  assert.match(goalTechnicalAuditorExtension, /sendUserMessage\(goalCommand\)/);
+  assert.ok(exists("lib/goal-technical-auditor/command.js"), "goal-technical-auditor command helper must exist");
+  assert.ok(exists("tests/goal-technical-auditor-command.test.mjs"), "goal-technical-auditor helper test must exist");
   assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
@@ -469,6 +495,7 @@ async function testSkills() {
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
   assert.deepEqual(listPackageSkillRootMarkdownFiles(root), [], "root markdown files under pi.skills are loaded as file skills and must move under a non-skill subdirectory");
+  assert.deepEqual(collectForbiddenPackageResourceArtifacts(root), [], "package resource trees must not contain local generated/runtime artifacts");
 
   const goal = read("skills/planning/goal/SKILL.md");
   const goalLines = goal.trimEnd().split(/\r?\n/).length;
@@ -490,28 +517,32 @@ async function testSkills() {
   assert.match(goalContract, /DEV_GOAL_DECISION: continue_next_slice/);
 
   const architecture = read("skills/engineering/improve-codebase-architecture/SKILL.md");
-  assert.match(architecture, /repo study/);
+  assert.match(architecture, /Compatibility shim/);
+  assert.match(architecture, /technical-auditor/);
+  assert.match(architecture, /Architecture mode/);
+  assert.match(architecture, /Full mode/);
   assert.match(architecture, /git status --short --branch/);
-  assert.match(architecture, /codebase-map-understand\.md/);
-  assert.match(architecture, /Study evidence/);
-  assert.match(architecture, /Graphify startup gate/);
-  assert.match(architecture, /graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500/);
-  assert.match(architecture, /start `\/graphify \.` before the manual study/);
-  assert.match(architecture, /Study quality gate/);
-  assert.match(architecture, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
-  assert.match(architecture, /diagrams carry the argument/);
-  assert.match(architecture, /strongest locality\/leverage proof/);
-  assert.match(architecture, /Architecture review generated: <absolute html path>/);
+  assert.match(architecture, /graphify-out\/graph\.json/);
+  assert.match(architecture, /module, interface, implementation, depth, seam, adapter, leverage, locality/);
   assert.doesNotMatch(architecture, /subagent_type=Explore/);
-  const repoStudy = read("skills/engineering/improve-codebase-architecture/REPO-STUDY.md");
+  const architectureMode = read("skills/engineering/technical-auditor/references/architecture-deepening-mode.md");
+  assert.match(architectureMode, /Graphify startup gate/);
+  assert.match(architectureMode, /graphify query "architecture hotspots, module relationships, callers, tests, and cross-module seams" --budget 2500/);
+  assert.match(architectureMode, /start `\/graphify \.` before the manual study/);
+  assert.match(architectureMode, /Study quality gate/);
+  assert.match(architectureMode, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
+  assert.match(architectureMode, /diagrams carry the argument/);
+  assert.match(architectureMode, /strongest locality\/leverage proof/);
+  assert.match(architectureMode, /Architecture review generated: <absolute html path>/);
+  const repoStudy = read("skills/engineering/technical-auditor/references/architecture-repo-study.md");
   assert.match(repoStudy, /Candidate evidence requirements/);
   assert.match(repoStudy, /Generated map discipline/);
   assert.match(repoStudy, /Dirty-worktree pass/);
   assert.match(repoStudy, /accepted in-scope dirty evidence/);
   assert.match(repoStudy, /Review quality gate/);
-  assert.match(read("skills/engineering/improve-codebase-architecture/HTML-REPORT.md"), /Evidence base/);
-  assert.match(read("skills/engineering/improve-codebase-architecture/HTML-REPORT.md"), /worktree status/);
-  assert.match(read("skills/engineering/improve-codebase-architecture/INTERFACE-DESIGN.md"), /If parallel sub-agents are available/);
+  assert.match(read("skills/engineering/technical-auditor/references/architecture-html-report.md"), /Evidence base/);
+  assert.match(read("skills/engineering/technical-auditor/references/architecture-html-report.md"), /worktree status/);
+  assert.match(read("skills/engineering/technical-auditor/references/architecture-interface-design.md"), /If parallel sub-agents are available/);
 
   const tdd = read("skills/engineering/tdd/SKILL.md");
   assert.match(tdd, /Repo study before RED/);
@@ -602,11 +633,24 @@ async function testSkills() {
   }
 
   const technicalAuditor = read("skills/engineering/technical-auditor/SKILL.md");
+  assert.match(technicalAuditor, /Full mode/);
+  assert.match(technicalAuditor, /default when the user gives no mode argument/);
+  assert.match(technicalAuditor, /Run Audit mode and Architecture mode together/);
   assert.match(technicalAuditor, /technical audit/);
   assert.match(technicalAuditor, /Repository Map/);
   assert.match(technicalAuditor, /file\/line evidence/);
   assert.match(technicalAuditor, /Do not edit code during the audit/);
   assert.match(technicalAuditor, /Graphify/);
+  assert.match(technicalAuditor, /Graphify is unavailable or fails/);
+  assert.match(technicalAuditor, /Fact` or `Judgment/);
+  assert.match(technicalAuditor, /Critical, High, Medium, or Low/);
+  assert.match(technicalAuditor, /Milestone 0: safety net before refactoring/);
+  assert.match(technicalAuditor, /Milestone 1: critical security\/correctness fixes/);
+  assert.match(technicalAuditor, /Milestone 2: high-impact improvements/);
+  assert.match(technicalAuditor, /Milestone 3: quality and polish/);
+  assert.match(technicalAuditor, /Verification Evidence/);
+  assert.match(technicalAuditor, /inspected files, commands\/tests run, Graphify query status/);
+  assert.match(technicalAuditor, /docs\/audits\/<scope-slug>-YYYY-MM-DD\.md/);
   assert.match(read("skills/engineering/technical-auditor/references/audit-dimensions.md"), /Severity calibration/);
 
   const promptCacheAuditor = read("skills/engineering/prompt-cache-auditor/SKILL.md");
@@ -644,6 +688,7 @@ async function testDocsAndNotices() {
   const readme = read("README.md");
   assert.match(readme, /bundles curated agent skills/);
   assert.match(readme, /git-commit-push/);
+  assert.match(readme, /technical-auditor/);
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /## Included extensions/);
   assert.doesNotMatch(readme, /goal-advisor/);

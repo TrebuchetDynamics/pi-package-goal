@@ -16,7 +16,7 @@ Use it when you want Pi to:
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
-| Engineering loops | Debug, test-drive, prototype, review, improve architecture, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `prompt-cache-auditor` |
+| Engineering loops | Debug, test-drive, prototype, review, improve architecture, run technical audits, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `technical-auditor`, `prompt-cache-auditor` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
@@ -116,6 +116,18 @@ Common commands:
 | `/goal statusbar on|off` | Toggle the footer status line. |
 
 While active, the extension exposes `get_goal` and `update_goal` tools so the agent can inspect the objective and mark it complete only after evidence-backed verification.
+
+### `/goal-technical-auditor`
+
+`/goal-technical-auditor [--tokens 200k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`). It is intended for repo-improvement automation: audit first, implement only safe in-scope changes, validate after each slice, and stop on ownership, legal/security, or product-behavior blockers.
+
+Examples:
+
+```text
+/goal-technical-auditor
+/goal-technical-auditor skills/engineering
+/goal-technical-auditor --tokens 500k .
+```
 
 ### `/understand`
 
@@ -329,6 +341,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
   "pi": {
     "extensions": [
       "./extensions/goal",
+      "./extensions/goal-technical-auditor",
       "./extensions/understand",
       "./extensions/folder-refactor",
       "./extensions/rtk",

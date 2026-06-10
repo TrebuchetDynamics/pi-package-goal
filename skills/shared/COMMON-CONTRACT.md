@@ -13,6 +13,10 @@ Use this contract as the baseline for every packaged skill unless a skill's own 
 
 Before broad codebase exploration, check whether `graphify-out/graph.json` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, query Graphify first and say the query you ran. If no graph exists and the task is broad enough to benefit from one, start `/graphify .` unless the skill is explicitly read-only/status-only or the user asked not to build artifacts. Treat graph facts as leads only: verify named files, callers, and tests against live source before editing or reporting. Full guidance: [Graphify codebase graph](GRAPHIFY-CODEBASE-GRAPH.md).
 
+## Bundled resource paths
+
+When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.
+
 ## Verification evidence
 
 Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, graph queries used, or explicit owner decisions. If validation is not applicable, say why.

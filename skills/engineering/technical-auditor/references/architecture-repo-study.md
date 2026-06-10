@@ -24,7 +24,7 @@ Before a candidate can appear in the HTML report, gather at least:
 3. **Validation evidence** — an existing test, missing-test signal, or validation command affected by the seam.
 4. **Domain/decision evidence** — relevant `CONTEXT.md` term, ADR, or explicit note that none was found.
 5. **Deletion-test result** — whether deleting the suspected module concentrates complexity or merely moves it.
-6. **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [DEEPENING.md](DEEPENING.md).
+6. **Dependency category** — `in-process`, `local-substitutable`, `ports & adapters`, or `mock` from [architecture-deepening-dependencies.md](architecture-deepening-dependencies.md).
 7. **Worktree status** — whether evidence came from committed source, accepted in-flight changes, or unrelated dirty work that must be excluded.
 
 Do not include candidates based only on aesthetics, naming preference, file size, or generic layering rules. A large file is not automatically shallow; a small file is not automatically deep.

@@ -7,12 +7,19 @@ description: Produce evidence-backed repository or folder-scoped technical audit
 
 Act as a principal engineer auditing the requested scope: a named folder/path when the user gives one; otherwise the current working directory where Pi is running. If the current working directory is the repo root, this becomes a whole-repository audit; if Pi was opened inside a subfolder, default to that folder. Analysis only: do not modify code, configs, generated artifacts, or docs during the audit unless the user separately asks to save the report.
 
+## Modes
+
+- **Full mode** — default when the user gives no mode argument or asks broadly for `technical-auditor`. Run Audit mode and Architecture mode together: produce the broad technical audit, then produce architecture-deepening candidates for architecture findings with real locality/leverage proof.
+- **Audit mode** — use only when the user explicitly asks for a broad/non-architecture audit or wants markdown findings without the architecture HTML review. Produce a broad technical audit across architecture/design, code quality, security, testing, performance, dependencies, DevEx/operations, and documentation.
+- **Architecture mode** — use when the user asks specifically for architecture improvement, refactoring opportunities, tighter seams, better testability, AI-navigable code, or invokes `improve-codebase-architecture`. Follow [architecture-deepening-mode.md](references/architecture-deepening-mode.md): use module/interface/implementation/depth/seam/adapter/leverage/locality vocabulary, require caller and validation evidence, apply the deletion test, classify dependency category, and produce the temp-directory HTML architecture report.
+
 ## Quick start
 
 1. Set the audit scope. If the user names a folder/path, audit that scope. Otherwise audit the current working directory where Pi is running. Still read enough repo-level instructions/manifests/CI to understand ownership and validation. Only default to a whole-repository audit when the current working directory is the repo root.
 2. Read repo instructions and state: `AGENTS.md`, `git status --short --branch`, README/CONTEXT/docs, manifests, lockfiles, build/CI config, tests relevant to the scope.
-3. If `graphify-out/graph.json` exists, query Graphify first for broad audit leads scoped to the audit root, e.g. `graphify query "architecture hotspots, entry points, dependencies, tests, and risk areas in <scope>" --budget 2500`; verify every lead in live files.
-4. Build the report in four phases, in order: Scope Map → Audit Report → Improvement Strategy → Task Plan.
+3. If `graphify-out/graph.json` exists, query Graphify first for broad audit leads scoped to the audit root, e.g. `graphify query "architecture hotspots, entry points, dependencies, tests, and risk areas in <scope>" --budget 2500`; verify every lead in live files. If Graphify is unavailable or fails, state that as `Unverified`, include the failed command/error summary in Verification Evidence, and continue from live-file evidence without rebuilding artifacts unless the user explicitly approves artifact generation.
+4. Select Full, Audit, or Architecture mode from the request. If the user provides no mode argument, run Full mode. For Architecture mode or the architecture portion of Full mode, load [architecture-deepening-mode.md](references/architecture-deepening-mode.md), [architecture-repo-study.md](references/architecture-repo-study.md), [architecture-language.md](references/architecture-language.md), [architecture-deepening-dependencies.md](references/architecture-deepening-dependencies.md), and [architecture-html-report.md](references/architecture-html-report.md).
+5. In Audit mode or the audit portion of Full mode, build the markdown report in four phases, in order: Scope Map → Audit Report → Improvement Strategy → Task Plan.
 
 ## Workflow
 
@@ -22,7 +29,7 @@ Read before judging. Map purpose, maturity, tech stack, runtime targets, entry p
 
 ### Phase 2 — Audit
 
-Audit architecture/design, code quality, security, testing, performance, dependencies, DevEx/operations, and documentation. Prefer 15 high-confidence findings over 50 speculative ones. For each finding include:
+Audit architecture/design, code quality, security, testing, performance, dependencies, DevEx/operations, and documentation. For architecture/design findings in Full mode, use the architecture-deepening evidence bar: caller evidence, validation evidence, deletion-test result, dependency category, and locality/leverage proof before recommending a seam or module change. Prefer 15 high-confidence findings over 50 speculative ones. For each finding include:
 
 - what you found;
 - where, with `file:line` or `file:start-end`;
@@ -64,7 +71,7 @@ Each task needs title, description, affected files/areas, acceptance criteria, e
 
 ### Verification gate
 
-Before final response, verify: all four phases are present; every finding has severity and file/line evidence or is explicitly `Unverified`; no code was modified; recommendations match project maturity; ugly high-priority issues are not softened.
+Before final response, verify: all four phases are present; every finding has severity and file/line evidence or is explicitly `Unverified`; no code was modified; recommendations match project maturity; ugly high-priority issues are not softened; Verification Evidence lists inspected files, commands/tests run, Graphify query status, and clean-worktree/no-modification confirmation.
 
 ### Red lines
 
@@ -75,7 +82,13 @@ Before final response, verify: all four phases are present; every finding has se
 
 ### Output contract
 
-Produce one document with: Executive Summary (≤10 sentences, A–F grade for the audited scope, top 3 risks, top 3 opportunities), Scope Map (Repository Map for whole-repo audits or Folder Map for folder audits), Audit Report, Improvement Strategy, Task Plan, and Open Questions.
+In Full mode, produce both outputs: first the Audit mode document, then the Architecture mode temp-directory HTML report. The final response must include the audit summary plus `Architecture review generated: <absolute html path>`, `Evidence base: <docs/tests/commands/maps inspected>`, `Top recommendation: <candidate>`, and `Next question: Which of these would you like to explore?`.
+
+In Audit mode, produce one document with: Executive Summary (≤10 sentences, A–F grade for the audited scope, top 3 risks, top 3 opportunities), Scope Map (Repository Map for whole-repo audits or Folder Map for folder audits), Audit Report, Improvement Strategy, Task Plan, Open Questions, and Verification Evidence.
+
+In Architecture mode, produce the temp-directory HTML architecture report described in [architecture-html-report.md](references/architecture-html-report.md), then respond with `Architecture review generated: <absolute html path>`, `Evidence base: <docs/tests/commands/maps inspected>`, `Top recommendation: <candidate>`, and `Next question: Which of these would you like to explore?`. Do not write the HTML report into the repository.
+
+If the user asks to save the report, write it only after the audit is complete, prefer `docs/audits/<scope-slug>-YYYY-MM-DD.md`, and do not overwrite an existing report without explicit confirmation.
 
 ## Shared contract
 

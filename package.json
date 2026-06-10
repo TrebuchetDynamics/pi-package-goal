@@ -57,6 +57,7 @@
   "pi": {
     "extensions": [
       "./extensions/goal",
+      "./extensions/goal-technical-auditor",
       "./extensions/understand",
       "./extensions/folder-refactor",
       "./extensions/rtk",
@@ -91,8 +92,8 @@
   },
   "scripts": {
     "test": "npm run test:package && npm run test:extensions && npm run test:assets && npm run test:goal",
-    "test:package": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/pi-bridge-command-grammar.test.mjs && node tests/candidates-folder-refactor.test.mjs",
-    "test:extensions": "node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/understand-extension.test.mjs && node tests/goal-extension-command.test.mjs",
+    "test:package": "node tests/validate-package.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/pi-bridge-command-grammar.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/skill-helper-scripts.test.mjs",
+    "test:extensions": "node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/graphify-extension.test.mjs && node tests/understand-extension.test.mjs && node tests/goal-extension-command.test.mjs && node tests/goal-technical-auditor-command.test.mjs",
     "test:assets": "node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs",
     "test:goal": "node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
     "prepublishOnly": "node scripts/ensure-clean-worktree.mjs && npm test",
