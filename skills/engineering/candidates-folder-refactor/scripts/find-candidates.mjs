@@ -43,6 +43,10 @@ const rolePatterns = [
   /hook|store|state|context/i,
   /config|constant|env/i,
 ];
+const maxContentFileBytes = positiveEnvInt("PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES", 1024 * 1024);
+const maxTotalContentBytes = positiveEnvInt("PI_CANDIDATES_FOLDER_REFACTOR_MAX_TOTAL_CONTENT_BYTES", 50 * 1024 * 1024);
+let contentBytesRead = 0;
+let skippedLargeContentFiles = 0;
 
 const options = parseArgs(process.argv.slice(2));
 const root = path.resolve(process.cwd(), options.targetArg);
@@ -68,6 +72,11 @@ const refactorIgnore = loadRefactorIgnore(root, process.cwd());
 const statsByDir = new Map();
 const fileSet = new Set();
 const fileContents = new Map();
+
+function positiveEnvInt(name, fallback) {
+  const value = Number(process.env[name]);
+  return Number.isSafeInteger(value) && value > 0 ? value : fallback;
+}
 
 function parseArgs(args) {
   let top = 5;
@@ -236,8 +245,14 @@ function walk(dir) {
     fileSet.add(full);
     if (isTextSource(ext)) {
       try {
-        const content = fs.readFileSync(full, "utf8");
-        if (!content.includes("\u0000")) fileContents.set(full, content);
+        const fileStat = fs.statSync(full);
+        if (fileStat.size > maxContentFileBytes || contentBytesRead + fileStat.size > maxTotalContentBytes) {
+          skippedLargeContentFiles += 1;
+        } else {
+          const content = fs.readFileSync(full, "utf8");
+          contentBytesRead += fileStat.size;
+          if (!content.includes("\u0000")) fileContents.set(full, content);
+        }
       } catch {
         // Ignore unreadable files; the structural score still works.
       }
@@ -400,6 +415,12 @@ const report = {
   command: `node ${path.relative(process.cwd(), process.argv[1]) || process.argv[1]} ${process.argv.slice(2).join(" ")}`.trim(),
   candidates,
   refactorIgnoreSuggestions,
+  contentRead: {
+    bytes: contentBytesRead,
+    skippedLargeFiles: skippedLargeContentFiles,
+    maxFileBytes: maxContentFileBytes,
+    maxTotalBytes: maxTotalContentBytes,
+  },
 };
 
 if (options.writeLog) writeScanLog(report);

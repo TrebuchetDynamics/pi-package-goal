@@ -3,7 +3,7 @@
 # Provides: run_bug_finding_slice
 
 run_bug_finding_slice() {
-  local loop_label=$1 target_label before after prompt pre_slice_status pi_exit validation_exit
+  local loop_label=$1 target_label before after prompt pre_slice_status before_repo_status outside_scope_changes pi_exit validation_exit
   target_label="${scan_root_rel:-${scan_root}}"
   section "bug-finding refactor ${loop_label}"
   kv "target" "${target_label}"
@@ -21,12 +21,25 @@ run_bug_finding_slice() {
     "Validate with the smallest relevant test command plus broader tests only when needed. Stop if no safe visibility refactor or bug-finding slice is available." \
     "Report changed contracts/helpers, bug found or ruled out, tests added, validation receipts, and next likely bug-finding seam.")"
   pre_slice_status="$(git_scope_status)"
+  before_repo_status="$(git_repo_status_paths)"
   before="$(snapshot_scope)"
   set +e
   run_pi_prompt "${prompt}"
   pi_exit=$?
   set -e
   revert_artifact_churn "bugfind-${loop_label//\//-}"
+  outside_scope_changes="$(new_changes_outside_run_root "${before_repo_status}")"
+  if [[ -n "${outside_scope_changes}" ]]; then
+    error "bug-finding changed files outside pwd scope ${run_root}"
+    printf '%s\n' "${outside_scope_changes}" >&2
+    rollback_repo_paths "${outside_scope_changes}"
+    rollback_scope_changes "bug-finding changed files outside pwd scope" "."
+    return 1
+  fi
+  if ! assert_changes_within_candidate "${target_label}"; then
+    rollback_scope_changes "bug-finding changed files outside target ${target_label}" "."
+    return 1
+  fi
   after="$(snapshot_scope)"
   if [[ "${before}" == "${after}" ]]; then
     warn "bug-finding slice made no non-artifact file changes; stopping"
@@ -44,5 +57,5 @@ run_bug_finding_slice() {
     rollback_failed_slice "bug-finding validation failed with status ${validation_exit}" "${target_label}" "${pre_slice_status}"
     return 1
   fi
-  deliver_scope_changes "bugfind-${loop_label//\//-}"
+  deliver_scope_changes "bugfind-${loop_label//\//-}" "${target_label}"
 }

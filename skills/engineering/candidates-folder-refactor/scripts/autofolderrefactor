@@ -61,6 +61,9 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_ROOT_FILES   do not drill down when candidate has >=N root files (default: 25)
   PI_AUTO_FOLDER_REFACTOR_DRILLDOWN_DEPTH        recursive drill-down depth (default: 3)
   PI_AUTO_FOLDER_REFACTOR_DYNAMIC_TIMEOUT=1       legacy ignored; timeouts are off by default
+  PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES scanner per-file read budget (default: 1048576)
+  PI_CANDIDATES_FOLDER_REFACTOR_MAX_TOTAL_CONTENT_BYTES scanner total read budget (default: 52428800)
+  AUTO_FOLDER_REFACTOR_INSTALL_FORCE=1            installer may replace a non-tool install dir; dangerous
 
 Examples:
   autofolderrefactor ignore
@@ -446,6 +449,7 @@ for ((i = 1; i <= loops; i++)); do
 
   commit_preexisting_changes
   pre_slice_status="$(git_scope_status)"
+  before_repo_status="$(git_repo_status_paths)"
   before_snapshot="$(snapshot_scope)"
   before_candidate_metrics="$(folder_debt_metrics "${candidate}")"
   before_parent_metrics=""
@@ -467,6 +471,22 @@ for ((i = 1; i <= loops; i++)); do
   set -e
 
   revert_artifact_churn "${candidate}"
+  outside_scope_changes="$(new_changes_outside_run_root "${before_repo_status}")"
+  if [[ -n "${outside_scope_changes}" ]]; then
+    error "pi changed files outside pwd scope ${run_root}"
+    printf '%s\n' "${outside_scope_changes}" >&2
+    rollback_repo_paths "${outside_scope_changes}"
+    rollback_scope_changes "pi changed files outside pwd scope" "."
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "pi failure rollback" "candidate" "0"
+    continue
+  fi
+  if ! assert_changes_within_candidate "${candidate}"; then
+    rollback_scope_changes "pi changed files outside selected candidate ${candidate}" "."
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "pi failure rollback" "candidate" "0"
+    continue
+  fi
   after_snapshot="$(snapshot_scope)"
   if [[ "${before_snapshot}" == "${after_snapshot}" ]]; then
     if [[ "${pi_exit}" == "124" ]]; then

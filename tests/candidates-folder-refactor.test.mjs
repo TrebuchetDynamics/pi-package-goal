@@ -59,11 +59,16 @@ try {
   const autoScript = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor");
   const autoInstaller = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/install.sh");
   const scannerUtils = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/scanner-utils.sh");
+  const gitUtils = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/lib/git-utils.sh");
   accessSync(autoScript, constants.X_OK);
   accessSync(autoInstaller, constants.X_OK);
   const autoHelp = execFileSync(autoScript, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(autoHelp, /autofolderrefactor <loops> \[scan-root\]/);
   assert.match(autoHelp, /PI_AUTO_FOLDER_REFACTOR_PI_ARGS/);
+  assert.match(autoHelp, /PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES/);
+  assert.match(autoHelp, /AUTO_FOLDER_REFACTOR_INSTALL_FORCE/);
+  const parsedStatusPaths = execFileSync("bash", ["-lc", `. ${JSON.stringify(gitUtils)}; printf 'R  renamed file\\0old file\\0 M candidate/file.ts\\0?? other.txt\\0' | git_status_paths`], { cwd: fixture, encoding: "utf8" });
+  assert.deepEqual(parsedStatusPaths.trim().split(/\n/), ["renamed file", "candidate/file.ts", "other.txt"]);
   const rootHeavyRetryLog = path.join(fixture, "root-heavy-retry-log.json");
   fs.writeFileSync(rootHeavyRetryLog, JSON.stringify({ candidates: [{ relative: ".", direct: 400, files: 531 }, { relative: "small", direct: 5, files: 5 }] }));
   const rootHeavyRetry = execFileSync("bash", ["-lc", `. ${JSON.stringify(scannerUtils)}; root_heavy_retry_candidate_from_log ${JSON.stringify(rootHeavyRetryLog)} . 25`], { cwd: fixture, encoding: "utf8" });
@@ -118,6 +123,14 @@ try {
   assert.doesNotMatch(fs.readFileSync(installedAuto, "utf8"), new RegExp(escapeRegExp(root)));
   const installedHelp = execFileSync(installedAuto, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(installedHelp, /autofolderrefactor <loops> \[scan-root\]/);
+  const unsafeInstallDir = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-unsafe-install-"));
+  fs.writeFileSync(path.join(unsafeInstallDir, "keep.txt"), "do not replace\n");
+  assert.throws(
+    () => execFileSync("sh", [autoInstaller], { cwd: fixture, encoding: "utf8", env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin, AUTO_FOLDER_REFACTOR_INSTALL_DIR: unsafeInstallDir } }),
+    /refusing to replace non-autofolderrefactor dir/,
+  );
+  assert.equal(fs.readFileSync(path.join(unsafeInstallDir, "keep.txt"), "utf8"), "do not replace\n");
+  fs.rmSync(unsafeInstallDir, { recursive: true, force: true });
   const portableScripts = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-install-source-"));
   fs.cpSync(path.join(root, "skills/engineering/candidates-folder-refactor/scripts"), portableScripts, { recursive: true });
   const portableBin = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-portable-bin-"));
@@ -196,6 +209,36 @@ try {
   assert.match(git("log", "-1", "--pretty=%s"), /Refactor src\/noisy topology/);
   assert.equal(git("status", "--porcelain", "--", "src/noisy/auto_refactor_marker.txt"), "");
   fs.rmSync(fakePiChange, { force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
+
+  const fakePiOutsideCandidate = path.join(os.tmpdir(), `fake-pi-outside-candidate-${process.pid}.sh`);
+  fs.writeFileSync(fakePiOutsideCandidate, "#!/usr/bin/env bash\necho fake pi outside candidate\necho changed > src/noisy/inside_candidate.txt\necho escaped > src/outside_candidate.txt\n");
+  fs.chmodSync(fakePiOutsideCandidate, 0o755);
+  const outsideCandidateOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 src 2>&1`], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiOutsideCandidate, PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(outsideCandidateOutput, /changed files outside candidate/);
+  assert.equal(fs.existsSync(path.join(fixture, "src/noisy/inside_candidate.txt")), false);
+  assert.equal(fs.existsSync(path.join(fixture, "src/outside_candidate.txt")), false);
+  fs.rmSync(fakePiOutsideCandidate, { force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
+
+  const subdirScopeFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-subdir-scope-"));
+  const subdirScopeApp = path.join(subdirScopeFixture, "internal/app");
+  fs.mkdirSync(path.join(subdirScopeFixture, "internal/sibling"), { recursive: true });
+  for (let n = 0; n < 3; n += 1) writeIn(subdirScopeApp, `root_${n}.ts`, `export const root${n} = ${n};\n`);
+  execFileSync("git", ["init"], { cwd: subdirScopeFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: subdirScopeFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: subdirScopeFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: subdirScopeFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial subdir fixture"], { cwd: subdirScopeFixture, stdio: "ignore" });
+  const fakePiOutsidePwd = path.join(os.tmpdir(), `fake-pi-outside-pwd-${process.pid}.sh`);
+  fs.writeFileSync(fakePiOutsidePwd, "#!/usr/bin/env bash\necho fake pi outside pwd\necho changed > inside_pwd.txt\necho escaped > ../sibling/outside_pwd.txt\n");
+  fs.chmodSync(fakePiOutsidePwd, 0o755);
+  const outsidePwdOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 . 2>&1`], { cwd: subdirScopeApp, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiOutsidePwd, PI_AUTO_FOLDER_REFACTOR_TINY_FLAT_MAX_FILES: "0", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(outsidePwdOutput, /changed files outside pwd scope/);
+  assert.equal(fs.existsSync(path.join(subdirScopeApp, "inside_pwd.txt")), false);
+  assert.equal(fs.existsSync(path.join(subdirScopeFixture, "internal/sibling/outside_pwd.txt")), false);
+  fs.rmSync(fakePiOutsidePwd, { force: true });
+  fs.rmSync(subdirScopeFixture, { recursive: true, force: true });
 
   const nodeValidationFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-node-validation-"));
   fs.mkdirSync(path.join(nodeValidationFixture, "src/pkg"), { recursive: true });
@@ -280,6 +323,15 @@ try {
   assert.equal((updatedStateText.match(/"state":"cooldown"/g) || []).length, 2);
   fs.rmSync(fakePiNoMetric, { force: true });
   fs.rmSync(skipStateDir, { recursive: true, force: true });
+
+  const fakePiAdditiveOnly = path.join(os.tmpdir(), `fake-pi-additive-only-${process.pid}.sh`);
+  fs.writeFileSync(fakePiAdditiveOnly, "#!/usr/bin/env bash\necho fake pi additive only\nmkdir -p src/noisy/additive\necho 'export const additive = 1;' > src/noisy/additive/new_file.ts\n");
+  fs.chmodSync(fakePiAdditiveOnly, 0o755);
+  const additiveOnlyOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 src 2>&1`], { cwd: fixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiAdditiveOnly, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_COOLDOWN_SECONDS: "0", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(additiveOnlyOutput, /new source\/test files without debt or root-file reduction/);
+  assert.equal(fs.existsSync(path.join(fixture, "src/noisy/additive/new_file.ts")), false);
+  fs.rmSync(fakePiAdditiveOnly, { force: true });
+  fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
 
   const fakePiBugfind = path.join(os.tmpdir(), `fake-pi-bugfind-${process.pid}.sh`);
   fs.writeFileSync(fakePiBugfind, "#!/usr/bin/env bash\necho fake pi bugfind\necho fixed > src/noisy/bugfind_marker.txt\necho runtime > src/noisy/paper-toxicity-decisions.jsonl\n");

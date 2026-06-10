@@ -107,7 +107,6 @@ metric_progress_decreased() {
       const before = JSON.parse(pairs[index]);
       const after = JSON.parse(pairs[index + 1]);
       if ((after.debt || 0) < (before.debt || 0) || (after.root || 0) < (before.root || 0)) process.exit(0);
-      if ((after.subdirs || 0) > (before.subdirs || 0) && (after.total || 0) > (before.total || 0)) process.exit(0);
     }
     process.exit(1);
   ' "$@"
@@ -117,14 +116,15 @@ metric_progress_reason() {
   node -e '
     const pairs = process.argv.slice(1).filter(Boolean);
     const reasons = [];
+    let additiveOnly = false;
     for (let index = 0; index < pairs.length; index += 2) {
       const before = JSON.parse(pairs[index]);
       const after = JSON.parse(pairs[index + 1]);
       if ((after.debt || 0) < (before.debt || 0)) reasons.push("debt decreased");
       if ((after.root || 0) < (before.root || 0)) reasons.push("root files decreased");
-      if ((after.subdirs || 0) > (before.subdirs || 0) && (after.total || 0) > (before.total || 0)) reasons.push("responsibility subfolders increased with new source/test files");
+      if ((after.subdirs || 0) > (before.subdirs || 0) && (after.total || 0) > (before.total || 0)) additiveOnly = true;
     }
-    process.stdout.write(reasons.length ? [...new Set(reasons)].join(", ") : "no debt/root reduction and no new responsibility subfolder split");
+    process.stdout.write(reasons.length ? [...new Set(reasons)].join(", ") : additiveOnly ? "new source/test files without debt or root-file reduction" : "no debt/root reduction");
   ' "$@"
 }
 
@@ -163,12 +163,90 @@ rollback_failed_slice() {
   rollback_scope_changes "${reason}" "${candidate}"
 }
 
+git_status_paths() {
+  node -e '
+    const fs = require("node:fs");
+    const records = fs.readFileSync(0, "utf8").split("\0").filter(Boolean);
+    const paths = [];
+    for (let index = 0; index < records.length; index += 1) {
+      const record = records[index];
+      if (record.length < 4) continue;
+      const status = record.slice(0, 2);
+      const file = record.slice(3);
+      if (!file || file === ".") continue;
+      paths.push(file.split(/[\\/]+/).filter(Boolean).join("/"));
+      if (status.includes("R") || status.includes("C")) index += 1;
+    }
+    process.stdout.write([...new Set(paths)].join("\n"));
+  '
+}
+
+git_repo_status_paths() {
+  local repo_root
+  repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
+  git -C "${repo_root}" status --porcelain=v1 -z --untracked-files=all -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | git_status_paths
+}
+
+changed_paths_outside_candidate() {
+  local candidate=$1
+  if [[ "${candidate}" == "." ]]; then
+    return 0
+  fi
+  git -C "${run_root}" status --porcelain=v1 -z --untracked-files=all -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | git_status_paths | node -e '
+    const fs = require("node:fs");
+    const candidate = process.argv[1].split(/[\\/]+/).filter(Boolean).join("/");
+    const outside = fs.readFileSync(0, "utf8").split(/\r?\n/).filter(Boolean).filter((file) => file !== candidate && !file.startsWith(`${candidate}/`));
+    process.stdout.write([...new Set(outside)].join("\n"));
+  ' "${candidate}"
+}
+
+new_changes_outside_run_root() {
+  local before=${1:-} repo_root run_root_rel
+  repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
+  run_root_rel="$(node -e 'const path=require("node:path"); process.stdout.write(path.relative(process.argv[1], process.argv[2]).split(path.sep).join("/") || ".");' "${repo_root}" "${run_root}")"
+  git_repo_status_paths | node -e '
+    const fs = require("node:fs");
+    const before = new Set((process.argv[1] || "").split(/\r?\n/).filter(Boolean));
+    const root = process.argv[2];
+    const current = fs.readFileSync(0, "utf8").split(/\r?\n/).filter(Boolean);
+    const inside = (file) => root === "." || file === root || file.startsWith(`${root}/`);
+    const outside = current.filter((file) => !inside(file) && !before.has(file));
+    process.stdout.write([...new Set(outside)].join("\n"));
+  ' "${before}" "${run_root_rel}"
+}
+
+rollback_repo_paths() {
+  local paths_text=${1:-} repo_root
+  local -a paths
+  [[ -z "${paths_text}" ]] && return 0
+  repo_root="$(git -C "${run_root}" rev-parse --show-toplevel 2>/dev/null || printf '%s' "${run_root}")"
+  mapfile -t paths < <(printf '%s\n' "${paths_text}" | sed '/^$/d')
+  (( ${#paths[@]} == 0 )) && return 0
+  git -C "${repo_root}" restore --staged --worktree -- "${paths[@]}" >/dev/null 2>&1 || true
+  git -C "${repo_root}" clean -fd -- "${paths[@]}" >/dev/null 2>&1 || true
+}
+
+assert_changes_within_candidate() {
+  local candidate=$1 outside
+  outside="$(changed_paths_outside_candidate "${candidate}")"
+  if [[ -n "${outside}" ]]; then
+    error "autofolderrefactor changed files outside candidate ${candidate}"
+    printf '%s\n' "${outside}" >&2
+    return 1
+  fi
+}
+
 stage_scope_changes() {
+  local candidate=${1:-.}
   # Avoid explicit ignored pathspecs in `git add`; they can turn ignored
-  # .pi/.understand-anything directories into hard blockers. Stage broadly
-  # inside run_root, then unstage local agent artifacts defensively.
-  git -C "${run_root}" -c advice.addIgnoredFile=false add --all -- .
-  git -C "${run_root}" restore --staged -- .pi .understand-anything 2>/dev/null || true
+  # .pi/.understand-anything directories into hard blockers. Stage only the
+  # selected candidate for normal slices, then unstage local agent artifacts.
+  if [[ "${candidate}" == "." ]]; then
+    git -C "${run_root}" -c advice.addIgnoredFile=false add --all -- .
+  else
+    git -C "${run_root}" -c advice.addIgnoredFile=false add --all -- "${candidate}"
+  fi
+  git -C "${run_root}" restore --staged -- .pi .understand-anything ':(glob)**/.pi/**' ':(glob)**/.understand-anything/**' 2>/dev/null || true
 }
 
 run_candidate_validation() {
@@ -189,7 +267,7 @@ run_candidate_validation() {
     if [[ ! -f "${module_dir}/go.mod" ]]; then
       warn "no go.mod found at or above ${candidate} up to ${repo_root}; skipping Go package validation"
     else
-      rel="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "${candidate_dir}" "${module_dir}")"
+      rel="$(node -e 'const path=require("node:path"); process.stdout.write(path.relative(process.argv[2], process.argv[1]) || ".");' "${candidate_dir}" "${module_dir}")"
       pattern="./${rel}/..."
       [[ "${rel}" == "." ]] && pattern="./..."
       info "go test ${pattern} -count=1 (from ${module_dir})"
@@ -290,7 +368,7 @@ commit_preexisting_changes() {
 }
 
 commit_scope_changes_local() {
-  local candidate=$1 message
+  local candidate=$1 stage_candidate=${2:-$1} message
   if [[ "${PI_AUTO_FOLDER_REFACTOR_NO_COMMIT:-}" == "1" ]]; then
     warn "PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1; leaving validated changes uncommitted"
     return 0
@@ -300,7 +378,8 @@ commit_scope_changes_local() {
     return 1
   fi
   section "commit ${candidate}"
-  stage_scope_changes
+  assert_changes_within_candidate "${stage_candidate}" || return $?
+  stage_scope_changes "${stage_candidate}"
   if git -C "${run_root}" diff --cached --quiet -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**'; then
     warn "no staged changes to commit after validation"
     return 0
@@ -320,11 +399,11 @@ commit_scope_changes_local() {
 }
 
 deliver_scope_changes() {
-  local candidate=$1
+  local candidate=$1 stage_candidate=${2:-$1}
   if [[ "${PI_AUTO_FOLDER_REFACTOR_DELIVERY:-local}" == "local" ]]; then
-    commit_scope_changes_local "${candidate}"
+    commit_scope_changes_local "${candidate}" "${stage_candidate}"
   else
-    run_git_commit_push_delivery "validated refactor slice for ${candidate}" "${candidate}"
+    run_git_commit_push_delivery "validated refactor slice for ${candidate}" "${stage_candidate}"
   fi
 }
 
