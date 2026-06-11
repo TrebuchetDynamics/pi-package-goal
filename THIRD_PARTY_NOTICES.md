@@ -42,6 +42,14 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/mattpocock-skills-LICENSE`
 
+## gcpdev/llm-council-skill
+
+- Source: https://github.com/gcpdev/llm-council-skill
+- Snapshot inspected: `0f95431`
+- Usage: source inspiration for council-style multi-perspective synthesis in `skills/planning/grill-with-docs/`; the upstream helper script is not bundled.
+- License: MIT
+- Full license copy: `licenses/gcpdev-llm-council-skill-LICENSE`
+
 ## qualisero/awesome-pi-agent
 
 - Source: https://github.com/qualisero/awesome-pi-agent

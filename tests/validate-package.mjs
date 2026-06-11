@@ -592,6 +592,8 @@ async function testSkills() {
   assert.match(grillWithDocs, /resolving dependencies between decisions one-by-one/);
   assert.match(grillWithDocs, /dirty files as in-scope evidence, unrelated owner work, or blocker/);
   assert.match(grillWithDocs, /state which prior decision this branch depends on/);
+  assert.match(grillWithDocs, /docs-council/);
+  assert.match(grillWithDocs, /external LLMs only when explicitly requested\/approved/);
   assert.match(grillWithDocs, /If the user has not accepted the canonical term, keep grilling instead of writing/);
   assert.match(read("skills/planning/to-prd/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/planning/to-issues/SKILL.md"), /codebase-map-understand\.md/);

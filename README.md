@@ -256,7 +256,7 @@ Borrowed design rules:
 | `improve-codebase-architecture` | Produce evidence-backed architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `technical-auditor` | Produce evidence-backed repository health audits with prioritized risk and improvement plans. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
-| `grill-with-docs` | Stress-test a plan against project docs and record decisions. |
+| `grill-with-docs` | Stress-test a plan against project docs, run docs-council critiques, and record decisions. |
 | `zoom-out` | Step back from the local task and reassess direction. |
 
 ### Planning, triage, and writing
