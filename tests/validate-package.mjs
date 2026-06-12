@@ -545,6 +545,11 @@ async function testSkills() {
   assert.match(lgtm, /selecting the #1 top candidate/);
   assert.match(lgtm, /immediately run `\/folder-refactor <candidate #1>`/);
   assert.match(lgtm, /extension invokes `skill-folder-refactor`/);
+  assert.match(lgtm, /ambiguous approval that should choose the best safe continuation/);
+  assert.match(lgtm, /Approval Resolution Protocol/);
+  assert.match(lgtm, /best safe continuation/);
+  assert.match(lgtm, /choose the safest bounded continuation/);
+  assert.match(lgtm, /Ask only when no safe bounded action can be inferred/);
   const shareCode = read("skills/engineering/share-code/SKILL.md");
   assert.match(shareCode, /pick smartly instead of asking/);
   assert.match(shareCode, /selecting the highest-signal bounded candidate/);

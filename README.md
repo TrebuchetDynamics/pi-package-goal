@@ -267,7 +267,7 @@ Theme discipline:
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Ship completed work with safe polish, validation, intentional staging, commit, and push. |
 | `autoreview` | Run a structured closeout review before shipping. |
-| `lgtm` | Continue after you approve the agent's latest plan or recommendation. |
+| `lgtm` | Continue after you approve the agent's latest plan or infer the best safe continuation from an ambiguous approval. |
 | `caveman` | Switch to terse, low-token communication. |
 
 ### Engineering workflows
