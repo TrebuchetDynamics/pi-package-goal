@@ -58,9 +58,12 @@ async function testScriptSyntaxAndHelp() {
 
   const help = run(tx, ["help"]);
   assert.match(help, /tx add <alias\[,\.\.\]> \[dir\]/);
+  assert.match(help, /tx add <dir> <alias\[,\.\.\]>/);
+  assert.match(help, /tx add \. <alias\[,\.\.\]>/);
   assert.match(help, /tx init/);
   assert.match(help, /tx config/);
   assert.match(help, /tx install/);
+  assert.match(help, /tx completion <shell>/);
   assert.match(help, /tx doctor/);
   assert.match(help, /TX_TMUX/);
 }
@@ -104,7 +107,22 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
     assert.equal(run(tx, ["which", "pp"], { env }).trim(), fs.realpathSync(promptProject));
     assert.match(run(tx, ["add", "."], { env, cwd: promptProject, input: "here\n" }), /updated: pp,here=/);
     assert.equal(run(tx, ["which", "here"], { env }).trim(), fs.realpathSync(promptProject));
-    assert.match(fs.readFileSync(config, "utf8"), /pp,here=.*prompt-project/);
+    assert.match(run(tx, ["add", ".", "dot2"], { env, cwd: promptProject }), /updated: pp,here,dot2=/);
+    assert.equal(run(tx, ["which", "dot2"], { env }).trim(), fs.realpathSync(promptProject));
+    const dirFirstProject = path.join(tmp, "dir-first-project");
+    fs.mkdirSync(dirFirstProject);
+    assert.match(run(tx, ["add", dirFirstProject, "df"], { env }), /added: df=/);
+    assert.equal(run(tx, ["which", "df"], { env }).trim(), fs.realpathSync(dirFirstProject));
+    assert.deepEqual(run(tx, ["__complete_aliases"], { env }).trim().split(/\n/), ["aa", "ab", "df", "dot2", "ga", "gormes", "here", "pp"]);
+    assert.match(run(tx, ["__complete_commands"], { env }), /\bcompletion\b/);
+    const bashCompletion = run(tx, ["completion", "bash"], { env });
+    assert.match(bashCompletion, /__complete_aliases/);
+    assert.match(bashCompletion, /complete -F _tx_completion tx/);
+    const zshCompletion = run(tx, ["completion", "zsh"], { env: { ...env, TX_COMPLETION_COMMAND: "tx-dev" } });
+    assert.match(zshCompletion, /#compdef tx-dev/);
+    const fishCompletion = run(tx, ["completion", "fish"], { env });
+    assert.match(fishCompletion, /complete -c tx/);
+    assert.match(fs.readFileSync(config, "utf8"), /pp,here,dot2=.*prompt-project/);
 
     const reserved = runFail(tx, ["add", "help", project], { env });
     assert.match(reserved.stderr, /alias 'help' is reserved/);
@@ -123,7 +141,10 @@ async function testInstallScript() {
     const home = path.join(tmp, "home");
     const bin = path.join(tmp, "bin");
     const helperDir = path.join(tmp, "helpers");
-    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0" };
+    const bashCompletionDir = path.join(tmp, "bash-completions");
+    const fishCompletionDir = path.join(tmp, "fish-completions");
+    const zshCompletionDir = path.join(tmp, "zsh-completions");
+    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
     const linkDir = path.join(tmp, "link-bin");
     fs.mkdirSync(linkDir, { recursive: true });
     const txLink = path.join(linkDir, "tx");
@@ -135,16 +156,56 @@ async function testInstallScript() {
     assert.ok(fs.existsSync(path.join(helperDir, "git-status.sh")));
     assert.ok(fs.existsSync(path.join(helperDir, "short-path.sh")));
     assert.ok(fs.existsSync(path.join(bin, "tx")));
+    assert.ok(fs.existsSync(path.join(bashCompletionDir, "tx")));
+    assert.ok(fs.existsSync(path.join(fishCompletionDir, "tx.fish")));
+    assert.ok(fs.existsSync(path.join(zshCompletionDir, "_tx")));
     const installedConfigText = fs.readFileSync(installedConfig, "utf8");
     assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/short-path\\.sh`));
     assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/git-status\\.sh`));
     assert.doesNotMatch(installedConfigText, /#\(~\/\.tmux\/(?:short-path|git-status)\.sh/);
+    assert.match(fs.readFileSync(path.join(bashCompletionDir, "tx"), "utf8"), /__complete_aliases/);
     assert.match(run(path.join(bin, "tx"), ["help"], { env }), /doctor --install/);
 
     const doctorEnv = { ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
     const doctor = run(txLink, ["doctor", "--install"], { env: doctorEnv });
     assert.match(doctor, /PATH: includes/);
     assert.match(doctor, /helper: .*git-status\.sh/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+async function testTxListFormattingAndColorPortability() {
+  const tmp = tempDir("tx-list-format-");
+  try {
+    const config = path.join(tmp, "sessions.conf");
+    const fakeTmux = path.join(tmp, "fake-tmux.sh");
+    const present = path.join(tmp, "present");
+    const missing = path.join(tmp, "missing");
+    fs.mkdirSync(present);
+    fs.writeFileSync(config, `run=${present}\nstop=${present}\nmiss=${missing}\n`);
+    fs.writeFileSync(fakeTmux, `#!/usr/bin/env sh
+case "$1" in
+  list-sessions) printf 'run\\n' ;;
+esac
+`);
+    fs.chmodSync(fakeTmux, 0o755);
+
+    const plain = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never" } });
+    assert.match(plain, /run\s+running\s+.*present/);
+    assert.match(plain, /stop\s+stopped\s+.*present/);
+    assert.match(plain, /miss\s+missing\s+.*missing/);
+    assert.doesNotMatch(plain, /\u001b\[/);
+    assert.doesNotMatch(plain, /[●○•]/);
+
+    const colored = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "always" } });
+    assert.match(colored, /\u001b\[32m/);
+    assert.match(colored, /\u001b\[31m/);
+
+    const asciiSymbols = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never", TX_LS_SYMBOLS: "ascii" } });
+    assert.match(asciiSymbols, /\+ running/);
+    assert.match(asciiSymbols, /- stopped/);
+    assert.match(asciiSymbols, /! missing/);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -235,6 +296,7 @@ await testPackageManifest();
 await testScriptSyntaxAndHelp();
 await testTxDefaultConfigPath();
 await testTxConfigLifecycleWithoutTmuxSessions();
+await testTxListFormattingAndColorPortability();
 await testInstallScript();
 await testKillAllOrdersCurrentSessionLast();
 await testStatusHelpers();

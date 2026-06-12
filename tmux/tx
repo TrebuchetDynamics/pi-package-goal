@@ -20,8 +20,18 @@ default_config_path() {
 
 CONFIG_PATH=$(default_config_path)
 TMUX_BIN=${TX_TMUX:-tmux}
+TX_COLOR_MODE=${TX_COLOR:-auto}
+TX_USE_COLOR=0
+if [[ -z "${NO_COLOR:-}" ]]; then
+  case "$TX_COLOR_MODE" in
+    always|1|true|yes) TX_USE_COLOR=1 ;;
+    never|0|false|no) TX_USE_COLOR=0 ;;
+    auto|"") [[ -t 1 ]] && TX_USE_COLOR=1 ;;
+    *) TX_USE_COLOR=0 ;;
+  esac
+fi
 
-RESERVED_ALIASES=(help ls kill kill-all init add doctor which config install)
+RESERVED_ALIASES=(help ls kill kill-all init add doctor which config install completion __complete_aliases __complete_commands)
 
 declare -A ALIAS_TO_PATH=()
 declare -A PATH_TO_ALIASES=()
@@ -75,11 +85,16 @@ Usage:
   tx which <alias>        Print the resolved target directory for <alias>.
   tx add <alias[,..]> [dir]
                           Add alias mapping for dir, defaulting to the current directory.
+  tx add <dir> <alias[,..]>
+                          Add alias mapping for dir, with directory-first shorthand.
   tx add . | tx add <dir>
                           Prompt for an alias and add/update that directory mapping.
+  tx add . <alias[,..]>
+                          Add alias mapping for the current directory without prompting.
   tx init                 Create an example config if one does not exist.
   tx config               Print the config path.
   tx install              Install tmux.conf, status helpers, and tx for this user.
+  tx completion <shell>   Print shell completion script for bash, zsh, or fish.
   tx doctor               Validate tmux availability, config parsing, and target dirs.
   tx doctor --install     Install/repair tmux assets, then verify installed paths.
   tx kill <alias>         Kill the tmux session for <alias>.
@@ -104,6 +119,9 @@ Environment:
   TX_CONFIG                         Override config file path.
   TX_TMUX                           Override tmux binary name/path.
   TX_DISPLAY_STRIP_PREFIX           Optional prefix to hide in tx ls paths.
+  TX_COLOR=auto|always|never        Color tx ls status cells (default: auto; NO_COLOR disables).
+  TX_LS_SYMBOLS=ascii|unicode|0     Optional status symbols; default text-only for portability.
+  TX_COMPLETION_COMMAND             Command name emitted by completion scripts (default: tx).
   TMUX_CONF_TARGET                  Install/doctor target for tmux.conf.
   TMUX_HELPER_DIR                   Install/doctor target for status helpers.
   TX_BIN_DIR, TX_BIN_NAME           Install/doctor target for tx.
@@ -186,6 +204,115 @@ display_path() {
   else
     printf '%s' "$p"
   fi
+}
+
+colorize() {
+  local code=$1 text=$2
+  if (( TX_USE_COLOR == 1 )); then
+    printf '\033[%sm%s\033[0m' "$code" "$text"
+  else
+    printf '%s' "$text"
+  fi
+}
+
+status_label() {
+  local status=$1 style=${TX_LS_SYMBOLS:-0}
+  case "$style:$status" in
+    unicode:running) printf '● running' ;;
+    unicode:stopped) printf '○ stopped' ;;
+    unicode:missing) printf '• missing' ;;
+    ascii:running) printf '%s' '+ running' ;;
+    ascii:stopped) printf '%s' '- stopped' ;;
+    ascii:missing) printf '%s' '! missing' ;;
+    *) printf '%s' "$status" ;;
+  esac
+}
+
+colorize_status() {
+  local status=$1 text=$2
+  case "$status" in
+    running) colorize '32' "$text" ;;
+    stopped) colorize '2' "$text" ;;
+    missing) colorize '31' "$text" ;;
+    *) printf '%s' "$text" ;;
+  esac
+}
+
+completion_commands() {
+  printf '%s\n' help ls kill kill-all init add doctor which config install completion
+}
+
+completion_aliases() {
+  [[ -f "$CONFIG_PATH" ]] || return 0
+  load_config
+  printf '%s\n' "${!ALIAS_TO_PATH[@]}" | sort
+}
+
+print_completion() {
+  local shell=$1 command_name=${TX_COMPLETION_COMMAND:-tx}
+  case "$shell" in
+    bash)
+      cat <<'EOF'
+_tx_completion() {
+  local cur cmd tx_bin commands aliases
+  COMPREPLY=()
+  tx_bin="${COMP_WORDS[0]}"
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  commands="$($tx_bin __complete_commands 2>/dev/null)"
+  aliases="$($tx_bin __complete_aliases 2>/dev/null)"
+  if (( COMP_CWORD == 1 )); then
+    COMPREPLY=( $(compgen -W "$commands $aliases" -- "$cur") )
+    return 0
+  fi
+  cmd="${COMP_WORDS[1]}"
+  case "$cmd" in
+    which|kill|-k|--kill)
+      COMPREPLY=( $(compgen -W "$aliases" -- "$cur") )
+      ;;
+    completion)
+      COMPREPLY=( $(compgen -W "bash zsh fish" -- "$cur") )
+      ;;
+    add)
+      compopt -o default 2>/dev/null || true
+      ;;
+  esac
+}
+EOF
+      printf 'complete -F _tx_completion %q\n' "$command_name"
+      ;;
+    zsh)
+      cat <<EOF
+#compdef ${command_name}
+_tx_completion() {
+  local -a commands aliases
+  commands=(\${(f)"\$(${command_name} __complete_commands 2>/dev/null)"})
+  aliases=(\${(f)"\$(${command_name} __complete_aliases 2>/dev/null)"})
+  if (( CURRENT == 2 )); then
+    _describe 'tx commands' commands
+    _describe 'tx aliases' aliases
+  elif [[ \${words[2]} == (which|kill|-k|--kill) ]]; then
+    _describe 'tx aliases' aliases
+  elif [[ \${words[2]} == completion ]]; then
+    _values 'shell' bash zsh fish
+  else
+    _files
+  fi
+}
+compdef _tx_completion ${command_name}
+EOF
+      ;;
+    fish)
+      cat <<EOF
+complete -c ${command_name} -f -n '__fish_use_subcommand' -a '(${command_name} __complete_commands; ${command_name} __complete_aliases)'
+complete -c ${command_name} -f -n '__fish_seen_subcommand_from which kill -k --kill' -a '(${command_name} __complete_aliases)'
+complete -c ${command_name} -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
+complete -c ${command_name} -n '__fish_seen_subcommand_from add' -a '(__fish_complete_directories)'
+EOF
+      ;;
+    *)
+      die "completion: expected bash, zsh, or fish"
+      ;;
+  esac
 }
 
 load_config() {
@@ -299,12 +426,16 @@ append_aliases_to_existing_path() {
 
 add_alias() {
   [[ $# -ge 1 && $# -le 2 ]] || die "add: expected alias[,alias2] and optional directory, or a directory to prompt for aliases"
-  local keys target part prompt_for_alias=0
+  local keys target part prompt_for_alias=0 first_path
   local -a parts
 
-  if [[ $# -eq 1 && ( "$1" == "." || -d "$(expand_tilde "$1")" ) ]]; then
+  first_path=$(expand_tilde "$1")
+  if [[ $# -eq 1 && ( "$1" == "." || -d "$first_path" ) ]]; then
     target=$1
     prompt_for_alias=1
+  elif [[ $# -eq 2 && ( "$1" == "." || -d "$first_path" ) ]]; then
+    target=$1
+    keys=$2
   else
     keys=$1
     target=${2:-$PWD}
@@ -432,9 +563,9 @@ list_sessions() {
   local running=""
   running=$("$TMUX_BIN" list-sessions -F '#{session_name}' 2>/dev/null || true)
 
-  local -a aliases=() statuses=() display_paths=()
+  local -a aliases=() statuses=() status_labels=() display_paths=()
   local total=0 running_count=0 missing_count=0
-  local p alias_str a disp dir_exists status
+  local p alias_str a disp dir_exists status label
   local -a parts
 
   for p in "${PATH_ORDER[@]}"; do
@@ -454,8 +585,10 @@ list_sessions() {
       else
         status="stopped"
       fi
+      label=$(status_label "$status")
       aliases+=("$a")
       statuses+=("$status")
+      status_labels+=("$label")
       display_paths+=("$disp")
     done
   done
@@ -471,9 +604,9 @@ list_sessions() {
   local alias_w=5 status_w=6 path_w=4
   local i n=${#aliases[@]}
   for (( i=0; i<n; i++ )); do
-    (( ${#aliases[i]}       > alias_w  )) && alias_w=${#aliases[i]}
-    (( ${#statuses[i]}      > status_w )) && status_w=${#statuses[i]}
-    (( ${#display_paths[i]} > path_w   )) && path_w=${#display_paths[i]}
+    (( ${#aliases[i]}        > alias_w  )) && alias_w=${#aliases[i]}
+    (( ${#status_labels[i]}  > status_w )) && status_w=${#status_labels[i]}
+    (( ${#display_paths[i]}  > path_w   )) && path_w=${#display_paths[i]}
   done
 
   local alias_dash status_dash path_dash
@@ -486,8 +619,12 @@ list_sessions() {
 
   printf '  %-*s  %-*s  %s\n'   "$alias_w" 'Alias'      "$status_w" 'Status'      'Path'
   printf '  %s  %s  %s\n'        "$alias_dash"           "$status_dash"            "$path_dash"
+  local alias_cell status_cell path_cell
   for (( i=0; i<n; i++ )); do
-    printf '  %-*s  %-*s  %s\n' "$alias_w" "${aliases[i]}" "$status_w" "${statuses[i]}" "${display_paths[i]}"
+    printf -v alias_cell  '%-*s' "$alias_w" "${aliases[i]}"
+    printf -v status_cell '%-*s' "$status_w" "${status_labels[i]}"
+    printf -v path_cell   '%s' "${display_paths[i]}"
+    printf '  %s  %s  %s\n' "$alias_cell" "$(colorize_status "${statuses[i]}" "$status_cell")" "$path_cell"
   done
 
   printf '\n%d configured; %d running; %d missing target dirs.\n' \
@@ -652,6 +789,19 @@ main() {
     install)
       shift
       run_installer "$@"
+      ;;
+    completion)
+      shift
+      [[ $# -eq 1 ]] || die "completion: expected exactly one shell: bash, zsh, or fish"
+      print_completion "$1"
+      ;;
+    __complete_aliases)
+      [[ $# -eq 1 ]] || die "__complete_aliases: takes no arguments"
+      completion_aliases
+      ;;
+    __complete_commands)
+      [[ $# -eq 1 ]] || die "__complete_commands: takes no arguments"
+      completion_commands
       ;;
     add)
       shift

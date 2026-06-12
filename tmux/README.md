@@ -179,12 +179,14 @@ Add the current directory with an explicit alias:
 
 ```sh
 tx add ga
+tx add . ga
 ```
 
-Add an explicit directory with an explicit alias:
+Add an explicit directory with an explicit alias. Alias-first and directory-first forms are both accepted:
 
 ```sh
 tx add ga ~/git/gormes/gormes-agent
+tx add ~/git/gormes/gormes-agent ga
 ```
 
 Prompt for an alias while adding the current directory or another directory:
@@ -206,6 +208,20 @@ tx which ga
 tx ga
 ```
 
+The installer writes shell completion files for Bash, Fish, and Zsh. It also appends a small Bash source line to `~/.bashrc` when that file exists, so new Bash shells complete aliases automatically. For the current shell, run:
+
+```sh
+source ~/.local/share/bash-completion/completions/tx
+```
+
+Manual completion output is also available:
+
+```sh
+tx completion bash
+tx completion zsh
+tx completion fish
+```
+
 Config format:
 
 ```text
@@ -214,3 +230,5 @@ ga,gormes=$WORK/gormes/gormes-agent
 ```
 
 Alias prefixes are accepted. Exact aliases win; otherwise the shortest matching alias wins, with alphabetical order used as a tie-breaker.
+
+`tx ls` defaults to text-only statuses for portability across terminals and fonts. Colors are enabled only when stdout is a terminal; use `TX_COLOR=always` or `TX_COLOR=never` to override, and `NO_COLOR=1` to disable. Optional symbols are available with `TX_LS_SYMBOLS=ascii` or `TX_LS_SYMBOLS=unicode`.

@@ -10,6 +10,11 @@ TMUX_HELPER_DIR=${TMUX_HELPER_DIR:-$HOME/.tmux}
 TX_BIN_DIR=${TX_BIN_DIR:-$HOME/.local/bin}
 TX_BIN_NAME=${TX_BIN_NAME:-tx}
 TX_INSTALL_BACKUP=${TX_INSTALL_BACKUP:-1}
+TX_INSTALL_COMPLETIONS=${TX_INSTALL_COMPLETIONS:-1}
+TX_BASH_COMPLETION_DIR=${TX_BASH_COMPLETION_DIR:-$HOME/.local/share/bash-completion/completions}
+TX_FISH_COMPLETION_DIR=${TX_FISH_COMPLETION_DIR:-$HOME/.config/fish/completions}
+TX_ZSH_COMPLETION_DIR=${TX_ZSH_COMPLETION_DIR:-$HOME/.zsh/completions}
+TX_INSTALL_BASHRC_COMPLETION=${TX_INSTALL_BASHRC_COMPLETION:-1}
 
 timestamp=$(date +%Y%m%d%H%M%S)
 
@@ -57,6 +62,28 @@ install_tmux_conf() {
   trap - EXIT HUP INT TERM
 }
 
+install_completions() {
+  [ "$TX_INSTALL_COMPLETIONS" = "1" ] || return 0
+
+  mkdir -p "$TX_BASH_COMPLETION_DIR" "$TX_FISH_COMPLETION_DIR" "$TX_ZSH_COMPLETION_DIR"
+  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion bash > "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion fish > "$TX_FISH_COMPLETION_DIR/$TX_BIN_NAME.fish"
+  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion zsh > "$TX_ZSH_COMPLETION_DIR/_$TX_BIN_NAME"
+  printf 'installed completion: %s\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+  printf 'installed completion: %s\n' "$TX_FISH_COMPLETION_DIR/$TX_BIN_NAME.fish"
+  printf 'installed completion: %s\n' "$TX_ZSH_COMPLETION_DIR/_$TX_BIN_NAME"
+
+  bashrc="$HOME/.bashrc"
+  if [ "$TX_INSTALL_BASHRC_COMPLETION" = "1" ] && [ -f "$bashrc" ] && ! grep -F "# tx completion" "$bashrc" >/dev/null 2>&1; then
+    backup_file "$bashrc"
+    {
+      printf '\n# tx completion\n'
+      printf '[ -r %s ] && . %s\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME" "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+    } >> "$bashrc"
+    printf 'updated shell rc: %s\n' "$bashrc"
+  fi
+}
+
 mkdir -p "$(dirname "$TMUX_CONF_TARGET")" "$HOME/.tmux" "$TMUX_HELPER_DIR" "$TX_BIN_DIR"
 
 install_tmux_conf "$script_dir/tmux.conf" "$TMUX_CONF_TARGET"
@@ -64,6 +91,7 @@ install_file_if_missing 0644 "$script_dir/style.tmux" "$HOME/.tmux/style.tmux"
 install_file 0755 "$script_dir/git-status.sh" "$TMUX_HELPER_DIR/git-status.sh"
 install_file 0755 "$script_dir/short-path.sh" "$TMUX_HELPER_DIR/short-path.sh"
 install_file 0755 "$script_dir/tx" "$TX_BIN_DIR/$TX_BIN_NAME"
+install_completions
 
 case ":$PATH:" in
   *":$TX_BIN_DIR:"*) ;;
@@ -74,3 +102,6 @@ esac
 
 printf 'next: tmux source-file %s\n' "$TMUX_CONF_TARGET"
 printf 'next: %s init  # if you do not have a tx config yet\n' "$TX_BIN_DIR/$TX_BIN_NAME"
+if [ "$TX_INSTALL_COMPLETIONS" = "1" ]; then
+  printf 'next: source %s  # enable tx alias completion in this shell\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+fi
