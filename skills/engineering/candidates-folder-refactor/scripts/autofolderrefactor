@@ -51,6 +51,8 @@ Options via env:
   PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD  switch to visibility/bug-finding when untried candidates <= N (default: 0/exhausted)
   PI_AUTO_FOLDER_REFACTOR_ARTIFACT_GUARD=0   disable runtime/generated artifact revert guard (default: on)
   PI_AUTO_FOLDER_REFACTOR_ARTIFACT_REGEX     extra regex for changed runtime artifacts to revert before commit
+  PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD=0   disable broad generic-folder rollback guard (default: on)
+  PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_MAX_GENERIC_DIRECT_FILES max direct files in a new generic bucket before rollback (default: 7)
   PI_AUTO_FOLDER_REFACTOR_NO_COMMIT=1        validate but do not commit/push after changed loops
   PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1        explicitly commit/deliver pre-existing pwd changes before loops (default: block)
   PI_AUTO_FOLDER_REFACTOR_NO_PRECOMMIT=1     legacy alias to skip pre-existing change delivery
@@ -399,7 +401,8 @@ for ((i = 1; i <= loops; i++)); do
     "- For each new module boundary, state what it owns, exposes, and must never know about." \
     "- Keep dependency direction sane: core/domain logic must not import UI, transport, database, framework, or app orchestration details." \
     "- Separate pure logic from side effects; use adapters/contracts at external boundaries." \
-    "- Avoid vague buckets like utils/common/misc; use specific names such as validation, formatting, pricing, auth, parser, or adapters." \
+    "- Avoid vague buckets like utils/common/misc/models/data_models/types; use specific responsibility/domain names such as validation, formatting, pricing, auth, parser, or adapters." \
+    "- The loop has a topology quality guard: newly created broad generic buckets with many direct source files will be rolled back even if tests pass." \
     "- Make shared-code reuse the main objective only when behavior is identical across proven call sites; do not create speculative abstractions." \
     "- Prefer extracting small contracts/interfaces/value types/shared helpers into focused packages over shallow file moves." \
     "- Build new contracts only when they reduce coupling or duplicated behavior; keep compatibility wrappers at the old boundary when needed." \
@@ -462,6 +465,7 @@ for ((i = 1; i <= loops; i++)); do
     printf '%s\n' "${preexisting_outside_scope}" >&2
   fi
   before_snapshot="$(snapshot_scope)"
+  before_topology_dirs="$(topology_dirs_snapshot "${candidate}")"
   before_candidate_metrics="$(folder_debt_metrics "${candidate}")"
   before_parent_metrics=""
   if [[ "${candidate}" == */* ]]; then
@@ -535,6 +539,16 @@ for ((i = 1; i <= loops; i++)); do
     rollback_failed_slice "validation failed with status ${validation_exit}" "${candidate}" "${pre_slice_status}"
     rollback_count=$((rollback_count + 1))
     mark_skipped "${candidate}" "validation rollback" "candidate" "0"
+    continue
+  fi
+  set +e
+  run_topology_quality_guard "${candidate}" "${before_topology_dirs}"
+  topology_guard_exit=$?
+  set -e
+  if [[ "${topology_guard_exit}" != "0" ]]; then
+    rollback_failed_slice "topology quality guard rejected generated folder structure" "${candidate}" "${pre_slice_status}"
+    rollback_count=$((rollback_count + 1))
+    mark_skipped "${candidate}" "topology guard rollback" "candidate" "0"
     continue
   fi
   after_candidate_metrics="$(folder_debt_metrics "${candidate}")"

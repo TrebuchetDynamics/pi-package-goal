@@ -388,6 +388,28 @@ try {
   fs.rmSync(fakePiAdditiveOnly, { force: true });
   fs.rmSync(path.join(fixture, ".pi/autofolderrefactor-state"), { recursive: true, force: true });
 
+  const topologyGuardFixture = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-topology-guard-"));
+  fs.mkdirSync(path.join(topologyGuardFixture, "src/noisy"), { recursive: true });
+  for (let n = 1; n <= 8; n += 1) {
+    fs.writeFileSync(path.join(topologyGuardFixture, `src/noisy/model_${n}.ts`), `export const model${n} = ${n};\n`);
+  }
+  execFileSync("git", ["init"], { cwd: topologyGuardFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.email", "test@example.invalid"], { cwd: topologyGuardFixture, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test User"], { cwd: topologyGuardFixture, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: topologyGuardFixture, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "initial topology fixture"], { cwd: topologyGuardFixture, stdio: "ignore" });
+  const fakePiUglyTopology = path.join(os.tmpdir(), `fake-pi-ugly-topology-${process.pid}.sh`);
+  fs.writeFileSync(fakePiUglyTopology, "#!/usr/bin/env bash\necho fake pi ugly topology\nmkdir -p src/noisy/data_models\nmv src/noisy/model_*.ts src/noisy/data_models/\n");
+  fs.chmodSync(fakePiUglyTopology, 0o755);
+  const uglyTopologyOutput = execFileSync("bash", ["-lc", `${JSON.stringify(autoScript)} 1 src 2>&1`], { cwd: topologyGuardFixture, encoding: "utf8", env: { ...process.env, PI_AUTO_FOLDER_REFACTOR_PI: fakePiUglyTopology, PI_AUTO_FOLDER_REFACTOR_DELIVERY: "local", PI_AUTO_FOLDER_REFACTOR_SHOW_PI_OUTPUT: "all", NO_COLOR: "1" }, stdio: ["ignore", "pipe", "pipe"] });
+  assert.match(uglyTopologyOutput, /topology quality guard rejected broad generic folder structure/);
+  assert.match(uglyTopologyOutput, /data_models/);
+  assert.equal(fs.existsSync(path.join(topologyGuardFixture, "src/noisy/data_models")), false);
+  assert.equal(fs.existsSync(path.join(topologyGuardFixture, "src/noisy/model_1.ts")), true);
+  assert.equal(execFileSync("git", ["status", "--porcelain", "--", "src/noisy"], { cwd: topologyGuardFixture, encoding: "utf8" }), "");
+  fs.rmSync(fakePiUglyTopology, { force: true });
+  fs.rmSync(topologyGuardFixture, { recursive: true, force: true });
+
   const fakePiBugfind = path.join(os.tmpdir(), `fake-pi-bugfind-${process.pid}.sh`);
   fs.writeFileSync(fakePiBugfind, "#!/usr/bin/env bash\necho fake pi bugfind\necho fixed > src/noisy/bugfind_marker.txt\necho runtime > src/noisy/paper-toxicity-decisions.jsonl\n");
   fs.chmodSync(fakePiBugfind, 0o755);

@@ -16,10 +16,8 @@ dist/
 *.tsbuildinfo
 *.tgz
 
-# Local Understand/Graphify agent artifacts
+# Local Understand agent artifacts
 .understand-anything/
-graphify-out/
-**/graphify-out/
 *-codebase-map-understand.md
 *-understand-compare.md
 *-understand-refactor.md

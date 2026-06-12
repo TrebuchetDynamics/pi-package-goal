@@ -3,7 +3,8 @@
 # Provides: git_scope_status, rollback_scope_changes, rollback_failed_slice,
 #           run_candidate_validation, commit_preexisting_changes, commit_scope_changes_local,
 #           deliver_scope_changes, run_git_commit_push_delivery, snapshot_scope,
-#           revert_artifact_churn
+#           revert_artifact_churn, topology_dirs_snapshot,
+#           run_topology_quality_guard
 
 git_scope_status() {
   git -C "${run_root}" status --porcelain --untracked-files=all -- . ':(exclude).pi/**' ':(exclude)**/.pi/**' ':(exclude).understand-anything/**' ':(exclude)**/.understand-anything/**' 2>/dev/null | grep -vF '.pi/' || true
@@ -126,6 +127,79 @@ metric_progress_reason() {
     }
     process.stdout.write(reasons.length ? [...new Set(reasons)].join(", ") : additiveOnly ? "new source/test files without debt or root-file reduction" : "no debt/root reduction");
   ' "$@"
+}
+
+topology_dirs_snapshot() {
+  local candidate=$1
+  node -e '
+    const fs = require("node:fs");
+    const path = require("node:path");
+    const root = path.resolve(process.argv[1]);
+    const skip = new Set([".git", ".pi", ".understand-anything", "node_modules", "dist", "build", "coverage"]);
+    const dirs = [];
+    function walk(dir) {
+      let entries = [];
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const entry of entries) {
+        if (!entry.isDirectory() || skip.has(entry.name)) continue;
+        const full = path.join(dir, entry.name);
+        dirs.push(path.relative(root, full).split(path.sep).join("/"));
+        walk(full);
+      }
+    }
+    walk(root);
+    process.stdout.write(dirs.sort().join("\n"));
+  ' "${run_root}/${candidate}"
+}
+
+run_topology_quality_guard() {
+  local candidate=$1 before_dirs=${2:-}
+  if [[ "${PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD:-1}" == "0" ]]; then
+    return 0
+  fi
+  node -e '
+    const fs = require("node:fs");
+    const path = require("node:path");
+    const root = path.resolve(process.argv[1]);
+    const before = new Set((process.argv[2] || "").split(/\r?\n/).filter(Boolean));
+    const maxDirect = Math.max(1, Number(process.env.PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_MAX_GENERIC_DIRECT_FILES || 7) || 7);
+    const generic = new RegExp(process.env.PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GENERIC_DIR_REGEX || "^(utils?|common|misc|helpers?|types?|models?|data[_-]?models?|entities?|schemas?)$", "i");
+    const source = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go", ".rs", ".java", ".kt", ".cs", ".rb", ".php", ".dart", ".swift", ".scala", ".c", ".cc", ".cpp", ".h", ".hpp"]);
+    const skip = new Set([".git", ".pi", ".understand-anything", "node_modules", "dist", "build", "coverage"]);
+    const violations = [];
+    const rootSourceBasenames = new Set(directSourceFiles(root).map((file) => path.basename(file, path.extname(file)).toLowerCase()));
+    walk(root);
+    if (violations.length) {
+      console.error("topology quality guard rejected broad generic folder structure:");
+      for (const item of violations) {
+        console.error(`  - ${item.rel}: ${item.directSource} direct source files in generic bucket${item.rootMirrors ? `; ${item.rootMirrors} mirror root file basenames` : ""}`);
+      }
+      console.error("Use specific responsibility/domain names and smaller coherent file families, or set PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD=0 for an explicit owner-approved exception.");
+      process.exit(1);
+    }
+
+    function walk(dir) {
+      let entries = [];
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const entry of entries) {
+        if (!entry.isDirectory() || skip.has(entry.name)) continue;
+        const full = path.join(dir, entry.name);
+        const rel = path.relative(root, full).split(path.sep).join("/");
+        if (!before.has(rel) && generic.test(entry.name)) {
+          const files = directSourceFiles(full);
+          const rootMirrors = files.filter((file) => rootSourceBasenames.has(path.basename(file, path.extname(file)).toLowerCase())).length;
+          if (files.length > maxDirect || rootMirrors >= Math.min(3, maxDirect)) violations.push({ rel, directSource: files.length, rootMirrors });
+        }
+        walk(full);
+      }
+    }
+
+    function directSourceFiles(dir) {
+      let entries = [];
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return []; }
+      return entries.filter((entry) => entry.isFile() && source.has(path.extname(entry.name).toLowerCase())).map((entry) => path.join(dir, entry.name));
+    }
+  ' "${run_root}/${candidate}" "${before_dirs}"
 }
 
 candidate_git_pathspecs() {
