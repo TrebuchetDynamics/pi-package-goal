@@ -1,14 +1,72 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills, Pi UX extensions, a theme, and `/understand` bridge commands.
+A Pi package that bundles curated agent skills, Pi UX extensions, a theme, tmux helpers, and `/understand` bridge commands.
 
-Use it when you want Pi to:
+Use it when you want Pi to keep an objective in view, choose a focused engineering workflow, understand a codebase, or ship changes with safer validation and commit discipline.
 
-- keep a clear objective in view while it works;
-- use safer commit/push discipline;
-- switch into focused engineering workflows like TDD, diagnosis, review, or prototyping;
-- build or review Pi package resources; and
-- map a codebase with [Understand-Anything](https://github.com/Lum1104/Understand-Anything).
+## Quick start
+
+Prerequisites:
+
+- Pi installed from [pi.dev](https://pi.dev).
+- Node.js `>=22` available to Pi's package installer.
+- Optional tools only when you use those features: `tmux`, [rtk](https://github.com/rtk-ai/rtk), or the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) checkout created by `/understand`.
+
+Check Pi:
+
+```bash
+pi --version
+```
+
+Install globally:
+
+```bash
+pi install git:github.com/TrebuchetDynamics/pi-package-goal
+```
+
+Or install for the current project/team repo:
+
+```bash
+pi install -l git:github.com/TrebuchetDynamics/pi-package-goal
+```
+
+Reload any open Pi session after installing or updating:
+
+```text
+/reload
+```
+
+Security note: Pi packages can include extensions and skills that run with your local permissions. Review third-party package source before installing it.
+
+## Pick the right entrypoint
+
+| If you want to... | Start with | Why |
+| --- | --- | --- |
+| Keep a long-running objective on track | `/goal <objective>` or `goal` | Tracks progress and requires evidence before completion. |
+| Improve a repo autonomously but safely | `/goal-technical-auditor [folder]` | Runs `technical-auditor`, then implements validated safe slices. |
+| Debug broken, flaky, or slow behavior | `diagnose` | Reproduce, minimize, instrument, fix, and regression-test. |
+| Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
+| Ship finished work | `git-commit-push` | Polishes, validates, commits safe in-scope changes, and pushes. |
+| Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
+| Understand a codebase | `/understand` then `/understand agent` | Builds a graph and writes an agent-readable map. |
+| Plan a graph-backed refactor | `/understand-refactor <focus>` | Generates a deterministic plan, then starts docs-backed grilling. |
+| Refactor one noisy folder | `/folder-refactor <folder>` | Uses scan/state/audit guardrails to avoid lazy completion. |
+| Rank folder-refactor candidates | `candidates-folder-refactor` | Scores bounded noisy folders and suggests the top target. |
+| Build or review Pi resources | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` | Uses Pi package, extension, and skill conventions. |
+| Build polished frontend UI | `ui-design` | Routes to the right frontend/design skill. |
+| Use terse responses | `caveman` | Switches to low-token communication. |
+
+Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled.
+
+```text
+/goal improve the README until a new user can install and choose a skill
+/goal-technical-auditor skills/engineering
+/skill:diagnose debug the failing npm test
+/skill:tdd add coverage for the parser edge case
+/understand
+/understand agent
+/folder-refactor skills/engineering
+```
 
 ## What you get
 
@@ -22,87 +80,13 @@ Use it when you want Pi to:
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
-
-## Install
-
-Install Pi from [pi.dev](https://pi.dev), then check that the command works:
-
-```bash
-pi --version
-```
-
-Install this package globally:
-
-```bash
-pi install git:github.com/TrebuchetDynamics/pi-package-goal
-```
-
-Or install it only for the current project/team repo:
-
-```bash
-pi install -l git:github.com/TrebuchetDynamics/pi-package-goal
-```
-
-After installing or updating, reload your open Pi session:
-
-```text
-/reload
-```
-
-## First commands to try
-
-Skills are loaded on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled.
-
-```text
-/goal improve the README until a new user can install and choose a skill
-/skill:goal write a stronger long-running objective for this repo
-/skill:git-commit-push audit
-/skill:tdd add coverage for the parser edge case
-/skill:diagnose debug the failing npm test
-/understand
-/understand agent
-```
-
-## Included tmux helpers
-
-This package also includes a portable tmux profile under `tmux/`:
-
-- `tmux/tmux.conf` — phone-friendly tmux config with a one-line status bar.
-- `tmux/tx` — installable tmux session launcher exposed as the package `tx` bin.
-- `tmux/install.sh` — copies the tmux config, status helper scripts, local style defaults, and `tx` into the current user account.
-
-Install the profile from a checkout:
-
-```bash
-npm run tmux:install
-```
-
-Or, when `tx` is already on your `PATH` from an npm install/link, install the profile with:
-
-```bash
-tx install
-```
-
-The `tx` and `autofolderrefactor` commands are declared in `package.json` as package bins. To install the command globally from a checkout:
-
-```bash
-sh skills/engineering/candidates-folder-refactor/scripts/install.sh
-autofolderrefactor 10
-```
-
-```json
-{ "bin": { "tx": "./tmux/tx", "autofolderrefactor": "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" } }
-```
-
-Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup.
+| Shell helpers | Install a portable tmux profile and session launcher. | `tx` |
 
 ## Included extensions
 
 ### `/goal`
 
 `/goal` is the bundled [pi-goal](https://github.com/Michaelliv/pi-goal) extension, installed from this package under the simple extension name `goal`.
-
-Common commands:
 
 | Command | Use it for |
 | --- | --- |
@@ -117,7 +101,7 @@ While active, the extension exposes `get_goal` and `update_goal` tools so the ag
 
 ### `/goal-technical-auditor`
 
-`/goal-technical-auditor [--tokens 200k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`). It is intended for repo-improvement automation: audit first, implement only safe in-scope changes, validate after each slice, and stop on ownership, legal/security, or product-behavior blockers.
+`/goal-technical-auditor [--tokens 200k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`).
 
 Examples:
 
@@ -133,15 +117,8 @@ Examples:
 
 On first use it prompts to clone Understand-Anything into `~/.understand-anything/repo`, then dispatches to the upstream workflows. It honors `UA_DIR`, `UA_REPO_URL`, and optional `UA_REF` for pinned upstream checkouts.
 
-Common commands:
-
 | Command | Use it for |
 | --- | --- |
-| `/folder-refactor <folder>` | Start a guarded folder refactor with deterministic scan/state/audit tools that block lazy completion reports. |
-| `/rtk status` | Check whether [rtk-ai/rtk](https://github.com/rtk-ai/rtk) is installed and active for Pi bash command rewriting. |
-| `/rtk install` | Show the upstream `rtk` installer command. The extension does not execute remote installers; review and run the command yourself. |
-| `autofolderrefactor ignore [folder]` | Scan all folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
-| `autofolderrefactor N [folder]` | Fully automatic loop: scan candidates, pick top #1, allow pre-existing dirty work outside the current pwd by default (`PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY=1` restores the old block), refuse/checkpoint dirty work under pwd unless `PI_AUTO_FOLDER_REFACTOR_PRECOMMIT=1` is set, run the guarded share-code + folder-refactor prompt, validate from the repo/module root, commit validated slices, cooldown landed candidates, and repeat N times. Focuses on proven shared-code reuse/contracts, honors `.refactorignore`, and transitions to visibility-driven bug finding when candidates are exhausted/low. |
 | `/understand` | Build or refresh the current repo's knowledge graph. |
 | `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |
@@ -181,9 +158,21 @@ Notes:
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.
 - Compare and refactor modes only generate deterministic Markdown files. Ask the LLM to reason over those files when you want analysis.
 
-### RTK bash command compression
+### `/folder-refactor`
 
-This package includes `extensions/rtk/index.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`. The extension fails open: missing, old, or broken RTK leaves commands unchanged.
+`/folder-refactor <folder>` starts a guarded folder refactor with deterministic scan/state/audit tools:
+
+- `folder_refactor_scan` inventories root files and safety hints before work starts.
+- `folder_refactor_state` preserves validated slices and next candidates for longer objectives.
+- `folder_refactor_audit` blocks completion claims until every remaining root file is classified and safe next candidates are not skipped.
+
+Use it for bounded folder splits, shared-code extraction from proven duplicate call sites, and behavior-preserving module organization.
+
+### `/rtk`
+
+This package includes `extensions/rtk/index.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`.
+
+The extension fails open: missing, old, or broken RTK leaves commands unchanged.
 
 Setup options:
 
@@ -198,9 +187,60 @@ Review and install RTK yourself, then reload Pi:
 brew install rtk
 ```
 
-For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer.
+For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
 
-The extension never executes the remote installer for you. Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
+## Included CLI and tmux helpers
+
+### `autofolderrefactor`
+
+`autofolderrefactor` is a package bin that repeatedly selects the top folder-refactor candidate and runs the guarded refactor workflow.
+
+| Command | Use it for |
+| --- | --- |
+| `autofolderrefactor ignore [folder]` | Scan folders first and establish `.refactorignore` entries for generated/artifact/vendor/clone trees. |
+| `autofolderrefactor N [folder]` | Run an automatic loop: scan candidates, pick top #1, protect dirty work under the working directory, run the guarded share-code + folder-refactor prompt, validate, commit validated slices, cool down landed candidates, and repeat `N` times. |
+
+Install the standalone wrapper from a checkout:
+
+```bash
+sh install-autofolderrefactor.sh
+autofolderrefactor 10
+```
+
+Advanced installer path, equivalent when working directly in the skill folder:
+
+```bash
+sh skills/engineering/candidates-folder-refactor/scripts/install.sh
+autofolderrefactor 10 internal
+```
+
+### `tx` tmux profile
+
+This package includes a portable tmux profile under `tmux/`:
+
+- `tmux/tmux.conf` — phone-friendly tmux config with a one-line status bar.
+- `tmux/tx` — installable tmux session launcher exposed as the package `tx` bin.
+- `tmux/install.sh` — copies the tmux config, status helper scripts, local style defaults, and `tx` into the current user account.
+
+Install the profile from a checkout:
+
+```bash
+npm run tmux:install
+```
+
+Or, when `tx` is already on your `PATH` from an npm install/link, install the profile with:
+
+```bash
+tx install
+```
+
+Run `tx init` to create an example config, `tx add <alias> [dir]` to add sessions, and `tx doctor` to validate the setup. See [`tmux/README.md`](tmux/README.md) for the full `tx` contract.
+
+The package bins are declared in `package.json`:
+
+```json
+{ "bin": { "tx": "./tmux/tx", "autofolderrefactor": "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" } }
+```
 
 ## Included theme: `trebuchet-neon`
 
@@ -217,18 +257,6 @@ Theme discipline:
 - all required Pi color tokens are present;
 - `export` colors live in the top-level `export` object, not inside `colors`; and
 - the package uses `pi.themes` so the theme is loaded through normal Pi package discovery, not a curl-pipe installer.
-
-## Provider bridge pattern
-
-This package documents provider bridge patterns but intentionally does not bundle Grok/OpenCode-style provider bridges by default.
-
-Borrowed design rules:
-
-- provider bridges should expose a `/provider-name status` command with auth source, registered models, smoke-test command, and limitations;
-- dynamic `pi.registerProvider()` and CLI-backed `streamSimple` are valid extension shapes when the API is understood;
-- upstream CLI tools must be denied or disabled so Pi owns file reads, writes, shell commands, and other tool execution;
-- credential-file reuse, proxy headers, OAuth refresh helpers, paid calls, and unofficial endpoints need explicit owner/legal/security approval before bundling; and
-- prompt-bridged tool calls are less reliable than native provider tool calling and should fail closed if the upstream CLI attempts to act directly.
 
 ## Included skills
 
@@ -306,6 +334,18 @@ GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
 
 It does not deploy, publish, force-push, rewrite history, rebase, or merge remote changes unless explicitly asked.
+
+## Provider bridge pattern
+
+This package documents provider bridge patterns but intentionally does not bundle Grok/OpenCode-style provider bridges by default.
+
+Borrowed design rules:
+
+- provider bridges should expose a `/provider-name status` command with auth source, registered models, smoke-test command, and limitations;
+- dynamic `pi.registerProvider()` and CLI-backed `streamSimple` are valid extension shapes when the API is understood;
+- upstream CLI tools must be denied or disabled so Pi owns file reads, writes, shell commands, and other tool execution;
+- credential-file reuse, proxy headers, OAuth refresh helpers, paid calls, and unofficial endpoints need explicit owner/legal/security approval before bundling; and
+- prompt-bridged tool calls are less reliable than native provider tool calling and should fail closed if the upstream CLI attempts to act directly.
 
 ## Package shape
 
