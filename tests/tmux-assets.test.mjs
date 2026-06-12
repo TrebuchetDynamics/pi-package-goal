@@ -207,6 +207,7 @@ async function testTmuxConfigShowsGitBranchStatus() {
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
   assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
   assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
+  assert.match(config, /source-file -q ~\/\.tmux\/local\.tmux/);
   assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
 }
 

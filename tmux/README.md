@@ -97,6 +97,22 @@ tmux list-clients -F '#{client_name} #{client_width}x#{client_height} #{client_t
 
 Mouse mode is left at the tmux built-in default (`off`) for maximum SSH/mobile compatibility.
 
+## Local/mobile overrides
+
+The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings, especially phone SSH clients such as Termius on Android.
+
+Example mobile override:
+
+```tmux
+# Reduce status work during resize-heavy mobile sessions.
+set -g status-interval 0
+
+# Optional if you prefer phone drag/scroll through tmux instead of the SSH app.
+# set -g mouse on
+```
+
+Keep resize overrides out of shared config unless there is a measured, cross-client reason. The shared profile intentionally leaves tmux resize behavior at defaults.
+
 ## User-facing colors
 
 Per-machine colors live in `~/.tmux/style.tmux`, sourced by `~/.tmux.conf`:
