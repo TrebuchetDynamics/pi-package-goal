@@ -85,12 +85,34 @@ So `tx` is available when this package is installed or linked by npm. The tmux c
 
 ## Screen resizing
 
-The profile does not set tmux resize options. It leaves `window-size` and `aggressive-resize` at tmux built-in defaults.
+The profile does not set tmux resize options. It leaves `window-size` and `aggressive-resize` at tmux built-in defaults. This is intentional: forcing a manual window size can make mobile SSH clients repaint worse.
 
 Inspect attached client sizes with:
 
 ```sh
-tmux list-clients -F '#{client_name} #{client_width}x#{client_height} #{client_tty}'
+tmux list-clients -F '#{client_name} #{client_session} #{client_width}x#{client_height} #{client_tty}'
+```
+
+If resize/redraw feels slow in a phone SSH app such as Termius, first close old SSH tabs and detach stale tmux clients:
+
+```sh
+tmux detach-client -a
+tmux list-clients -F '#{client_name} #{client_session} #{client_width}x#{client_height} #{client_tty}'
+```
+
+The goal is one attached client, or at least no stale phone clients at very different sizes.
+
+Avoid this as a default fix:
+
+```sh
+# Usually worse on mobile; use only as a temporary experiment.
+tmux set -g window-size manual
+```
+
+Return to normal resize behavior with:
+
+```sh
+tmux set -g window-size latest
 ```
 
 ## Mouse
@@ -99,16 +121,27 @@ Mouse mode is left at the tmux built-in default (`off`) for maximum SSH/mobile c
 
 ## Local/mobile overrides
 
-The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings, especially phone SSH clients such as Termius on Android.
+The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings only after stale-client cleanup is not enough.
 
-Example mobile override:
+Test one setting at a time so rollback is easy:
 
 ```tmux
-# Reduce status work during resize-heavy mobile sessions.
+# Optional: stop periodic status refreshes. Keep status visible.
 set -g status-interval 0
+
+# Optional: reduce scrollback memory for constrained clients.
+# set -g history-limit 50000
 
 # Optional if you prefer phone drag/scroll through tmux instead of the SSH app.
 # set -g mouse on
+```
+
+Rollback to shared defaults:
+
+```sh
+rm -f ~/.tmux/local.tmux
+tmux set -g window-size latest
+tmux source-file ~/.tmux.conf
 ```
 
 Keep resize overrides out of shared config unless there is a measured, cross-client reason. The shared profile intentionally leaves tmux resize behavior at defaults.
