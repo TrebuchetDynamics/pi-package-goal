@@ -27,9 +27,10 @@ try {
   await writeFile(join(fixture, "internal", "config", "config.go"), "package config\n");
   await writeFile(join(fixture, "internal", "config", "slash_title.go"), "package config\n");
   await writeFile(join(fixture, "internal", "config", "schema_test.go"), "package config\n");
+  await writeFile(join(fixture, "internal", "config", "setup.test.mjs"), "import \"./config.js\";\n");
 
   const scan = await scanFolderRefactorTarget(fixture, "internal/config");
-  assert.deepEqual(scan.rootFiles, ["config.go", "schema_test.go", "slash_title.go"]);
+  assert.deepEqual(scan.rootFiles, ["config.go", "schema_test.go", "setup.test.mjs", "slash_title.go"]);
   assert.deepEqual(scan.rootDirs, ["auth"]);
   await assert.rejects(
     () => scanFolderRefactorTarget(fixture, join(tmpdir(), `folder-refactor-outside-${process.pid}`)),
@@ -47,7 +48,7 @@ try {
   const failingAudit = auditFolderRefactorCompletion(scan, {
     plannedTopologyComplete: true,
     facadeFiles: ["config.go"],
-    outOfScopeFiles: ["schema_test.go"],
+    outOfScopeFiles: ["schema_test.go", "setup.test.mjs"],
   });
   assert.equal(failingAudit.ok, false);
   assert.deepEqual(failingAudit.unclassified, ["slash_title.go"]);
@@ -56,7 +57,7 @@ try {
   const passingAudit = auditFolderRefactorCompletion(scan, {
     plannedTopologyComplete: false,
     facadeFiles: ["config.go"],
-    outOfScopeFiles: ["schema_test.go"],
+    outOfScopeFiles: ["schema_test.go", "setup.test.mjs"],
     nextCandidateFiles: ["slash_title.go"],
   });
   assert.equal(passingAudit.ok, true);
@@ -103,6 +104,8 @@ try {
   assert.equal(rootFilesByName["schema_test.go"].gitStatus, "clean");
   assert.equal(rootFilesByName["new_test.go"].gitStatus, "untracked");
   assert.equal(rootFilesByName["new_test.go"].isLikelyTest, true);
+  assert.equal(rootFilesByName["setup.test.mjs"].isLikelyTest, true);
+  assert.deepEqual(rootFilesByName["setup.test.mjs"].localImports, ["./config.js"]);
   assert.equal(rootFilesByName["generated.pb.go"].isGenerated, true);
   assert.equal(rootFilesByName["ignored.log"].gitStatus, "ignored");
   assert.equal(rootFilesByName["config.go"].packageName, "config");

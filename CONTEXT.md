@@ -80,6 +80,14 @@ _Avoid_: freeform vague handoffs, heavyweight forms, claims without a concrete a
 An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation, auto-discovers a bounded objective when invoked with no active goal, and requires a completion audit before done.
 _Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
+**Goal Technical Auditor Extension**:
+The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus a safe prioritized development loop.
+_Avoid_: hidden workflow modes, silently starting broad automation for invalid arguments, weakening the command's predictable Full-mode meaning
+
+**Bug-Hunt Refactor Focus**:
+An opt-in `/goal-technical-auditor --focus bug-hunt-refactor` objective emphasis for code reduction, proven shared-code extraction, and pre/during/post refactor bug hunts while preserving the command's technical-auditor Full-mode launch shape.
+_Avoid_: making bug-hunt refactoring the default for every audit, speculative utilities, one-call-site abstractions, broad repo-wide dedupe sweeps
+
 **Git Commit Push Skill**:
 A delivery skill that audits git state, reviews changed files for safety, fixes obvious safe polish/validation issues in scope, runs validation, commits safe in-scope work, pushes to the current upstream, and reports `GIT_COMMIT_PUSH_*` markers.
 _Avoid_: deploy/publish side effects, force-push/rebase/merge without explicit approval, committing secrets or local state, product rewrites disguised as polish, success claims without validation and push evidence
