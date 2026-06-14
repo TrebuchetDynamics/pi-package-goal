@@ -1,6 +1,6 @@
 {
   "name": "pi-package-goal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pi package bundling high-signal engineering skills, opt-in Pi UX extensions, and Understand slash-command bridges.",
   "type": "module",
   "bin": {
