@@ -33,6 +33,14 @@ try {
   assert.deepEqual(scan.rootFiles, ["config.go", "schema_test.go", "setup.test.mjs", "slash_title.go"]);
   assert.deepEqual(scan.rootDirs, ["auth"]);
   await assert.rejects(
+    () => scanFolderRefactorTarget(fixture, "internal/missing"),
+    /folder-refactor target must be an existing directory: internal\/missing/,
+  );
+  await assert.rejects(
+    () => scanFolderRefactorTarget(fixture, "internal/config/config.go"),
+    /folder-refactor target must be an existing directory: internal\/config\/config.go/,
+  );
+  await assert.rejects(
     () => scanFolderRefactorTarget(fixture, join(tmpdir(), `folder-refactor-outside-${process.pid}`)),
     /folder-refactor target must be inside cwd/,
   );
