@@ -13,6 +13,7 @@ export {
   auditFolderRefactorCompletion,
   buildFolderRefactorPrompt,
   formatAuditResult,
+  normalizeFolderRefactorPromptTarget,
   readFolderRefactorState,
   scanFolderRefactorTarget,
   stableStringify,

@@ -9,6 +9,7 @@ import {
   auditFolderRefactorCompletion,
   buildFolderRefactorPrompt,
   formatAuditResult,
+  normalizeFolderRefactorPromptTarget,
   readFolderRefactorState,
   scanFolderRefactorTarget,
   stableStringify,
@@ -28,10 +29,16 @@ try {
   await writeFile(join(fixture, "internal", "config", "slash_title.go"), "package config\n");
   await writeFile(join(fixture, "internal", "config", "schema_test.go"), "package config\n");
   await writeFile(join(fixture, "internal", "config", "setup.test.mjs"), "import \"./config.js\";\n");
+  await mkdir(join(fixture, "internal", "config", "activation"));
+  await writeFile(join(fixture, "internal", "config", "activation.rs"), "pub fn activate() {}\n");
 
   const scan = await scanFolderRefactorTarget(fixture, "internal/config");
-  assert.deepEqual(scan.rootFiles, ["config.go", "schema_test.go", "setup.test.mjs", "slash_title.go"]);
-  assert.deepEqual(scan.rootDirs, ["auth"]);
+  assert.deepEqual(scan.rootFiles, ["activation.rs", "config.go", "schema_test.go", "setup.test.mjs", "slash_title.go"]);
+  assert.deepEqual(scan.rootDirs, ["activation", "auth"]);
+  const activationEntry = scan.files.find((file) => file.basename === "activation.rs");
+  assert.equal(activationEntry.pairedRootDir, "activation");
+  assert.equal(activationEntry.likelyFolderModuleCandidate, true);
+  assert.match(activationEntry.facadeReasons.join("\n"), /same-stem root file/);
   await assert.rejects(
     () => scanFolderRefactorTarget(fixture, "internal/missing"),
     /folder-refactor target must be an existing directory: internal\/missing/,
@@ -59,18 +66,30 @@ try {
     outOfScopeFiles: ["schema_test.go", "setup.test.mjs"],
   });
   assert.equal(failingAudit.ok, false);
-  assert.deepEqual(failingAudit.unclassified, ["slash_title.go"]);
+  assert.deepEqual(failingAudit.unclassified, ["activation.rs", "slash_title.go"]);
   assert.match(formatAuditResult(failingAudit), /FOLDER_REFACTOR_AUDIT: fail/);
+
+  const facadePairAudit = auditFolderRefactorCompletion(scan, {
+    plannedTopologyComplete: true,
+    facadeFiles: ["activation.rs", "config.go", "slash_title.go"],
+    outOfScopeFiles: ["schema_test.go", "setup.test.mjs"],
+  });
+  assert.equal(facadePairAudit.ok, false);
+  assert.match(formatAuditResult(facadePairAudit), /skipped folder-module candidates: activation\.rs/);
 
   const passingAudit = auditFolderRefactorCompletion(scan, {
     plannedTopologyComplete: false,
     facadeFiles: ["config.go"],
     outOfScopeFiles: ["schema_test.go", "setup.test.mjs"],
-    nextCandidateFiles: ["slash_title.go"],
+    nextCandidateFiles: ["activation.rs", "slash_title.go"],
   });
   assert.equal(passingAudit.ok, true);
-  assert.match(formatAuditResult(passingAudit), /next candidates: slash_title\.go/);
+  assert.match(formatAuditResult(passingAudit), /next candidates: activation\.rs, slash_title\.go/);
 
+  assert.equal(normalizeFolderRefactorPromptTarget(""), ".");
+  const cwdPrompt = buildFolderRefactorPrompt("");
+  assert.match(cwdPrompt, /^\/skill:skill-folder-refactor \./);
+  assert.match(cwdPrompt, /current working directory/);
   const prompt = buildFolderRefactorPrompt("internal/config");
   assert.match(prompt, /^\/skill:skill-folder-refactor internal\/config/);
   assert.match(prompt, /folder_refactor_audit/);
