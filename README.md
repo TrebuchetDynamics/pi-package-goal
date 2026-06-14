@@ -48,6 +48,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
 | Ship finished work | `git-commit-push` | Polishes, validates, commits safe in-scope changes, and pushes. |
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
+| Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` then `/understand agent` | Builds a graph and writes an agent-readable map. |
 | Plan a graph-backed refactor | `/understand-refactor <focus>` | Generates a deterministic plan, then starts docs-backed grilling. |
 | Refactor one noisy folder | `/folder-refactor <folder>` | Uses scan/state/audit guardrails to avoid lazy completion. |
@@ -267,8 +268,8 @@ Theme discipline:
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Ship completed work with safe polish, validation, intentional staging, commit, and push. |
-| `autoreview` | Run a structured closeout review before shipping. |
-| `lgtm` | Continue after you approve the agent's latest plan or infer the best safe continuation from an ambiguous approval. |
+| `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
+| `lgtm` | Continue after you approve the agent's latest plan, or treat an advisor/reviewer verdict as advisory input from an ambiguous approval. |
 | `caveman` | Switch to terse, low-token communication. |
 
 ### Engineering workflows
@@ -285,7 +286,7 @@ Theme discipline:
 | `improve-codebase-architecture` | Produce evidence-backed architecture reviews, then explore deeper seams for testability and AI navigation. |
 | `technical-auditor` | Produce evidence-backed repository health audits with prioritized risk and improvement plans. |
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
-| `grill-with-docs` | Stress-test a plan against project docs, run docs-council critiques, and record decisions. |
+| `grill-with-docs` | Stress-test a plan against project docs, run docs-council critiques (the clean-context advisor role), and record decisions. |
 | `zoom-out` | Step back from the local task and reassess direction. |
 
 ### Planning, triage, and writing
