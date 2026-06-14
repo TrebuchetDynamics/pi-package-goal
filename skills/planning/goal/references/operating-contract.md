@@ -63,6 +63,8 @@ After each slice:
 5. if stopping for an owner checkpoint, produce a slice result with one recommended next action;
 6. continue immediately if the objective remains active and no stop condition applies.
 
+For a high-leverage or cross-cutting plan, optionally get an **advisor** second opinion before executing — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Keep it advisory; do not turn the slice loop into a mandatory gate.
+
 Good next-slice evidence includes unchecked TODO/parity items, failing or missing focused tests, module lists from the source app, `codebase-map-understand.md` seams verified against live files, and explicit continuation markers like `DEV_GOAL_DECISION: continue_next_slice`.
 
 Do not stop at a status-only report when the next safe slice is known. A status reply is enough only for `goal status`, user-requested pause, blocked work, failed validation, soft-budget/context limits, a completed objective, or an explicit owner checkpoint with a concrete recommendation.
@@ -116,7 +118,7 @@ handoff evidence:
 
 ## Completion audit details
 
-Completion requires real evidence, not memory. Before declaring `complete`:
+Completion requires real evidence, not memory. For a non-trivial diff, optionally get a **reviewer** second opinion first — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Findings are advisory; verify them against source before acting. Before declaring `complete`:
 
 1. Restate the objective as concrete deliverables and success criteria.
 2. Map each explicit requirement to evidence.

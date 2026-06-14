@@ -7,6 +7,8 @@ description: Run an available structured autoreview helper as a closeout code re
 
 Run a structured closeout review helper against the current change. This is advisory code review, not approval routing.
 
+This skill is the **reviewer** role from [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md): a second opinion on changes. When the host exposes a fork/subagent tool, a clean-context delegate is the preferred dispatch; the helper script below is the concrete implementation when it is available.
+
 Based on the OpenClaw `autoreview` skill; this package bundles the workflow, not the helper script.
 
 ## Entry protocol

@@ -14,6 +14,8 @@ Skip it for small reversible choices, obvious terminology cleanup, or cases wher
 
 ## Local docs council
 
+These local role lenses run inside the main context, so they lack context isolation. When the host exposes a fork/subagent tool, prefer a clean-context **advisor** delegate instead — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Use the local lenses below as the labeled fallback, and say which one you used.
+
 When no approved external council is available, run three local perspectives and say that they are local role lenses, not external models:
 
 1. **Language steward** — checks `CONTEXT.md`, `CONTEXT-MAP.md`, ADR language, term boundaries, aliases to avoid, and whether a term belongs in glossary form.
