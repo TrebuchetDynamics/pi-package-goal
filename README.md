@@ -49,7 +49,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Ship finished work | `git-commit-push` | Polishes, validates, commits safe in-scope changes, and pushes. |
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
-| Understand a codebase | `/understand` then `/understand agent` | Builds a graph and writes an agent-readable map. |
+| Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
 | Plan a graph-backed refactor | `/understand-refactor <focus>` | Generates a deterministic plan, then starts docs-backed grilling. |
 | Refactor one noisy folder | `/folder-refactor <folder>` | Uses scan/state/audit guardrails to avoid lazy completion. |
 | Rank folder-refactor candidates | `candidates-folder-refactor` | Scores bounded noisy folders and suggests the top target. |
@@ -65,7 +65,6 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 /skill:diagnose debug the failing npm test
 /skill:tdd add coverage for the parser edge case
 /understand
-/understand agent
 /folder-refactor skills/engineering
 ```
 
@@ -121,13 +120,14 @@ On first use it prompts to clone Understand-Anything into `~/.understand-anythin
 
 | Command | Use it for |
 | --- | --- |
-| `/understand` | Build or refresh the current repo's knowledge graph. |
-| `/understand src/frontend --language zh` | Understand a specific path with upstream options. |
+| `/understand` | Build or refresh the current repo's knowledge graph, then write `codebase-map-understand.md`. |
+| `/understand --no-agent-map` | Build only the upstream graph and skip the automatic Markdown map. |
+| `/understand src/frontend --language zh` | Understand a specific path, then write a folder-scoped map such as `frontend-codebase-map-understand.md`. |
 | `/understand dashboard` | Open the upstream dashboard workflow. |
 | `/understand chat How does auth work?` | Ask about the generated graph. |
 | `/understand diff` | Summarize recent graph/code changes. |
-| `/understand agent` | Write `codebase-map-understand.md` for future agents. |
-| `/understand agent @frontend` | Write `frontend-codebase-map-understand.md`. |
+| `/understand agent` | Refresh `codebase-map-understand.md` from an existing graph. |
+| `/understand agent @frontend` | Refresh `frontend-codebase-map-understand.md` from `frontend/.understand-anything/knowledge-graph.json`. |
 | `/understand compare ../project-a ../project-b` | Compare two existing graphs and write a deterministic compare map. |
 | `/understand refactor "auth flow"` | Generate a deterministic refactor plan from the current graph. |
 | `/understand-refactor @internal/channels/telegram/.` | Generate/use a folder-only graph for refactor planning. |
@@ -154,7 +154,7 @@ Direct aliases are also registered:
 
 Notes:
 
-- `/understand agent` reads `.understand-anything/knowledge-graph.json` and writes `codebase-map-understand.md` by default.
+- `/understand` queues `/understand agent` automatically after the graph run; `/understand agent` remains available to regenerate the Markdown map from an existing graph.
 - `/understand compare <folder-a> <folder-b>` requires both folders to already contain `.understand-anything/knowledge-graph.json`.
 - `/understand refactor [@folder] [focus] [output.md]` uses the current repo graph by default; with `@folder`, it reads `folder/.understand-anything/knowledge-graph.json`, defaults the plan name from that folder, and if no graph exists, starts `/understand <folder>` directly to build a folder-only graph first.
 - Refactor mode reads an existing output plan before overwriting it, combines that continuity with graph hotspots, live file checks, related-test discovery, and before/during/after bug-search checkpoints, displays the generated plan inline, then immediately starts `grill-with-docs` on the top candidate so the refactor workflow can proceed or ask for owner steering. Follow-ups remain available: `/understand-refactor grill N`, `/understand-refactor ignore N`, or `/understand-refactor regenerate with focus <area>`.

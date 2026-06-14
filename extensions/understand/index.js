@@ -179,18 +179,39 @@ function edgeLine(edge, byId) {
 }
 
 export function normalizeAgentOutputArg(args = "") {
-  const trimmed = args.trim();
-  if (!trimmed) return "codebase-map-understand.md";
-  const target = trimmed.replace(/^and\s+/i, "").trim();
-  if (!target) return "codebase-map-understand.md";
+  return parseAgentMapArgs(args).output;
+}
 
-  if (target.startsWith("@")) {
-    const folder = target.slice(1).replace(/[\\/]+$/, "").trim();
+export function parseAgentMapArgs(args = "") {
+  const trimmed = args.trim().replace(/^and\s+/i, "").trim();
+  if (!trimmed) return { graphRootArg: "", output: "codebase-map-understand.md" };
+
+  const tokens = splitCommandArgs(trimmed);
+  const [first, ...rest] = tokens;
+  if (first?.startsWith("@")) {
+    const folder = first.slice(1).replace(/[\\/]+$/, "").trim();
     const folderName = basename(folder) || "codebase";
-    return `${folderName}-codebase-map-understand.md`;
+    return {
+      graphRootArg: first,
+      output: rest.join(" ") || `${folderName}-codebase-map-understand.md`,
+    };
   }
 
-  return target;
+  return { graphRootArg: "", output: trimmed };
+}
+
+export function buildAutoAgentArgs(understandArgs = "") {
+  const tokens = splitCommandArgs(understandArgs).filter((token) => token !== "--no-agent-map");
+  const pathToken = tokens.find((token, index) => {
+    if (token.startsWith("--")) return false;
+    const previous = tokens[index - 1];
+    return previous !== "--language";
+  });
+  return pathToken ? `@${pathToken}` : "";
+}
+
+function shouldAutoWriteAgentMap(parsed) {
+  return parsed.type === "skill" && parsed.skillName === "understand" && !splitCommandArgs(parsed.args).includes("--no-agent-map");
 }
 
 function formatAnalyzedAt(value) {
@@ -292,7 +313,7 @@ export function generateAgentMapMarkdown(graph, { cwd = process.cwd(), graphPath
     "",
     "- Prefer this Markdown file for quick orientation.",
     "- Use the full JSON graph when you need exact node IDs, line ranges, or relationship details.",
-    "- Re-run `/understand` after major code changes, then re-run `/understand agent` to refresh this file.",
+    "- Re-run `/understand` after major code changes; it refreshes this file automatically unless `--no-agent-map` is used.",
     "",
   ];
 
@@ -493,11 +514,12 @@ async function sendBundledSkillInvocation(pi, ctx, skillName, args) {
 function helpText(paths = getUnderstandPaths()) {
   return `Understand-Anything bridge\n\n` +
     `Slash commands:\n` +
-    `  /understand [path|flags]          Analyze the current project\n` +
+    `  /understand [path|flags]          Analyze the current project, then write an agent-readable Markdown map\n` +
+    `  /understand --no-agent-map        Analyze only; skip the automatic Markdown map\n` +
     `  /understand dashboard            Open the dashboard\n` +
     `  /understand chat <question>       Ask about the graph\n` +
-    `  /understand diff                  Analyze current changes\n` +
-    `  /understand agent [output.md]     Write an agent-readable Markdown map\n` +
+    `  /understand diff                  Summarize recent graph/code changes\n` +
+    `  /understand agent [@path] [out]   Write or refresh the agent-readable Markdown map\n` +
     `  /understand compare <a> <b> [out] Compare two folders with existing graphs\n` +
     `  /understand refactor [@folder] [focus] [out] Generate a graph-based refactor plan\n` +
     `  /understand explain <target>      Explain a file/function\n` +
@@ -524,18 +546,20 @@ async function statusText(pi, ctx, paths) {
 }
 
 async function writeAgentMap(ctx, args) {
-  const graphPath = resolve(ctx.cwd, ".understand-anything", "knowledge-graph.json");
-  const outputArg = normalizeAgentOutputArg(args);
-  const outputPath = resolveContainedOutputPath(ctx.cwd, outputArg);
+  const parsed = parseAgentMapArgs(args);
+  const graphRoot = parsed.graphRootArg ? resolveFolderArg(ctx.cwd, parsed.graphRootArg) : ctx.cwd;
+  const graphPath = resolve(graphRoot, ".understand-anything", "knowledge-graph.json");
+  const outputPath = resolveContainedOutputPath(ctx.cwd, parsed.output);
 
   let graph;
   try {
     graph = JSON.parse(await readFile(graphPath, "utf8"));
   } catch (error) {
     if (error?.code === "ENOENT") {
+      const runHint = parsed.graphRootArg ? `/understand ${parsed.graphRootArg.slice(1)}` : "/understand";
       return {
         written: false,
-        message: `No Understand-Anything graph found at ${graphPath}. Run /understand first, then /understand agent.`,
+        message: `No Understand-Anything graph found at ${graphPath}. Run ${runHint} first, then /understand agent${parsed.graphRootArg ? ` ${parsed.graphRootArg}` : ""}.`,
       };
     }
     throw error;
@@ -693,7 +717,11 @@ function registerUnderstandCommand(pi, name, paths) {
         return;
       }
 
-      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, parsed.args);
+      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " ").trim());
+      if (shouldAutoWriteAgentMap(parsed)) {
+        const agentArgs = buildAutoAgentArgs(parsed.args);
+        pi.sendUserMessage(`/understand agent${agentArgs ? ` ${agentArgs}` : ""}`, { deliverAs: "followUp" });
+      }
     },
   });
 }
