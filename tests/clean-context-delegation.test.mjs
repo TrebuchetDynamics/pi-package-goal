@@ -44,4 +44,11 @@ assert.ok(
   "autoreview must link the clean-context delegation contract",
 );
 
+// --- Task 4: council-review cross-links the contract ---
+const councilReview = read("skills/planning/grill-with-docs/references/council-review.md");
+assert.ok(
+  councilReview.includes("../../../shared/CLEAN-CONTEXT-DELEGATION.md"),
+  "council-review must link the clean-context delegation contract",
+);
+
 console.log("clean-context-delegation ok");
