@@ -263,6 +263,11 @@ async function testTmuxMouseSelectionDoesNotAutoCopy() {
   assert.doesNotMatch(config, /set -g mouse on/);
 }
 
+async function testTmuxExtendedKeysEnabled() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.match(config, /set -g extended-keys on/);
+}
+
 async function testTmuxConfigShowsGitBranchStatus() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
@@ -301,6 +306,7 @@ await testInstallScript();
 await testKillAllOrdersCurrentSessionLast();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
+await testTmuxExtendedKeysEnabled();
 await testTmuxConfigShowsGitBranchStatus();
 await testTmuxUsesDefaultResizeBehavior();
 await testTmuxPluginsAreNotLoaded();
