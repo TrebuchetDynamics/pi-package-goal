@@ -15,6 +15,8 @@ Treat the user's approval as permission to continue with the most recent concret
 4. Continue with the next planned action without asking the same approval question again.
 5. Briefly state what was accepted, then act with the relevant specialist skill or workflow.
 
+When the approval accepts an advisor or reviewer verdict, treat that verdict as advisory input rather than authority — see [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md). Verify any codebase claim against source before continuing.
+
 ## Approval Resolution Protocol
 
 Use this protocol as the module interface for approval handling: approval phrase plus recent assistant context goes in; one accepted action, one blocker, or one clarifying question comes out.

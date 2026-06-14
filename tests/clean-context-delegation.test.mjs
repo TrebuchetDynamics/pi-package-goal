@@ -51,4 +51,11 @@ assert.ok(
   "council-review must link the clean-context delegation contract",
 );
 
+// --- Task 5: lgtm cross-links the contract ---
+const lgtm = read("skills/planning/lgtm/SKILL.md");
+assert.ok(
+  lgtm.includes("../../shared/CLEAN-CONTEXT-DELEGATION.md"),
+  "lgtm must link the clean-context delegation contract",
+);
+
 console.log("clean-context-delegation ok");
