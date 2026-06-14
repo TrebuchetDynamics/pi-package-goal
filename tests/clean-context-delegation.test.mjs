@@ -58,4 +58,12 @@ assert.ok(
   "lgtm must link the clean-context delegation contract",
 );
 
+// --- Task 6: README references the pattern ---
+const readme = read("README.md");
+assert.ok(
+  readme.includes("CLEAN-CONTEXT-DELEGATION.md") ||
+    /clean-context (advisor|delegation)/i.test(readme),
+  "README must reference the clean-context advisor/reviewer pattern",
+);
+
 console.log("clean-context-delegation ok");
