@@ -37,4 +37,11 @@ assert.ok(
   "goal operating-contract must link the clean-context delegation contract",
 );
 
+// --- Task 3: autoreview cross-links the contract ---
+const autoreview = read("skills/delivery/autoreview/SKILL.md");
+assert.ok(
+  autoreview.includes("../../shared/CLEAN-CONTEXT-DELEGATION.md"),
+  "autoreview must link the clean-context delegation contract",
+);
+
 console.log("clean-context-delegation ok");
