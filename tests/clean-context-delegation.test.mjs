@@ -30,4 +30,11 @@ assert.ok(
   "contract must link back to the shared common contract",
 );
 
+// --- Task 2: goal operating-contract cross-links the contract ---
+const goalContract = read("skills/planning/goal/references/operating-contract.md");
+assert.ok(
+  goalContract.includes("../../../shared/CLEAN-CONTEXT-DELEGATION.md"),
+  "goal operating-contract must link the clean-context delegation contract",
+);
+
 console.log("clean-context-delegation ok");

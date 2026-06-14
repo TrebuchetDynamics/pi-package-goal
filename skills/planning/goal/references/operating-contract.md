@@ -61,7 +61,8 @@ After each slice:
 3. update Goal state evidence with the validation receipt;
 4. inspect repo evidence for the next smallest safe slice;
 5. if stopping for an owner checkpoint, produce a slice result with one recommended next action;
-6. continue immediately if the objective remains active and no stop condition applies.
+6. continue immediately if the objective remains active and no stop condition applies;
+- For a high-leverage or cross-cutting plan, optionally get an **advisor** second opinion before executing — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Keep it advisory; do not turn the slice loop into a mandatory gate.
 
 Good next-slice evidence includes unchecked TODO/parity items, failing or missing focused tests, module lists from the source app, `codebase-map-understand.md` seams verified against live files, and explicit continuation markers like `DEV_GOAL_DECISION: continue_next_slice`.
 
@@ -124,3 +125,4 @@ Completion requires real evidence, not memory. Before declaring `complete`:
 4. Name weak evidence, missing requirements, or uncertainty.
 5. Keep working or set `status: blocked` if anything material is missing.
 6. Set `status: complete` only after the evidence covers the objective.
+- For a non-trivial diff, optionally get a **reviewer** second opinion before the completion audit — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Findings are advisory; verify them against source before acting.
