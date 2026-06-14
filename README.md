@@ -337,6 +337,21 @@ GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 
 It does not deploy, publish, force-push, rewrite history, rebase, or merge remote changes unless explicitly asked.
 
+## Clean-context advisor and reviewer
+
+Several skills can ask for a second opinion. The value of that opinion comes from a *clean, unbiased context* — a delegate that has not seen the main agent's reasoning and so will not rubber-stamp it. The shared [clean-context delegation contract](skills/shared/CLEAN-CONTEXT-DELEGATION.md) defines two roles:
+
+- **Advisor** — a strategy, architecture, or product opinion on a plan or decision, *before* execution. Surfaced by `grill-with-docs` (docs-council) and the `goal` slice checkpoint.
+- **Reviewer** — a code-quality, security, or UX opinion on changes, *after* execution. Surfaced by `autoreview` and the `goal` completion audit.
+
+How it behaves:
+
+1. When the host exposes a fork/subagent tool, the role is dispatched to a clean-context delegate, briefed with the objective and the artifact under review but **not** the main agent's preferred answer.
+2. When no such tool is available, it falls back to a single in-context lens that is explicitly labeled as lacking context isolation — never presented as a clean-context opinion.
+3. Verdicts are advisory: codebase claims are verified against live source before being acted on, and a disagreement surfaces the trade-off instead of defaulting to either side.
+
+This pattern is bundled as guidance only. It does not install a fork/subagent extension or any memory/compaction system, so it works standalone and simply improves when the host provides a dispatch tool.
+
 ## Provider bridge pattern
 
 This package documents provider bridge patterns but intentionally does not bundle Grok/OpenCode-style provider bridges by default.
