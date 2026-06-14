@@ -118,7 +118,7 @@ handoff evidence:
 
 ## Completion audit details
 
-Completion requires real evidence, not memory. Before declaring `complete`:
+Completion requires real evidence, not memory. For a non-trivial diff, optionally get a **reviewer** second opinion first — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Findings are advisory; verify them against source before acting. Before declaring `complete`:
 
 1. Restate the objective as concrete deliverables and success criteria.
 2. Map each explicit requirement to evidence.
@@ -126,5 +126,3 @@ Completion requires real evidence, not memory. Before declaring `complete`:
 4. Name weak evidence, missing requirements, or uncertainty.
 5. Keep working or set `status: blocked` if anything material is missing.
 6. Set `status: complete` only after the evidence covers the objective.
-
-For a non-trivial diff, optionally get a **reviewer** second opinion before the completion audit — see [clean-context delegation](../../../shared/CLEAN-CONTEXT-DELEGATION.md). Findings are advisory; verify them against source before acting.
