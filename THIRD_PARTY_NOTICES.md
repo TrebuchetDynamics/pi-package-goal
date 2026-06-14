@@ -144,6 +144,14 @@ Trebuchet Dynamics under the MIT License.
 - License: Apache-2.0
 - Full license copy: `licenses/rtk-ai-rtk-LICENSE`
 
+## MasuRii/pi-rtk-optimizer
+
+- Source: https://github.com/MasuRii/pi-rtk-optimizer
+- Snapshot inspected: `0ec4ea1fd13ca47dc22d9d0c61742356b290afd1`
+- Usage: source inspiration for the package-local `extensions/rtk/index.js` rewrite status cache, suggestion mode, session stats, and tool output compaction pipeline; the upstream extension is not bundled wholesale.
+- License: MIT
+- Full license copy: `licenses/MasuRii-pi-rtk-optimizer-LICENSE`
+
 ## tolibear/goalbuddy
 
 - Source: https://github.com/tolibear/goalbuddy

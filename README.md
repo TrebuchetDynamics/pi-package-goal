@@ -174,12 +174,14 @@ Use it for bounded folder splits, shared-code extraction from proven duplicate c
 
 This package includes `extensions/rtk/index.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`.
 
-The extension fails open: missing, old, or broken RTK leaves commands unchanged.
+The extension fails open: missing, old, or broken RTK leaves commands unchanged. It also compacts noisy `bash`/`grep` tool results, strips ANSI/control noise, summarizes common test/build/git/search output, tracks per-session savings, and can run in suggestion-only mode.
 
-Setup options:
+Useful commands:
 
 ```text
 /rtk status
+/rtk stats
+/rtk clear-stats
 /rtk install
 ```
 
@@ -189,7 +191,7 @@ Review and install RTK yourself, then reload Pi:
 brew install rtk
 ```
 
-For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use `RTK_DISABLED=1` to bypass rewriting for a Pi process.
+For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
 ## Included CLI and tmux helpers
 
