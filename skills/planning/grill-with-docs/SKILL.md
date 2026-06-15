@@ -9,7 +9,14 @@ Stress-test a plan against the repo's domain model and documented decisions unti
 
 ## What to do
 
-Interview the owner relentlessly about every load-bearing aspect of the plan. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer first. Ask exactly one question at a time and wait for feedback before continuing. If a question can be answered by exploring the codebase or docs, explore instead of asking.
+Default behavior, without needing the user to ask:
+
+- Check `CONTEXT.md`, `CONTEXT-MAP.md`, ADRs, relevant tests, manifests, and code before asking the owner anything the repo can answer.
+- Ask one hard owner-decision question at a time and wait for feedback before continuing.
+- Put `Recommended answer:` before the question rationale so the owner can accept, reject, or amend a concrete proposal.
+- Update `CONTEXT.md` only after the owner accepts the terminology; never write speculative terms.
+
+Interview the owner relentlessly about every load-bearing aspect of the plan. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. If a question can be answered by exploring the codebase or docs, explore instead of asking.
 
 ## Quick start
 
