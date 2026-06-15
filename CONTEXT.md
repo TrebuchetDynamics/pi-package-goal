@@ -105,5 +105,5 @@ Portable tmux helper assets under `tmux/`, including `tmux.conf`, `tx`, installe
 _Avoid_: docs/install drift, hard-coded helper paths that contradict installer overrides, machine-local style choices committed as shared defaults
 
 **Tmux Status Profile**:
-The tmux status-bar interface assembled by `tmux/tmux.conf` from local style settings plus the lightweight `git-status.sh` branch segment. The profile intentionally avoids resize overrides and complex multi-helper status execution for SSH/mobile compatibility.
-_Avoid_: scattering status path/color/git knowledge across config, installer, docs, and tests; overriding tmux resize defaults; adding mobile-specific resize hooks
+The low-bandwidth tmux status-bar interface assembled by `tmux/tmux.conf` from local style settings. The shared default is static and avoids periodic redraws, status-shell commands, resize overrides, and truecolor forcing for SSH/mobile compatibility; richer path/git status belongs in `~/.tmux/local.tmux`.
+_Avoid_: scattering status path/color/git knowledge across config, installer, docs, and tests; overriding tmux resize defaults; adding mobile-specific resize hooks; making dynamic status the shared default

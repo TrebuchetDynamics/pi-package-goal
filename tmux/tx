@@ -514,8 +514,11 @@ doctor_install() {
   esac
 
   if [[ -f "$tmux_conf_target" ]]; then
-    grep -F -- "$tmux_helper_dir/short-path.sh" "$tmux_conf_target" >/dev/null || { printf 'tmux.conf: does not reference %s/short-path.sh\n' "$tmux_helper_dir"; ok=0; }
-    grep -F -- "$tmux_helper_dir/git-status.sh" "$tmux_conf_target" >/dev/null || { printf 'tmux.conf: does not reference %s/git-status.sh\n' "$tmux_helper_dir"; ok=0; }
+    if grep -F -- "$tmux_helper_dir/short-path.sh" "$tmux_conf_target" >/dev/null || grep -F -- "$tmux_helper_dir/git-status.sh" "$tmux_conf_target" >/dev/null; then
+      printf 'tmux.conf: references optional status helpers\n'
+    else
+      printf 'tmux.conf: static low-bandwidth status (optional helpers installed)\n'
+    fi
   fi
 
   (( ok == 1 ))

@@ -6,8 +6,8 @@ Portable tmux assets and the `tx` tmux-session launcher.
 
 - `tmux.conf` — tmux configuration. Install as `~/.tmux.conf`.
 - `style.tmux` — local style overrides. Installed as `~/.tmux/style.tmux` only when missing.
-- `git-status.sh` — status-bar git segment. Prints the branch name in green when clean and red when changed/untracked.
-- `short-path.sh` — status-bar path segment. Prints only the last two path folders, e.g. `/home/xel/git/pi-package-development-goal` -> `git/pi-package-development-goal`.
+- `git-status.sh` — optional status-bar git segment. Prints the branch name in green when clean and red when changed/untracked.
+- `short-path.sh` — optional status-bar path segment. Prints only the last two path folders, e.g. `/home/xel/git/pi-package-development-goal` -> `git/pi-package-development-goal`.
 - `tx` — installable helper for starting, attaching, listing, and killing configured tmux sessions.
 - `install.sh` — installer for the config, status helpers, and `tx`.
 
@@ -56,22 +56,23 @@ tmux source-file ~/.tmux.conf
 ## Runtime flow
 
 - `install.sh` copies the shared assets into user locations: `tmux.conf`, helper scripts, optional local style, and the `tx` launcher.
-- `tmux.conf` renders the status bar by invoking `short-path.sh` and `git-status.sh` with tmux's `#{pane_current_path}` value.
+- `tmux.conf` renders a static status bar by default: session name on the left, host name on the right, no periodic refresh, and no status-shell commands.
 - `tx` reads session aliases from its config file, starts or switches to the matching tmux session, and uses the alias as the tmux session name.
 - `style.tmux` stores per-machine colors and is sourced by `tmux.conf` from `~/.tmux/style.tmux`.
 
 ## Helper-script contract
 
-`tmux.conf` calls the helper scripts as status commands:
+The default shared config does not call status helper scripts. This keeps SSH sessions low-data and avoids repeated `git status` work. The installer still places both helpers under `~/.tmux` (or `TMUX_HELPER_DIR`) for users who opt into a richer local status.
+
+Each helper takes one argument: the current pane path from `#{pane_current_path}`.
+
+To re-enable path and git status on a fast local connection, put this in `~/.tmux/local.tmux`:
 
 ```tmux
-#(~/.tmux/short-path.sh #{q:pane_current_path})
-#(~/.tmux/git-status.sh #{q:pane_current_path})
+set -g status-interval 120
+set -g status-left '#[bg=#{@primary_color},fg=#{@primary_text_color},bold] #S #[bg=#101820,fg=#f8f8f2] #(~/.tmux/short-path.sh #{q:pane_current_path}) #(~/.tmux/git-status.sh #{q:pane_current_path})'
+set -g status-left-length 100
 ```
-
-Each helper takes one argument: the current pane path from `#{pane_current_path}`. The default config expects both scripts to be executable under `~/.tmux`. If you install with a custom `TMUX_HELPER_DIR`, the installer rewrites the installed tmux config to point at that directory.
-
-The status bar refreshes every 120 seconds via `status-interval 120`, so git/path changes may take up to two minutes to appear unless tmux refreshes the status line for another reason.
 
 ## npm/bin install
 
@@ -123,14 +124,18 @@ Mouse mode is left at the tmux built-in default (`off`) for maximum SSH/mobile c
 
 The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings only after stale-client cleanup is not enough.
 
-Test one setting at a time so rollback is easy:
+The defaults already favor SSH/mobile performance:
 
 ```tmux
-# Optional: stop periodic status refreshes. Keep status visible.
 set -g status-interval 0
+set -g history-limit 50000
+```
 
-# Optional: reduce scrollback memory for constrained clients.
-# set -g history-limit 50000
+Test one extra setting at a time so rollback is easy:
+
+```tmux
+# Optional if your local terminal needs truecolor more than low-byte output.
+# set -as terminal-overrides ',xterm-256color:RGB'
 
 # Optional if you prefer phone drag/scroll through tmux instead of the SSH app.
 # set -g mouse on
@@ -155,7 +160,7 @@ set -g @primary_color '#06d6a0'
 set -g @primary_text_color '#101820'
 ```
 
-The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect only the tmux session name and hostname. The current git branch is shown by `~/.tmux/git-status.sh`: green when clean, red when changed or untracked.
+The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect only the tmux session name and hostname. If enabled in `~/.tmux/local.tmux`, the current git branch is shown by `~/.tmux/git-status.sh`: green when clean, red when changed or untracked.
 
 ## tx config
 

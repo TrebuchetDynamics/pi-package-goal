@@ -160,9 +160,7 @@ async function testInstallScript() {
     assert.ok(fs.existsSync(path.join(fishCompletionDir, "tx.fish")));
     assert.ok(fs.existsSync(path.join(zshCompletionDir, "_tx")));
     const installedConfigText = fs.readFileSync(installedConfig, "utf8");
-    assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/short-path\\.sh`));
-    assert.match(installedConfigText, new RegExp(`${helperDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/git-status\\.sh`));
-    assert.doesNotMatch(installedConfigText, /#\(~\/\.tmux\/(?:short-path|git-status)\.sh/);
+    assert.doesNotMatch(installedConfigText, /#\(.*(?:short-path|git-status)\.sh/);
     assert.match(fs.readFileSync(path.join(bashCompletionDir, "tx"), "utf8"), /__complete_aliases/);
     assert.match(run(path.join(bin, "tx"), ["help"], { env }), /doctor --install/);
 
@@ -268,11 +266,12 @@ async function testTmuxExtendedKeysEnabled() {
   assert.match(config, /set -g extended-keys on/);
 }
 
-async function testTmuxConfigShowsGitBranchStatus() {
+async function testTmuxConfigUsesStaticLowBandwidthStatus() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
-  assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
-  assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
+  assert.match(config, /set -g status-interval 0/);
+  assert.match(config, /set -g status-left '#\[bg=#\{@primary_color\},fg=#\{@primary_text_color\},bold\] #S '/);
+  assert.doesNotMatch(config, /#\(.*(?:short-path|git-status)\.sh/);
   assert.match(config, /source-file -q ~\/\.tmux\/local\.tmux/);
   assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
 }
@@ -307,7 +306,7 @@ await testKillAllOrdersCurrentSessionLast();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
 await testTmuxExtendedKeysEnabled();
-await testTmuxConfigShowsGitBranchStatus();
+await testTmuxConfigUsesStaticLowBandwidthStatus();
 await testTmuxUsesDefaultResizeBehavior();
 await testTmuxPluginsAreNotLoaded();
 await testTmuxConfigParsesWhenTmuxExists();
