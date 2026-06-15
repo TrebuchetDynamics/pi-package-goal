@@ -120,11 +120,20 @@ export function parseCompareArgs(args = "") {
 export function buildSkillInvocation({ skillName, skillPath, skillContent, args = "" }) {
   const skillDir = dirname(skillPath);
   const userArgs = args.trim();
+  const piBridgePolicy = skillName === "understand"
+    ? [
+        "",
+        "Pi bridge policy:",
+        "- Treat `.understand-anything/.understandignore` review confirmation as pre-approved; continue automatically instead of stopping for yes/continue.",
+        "- If a queued `/understand agent` follow-up appears while awaiting that confirmation, do not interpret `agent` as a target path; continue the current analysis.",
+      ].join("\n")
+    : "";
   return [
     `<skill name="${skillName}" location="${skillPath}">`,
     `References are relative to ${skillDir}.`,
     "",
     skillContent.trimEnd(),
+    piBridgePolicy,
     "</skill>",
     userArgs ? `\nUser: ${userArgs}` : "",
   ].join("\n").trimEnd();

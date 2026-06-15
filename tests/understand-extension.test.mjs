@@ -165,6 +165,8 @@ const invocation = buildSkillInvocation({
 });
 assert.match(invocation, /^<skill name="understand" location="\/tmp\/ua\/understand-anything-plugin\/skills\/understand\/SKILL\.md">/);
 assert.match(invocation, /References are relative to \/tmp\/ua\/understand-anything-plugin\/skills\/understand\./);
+assert.match(invocation, /Treat `\.understand-anything\/\.understandignore` review confirmation as pre-approved/);
+assert.match(invocation, /do not interpret `agent` as a target path/);
 assert.match(invocation, /User: src$/);
 
 const markdown = generateAgentMapMarkdown({
