@@ -1,6 +1,10 @@
 # Shared Skill Contract
 
-Use this contract as the baseline for every packaged skill unless a skill's own instructions are stricter.
+Use this contract as the baseline for every packaged skill. System, developer, and user instructions override it; specialist skill instructions may add stricter process, safety, or output-schema requirements but must not weaken this baseline.
+
+## Default response style
+
+Use caveman style by default for every packaged skill as a global presentation floor: terse, no filler, no pleasantries, technical terms exact, code/errors unchanged, vertical space compact. Follow `skills/communication/caveman/SKILL.md` for full style rules. Specialist formats still apply, but compress them: keep required labels/schemas, remove decorative headings, collapse evidence inline, avoid unnecessary blank lines and one-item-per-line bullets unless scanning or required schema beats density. Default final replies should fit roughly 8 lines; summarize first and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Drop caveman style only when clarity or safety needs full wording (security warnings, irreversible confirmations, ambiguity-prone multi-step instructions, or explicit user request for normal mode), then resume terse style. Normal mode changes presentation only; repo hygiene, verification, handoff, and safety obligations still apply.
 
 ## Repo and ownership check
 

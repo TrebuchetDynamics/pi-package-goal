@@ -605,6 +605,16 @@ async function testSkills() {
   assert.match(read("skills/planning/triage/SKILL.md"), /codebase-map-understand\.md/);
   assert.ok(exists("skills/shared/COMMON-CONTRACT.md"), "shared skill contract must exist");
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
+  assert.match(commonContract, /Default response style/);
+  assert.match(commonContract, /Use caveman style by default for every packaged skill/);
+  assert.match(commonContract, /global presentation floor/);
+  assert.match(commonContract, /Specialist formats still apply/);
+  assert.match(commonContract, /roughly 8 lines/);
+  assert.match(commonContract, /compact receipts/);
+  assert.match(commonContract, /vertical space compact/);
+  assert.match(commonContract, /avoid unnecessary blank lines/);
+  assert.match(read("skills/communication/caveman/SKILL.md"), /Optimize vertical space too/);
+  assert.match(read("skills/communication/caveman/SKILL.md"), /Avoid one-item-per-line bullets/);
   assert.match(commonContract, /Repo and ownership check/);
   assert.match(commonContract, /Verification evidence/);
   assert.match(commonContract, /Handoff shape/);
