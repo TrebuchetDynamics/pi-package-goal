@@ -190,6 +190,9 @@ export function parseAgentMapArgs(args = "") {
   const [first, ...rest] = tokens;
   if (first?.startsWith("@")) {
     const folder = first.slice(1).replace(/[\\/]+$/, "").trim();
+    if (isCurrentDirectoryToken(folder)) {
+      return { graphRootArg: "", output: rest.join(" ") || "codebase-map-understand.md" };
+    }
     const folderName = basename(folder) || "codebase";
     return {
       graphRootArg: first,
@@ -200,6 +203,18 @@ export function parseAgentMapArgs(args = "") {
   return { graphRootArg: "", output: trimmed };
 }
 
+function isCurrentDirectoryToken(token) {
+  const cleaned = String(token ?? "").replace(/^@/, "").replace(/[\\/]+$/, "");
+  return cleaned === "." || cleaned === "";
+}
+
+export function normalizeSkillArgs(args = "") {
+  const trimmed = args.trim();
+  const [first, ...rest] = splitCommandArgs(trimmed);
+  if (first && isCurrentDirectoryToken(first)) return rest.join(" ");
+  return isCurrentDirectoryToken(trimmed) ? "" : trimmed;
+}
+
 export function buildAutoAgentArgs(understandArgs = "") {
   const tokens = splitCommandArgs(understandArgs).filter((token) => token !== "--no-agent-map");
   const pathToken = tokens.find((token, index) => {
@@ -207,7 +222,8 @@ export function buildAutoAgentArgs(understandArgs = "") {
     const previous = tokens[index - 1];
     return previous !== "--language";
   });
-  return pathToken ? `@${pathToken}` : "";
+  if (!pathToken || isCurrentDirectoryToken(pathToken)) return "";
+  return `@${pathToken}`;
 }
 
 function shouldAutoWriteAgentMap(parsed) {
@@ -717,7 +733,7 @@ function registerUnderstandCommand(pi, name, paths) {
         return;
       }
 
-      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " ").trim());
+      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, normalizeSkillArgs(parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " ")));
       if (shouldAutoWriteAgentMap(parsed)) {
         const agentArgs = buildAutoAgentArgs(parsed.args);
         pi.sendUserMessage(`/understand agent${agentArgs ? ` ${agentArgs}` : ""}`, { deliverAs: "followUp" });

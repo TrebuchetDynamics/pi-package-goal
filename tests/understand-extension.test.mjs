@@ -10,6 +10,7 @@ import {
   getUnderstandPaths,
   handleRefactorCommand,
   normalizeAgentOutputArg,
+  normalizeSkillArgs,
   parseAgentMapArgs,
   parseCompareArgs,
   parseUnderstandCommand,
@@ -126,14 +127,23 @@ assert.deepEqual(parseRefactorInstruction("regenerate with focus services state"
 
 assert.equal(normalizeAgentOutputArg("@frontend"), "frontend-codebase-map-understand.md");
 assert.equal(normalizeAgentOutputArg("@packages/api/"), "api-codebase-map-understand.md");
+assert.equal(normalizeAgentOutputArg("@."), "codebase-map-understand.md");
 assert.equal(normalizeAgentOutputArg("and codebase-map-understand.md"), "codebase-map-understand.md");
 assert.deepEqual(parseAgentMapArgs("@packages/api custom.md"), {
   graphRootArg: "@packages/api",
   output: "custom.md",
 });
+assert.deepEqual(parseAgentMapArgs("@. custom.md"), {
+  graphRootArg: "",
+  output: "custom.md",
+});
 assert.equal(buildAutoAgentArgs("src/frontend --language zh"), "@src/frontend");
 assert.equal(buildAutoAgentArgs("--full --language zh"), "");
 assert.equal(buildAutoAgentArgs("src --no-agent-map"), "@src");
+assert.equal(buildAutoAgentArgs("."), "");
+assert.equal(buildAutoAgentArgs("./"), "");
+assert.equal(normalizeSkillArgs("."), "");
+assert.equal(normalizeSkillArgs("./ --language rust"), "--language rust");
 assert.equal(resolveContainedUnderstandOutputPath("/repo", "reports/map.md"), "/repo/reports/map.md");
 assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "../outside.md"), /must stay inside/);
 assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "/tmp/outside.md"), /must stay inside/);
