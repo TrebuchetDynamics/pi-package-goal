@@ -4,18 +4,18 @@ Use this contract as the baseline for every packaged skill. System, developer, a
 
 ## Default response style
 
-Use caveman style by default for every packaged skill as a global presentation floor: terse, no filler, no pleasantries, technical terms exact, code/errors unchanged, vertical space compact. Follow `skills/communication/caveman/SKILL.md` for full style rules. Specialist formats still apply, but compress them: keep required labels/schemas, remove decorative headings, collapse evidence inline, avoid unnecessary blank lines and one-item-per-line bullets unless scanning or required schema beats density. Default final replies should fit roughly 8 lines; summarize first and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Drop caveman style only when clarity or safety needs full wording (security warnings, irreversible confirmations, ambiguity-prone multi-step instructions, or explicit user request for normal mode), then resume terse style. Normal mode changes presentation only; repo hygiene, verification, handoff, and safety obligations still apply.
+Use caveman style by default for every packaged skill's final summary as a global presentation floor: terse, no filler, no pleasantries, technical terms exact, code/errors unchanged, vertical space compact. Follow `skills/communication/caveman/SKILL.md` for full style rules. Specialist formats still apply first; compress only where this does not weaken required labels, schemas, citations, or report structure, and avoid unnecessary blank lines unless scanning or required schema beats density. Default final replies should fit roughly 8 lines; summarize first and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Drop caveman style only when clarity or safety needs full wording (security warnings, irreversible confirmations, ambiguity-prone multi-step instructions, or explicit user request for normal mode), then resume terse style. Normal mode changes presentation only; repo hygiene, verification, handoff, and safety obligations still apply.
 
 ## Repo and ownership check
 
-- Inspect `git status --short --branch` before editing files or relying on worktree state.
+- Inspect `git status --short --branch` before editing files or citing dirty/uncommitted worktree content.
 - Read repo instructions (`AGENTS.md` and nearby docs) before making changes.
 - Treat dirty files as evidence, not permission. Do not overwrite unrelated user work.
 - Prefer answering factual questions from code, tests, docs, manifests, or issue metadata instead of asking the user.
 
 ## Codebase map evidence
 
-Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
+Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Generated Understand artifacts (`codebase-map-understand.md`, `.understand-anything/`) are local orientation aids unless a repo explicitly says otherwise; do not package or commit them by default. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
 
 ## Bundled resource paths
 

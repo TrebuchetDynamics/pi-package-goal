@@ -13,7 +13,7 @@ Default behavior, without needing the user to ask:
 
 - Check `CONTEXT.md`, `CONTEXT-MAP.md`, ADRs, relevant tests, manifests, and code before asking the owner anything the repo can answer.
 - Ask one hard owner-decision question at a time and wait for feedback before continuing.
-- Put `Recommended answer:` before the question rationale so the owner can accept, reject, or amend a concrete proposal.
+- Put `Recommended answer:` before `Why it matters:` so the owner sees the concrete proposal before the rationale.
 - Update `CONTEXT.md` only after the owner accepts the terminology; never write speculative terms.
 
 Interview the owner relentlessly about every load-bearing aspect of the plan. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. If a question can be answered by exploring the codebase or docs, explore instead of asking.
@@ -23,7 +23,7 @@ Interview the owner relentlessly about every load-bearing aspect of the plan. Wa
 1. Restate the plan in one sentence, name the current design branch, and identify the next hard uncertainty.
 2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, and codebase-map-understand.md when present. Query the map for relationship evidence when the plan spans modules, then verify named files. Classify dirty files as in-scope evidence, unrelated owner work, or blocker before using them.
 3. Answer anything the code/docs can answer; ask the user only owner-decision questions.
-4. If the user asks for a council, or the decision is high-leverage, run a docs-council pass before asking: language steward, architecture skeptic, delivery realist. Use external LLMs only when explicitly requested/approved and available.
+4. If the user asks for a council, or the decision is high-leverage (irreversible, cross-context, glossary-conflicting, production/security-impacting, or validation-order-sensitive), run a docs-council pass before asking: language steward, architecture skeptic, delivery realist. Use external LLMs only when explicitly requested/approved and available.
 5. Ask one question at a time and wait for feedback. Include your recommended answer.
 6. Capture accepted domain terms in `CONTEXT.md` immediately; offer ADRs sparingly for durable trade-offs.
 
@@ -77,11 +77,11 @@ Evidence checked: <files/docs/tests inspected, graph query if used, dirty-path c
 Doc impact: none | CONTEXT.md term | ADR candidate
 ```
 
-After the user answers, restate the resolved decision in one sentence, apply any accepted doc update immediately, then move to the next dependent branch.
+After the user answers, restate the resolved decision in one sentence, apply any accepted doc update through the Updating docs flow, then move to the next dependent branch.
 
 ## Updating docs
 
-When a term is resolved and accepted, update the relevant `CONTEXT.md` inline; do not batch terms until the end. Use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). If the user has not accepted the canonical term, keep grilling instead of writing.
+When a term is resolved and accepted, re-check `git status --short --branch`, then update the relevant `CONTEXT.md` inline; do not batch terms until the end. Use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). If the user has not accepted the canonical term, keep grilling instead of writing.
 
 `CONTEXT.md` is a glossary, not a spec or scratch pad. Keep it free of implementation details. Only add domain concepts specific to the project context; do not add general programming concepts.
 

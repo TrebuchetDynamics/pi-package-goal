@@ -606,9 +606,10 @@ async function testSkills() {
   assert.ok(exists("skills/shared/COMMON-CONTRACT.md"), "shared skill contract must exist");
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
   assert.match(commonContract, /Default response style/);
-  assert.match(commonContract, /Use caveman style by default for every packaged skill/);
+  assert.match(commonContract, /packaged skill's final summary/);
   assert.match(commonContract, /global presentation floor/);
-  assert.match(commonContract, /Specialist formats still apply/);
+  assert.match(commonContract, /Specialist formats still apply first/);
+  assert.match(commonContract, /does not weaken required labels, schemas, citations, or report structure/);
   assert.match(commonContract, /roughly 8 lines/);
   assert.match(commonContract, /compact receipts/);
   assert.match(commonContract, /vertical space compact/);
