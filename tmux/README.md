@@ -56,22 +56,22 @@ tmux source-file ~/.tmux.conf
 ## Runtime flow
 
 - `install.sh` copies the shared assets into user locations: `tmux.conf`, helper scripts, optional local style, and the `tx` launcher.
-- `tmux.conf` renders a static status bar by default: session name on the left, host name on the right, no periodic refresh, and no status-shell commands.
+- `tmux.conf` renders session name, short current path, git branch/status, and host name in the status bar. It refreshes every 120 seconds.
 - `tx` reads session aliases from its config file, starts or switches to the matching tmux session, and uses the alias as the tmux session name.
 - `style.tmux` stores per-machine colors and is sourced by `tmux.conf` from `~/.tmux/style.tmux`.
 
 ## Helper-script contract
 
-The default shared config does not call status helper scripts. This keeps SSH sessions low-data and avoids repeated `git status` work. The installer still places both helpers under `~/.tmux` (or `TMUX_HELPER_DIR`) for users who opt into a richer local status.
+The shared config calls `short-path.sh` and `git-status.sh` in the status bar. The installer places both helpers under `~/.tmux` (or `TMUX_HELPER_DIR`) and rewrites `tmux.conf` to that helper path.
 
-Each helper takes one argument: the current pane path from `#{pane_current_path}`.
+Each helper takes one argument: the current pane path from `#{pane_current_path}`. `git-status.sh` prints the branch in green when clean and red when changed/untracked; outside git repos it prints nothing.
 
-To re-enable path and git status on a fast local connection, put this in `~/.tmux/local.tmux`:
+For very slow SSH/mobile links, disable periodic helper calls in `~/.tmux/local.tmux`:
 
 ```tmux
-set -g status-interval 120
-set -g status-left '#[bg=#{@primary_color},fg=#{@primary_text_color},bold] #S #[bg=#101820,fg=#f8f8f2] #(~/.tmux/short-path.sh #{q:pane_current_path}) #(~/.tmux/git-status.sh #{q:pane_current_path})'
-set -g status-left-length 100
+set -g status-interval 0
+set -g status-left '#[bg=#{@primary_color},fg=#{@primary_text_color},bold] #S '
+set -g status-left-length 40
 ```
 
 ## npm/bin install
@@ -124,10 +124,10 @@ Mouse mode is left at the tmux built-in default (`off`) for maximum SSH/mobile c
 
 The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings only after stale-client cleanup is not enough.
 
-The defaults already favor SSH/mobile performance:
+The defaults keep history large and refresh repo info slowly:
 
 ```tmux
-set -g status-interval 0
+set -g status-interval 120
 set -g history-limit 50000
 ```
 
@@ -160,7 +160,7 @@ set -g @primary_color '#06d6a0'
 set -g @primary_text_color '#101820'
 ```
 
-The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect only the tmux session name and hostname. If enabled in `~/.tmux/local.tmux`, the current git branch is shown by `~/.tmux/git-status.sh`: green when clean, red when changed or untracked.
+The installer creates this file only when missing, so each PC can keep local colors while updating the shared tmux config. These colors affect the tmux session name and hostname. The current git branch is shown by `~/.tmux/git-status.sh`: green when clean, red when changed or untracked.
 
 ## tx config
 

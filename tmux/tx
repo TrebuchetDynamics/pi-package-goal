@@ -515,9 +515,9 @@ doctor_install() {
 
   if [[ -f "$tmux_conf_target" ]]; then
     if grep -F -- "$tmux_helper_dir/short-path.sh" "$tmux_conf_target" >/dev/null || grep -F -- "$tmux_helper_dir/git-status.sh" "$tmux_conf_target" >/dev/null; then
-      printf 'tmux.conf: references optional status helpers\n'
+      printf 'tmux.conf: references status helpers\n'
     else
-      printf 'tmux.conf: static low-bandwidth status (optional helpers installed)\n'
+      printf 'tmux.conf: no status helper references\n'
     fi
   fi
 
