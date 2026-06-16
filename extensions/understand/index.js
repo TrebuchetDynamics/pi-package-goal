@@ -217,11 +217,26 @@ function isCurrentDirectoryToken(token) {
   return cleaned === "." || cleaned === "";
 }
 
+function hasProjectRootArg(tokens) {
+  return tokens.some((token, index) => {
+    if (token.startsWith("--")) return false;
+    return tokens[index - 1] !== "--language";
+  });
+}
+
 export function normalizeSkillArgs(args = "") {
   const trimmed = args.trim();
   const [first, ...rest] = splitCommandArgs(trimmed);
   if (first && isCurrentDirectoryToken(first)) return rest.join(" ");
   return isCurrentDirectoryToken(trimmed) ? "" : trimmed;
+}
+
+export function buildUnderstandSkillArgs(args = "", cwd = process.cwd()) {
+  const normalized = normalizeSkillArgs(args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " "));
+  const tokens = splitCommandArgs(normalized);
+  if (hasProjectRootArg(tokens)) return normalized;
+  const cwdArg = cwd.includes(" ") ? JSON.stringify(cwd) : cwd;
+  return [cwdArg, normalized].filter(Boolean).join(" ");
 }
 
 export function buildAutoAgentArgs(understandArgs = "") {
@@ -742,7 +757,10 @@ function registerUnderstandCommand(pi, name, paths) {
         return;
       }
 
-      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, normalizeSkillArgs(parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " ")));
+      const skillArgs = parsed.skillName === "understand"
+        ? buildUnderstandSkillArgs(parsed.args, ctx.cwd)
+        : normalizeSkillArgs(parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " "));
+      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, skillArgs);
       if (shouldAutoWriteAgentMap(parsed)) {
         const agentArgs = buildAutoAgentArgs(parsed.args);
         pi.sendUserMessage(`/understand agent${agentArgs ? ` ${agentArgs}` : ""}`, { deliverAs: "followUp" });

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   buildAutoAgentArgs,
   buildSkillInvocation,
+  buildUnderstandSkillArgs,
   generateAgentMapMarkdown,
   generateCompareMarkdown,
   getUnderstandPaths,
@@ -144,6 +145,10 @@ assert.equal(buildAutoAgentArgs("."), "");
 assert.equal(buildAutoAgentArgs("./"), "");
 assert.equal(normalizeSkillArgs("."), "");
 assert.equal(normalizeSkillArgs("./ --language rust"), "--language rust");
+assert.equal(buildUnderstandSkillArgs("", "/repo/tmux"), "/repo/tmux");
+assert.equal(buildUnderstandSkillArgs("--full --language zh", "/repo/tmux"), "/repo/tmux --full --language zh");
+assert.equal(buildUnderstandSkillArgs("src/frontend --language zh", "/repo/tmux"), "src/frontend --language zh");
+assert.equal(buildUnderstandSkillArgs(". --language rust", "/repo/tmux"), "/repo/tmux --language rust");
 assert.equal(resolveContainedUnderstandOutputPath("/repo", "reports/map.md"), "/repo/reports/map.md");
 assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "../outside.md"), /must stay inside/);
 assert.throws(() => resolveContainedUnderstandOutputPath("/repo", "/tmp/outside.md"), /must stay inside/);
