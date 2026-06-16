@@ -43,6 +43,14 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/mattpocock-skills-LICENSE`
 
+## DietrichGebert/ponytail
+
+- Source: https://github.com/DietrichGebert/ponytail
+- Snapshot inspected: `adad50d`
+- Usage: source inspiration for the Ponytail compression rules added to `skills/communication/caveman/`.
+- License: MIT
+- Full license copy: `licenses/DietrichGebert-ponytail-LICENSE`
+
 ## gcpdev/llm-council-skill
 
 - Source: https://github.com/gcpdev/llm-council-skill

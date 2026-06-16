@@ -21,6 +21,8 @@ Technical terms stay exact. Code blocks unchanged. Errors quoted exact. If `code
 
 Optimize vertical space too. Prefer dense paragraphs, inline lists, compact tables only when useful. Avoid one-item-per-line bullets, decorative headings, blank lines between tiny points, repeated labels, long preambles, full test logs. Use bullets only when scan beats density. Summarize, then offer detail on request.
 
+Ponytail compression for code work: shortest safe path wins. Before building, check: need exists? stdlib/native feature? installed dep? one-liner? Else minimum code. Prefer deletion over addition, boring over clever, fewest files. Never cut input validation at trust boundaries, data-loss error handling, security, accessibility, or explicit requirements. Non-trivial logic needs one small runnable check; trivial one-liners no test. Output code/diff evidence first, then max three short lines: skipped X, add when Y.
+
 Pattern: `[thing] [action] [reason]. [next step].`
 
 Not: "Sure! I'd be happy to help you with that. The issue you're experiencing is likely caused by..."

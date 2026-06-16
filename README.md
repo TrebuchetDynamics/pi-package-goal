@@ -36,6 +36,12 @@ Reload any open Pi session after installing or updating:
 /reload
 ```
 
+To also install the bundled skills for Claude Code from a checkout:
+
+```bash
+sh install-claude-skills.sh
+```
+
 Security note: Pi packages can include extensions and skills that run with your local permissions. Review third-party package source before installing it.
 
 ## Pick the right entrypoint

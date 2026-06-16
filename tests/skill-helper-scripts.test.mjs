@@ -66,6 +66,29 @@ function testPiLogAuditRedactsFreeText() {
   }
 }
 
+function testClaudeSkillsInstaller() {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "claude-skills-install-"));
+  try {
+    const output = execFileSync("sh", [path.join(root, "install-claude-skills.sh")], {
+      cwd: root,
+      env: { ...process.env, HOME: fixture },
+      encoding: "utf8",
+    });
+    const skillsDir = path.join(fixture, ".claude", "skills");
+    const installedSkillFiles = fs.readdirSync(skillsDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name !== "shared")
+      .filter((entry) => fs.existsSync(path.join(skillsDir, entry.name, "SKILL.md")));
+
+    assert.match(output, /Claude skills dir:/);
+    assert.equal(installedSkillFiles.length, 34);
+    assert.ok(fs.existsSync(path.join(skillsDir, "shared", "COMMON-CONTRACT.md")));
+    assert.match(fs.readFileSync(path.join(skillsDir, "caveman", "SKILL.md"), "utf8"), /\.\.\/shared\/COMMON-CONTRACT\.md/);
+    assert.match(fs.readFileSync(path.join(skillsDir, "technical-auditor", "references", "architecture-deepening-mode.md"), "utf8"), /\.\.\/\.\.\/grill-with-docs\/CONTEXT-FORMAT\.md/);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
 function testStitchSkillUsesBundledResourcePrefix() {
   const skill = fs.readFileSync(path.join(root, "skills/frontend/stitch-react-components/SKILL.md"), "utf8");
   assert.match(skill, /Set `SKILL_DIR` to this skill directory/);
@@ -83,6 +106,7 @@ function testStitchSkillUsesBundledResourcePrefix() {
 
 testPromptCacheSummary();
 testPiLogAuditRedactsFreeText();
+testClaudeSkillsInstaller();
 testStitchSkillUsesBundledResourcePrefix();
 
 console.log("skill-helper-scripts ok");

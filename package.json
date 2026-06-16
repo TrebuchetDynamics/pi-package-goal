@@ -49,7 +49,8 @@
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
-    "install-autofolderrefactor.sh"
+    "install-autofolderrefactor.sh",
+    "install-claude-skills.sh"
   ],
   "pi": {
     "extensions": [
