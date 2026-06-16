@@ -20,6 +20,6 @@ jobs:
       - name: Check package contents
         run: |
           npm pack --dry-run 2>&1 | tee /tmp/pi-package-goal-pack.txt
-          ! grep -E '(^|/)\.pi/|\.understand-anything' /tmp/pi-package-goal-pack.txt
+          ! grep -E '(^|/)\.pi/|\.understand-anything|codebase-map-understand\.md' /tmp/pi-package-goal-pack.txt
       - name: Audit bundled Stitch tooling
         run: npm --prefix skills/frontend/stitch-react-components audit --omit=dev --audit-level=moderate

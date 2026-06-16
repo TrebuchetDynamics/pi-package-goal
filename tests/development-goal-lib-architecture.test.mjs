@@ -10,6 +10,9 @@ assert.equal(pkg.files.includes("extensions"), true, "published package must inc
 assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk"], "package must register package extensions");
 assert.deepEqual(pkg.pi.themes, ["./themes"], "package must register package themes");
 
+const reportParserSource = fs.readFileSync(path.join(root, "lib", "goal", "report-parser.ts"), "utf8");
+assert.doesNotMatch(reportParserSource, /\bas LoopDecision\b/, "report parser must not carry stale unimported LoopDecision casts");
+
 const reportParser = await import(path.join(root, "lib", "goal", "report-parser.ts"));
 assert.equal(typeof reportParser.parseFinalReport, "function");
 

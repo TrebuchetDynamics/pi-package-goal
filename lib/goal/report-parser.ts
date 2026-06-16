@@ -246,7 +246,7 @@ function parseFinalMarkerBlock(text: string): FinalMarkerBlock | undefined {
   return {
     index: match.index,
     validated: match[1].toLowerCase() === "yes",
-    decision: match[2].toLowerCase() as LoopDecision,
+    decision: match[2].toLowerCase() as GoalDecision,
   };
 }
 

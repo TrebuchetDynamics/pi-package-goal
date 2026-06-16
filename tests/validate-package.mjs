@@ -380,6 +380,7 @@ async function testPackageManifest() {
   assert.equal(pkg.files.includes("tmux"), true, "package tarball must include tmux helpers and tx bin");
   assert.equal(pkg.files.includes("!**/.pi/**"), true, "package tarball must exclude local Pi artifacts");
   assert.equal(pkg.files.includes("!**/.understand-anything/**"), true, "package tarball must exclude generated Understand artifacts");
+  assert.equal(pkg.files.includes("codebase-map-understand.md"), false, "package tarball must not include generated Understand agent maps");
   assert.ok(exists(".github/workflows/ci.yml"), "CI must run package validation");
   const ci = read(".github/workflows/ci.yml");
   assert.match(ci, /npm test/);
@@ -388,6 +389,7 @@ async function testPackageManifest() {
   assert.match(ci, /git diff --check/);
   assert.match(ci, /npm pack --dry-run/);
   assert.match(ci, /\.understand-anything/);
+  assert.match(ci, /codebase-map-understand\\\.md/);
   assert.match(ci, /npm --prefix skills\/frontend\/stitch-react-components audit/);
   for (const file of fs.readdirSync(path.join(root, "tests")).filter((name) => name.endsWith(".mjs"))) {
     assert.doesNotMatch(read(path.join("tests", file)), /\/home\/xel\/\.nvm\/.*pi-coding-agent/, `${file} must not depend on a machine-local global Pi install`);
