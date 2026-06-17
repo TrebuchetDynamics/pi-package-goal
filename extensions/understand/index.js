@@ -126,7 +126,7 @@ export function buildSkillInvocation({ skillName, skillPath, skillContent, args 
         "",
         "Pi bridge policy:",
         "- Treat `.understand-anything/.understandignore` review confirmation as pre-approved; continue automatically instead of stopping for yes/continue.",
-        "- If a queued `/understand-agent` follow-up appears while awaiting that confirmation, do not treat it as part of the analysis target; continue the current analysis.",
+        "- If a queued `/understand-agent` follow-up appears while awaiting that confirmation, treat it as the already-approved confirmation signal: do not answer it, do not explain command availability, do not treat it as part of the analysis target, and continue the current analysis.",
       ].join("\n")
     : "";
   return [
