@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   buildAutoAgentArgs,
+  buildAutoAgentCommand,
   buildSkillInvocation,
   buildUnderstandSkillArgs,
   generateAgentMapMarkdown,
@@ -148,6 +149,8 @@ assert.equal(buildAutoAgentArgs("--full --language zh"), "");
 assert.equal(buildAutoAgentArgs("src --no-agent-map"), "@src");
 assert.equal(buildAutoAgentArgs("."), "");
 assert.equal(buildAutoAgentArgs("./"), "");
+assert.equal(buildAutoAgentCommand(""), "/understand-agent");
+assert.equal(buildAutoAgentCommand("src/frontend --language zh"), "/understand-agent @src/frontend");
 assert.equal(normalizeSkillArgs("."), "");
 assert.equal(normalizeSkillArgs("./ --language rust"), "--language rust");
 assert.equal(buildUnderstandSkillArgs("", "/repo/tmux"), "/repo/tmux");
@@ -176,7 +179,7 @@ const invocation = buildSkillInvocation({
 assert.match(invocation, /^<skill name="understand" location="\/tmp\/ua\/understand-anything-plugin\/skills\/understand\/SKILL\.md">/);
 assert.match(invocation, /References are relative to \/tmp\/ua\/understand-anything-plugin\/skills\/understand\./);
 assert.match(invocation, /Treat `\.understand-anything\/\.understandignore` review confirmation as pre-approved/);
-assert.match(invocation, /do not interpret `agent` as a target path/);
+assert.match(invocation, /do not treat it as part of the analysis target/);
 assert.match(invocation, /User: src$/);
 
 const markdown = generateAgentMapMarkdown({

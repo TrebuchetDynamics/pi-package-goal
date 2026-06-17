@@ -126,7 +126,7 @@ export function buildSkillInvocation({ skillName, skillPath, skillContent, args 
         "",
         "Pi bridge policy:",
         "- Treat `.understand-anything/.understandignore` review confirmation as pre-approved; continue automatically instead of stopping for yes/continue.",
-        "- If a queued `/understand agent` follow-up appears while awaiting that confirmation, do not interpret `agent` as a target path; continue the current analysis.",
+        "- If a queued `/understand-agent` follow-up appears while awaiting that confirmation, do not treat it as part of the analysis target; continue the current analysis.",
       ].join("\n")
     : "";
   return [
@@ -249,6 +249,11 @@ export function buildAutoAgentArgs(understandArgs = "") {
   });
   if (!pathToken || isCurrentDirectoryToken(pathToken)) return "";
   return `@${pathToken}`;
+}
+
+export function buildAutoAgentCommand(understandArgs = "") {
+  const agentArgs = buildAutoAgentArgs(understandArgs);
+  return `/understand-agent${agentArgs ? ` ${agentArgs}` : ""}`;
 }
 
 function shouldAutoWriteAgentMap(parsed) {
@@ -765,8 +770,7 @@ function registerUnderstandCommand(pi, name, paths) {
         : normalizeSkillArgs(parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " "));
       await sendSkillInvocation(pi, ctx, paths, parsed.skillName, skillArgs);
       if (shouldAutoWriteAgentMap(parsed)) {
-        const agentArgs = buildAutoAgentArgs(parsed.args);
-        pi.sendUserMessage(`/understand agent${agentArgs ? ` ${agentArgs}` : ""}`, { deliverAs: "followUp" });
+        pi.sendUserMessage(buildAutoAgentCommand(parsed.args), { deliverAs: "followUp" });
       }
     },
   });
