@@ -20,7 +20,7 @@ default_config_path() {
 
 CONFIG_PATH=$(default_config_path)
 TMUX_BIN=${TX_TMUX:-tmux}
-TX_COLOR_MODE=${TX_COLOR:-auto}
+TX_COLOR_MODE=${TX_COLOR:-always}
 TX_USE_COLOR=0
 if [[ -z "${NO_COLOR:-}" ]]; then
   case "$TX_COLOR_MODE" in
@@ -31,7 +31,7 @@ if [[ -z "${NO_COLOR:-}" ]]; then
   esac
 fi
 
-RESERVED_ALIASES=(help ls kill kill-all init add doctor which config install completion __complete_aliases __complete_commands)
+RESERVED_ALIASES=(help ls kill kill-all init add remove edit doctor which config install completion __complete_aliases __complete_commands)
 
 declare -A ALIAS_TO_PATH=()
 declare -A PATH_TO_ALIASES=()
@@ -91,6 +91,8 @@ Usage:
                           Prompt for an alias and add/update that directory mapping.
   tx add . <alias[,..]>
                           Add alias mapping for the current directory without prompting.
+  tx remove <alias>       Remove one alias from the tx config.
+  tx edit <alias> [new]   Rename one alias in the tx config; prompts when [new] is omitted.
   tx init                 Create an example config if one does not exist.
   tx config               Print the config path.
   tx install              Install tmux.conf, status helpers, and tx for this user.
@@ -119,8 +121,7 @@ Environment:
   TX_CONFIG                         Override config file path.
   TX_TMUX                           Override tmux binary name/path.
   TX_DISPLAY_STRIP_PREFIX           Optional prefix to hide in tx ls paths.
-  TX_COLOR=auto|always|never        Color tx ls status cells (default: auto; NO_COLOR disables).
-  TX_LS_SYMBOLS=ascii|unicode|0     Optional status symbols; default text-only for portability.
+  TX_COLOR=always|auto|never        Color tx ls aliases (default: always; NO_COLOR disables).
   TX_COMPLETION_COMMAND             Command name emitted by completion scripts (default: tx).
   TMUX_CONF_TARGET                  Install/doctor target for tmux.conf.
   TMUX_HELPER_DIR                   Install/doctor target for status helpers.
@@ -215,33 +216,19 @@ colorize() {
   fi
 }
 
-status_label() {
-  local status=$1 style=${TX_LS_SYMBOLS:-0}
-  case "$style:$status" in
-    unicode:running) printf '● running' ;;
-    unicode:stopped) printf '○ stopped' ;;
-    unicode:missing) printf '• missing' ;;
-    ascii:running) printf '%s' '+ running' ;;
-    ascii:stopped) printf '%s' '- stopped' ;;
-    ascii:missing) printf '%s' '! missing' ;;
-    *) printf '%s' "$status" ;;
-  esac
-}
-
 colorize_status() {
   local status=$1 text=$2
   case "$status" in
     running) colorize '32' "$text" ;;
-    stopped) colorize '2' "$text" ;;
+    stopped) colorize '31' "$text" ;;
     missing) colorize '31' "$text" ;;
     *) printf '%s' "$text" ;;
   esac
 }
 
 completion_commands() {
-  printf '%s\n' help ls kill kill-all init add doctor which config install completion
+  printf '%s\n' help ls kill kill-all init add remove edit doctor which config install completion
 }
-
 completion_aliases() {
   [[ -f "$CONFIG_PATH" ]] || return 0
   load_config
@@ -266,7 +253,7 @@ _tx_completion() {
   fi
   cmd="${COMP_WORDS[1]}"
   case "$cmd" in
-    which|kill|-k|--kill)
+    which|kill|remove|edit|-k|--kill)
       COMPREPLY=( $(compgen -W "$aliases" -- "$cur") )
       ;;
     completion)
@@ -290,7 +277,7 @@ _tx_completion() {
   if (( CURRENT == 2 )); then
     _describe 'tx commands' commands
     _describe 'tx aliases' aliases
-  elif [[ \${words[2]} == (which|kill|-k|--kill) ]]; then
+  elif [[ \${words[2]} == (which|kill|remove|edit|-k|--kill) ]]; then
     _describe 'tx aliases' aliases
   elif [[ \${words[2]} == completion ]]; then
     _values 'shell' bash zsh fish
@@ -304,7 +291,7 @@ EOF
     fish)
       cat <<EOF
 complete -c ${command_name} -f -n '__fish_use_subcommand' -a '(${command_name} __complete_commands; ${command_name} __complete_aliases)'
-complete -c ${command_name} -f -n '__fish_seen_subcommand_from which kill -k --kill' -a '(${command_name} __complete_aliases)'
+complete -c ${command_name} -f -n '__fish_seen_subcommand_from which kill remove edit -k --kill' -a '(${command_name} __complete_aliases)'
 complete -c ${command_name} -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c ${command_name} -n '__fish_seen_subcommand_from add' -a '(__fish_complete_directories)'
 EOF
@@ -318,6 +305,9 @@ EOF
 load_config() {
   [[ -f "$CONFIG_PATH" ]] || die "config not found: $CONFIG_PATH"
 
+  ALIAS_TO_PATH=()
+  PATH_TO_ALIASES=()
+  PATH_ORDER=()
   declare -A vars=()
   local lineno=0 line key val keys path part
   local -a parts
@@ -472,6 +462,98 @@ add_alias() {
   fi
 }
 
+rewrite_alias_row() {
+  local mode=$1 alias=$2 replacement=${3:-}
+  [[ -f "$CONFIG_PATH" ]] || die "$mode: config missing: $CONFIG_PATH"
+  load_config
+
+  local target tmp line key val map_keys path changed=0 kept_keys part new_part
+  local -a parts kept_parts
+  alias=$(resolve_alias "$alias")
+  target=${ALIAS_TO_PATH[$alias]}
+  tmp=$(mktemp "${CONFIG_PATH}.tmp.XXXXXX")
+  declare -A vars=()
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$line" =~ ^[[:space:]]*([A-Z_][A-Z0-9_]*)=(.*)$ ]]; then
+      key=${BASH_REMATCH[1]}
+      val=${BASH_REMATCH[2]}
+      vars[$key]=$(expand_vars "$val" vars)
+      printf '%s\n' "$line" >> "$tmp"
+      continue
+    fi
+
+    if [[ "$line" =~ ^[[:space:]]*([A-Za-z0-9_,-]+)[[:space:]]*=[[:space:]]*(.*)$ ]]; then
+      map_keys=${BASH_REMATCH[1]}
+      val=${BASH_REMATCH[2]}
+      val=${val%"${val##*[![:space:]]}"}
+      path=$(expand_vars "$val" vars)
+      path=$(expand_tilde "$path")
+      if [[ "$path" == "$target" ]]; then
+        IFS=',' read -ra parts <<< "$map_keys"
+        kept_parts=()
+        for part in "${parts[@]}"; do
+          if [[ "$part" == "$alias" ]]; then
+            changed=1
+            [[ "$mode" == "edit" ]] && kept_parts+=("$replacement")
+          else
+            kept_parts+=("$part")
+          fi
+        done
+        if (( ${#kept_parts[@]} > 0 )); then
+          kept_keys=""
+          for new_part in "${kept_parts[@]}"; do
+            [[ -n "$kept_keys" ]] && kept_keys+=","
+            kept_keys+="$new_part"
+          done
+          printf '%s=%s\n' "$kept_keys" "$val" >> "$tmp"
+        fi
+        continue
+      fi
+    fi
+
+    printf '%s\n' "$line" >> "$tmp"
+  done < "$CONFIG_PATH"
+
+  if (( changed == 0 )); then
+    rm -f "$tmp"
+    die "$mode: alias not found: $alias"
+  fi
+
+  mv "$tmp" "$CONFIG_PATH"
+  if [[ "$mode" == "edit" ]]; then
+    printf 'renamed: %s -> %s=%s\n' "$alias" "$replacement" "$target"
+  else
+    printf 'removed: %s=%s\n' "$alias" "$target"
+  fi
+}
+
+remove_alias() {
+  [[ $# -eq 1 ]] || die "remove: expected exactly one alias"
+  rewrite_alias_row remove "$1"
+}
+
+edit_alias() {
+  [[ $# -ge 1 && $# -le 2 ]] || die "edit: expected alias and optional new alias"
+  [[ -f "$CONFIG_PATH" ]] || die "edit: config missing: $CONFIG_PATH"
+  load_config
+
+  local old_alias new_alias
+  old_alias=$(resolve_alias "$1")
+  if [[ $# -eq 2 ]]; then
+    new_alias=$2
+  else
+    printf 'Rename %s to: ' "$old_alias" >&2
+    IFS= read -r new_alias || die "edit: alias prompt cancelled"
+  fi
+  validate_alias_list "$new_alias" "edit"
+  [[ "$new_alias" != "$old_alias" ]] || die "edit: new alias matches old alias: $old_alias"
+  if [[ -n "${ALIAS_TO_PATH[$new_alias]+x}" ]]; then
+    die "edit: duplicate alias '$new_alias' (already maps to ${ALIAS_TO_PATH[$new_alias]})"
+  fi
+  rewrite_alias_row edit "$old_alias" "$new_alias"
+}
+
 print_alias_path() {
   local alias
   alias=$(resolve_alias "$1")
@@ -566,10 +648,10 @@ list_sessions() {
   local running=""
   running=$("$TMUX_BIN" list-sessions -F '#{session_name}' 2>/dev/null || true)
 
-  local -a aliases=() statuses=() status_labels=() display_paths=()
+  local -a row_aliases=() row_aliases_plain=() row_paths=()
   local total=0 running_count=0 missing_count=0
-  local p alias_str a disp dir_exists status label
-  local -a parts
+  local p alias_str a disp dir_exists status item colored_item plain_item joined colored_joined
+  local -a parts colored_parts plain_parts
 
   for p in "${PATH_ORDER[@]}"; do
     alias_str=${PATH_TO_ALIASES[$p]}
@@ -577,6 +659,8 @@ list_sessions() {
     disp=$(display_path "$p")
     dir_exists=1
     [[ -d "$p" ]] || dir_exists=0
+    colored_parts=()
+    plain_parts=()
     for a in "${parts[@]}"; do
       total=$((total + 1))
       if (( ! dir_exists )); then
@@ -588,12 +672,24 @@ list_sessions() {
       else
         status="stopped"
       fi
-      label=$(status_label "$status")
-      aliases+=("$a")
-      statuses+=("$status")
-      status_labels+=("$label")
-      display_paths+=("$disp")
+      item=$a
+      colored_item=$(colorize_status "$status" "$item")
+      colored_parts+=("$colored_item")
+      plain_parts+=("$item")
     done
+    joined=""
+    colored_joined=""
+    for item in "${plain_parts[@]}"; do
+      [[ -n "$joined" ]] && joined+=", "
+      joined+="$item"
+    done
+    for item in "${colored_parts[@]}"; do
+      [[ -n "$colored_joined" ]] && colored_joined+=", "
+      colored_joined+="$item"
+    done
+    row_aliases+=("$colored_joined")
+    row_aliases_plain+=("$joined")
+    row_paths+=("$disp")
   done
 
   printf 'tx sessions\n'
@@ -604,30 +700,26 @@ list_sessions() {
     return 0
   fi
 
-  local alias_w=5 status_w=6 path_w=4
-  local i n=${#aliases[@]}
+  local alias_w=7 path_w=4
+  local i n=${#row_aliases[@]}
   for (( i=0; i<n; i++ )); do
-    (( ${#aliases[i]}        > alias_w  )) && alias_w=${#aliases[i]}
-    (( ${#status_labels[i]}  > status_w )) && status_w=${#status_labels[i]}
-    (( ${#display_paths[i]}  > path_w   )) && path_w=${#display_paths[i]}
+    (( ${#row_aliases_plain[i]} > alias_w )) && alias_w=${#row_aliases_plain[i]}
+    (( ${#row_paths[i]}          > path_w  )) && path_w=${#row_paths[i]}
   done
 
-  local alias_dash status_dash path_dash
-  printf -v alias_dash  '%*s' "$alias_w"  ''
-  printf -v status_dash '%*s' "$status_w" ''
-  printf -v path_dash   '%*s' "$path_w"   ''
+  local alias_dash path_dash
+  printf -v alias_dash '%*s' "$alias_w" ''
+  printf -v path_dash  '%*s' "$path_w"  ''
   alias_dash=${alias_dash// /-}
-  status_dash=${status_dash// /-}
   path_dash=${path_dash// /-}
 
-  printf '  %-*s  %-*s  %s\n'   "$alias_w" 'Alias'      "$status_w" 'Status'      'Path'
-  printf '  %s  %s  %s\n'        "$alias_dash"           "$status_dash"            "$path_dash"
-  local alias_cell status_cell path_cell
+  printf '  %-*s  %s\n' "$alias_w" 'Aliases' 'Path'
+  printf '  %s  %s\n' "$alias_dash" "$path_dash"
+  local pad
   for (( i=0; i<n; i++ )); do
-    printf -v alias_cell  '%-*s' "$alias_w" "${aliases[i]}"
-    printf -v status_cell '%-*s' "$status_w" "${status_labels[i]}"
-    printf -v path_cell   '%s' "${display_paths[i]}"
-    printf '  %s  %s  %s\n' "$alias_cell" "$(colorize_status "${statuses[i]}" "$status_cell")" "$path_cell"
+    pad=$((alias_w - ${#row_aliases_plain[i]}))
+    printf '  %s' "${row_aliases[i]}"
+    printf '%*s  %s\n' "$pad" '' "${row_paths[i]}"
   done
 
   printf '\n%d configured; %d running; %d missing target dirs.\n' \
@@ -809,6 +901,14 @@ main() {
     add)
       shift
       add_alias "$@"
+      ;;
+    remove)
+      shift
+      remove_alias "$@"
+      ;;
+    edit)
+      shift
+      edit_alias "$@"
       ;;
     doctor)
       if [[ $# -eq 2 && "$2" == "--install" ]]; then

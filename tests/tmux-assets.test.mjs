@@ -64,6 +64,8 @@ async function testScriptSyntaxAndHelp() {
   assert.match(help, /tx add <alias\[,\.\.\]> \[dir\]/);
   assert.match(help, /tx add <dir> <alias\[,\.\.\]>/);
   assert.match(help, /tx add \. <alias\[,\.\.\]>/);
+  assert.match(help, /tx remove <alias>/);
+  assert.match(help, /tx edit <alias> \[new\]/);
   assert.match(help, /tx init/);
   assert.match(help, /tx config/);
   assert.match(help, /tx install/);
@@ -118,18 +120,32 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
     assert.match(run(tx, ["add", dirFirstProject, "df"], { env }), /added: df=/);
     assert.equal(run(tx, ["which", "df"], { env }).trim(), fs.realpathSync(dirFirstProject));
     assert.deepEqual(run(tx, ["__complete_aliases"], { env }).trim().split(/\n/), ["aa", "ab", "df", "dot2", "ga", "gormes", "here", "pp"]);
+    assert.match(run(tx, ["remove", "dot"], { env }), /removed: dot2=/);
+    assert.throws(() => run(tx, ["which", "dot2"], { env }), /failed/);
+    assert.equal(run(tx, ["which", "here"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(run(tx, ["edit", "pp", "p2"], { env }), /renamed: pp -> p2=/);
+    assert.throws(() => run(tx, ["which", "pp"], { env }), /failed/);
+    assert.equal(run(tx, ["which", "p2"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(run(tx, ["edit", "p2"], { env, input: "p3\n" }), /renamed: p2 -> p3=/);
+    assert.equal(run(tx, ["which", "p3"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(fs.readFileSync(config, "utf8"), /p3,here=.*prompt-project/);
+    assert.doesNotMatch(fs.readFileSync(config, "utf8"), /(^|,)pp[,=]|(^|,)p2[,=]|(^|,)dot2[,=]/m);
+    assert.match(run(tx, ["__complete_commands"], { env }), /\bremove\b/);
+    assert.match(run(tx, ["__complete_commands"], { env }), /\bedit\b/);
     assert.match(run(tx, ["__complete_commands"], { env }), /\bcompletion\b/);
     const bashCompletion = run(tx, ["completion", "bash"], { env });
     assert.match(bashCompletion, /__complete_aliases/);
+    assert.match(bashCompletion, /which\|kill\|remove\|edit\|-k\|--kill/);
     assert.match(bashCompletion, /complete -F _tx_completion tx/);
     const zshCompletion = run(tx, ["completion", "zsh"], { env: { ...env, TX_COMPLETION_COMMAND: "tx-dev" } });
     assert.match(zshCompletion, /#compdef tx-dev/);
+    assert.match(zshCompletion, /which\|kill\|remove\|edit\|-k\|--kill/);
     const fishCompletion = run(tx, ["completion", "fish"], { env });
     assert.match(fishCompletion, /complete -c tx/);
-    assert.match(fs.readFileSync(config, "utf8"), /pp,here,dot2=.*prompt-project/);
+    assert.match(fishCompletion, /which kill remove edit -k --kill/);
 
-    const reserved = runFail(tx, ["add", "help", project], { env });
-    assert.match(reserved.stderr, /alias 'help' is reserved/);
+    const reserved = runFail(tx, ["add", "edit", project], { env });
+    assert.match(reserved.stderr, /alias 'edit' is reserved/);
 
     fs.appendFileSync(config, `missing=${path.join(tmp, "missing")}\n`);
     const missing = runFail(tx, ["doctor"], { env });
@@ -195,20 +211,17 @@ esac
     fs.chmodSync(fakeTmux, 0o755);
 
     const plain = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never" } });
-    assert.match(plain, /run\s+running\s+.*present/);
-    assert.match(plain, /stop\s+stopped\s+.*present/);
-    assert.match(plain, /miss\s+missing\s+.*missing/);
+    assert.match(plain, /run, stop\s+.*present/);
+    assert.match(plain, /miss\s+.*missing/);
+    assert.equal((plain.match(/present/g) ?? []).length, 1);
     assert.doesNotMatch(plain, /\u001b\[/);
-    assert.doesNotMatch(plain, /[●○•]/);
+    assert.doesNotMatch(plain, /\(running\)|\(stopped\)|\(missing\)|[●○•]/);
 
     const colored = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "always" } });
-    assert.match(colored, /\u001b\[32m/);
-    assert.match(colored, /\u001b\[31m/);
-
-    const asciiSymbols = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never", TX_LS_SYMBOLS: "ascii" } });
-    assert.match(asciiSymbols, /\+ running/);
-    assert.match(asciiSymbols, /- stopped/);
-    assert.match(asciiSymbols, /! missing/);
+    assert.match(colored, /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m/);
+    assert.match(colored, /\u001b\[31mmiss\u001b\[0m/);
+    assert.match(colored, /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m\s+.*present/);
+    assert.doesNotMatch(colored, /\(running\)|\(stopped\)|\(missing\)/);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

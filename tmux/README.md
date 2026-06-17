@@ -203,13 +203,15 @@ tx add ~/git/gormes/gormes-agent
 
 If the target directory already has a config row, the new alias is appended to that row's comma-separated alias list.
 
-Inspect and use:
+Inspect, rename, remove, and use:
 
 ```sh
 tx config
 tx ls
 tx doctor
 tx which ga
+tx edit asul azul
+tx remove oldalias
 tx ga
 ```
 
@@ -236,4 +238,4 @@ ga,gormes=$WORK/gormes/gormes-agent
 
 Alias prefixes are accepted. Exact aliases win; otherwise the shortest matching alias wins, with alphabetical order used as a tie-breaker.
 
-`tx ls` defaults to text-only statuses for portability across terminals and fonts. Colors are enabled only when stdout is a terminal; use `TX_COLOR=always` or `TX_COLOR=never` to override, and `NO_COLOR=1` to disable. Optional symbols are available with `TX_LS_SYMBOLS=ascii` or `TX_LS_SYMBOLS=unicode`.
+`tx ls` groups aliases by target directory to save vertical space. Running aliases are green; stopped or missing aliases are red. No status words are printed in the alias list. Colors are enabled by default for SSH terminals; use `TX_COLOR=auto` for TTY-only color, `TX_COLOR=never` to disable, or `NO_COLOR=1` to disable.
