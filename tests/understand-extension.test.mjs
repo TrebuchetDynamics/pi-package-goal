@@ -65,6 +65,11 @@ assert.deepEqual(parseUnderstandCommand("understand", "agent and codebase-map-un
   args: "and codebase-map-understand.md",
 });
 
+assert.deepEqual(parseUnderstandCommand("understand-agent", "@frontend"), {
+  type: "agent",
+  args: "@frontend",
+});
+
 assert.deepEqual(parseUnderstandCommand("understand", "compare @project-a @project-b"), {
   type: "compare",
   args: "@project-a @project-b",

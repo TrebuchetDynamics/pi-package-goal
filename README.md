@@ -108,7 +108,7 @@ While active, the extension exposes `get_goal` and `update_goal` tools so the ag
 
 ### `/goal-technical-auditor`
 
-`/goal-technical-auditor [--tokens 200k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`).
+`/goal-technical-auditor [--tokens 700k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`).
 
 Examples:
 
@@ -132,8 +132,8 @@ On first use it prompts to clone Understand-Anything into `~/.understand-anythin
 | `/understand dashboard` | Open the upstream dashboard workflow. |
 | `/understand chat How does auth work?` | Ask about the generated graph. |
 | `/understand diff` | Summarize recent graph/code changes. |
-| `/understand agent` | Refresh `codebase-map-understand.md` from an existing graph. |
-| `/understand agent @frontend` | Refresh `frontend-codebase-map-understand.md` from `frontend/.understand-anything/knowledge-graph.json`. |
+| `/understand agent` or `/understand-agent` | Refresh `codebase-map-understand.md` from an existing graph. |
+| `/understand agent @frontend` or `/understand-agent @frontend` | Refresh `frontend-codebase-map-understand.md` from `frontend/.understand-anything/knowledge-graph.json`. |
 | `/understand compare ../project-a ../project-b` | Compare two existing graphs and write a deterministic compare map. |
 | `/understand refactor "auth flow"` | Generate a deterministic refactor plan from the current graph. |
 | `/understand-refactor @internal/channels/telegram/.` | Generate/use a folder-only graph for refactor planning. |
@@ -154,6 +154,7 @@ Direct aliases are also registered:
 /understand-onboard
 /understand-domain
 /understand-knowledge
+/understand-agent
 /understand-compare
 /understand-refactor
 ```

@@ -674,6 +674,9 @@ async function testSkills() {
   assert.match(gitCommitPush, /never because the user omitted explicit ship wording/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
+  assert.match(gitCommitPush, /`git diff --stat` excludes untracked files/);
+  assert.match(gitCommitPush, /modified and untracked files/);
+  assert.match(gitCommitPush, /Completion audit/);
   assert.match(gitCommitPush, /Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes/);
 }
 

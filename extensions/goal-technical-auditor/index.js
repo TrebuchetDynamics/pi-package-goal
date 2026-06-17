@@ -9,7 +9,7 @@ export default function goalTechnicalAuditor(pi) {
   pi.registerCommand("goal-technical-auditor", {
     description: "Start a goal-driven technical-auditor Full-mode automation loop",
     getArgumentCompletions: (prefix) => {
-      const values = [".", "--tokens 200k .", "--tokens 500k .", "--dry-run .", "--focus bug-hunt-refactor .", "skills", "extensions", "lib"];
+      const values = [".", "--tokens 700k .", "--tokens 500k .", "--tokens 200k .", "--dry-run .", "--focus bug-hunt-refactor .", "skills", "extensions", "lib"];
       const filtered = values.filter((value) => value.startsWith(prefix));
       return filtered.length ? filtered.map((value) => ({ value, label: value })) : null;
     },

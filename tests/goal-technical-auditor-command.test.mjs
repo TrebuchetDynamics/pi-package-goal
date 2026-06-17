@@ -5,16 +5,16 @@ import { join } from "node:path";
 import registerGoalTechnicalAuditor from "../extensions/goal-technical-auditor/index.js";
 import { buildGoalTechnicalAuditorObjective, DEFAULT_TOKEN_BUDGET, formatScopeForObjective, interpretScopeOrPrompt, parseGoalTechnicalAuditorArgs, validateScopeInsideCwd } from "../lib/goal-technical-auditor/command.js";
 
-assert.equal(DEFAULT_TOKEN_BUDGET, "200k");
-assert.deepEqual(parseGoalTechnicalAuditorArgs(""), { scope: ".", tokenBudget: "200k", dryRun: false, help: false, focus: null, prompt: "", error: null });
-assert.deepEqual(parseGoalTechnicalAuditorArgs("skills"), { scope: "skills", tokenBudget: "200k", dryRun: false, help: false, focus: null, prompt: "", error: null });
+assert.equal(DEFAULT_TOKEN_BUDGET, "700k");
+assert.deepEqual(parseGoalTechnicalAuditorArgs(""), { scope: ".", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "", error: null });
+assert.deepEqual(parseGoalTechnicalAuditorArgs("skills"), { scope: "skills", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "", error: null });
 assert.deepEqual(parseGoalTechnicalAuditorArgs("--tokens 500k extensions"), { scope: "extensions", tokenBudget: "500k", dryRun: false, help: false, focus: null, prompt: "", error: null });
 assert.deepEqual(parseGoalTechnicalAuditorArgs("lib --tokens=1M"), { scope: "lib", tokenBudget: "1M", dryRun: false, help: false, focus: null, prompt: "", error: null });
-assert.deepEqual(parseGoalTechnicalAuditorArgs("--tokens 0 extensions"), { scope: "extensions", tokenBudget: "200k", dryRun: false, help: false, focus: null, prompt: "", error: "Token budget must be positive." });
+assert.deepEqual(parseGoalTechnicalAuditorArgs("--tokens 0 extensions"), { scope: "extensions", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "", error: "Token budget must be positive." });
 assert.deepEqual(parseGoalTechnicalAuditorArgs("--dry-run --tokens 500k extensions"), { scope: "extensions", tokenBudget: "500k", dryRun: true, help: false, focus: null, prompt: "", error: null });
-assert.deepEqual(parseGoalTechnicalAuditorArgs("--focus bug-hunt-refactor lib"), { scope: "lib", tokenBudget: "200k", dryRun: false, help: false, focus: "bug-hunt-refactor", prompt: "", error: null });
-assert.deepEqual(parseGoalTechnicalAuditorArgs("bug hunt"), { scope: ".", tokenBudget: "200k", dryRun: false, help: false, focus: "bug-hunt-refactor", prompt: "bug hunt", error: null });
-assert.deepEqual(parseGoalTechnicalAuditorArgs("audit current repo"), { scope: ".", tokenBudget: "200k", dryRun: false, help: false, focus: null, prompt: "audit current repo", error: null });
+assert.deepEqual(parseGoalTechnicalAuditorArgs("--focus bug-hunt-refactor lib"), { scope: "lib", tokenBudget: "700k", dryRun: false, help: false, focus: "bug-hunt-refactor", prompt: "", error: null });
+assert.deepEqual(parseGoalTechnicalAuditorArgs("bug hunt"), { scope: ".", tokenBudget: "700k", dryRun: false, help: false, focus: "bug-hunt-refactor", prompt: "bug hunt", error: null });
+assert.deepEqual(parseGoalTechnicalAuditorArgs("audit current repo"), { scope: ".", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "audit current repo", error: null });
 assert.deepEqual(interpretScopeOrPrompt(["hunt", "bugs", "in", "repo"]), { scope: ".", focus: null, prompt: "hunt bugs in repo" });
 assert.equal(parseGoalTechnicalAuditorArgs("--help").help, true);
 assert.match(parseGoalTechnicalAuditorArgs("--focus cleanup").error, /Unknown focus: cleanup/);
@@ -34,7 +34,7 @@ try {
 const defaultObjective = buildGoalTechnicalAuditorObjective("");
 assert.equal(defaultObjective.scope, ".");
 assert.equal(defaultObjective.scopeLabel, "the current Pi working directory (`.`)");
-assert.match(defaultObjective.goalCommand, /^\/goal --tokens 200k Run technical-auditor Full mode for the current Pi working directory \(`\.`\)/);
+assert.match(defaultObjective.goalCommand, /^\/goal --tokens 700k Run technical-auditor Full mode for the current Pi working directory \(`\.`\)/);
 
 const objective = buildGoalTechnicalAuditorObjective("--tokens 300k skills/engineering");
 assert.equal(objective.scope, "skills/engineering");

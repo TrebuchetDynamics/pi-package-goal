@@ -51,6 +51,7 @@ const SUBCOMMAND_TO_SKILL = new Map([
 
 const META_COMMANDS = new Set(["help", "install", "status", "update", "agent", "compare", "refactor"]);
 const DIRECT_META_COMMANDS = new Map([
+  ["understand-agent", "agent"],
   ["understand-compare", "compare"],
   ["understand-refactor", "refactor"],
 ]);
@@ -566,7 +567,7 @@ function helpText(paths = getUnderstandPaths()) {
     `  /understand onboard               Generate onboarding guide\n` +
     `  /understand domain                Extract business domain graph\n` +
     `  /understand knowledge <wiki>      Analyze a knowledge base\n\n` +
-    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-compare, /understand-refactor.\n\n` +
+    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-agent, /understand-compare, /understand-refactor.\n\n` +
     `Management:\n` +
     `  /understand install               Clone upstream Understand-Anything\n` +
     `  /understand update                git pull --ff-only upstream checkout\n` +
@@ -707,7 +708,9 @@ export async function handleRefactorCommand(pi, ctx, paths, args = "") {
 function registerUnderstandCommand(pi, name, paths) {
   const description = name === "understand"
     ? "Run Understand-Anything analysis and related graph workflows"
-    : name === "understand-compare"
+    : name === "understand-agent"
+      ? "Write or refresh the agent-readable Understand-Anything Markdown map"
+      : name === "understand-compare"
       ? "Compare two folders with existing Understand-Anything graphs"
       : name === "understand-refactor"
         ? "Generate a deterministic refactor plan from the current Understand-Anything graph"
@@ -778,6 +781,7 @@ export default function understandAnythingExtension(pi) {
   });
 
   registerUnderstandCommand(pi, "understand", paths);
+  registerUnderstandCommand(pi, "understand-agent", paths);
   registerUnderstandCommand(pi, "understand-compare", paths);
   registerUnderstandCommand(pi, "understand-refactor", paths);
   for (const name of SKILL_NAMES) {

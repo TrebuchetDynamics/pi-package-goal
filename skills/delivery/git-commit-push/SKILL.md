@@ -49,7 +49,7 @@ Before blocking on validation, prove at least one of:
 ## Workflow
 
 1. Read repo instructions (`AGENTS.md`, package scripts, relevant docs) and inspect `git status --short --branch`.
-2. Inspect diffs for every changed and untracked path. For untracked files, inspect names, type/size, and contents when text.
+2. Inspect diffs for every changed and untracked path. For untracked files, inspect names, type/size, and contents when text. Remember `git diff --stat` excludes untracked files; report modified and untracked files from `git status --short` plus explicit untracked-file inspection, not diff stat alone.
 3. If the patch claims architecture/refactor/codebase-impact evidence and `codebase-map-understand.md` exists, consult the codebase map for the touched modules/callers and verify the named files before classifying the patch. Do not build or refresh codebase map during delivery unless validation or the accepted scope requires it.
 4. Check whether generated junk, local state, logs, caches, temp files, or tool outputs should be ignored. In ship mode, fix safe hygiene directly: tighten `.gitignore`, remove/leave unstaged generated junk, run formatters already declared by the repo, update imports, and apply small mechanical fixes from validation.
 5. Classify each path:
@@ -93,6 +93,7 @@ Validation:
 - <command>: pass|fail|not run (<reason if needed>)
 Delivery: <commit/push result or why skipped>
 Final state: <git status --short --branch summary>
+Completion audit: <concise statement that all modified and untracked files were inspected/classified; note when untracked tests are absent from diff stat but included from status/inspection>
 GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
