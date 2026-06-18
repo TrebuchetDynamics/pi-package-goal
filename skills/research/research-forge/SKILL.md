@@ -17,6 +17,7 @@ Follow the shared repo/ownership/verification defaults in [COMMON-CONTRACT.md](.
 2. Create or inspect a project folder.
 3. Run the smallest retrieval/analyze step that answers the question.
 4. Save outputs plus `provenance.json` before final response.
+5. If errors, tool failures, suspicious data, or research-subject bugs are found, create or append `BUGS.md` in the output/project folder.
 
 ```sh
 command -v rforge && rforge version || true
@@ -73,6 +74,7 @@ Arbitrary folder fallback: write outputs directly and include:
 <folder>/provenance.json
 <folder>/search-results-<timestamp>.json
 <folder>/papers.json          # when applicable
+<folder>/BUGS.md              # required if errors or bugs are found
 ```
 
 ## Common workflows
@@ -151,6 +153,24 @@ Human approval required before proceeding:
 Waiting; I will not download/package until approval is confirmed.
 ```
 
+## Bug log requirement
+
+If ResearchForge, the researched project, a source API, parser, analysis, or generated artifact exposes errors or likely bugs, write `<project-or-output-folder>/BUGS.md` before final response. Append rather than overwrite when it exists.
+
+Minimum entry format:
+
+```md
+## <ISO 8601 timestamp> — <short title>
+
+- Context: <question/workflow/command>
+- Evidence: <file path, command output, source URL, or citation>
+- Impact: <why it matters>
+- Repro/trigger: `<command or steps>`
+- Status: open|needs-human-review|fixed-upstream|false-positive
+```
+
+Mention `BUGS.md` in `provenance.json.outputs` and in the final response. If no bugs/errors were found, say so; do not create an empty `BUGS.md`.
+
 ## Provenance requirement
 
 Every run must write or append `provenance.json`:
@@ -175,6 +195,7 @@ Before final response:
 - `rforge version` or note `rforge: not available`.
 - List files written.
 - Confirm `provenance.json` exists and names all outputs.
+- If errors or bugs were found, confirm `BUGS.md` exists, is listed in provenance, and summarizes evidence/repro.
 - Surface any unresolved human gate instead of claiming completion.
 
 ## Red lines
@@ -182,4 +203,5 @@ Before final response:
 - Do not self-approve acquisition, privacy, package, or LLM-suggestion gates.
 - Do not run live scholarly APIs in tests/CI.
 - Do not finish without provenance.
+- Do not suppress discovered errors/bugs; record them in `BUGS.md` when found.
 - Do not store copyrighted full text unless an acquisition-approved record exists.
