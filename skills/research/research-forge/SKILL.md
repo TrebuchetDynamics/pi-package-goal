@@ -7,6 +7,8 @@ description: Full provenance-first research on any topic using rforge. Multi-sou
 
 Core principle: **retrieval-first, provenance-first, LLM-assisted** — retrieve source material, write provenance, never self-approve gated human decisions.
 
+Follow [the shared skill contract](../../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+
 ## Save-location decision (pick before doing anything)
 
 | Context | Save to |
