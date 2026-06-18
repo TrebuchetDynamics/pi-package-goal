@@ -316,11 +316,31 @@ function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---\n/);
   assert.ok(match, "SKILL.md must have YAML frontmatter");
   const frontmatter = match[1];
-  const name = frontmatter.match(/^name:\s*['"]?([^'"\n]+)['"]?\s*$/m)?.[1]?.trim();
-  const description = frontmatter.match(/^description:\s*(?:[>|-]\s*)?([\s\S]*?)(?:\n[a-zA-Z_-]+:|$)/m)?.[1]?.trim();
+  const name = frontmatterField(frontmatter, "name")?.replace(/^['"]|['"]$/g, "").trim();
+  const description = frontmatterField(frontmatter, "description");
   assert.ok(name, "frontmatter must include name");
   assert.ok(description !== undefined, `frontmatter for ${name} must include description`);
   return { name, description };
+}
+
+function frontmatterField(frontmatter, fieldName) {
+  const lines = frontmatter.split(/\r?\n/);
+  const prefix = `${fieldName}:`;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.startsWith(prefix)) continue;
+    const rawValue = line.slice(prefix.length).trim();
+    if ([">", "|", ">-", "|-"].includes(rawValue)) {
+      const blockLines = [];
+      for (let next = index + 1; next < lines.length; next += 1) {
+        if (/^[a-zA-Z_-]+:\s*/.test(lines[next])) break;
+        blockLines.push(lines[next].trim());
+      }
+      return blockLines.join(" ").trim();
+    }
+    return rawValue.replace(/^['"]|['"]$/g, "").trim();
+  }
+  return undefined;
 }
 
 function normalizeSkillDescription(description) {
@@ -352,6 +372,56 @@ function collectSkillFrontmatterYamlIssues(baseDir) {
     if (!isQuotedOrBlock && /:\s/.test(descriptionValue)) issues.push(`${file}: description contains ": " and must be quoted or use a block scalar`);
   }
   return issues;
+}
+
+const triggerDescriptionPattern = /\bUse (?:when|for|only when|this skill when)|\bUse technical-auditor/i;
+
+const skillShadowingStopwords = new Set([
+  "about", "after", "agent", "agents", "against", "asks", "asked", "before", "build", "code", "docs", "files", "from", "into", "llm", "pi", "review", "skill", "skills", "that", "their", "this", "tool", "tools", "user", "using", "when", "with", "work",
+]);
+
+function collectSkillQualityGateIssues(baseDir) {
+  const issues = [];
+  const skillRecords = listSkillFiles(baseDir).map((file) => {
+    const content = fs.readFileSync(path.join(baseDir, file), "utf8");
+    const frontmatter = parseFrontmatter(content);
+    const description = normalizeSkillDescription(frontmatter.description);
+    if (!triggerDescriptionPattern.test(description)) issues.push(`${file}: description must include a concrete Use when/Use for trigger`);
+    if (!/COMMON-CONTRACT\.md/.test(content)) issues.push(`${file}: must reference the shared skill contract`);
+    if (!hasSkillVerificationPath(content)) issues.push(`${file}: must define or inherit a verification path`);
+    return { file, name: frontmatter.name, description };
+  });
+  issues.push(...collectSkillShadowingIssues(skillRecords));
+  return issues.sort();
+}
+
+function hasSkillVerificationPath(content) {
+  return /## Verification gate|## Output contract|Verification evidence|COMMON-CONTRACT\.md/.test(content);
+}
+
+function collectSkillShadowingIssues(skillRecords) {
+  const issues = [];
+  for (let left = 0; left < skillRecords.length; left += 1) {
+    for (let right = left + 1; right < skillRecords.length; right += 1) {
+      const leftTokens = skillTriggerTokens(skillRecords[left].description);
+      const rightTokens = skillTriggerTokens(skillRecords[right].description);
+      const overlap = [...leftTokens].filter((token) => rightTokens.has(token)).sort();
+      const denominator = Math.min(leftTokens.size, rightTokens.size);
+      const score = denominator ? overlap.length / denominator : 0;
+      if (overlap.length >= 5 && score >= 0.62) {
+        issues.push(`${skillRecords[left].name}/${skillRecords[right].name}: possible skill shadowing on trigger tokens ${overlap.join(",")}`);
+      }
+    }
+  }
+  return issues;
+}
+
+function skillTriggerTokens(description) {
+  return new Set(description
+    .toLowerCase()
+    .replace(/[^a-z0-9/.-]+/g, " ")
+    .split(/\s+/)
+    .filter((token) => token.length > 3 && !skillShadowingStopwords.has(token)));
 }
 
 async function testPackageManifest() {
@@ -486,6 +556,7 @@ async function testSkills() {
   assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
+  assert.deepEqual(collectSkillQualityGateIssues(root), []);
   assert.deepEqual(listPackageSkillRootMarkdownFiles(root), [], "root markdown files under pi.skills are loaded as file skills and must move under a non-skill subdirectory");
   assert.deepEqual(collectForbiddenPackageResourceArtifacts(root), [], "package resource trees must not contain local generated/runtime artifacts");
 

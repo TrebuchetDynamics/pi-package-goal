@@ -1,6 +1,6 @@
 ---
 name: research-forge
-description: Full provenance-first research on any topic using rforge. Multi-source sweep (openalex, crossref, semantic-scholar, arxiv), citation expansion, source-coverage stats, and smart save-location inference. Use when the user asks to research, study, survey, or systematically review a topic.
+description: "Provenance-first research using rforge: multi-source sweep, citation expansion, stats, save paths. Use when the user asks to research, study, survey, or systematically review a topic."
 ---
 
 # ResearchForge Research Agent

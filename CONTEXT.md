@@ -32,6 +32,14 @@ _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource
 Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
 _Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
 
+**Skill Lifecycle**:
+The package-level discipline for skill changes: author or import a skill, preserve provenance, validate trigger quality and contract coverage, enable it through the package manifest, evaluate it against realistic use, and deprecate or split it when overlap appears.
+_Avoid_: self-generated skills enabled without review, untracked source/license history, stale skills with no validation path, treating skill creation as a one-time prompt dump
+
+**Skill Shadowing**:
+A skill-library failure mode where two skill descriptions or trigger phrases are similar enough that the wrong skill may load or a broader skill hides a narrower one. Validation should catch obvious overlap before release; intentional overlap belongs in explicit orchestration or handoff language.
+_Avoid_: duplicate trigger phrases, catch-all descriptions, adding broad UI/planning/refactor skills without boundaries, relying on agent intuition to choose between near-identical skills
+
 **Prompt Cache Auditor Skill**:
 The `prompt-cache-auditor` skill audits LLM agent harness prompt-caching paths by first classifying provider topology, stable versus volatile prompt prefixes, cache keys/markers, and verification counters, then applying one request-building fix at a time and requiring warm-turn cache-read evidence before claiming savings.
 _Avoid_: live paid API calls without approval, credential-bearing captures in reports, current-user-turn cache breakpoints, random per-request `prompt_cache_key`, savings claims without provider usage counters

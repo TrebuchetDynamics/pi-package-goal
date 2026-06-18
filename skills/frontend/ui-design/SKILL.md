@@ -1,6 +1,6 @@
 ---
 name: ui-design
-description: Orchestrate UI/UX skills for frontend design, redesign, audits, design systems, shadcn UI, Stitch-to-React, accessibility, and anti-slop polish.
+description: Orchestrate UI/UX skills for frontend design, redesign, audits, design systems, shadcn UI, accessibility, and anti-slop polish. Use when routing UI/UX work.
 ---
 
 # UI Design Orchestrator

@@ -1,6 +1,6 @@
 ---
 name: stitch-react-components
-description: Convert Stitch designs into modular Vite and React components with networking, theme mapping, and validation.
+description: Convert Stitch designs into modular Vite and React components. Use when working from Stitch output or design-to-React artifacts.
 allowed-tools:
   - "stitch*:*"
   - "Bash"
