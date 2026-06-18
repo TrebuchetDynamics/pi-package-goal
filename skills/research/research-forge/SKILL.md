@@ -1,207 +1,215 @@
 ---
 name: research-forge
-description: Run or install ResearchForge/rforge for provenance-first literature search, OSS research, systematic reviews, evidence extraction, meta-analysis, and auditable reports.
+description: Full provenance-first research on any topic using rforge. Multi-source sweep (openalex, crossref, semantic-scholar, arxiv), citation expansion, source-coverage stats, and smart save-location inference. Use when the user asks to research, study, survey, or systematically review a topic.
 ---
 
-# ResearchForge
+# ResearchForge Research Agent
 
-Use this skill when research should be captured as files with source provenance instead of answered from memory. ResearchForge is the `rforge` CLI from <https://github.com/TrebuchetDynamics/research-forge>.
+Core principle: **retrieval-first, provenance-first, LLM-assisted** — retrieve source material, write provenance, never self-approve gated human decisions.
 
-Core rule: **retrieval-first, provenance-first, LLM-assisted**. Retrieve/cite source material, write provenance, and never self-approve gated human decisions.
+## Save-location decision (pick before doing anything)
 
-Follow the shared repo/ownership/verification defaults in [COMMON-CONTRACT.md](../../shared/COMMON-CONTRACT.md).
+| Context | Save to |
+|---|---|
+| Inside a project repo with `artifacts/` directory | `artifacts/research/<topic-slug>/` |
+| Inside a project repo without `artifacts/` | `<repo-root>/research/<topic-slug>/` |
+| Standalone request, topic matches a known project directory | That project's `research/` or `artifacts/research/` |
+| No clear project home | `~/research/<topic-slug>/` |
 
-## Quick start
+**Topic slug** = lowercase, hyphen-separated, 3–6 words from the research question (e.g. `ferroelectric-compute-in-memory`, `artificial-photosynthesis-catalysts`).
 
-1. Check/install `rforge`.
-2. Create or inspect a project folder.
-3. Run the smallest retrieval/analyze step that answers the question.
-4. Save outputs plus `provenance.json` before final response.
-5. If errors, tool failures, suspicious data, or research-subject bugs are found, create or append `BUGS.md` in the output/project folder.
+When in doubt: confirm the save path with the user before writing any files.
+
+---
+
+## Depth routing
+
+| Request phrasing | Depth |
+|---|---|
+| "quick look", "any papers on", "what's out there" | **Quick** — 3 queries × 2 sources |
+| "research", "find papers", "survey", "study" | **Standard** — 5–8 queries × 4 sources + citation expansion |
+| "full research", "systematic", "comprehensive", "mega", "thorough" | **Comprehensive** — 10+ queries × all sources + citation expansion + evidence grid |
+
+Default to **Standard** when depth is ambiguous.
+
+See [deep-search reference](references/deep-search.md) for query expansion patterns and comprehensive sweep checklist.
+
+---
+
+## Phase 1 — Setup
 
 ```sh
 command -v rforge && rforge version || true
-rforge doctor || true
 ```
 
-## Install rforge from GitHub
-
-Prereqs: Git and Go matching the upstream `go.mod` version (ResearchForge is pre-alpha; inspect upstream before installing).
-
-Preferred install from GitHub:
+If rforge is missing, install it:
 
 ```sh
 go install github.com/TrebuchetDynamics/research-forge/cmd/rforge@latest
 export PATH="$(go env GOPATH)/bin:$PATH"
 rforge version
-rforge doctor
 ```
 
-If `go install ...@latest` fails or you need a pinned checkout:
+Create the output directory:
 
 ```sh
-git clone https://github.com/TrebuchetDynamics/research-forge.git
-cd research-forge
-git checkout <commit-or-tag>   # optional, prefer pinned commits for reproducible work
-go run ./cmd/rforge version
-go install ./cmd/rforge
-rforge version
+mkdir -p <save-path>
+cd <save-path>
 ```
 
-Do not add ResearchForge as a dependency of the current repo just to use the CLI.
+---
 
-## Project setup
+## Phase 2 — Discover (multi-source sweep)
 
-Preferred project folder:
+### Query expansion
+
+Before searching, expand the topic into 3–10 query variations covering:
+- Canonical term + abbreviations (e.g. "ferroelectric compute in memory", "FeFET CIM")
+- Material/mechanism variants (e.g. "HfO2 in-memory", "ferroelectric tunnel junction")
+- Application variants (e.g. "ferroelectric neural accelerator", "ferroelectric CAM")
+- Broader/narrower scopes
+
+### Per-query sweep
+
+Run all four primary sources for each query. Use `|| true` so failures don't stop the sweep:
 
 ```sh
-rforge project create <path> --title "<title>"
-rforge project inspect <path>
+rforge search --source openalex          --query "QUERY" --limit 20 > search-openalex-SLUG.txt          2>&1 || true
+rforge search --source crossref          --query "QUERY" --limit 20 > search-crossref-SLUG.txt          2>&1 || true
+rforge search --source semantic-scholar  --query "QUERY" --limit 20 > search-semantic-scholar-SLUG.txt  2>&1 || true
+rforge search --source arxiv             --query "QUERY" --limit 20 > search-arxiv-SLUG.txt             2>&1 || true
 ```
 
-Then pass `--project <path>` to project-aware commands. For guided workflow state:
+arXiv note: rate-limited; may take 30–90 s per query. Always include it; check the file is non-empty after.
+
+For biomedical topics, also include:
 
 ```sh
-rforge forge init --project <path> --question "<research question>"
-rforge forge status --project <path>
-rforge forge next --project <path>
+rforge search --source pubmed     --query "QUERY" --limit 20 > search-pubmed-SLUG.txt     2>&1 || true
+rforge search --source europepmc  --query "QUERY" --limit 20 > search-europepmc-SLUG.txt  2>&1 || true
 ```
 
-Arbitrary folder fallback: write outputs directly and include:
+### Source coverage stats
 
-```text
-<folder>/report.md
-<folder>/provenance.json
-<folder>/search-results-<timestamp>.json
-<folder>/papers.json          # when applicable
-<folder>/BUGS.md              # required if errors or bugs are found
-```
-
-## Common workflows
-
-### Literature discovery
+After the sweep, always run:
 
 ```sh
-rforge search --source openalex|arxiv|crossref|semantic-scholar|europepmc|pubmed \
-  --query "<query>" [--from-year YYYY] [--to-year YYYY] [--open-access true|false]
-rforge search import --source openalex --query "<query>" --pages N [--project <path>]
-rforge citations expand --source semantic-scholar|openalex|crossref --paper <id> \
-  --direction references|citations|both --depth N --out <graph.json>
-rforge citations report --graph <graph.json> --out <report.md>
+rforge search stats --dir .
 ```
 
-For query planning, draft and show the plan before running broad searches:
+This reports per-source record counts and total unique DOIs. Include the output in provenance.json under `search_stats`. If any source shows 0 records across all queries, note the likely cause (rate-limit, API down, query mismatch).
+
+---
+
+## Phase 3 — Citation expansion
+
+Pick the 3–5 highest-impact papers from the sweep (Nature, Nature Communications, Science, high-cited IEEE venues first). For each:
 
 ```sh
-rforge protocol compile --type pico|peco|spider|freeform --question "<text>"
-rforge protocol plan-sources --type pico --question "<text>"
-rforge protocol capabilities
+rforge citations expand --source openalex \
+  --paper "10.xxxx/xxxxxxx" \
+  --direction both --limit 50 \
+  --out citation-graph-SLUG.json
 ```
 
-### OSS research
+If a DOI fails (404, timeout), note it in provenance and move on. For semantic-scholar as fallback:
 
 ```sh
-rforge oss add <owner/repo>
-rforge oss scan --topic "<topic>"
-rforge oss report --area <area>
-rforge oss inventory-check <manifest.json>
+rforge citations expand --source semantic-scholar \
+  --paper "<s2-paper-id>" --direction both --out citation-graph-SLUG.json
 ```
 
-### Collect, screen, parse, extract
+Optionally build a citation report:
 
 ```sh
-rforge import bibtex|ris|csl-json|zotero-rdf|json|csv <file>
-rforge library list
-rforge duplicate report
-rforge screen configure
-rforge screen queue --out <queue.csv>
-rforge screen progress
-rforge prisma counts
-rforge parse --paper <id> --parser grobid|tex|s2orc|papermage --pdf <file>
-rforge parse quality --parsed <parsed.json> --out <report.json>
-rforge extraction schema add
-rforge extract add|suggest
-rforge evidence grid --out <grid.json>
-rforge evidence gaps --out <report.json>
+rforge citations report --graph citation-graph-SLUG.json --out citation-report-SLUG.md
 ```
 
-### Analyze and report
+---
+
+## Phase 4 — Analyze and report
+
+### Evidence grid (Comprehensive depth only)
 
 ```sh
-rforge analysis prepare [--effect smd|log-odds-ratio|risk-ratio|mean-difference]
-rforge analysis run
-rforge analysis sensitivity
-rforge analysis publication-bias --method egger|begg
-rforge report build --out <report.md>
-rforge report trace --claims <queue.json> --analysis <run.json> --out <trace.json>
-rforge report audit
+rforge evidence grid --out evidence-grid.json
+rforge evidence gaps --out evidence-gaps.md
 ```
 
-## Human gates
+Or write `evidence-grid.csv` manually with columns:
+`category, doi, year, venue, title, evidence_level, support_from_abstract_or_metadata`
 
-Stop and ask the human before:
+### Report
 
-- approving full-text acquisition or privacy review;
-- accepting LLM-generated suggestions (`*-suggest` queues);
-- packaging/distributing reports that may include copyrighted or private material.
+Write `report.md` covering:
+1. **Method and limits** — what was retrieved, what was not (no copyrighted full text)
+2. **Bottom line** — 2–3 sentences: what the evidence shows
+3. **Main themes** — one section per major concept/device/method found
+4. **Performance claims hygiene** — safe handling rules for headline numbers
+5. **Evidence gaps** — what's missing or uncertain
+6. **Implications** — for the specific project or question
 
-Use wording like:
+Cite specific DOIs with title and venue. Never assert "X achieves Y" without naming the exact paper.
 
-```text
-Human approval required before proceeding:
-  rforge --project <path> oa acquisition-approve <id> --reviewer <name> --reason "<text>"
-Waiting; I will not download/package until approval is confirmed.
-```
+---
 
-## Bug log requirement
+## Phase 5 — Save and provenance
 
-If ResearchForge, the researched project, a source API, parser, analysis, or generated artifact exposes errors or likely bugs, write `<project-or-output-folder>/BUGS.md` before final response. Append rather than overwrite when it exists.
-
-Minimum entry format:
-
-```md
-## <ISO 8601 timestamp> — <short title>
-
-- Context: <question/workflow/command>
-- Evidence: <file path, command output, source URL, or citation>
-- Impact: <why it matters>
-- Repro/trigger: `<command or steps>`
-- Status: open|needs-human-review|fixed-upstream|false-positive
-```
-
-Mention `BUGS.md` in `provenance.json.outputs` and in the final response. If no bugs/errors were found, say so; do not create an empty `BUGS.md`.
-
-## Provenance requirement
-
-Every run must write or append `provenance.json`:
+Write `provenance.json` before finishing:
 
 ```json
 {
-  "question": "<research question or task>",
-  "sources": ["openalex", "arxiv"],
-  "queries": ["<exact query>"],
+  "question": "<exact research question>",
+  "rforge_version": "<from rforge version>",
   "timestamp": "<ISO 8601>",
-  "rforge_version": "<rforge version, or not available>",
-  "outputs": ["<relative paths>"]
+  "depth": "quick|standard|comprehensive",
+  "queries": ["<query 1>", "..."],
+  "sources": ["openalex", "crossref", "semantic-scholar", "arxiv"],
+  "search_stats": {
+    "openalex": <count>,
+    "crossref": <count>,
+    "semantic-scholar": <count>,
+    "arxiv": <count>,
+    "total_unique_dois": <count>
+  },
+  "citation_expand_attempted": ["10.xxx/yyy"],
+  "citation_expand_succeeded": ["10.xxx/yyy"],
+  "outputs": ["report.md", "evidence-grid.csv", "search-openalex-*.txt", "..."],
+  "errors": ["<any errors or rate-limit notes>"]
 }
 ```
 
-If `rforge` is unavailable, save raw API/manual outputs and create `provenance.json` yourself.
+---
 
 ## Verification gate
 
-Before final response:
+Before responding done:
+- `rforge version` printed or noted as unavailable
+- All search files non-empty or failure noted in provenance
+- `rforge search stats --dir .` run and result included in provenance
+- `report.md` exists with bottom-line and citations
+- `provenance.json` written and names all output files
 
-- `rforge version` or note `rforge: not available`.
-- List files written.
-- Confirm `provenance.json` exists and names all outputs.
-- If errors or bugs were found, confirm `BUGS.md` exists, is listed in provenance, and summarizes evidence/repro.
-- Surface any unresolved human gate instead of claiming completion.
+---
+
+## Human gates — stop and surface, never self-approve
+
+- Full-text acquisition: `rforge oa acquisition-approve` — surface to user, do not run
+- Privacy review: `rforge oa privacy-approve` — surface to user, do not run
+- LLM suggestions (`*-suggest` queues) — surface queue path, do not self-accept
+- Packaging reports with copyrighted material — surface, do not run
+
+---
 
 ## Red lines
 
-- Do not self-approve acquisition, privacy, package, or LLM-suggestion gates.
-- Do not run live scholarly APIs in tests/CI.
-- Do not finish without provenance.
-- Do not suppress discovered errors/bugs; record them in `BUGS.md` when found.
-- Do not store copyrighted full text unless an acquisition-approved record exists.
+- Do not finish without `provenance.json`.
+- Do not skip the source-coverage stats step (`rforge search stats`).
+- Do not assert performance claims without naming the exact paper.
+- Do not self-approve any gated human decision.
+- Do not download copyrighted full text.
+- Do not run live APIs in tests or CI.
+
+## References
+
+- [Deep-search patterns and query expansion](references/deep-search.md)
