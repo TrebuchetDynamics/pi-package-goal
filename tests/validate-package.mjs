@@ -34,6 +34,7 @@ const expectedSkills = [
   "autoreview",
   "pi-ecosystem-scout",
   "pi-extensions-helper",
+  "research-forge",
   "ui-ux-pro-max",
   "ui-design",
   "frontend-design",

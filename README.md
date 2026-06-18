@@ -56,6 +56,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
+| Run provenance-first research | `research-forge` | Installs/uses `rforge` for literature search, OSS research, evidence extraction, meta-analysis, and auditable reports. |
 | Plan a graph-backed refactor | `/understand-refactor <focus>` | Generates a deterministic plan, then starts docs-backed grilling. |
 | Refactor one noisy folder | `/folder-refactor <folder>` | Uses scan/state/audit guardrails to avoid lazy completion. |
 | Rank folder-refactor candidates | `candidates-folder-refactor` | Scores bounded noisy folders and suggests the top target. |
@@ -87,6 +88,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
+| Research workflow | Install/use ResearchForge `rforge` for provenance-first literature discovery, OSS study, systematic reviews, and auditable reports. | `research-forge` |
 | Shell helpers | Install a portable tmux profile and session launcher. | `tx` |
 
 ## Included extensions
@@ -297,6 +299,7 @@ Theme discipline:
 | `grill-me` | Stress-test a plan and ask only hard owner-decision questions. |
 | `grill-with-docs` | Stress-test a plan against project docs, run docs-council critiques (the clean-context advisor role), and record decisions. |
 | `zoom-out` | Step back from the local task and reassess direction. |
+| `research-forge` | Install/use `rforge` for provenance-first literature discovery, OSS study, systematic reviews, evidence extraction, and auditable reports. |
 
 ### Planning, triage, and writing
 

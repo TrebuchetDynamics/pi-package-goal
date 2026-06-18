@@ -145,6 +145,15 @@ Trebuchet Dynamics under the MIT License.
 - Usage: the local `/understand` extension can clone and load the upstream Understand-Anything skills from a user checkout; no upstream code is bundled in this package tarball.
 - License: MIT
 
+## TrebuchetDynamics/research-forge
+
+- Source: https://github.com/TrebuchetDynamics/research-forge
+- Snapshot inspected: `a488ca282b26d610a7d4b2fecdf94af2807099a4`
+- Bundled paths:
+  - `skills/research/research-forge/`
+- License: MIT
+- Full license copy: `licenses/TrebuchetDynamics-research-forge-LICENSE`
+
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk
