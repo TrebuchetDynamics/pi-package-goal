@@ -1,0 +1,20 @@
+10.1145/3586183.3606763	Generative Agents: Interactive Simulacra of Human Behavior
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.3389/feduc.2024.1366434	Prompt engineering as a new 21st century skill
+10.1080/00461520.2016.1207538	Supporting Learners' Agentic Engagement With Feedback: A Systematic Review and a Taxonomy of Recipience Processes
+10.1108/lht-08-2018-0105	The intelligent library
+10.1007/s11423-023-10203-6	Teachers’ AI digital competencies and twenty-first century skills in the post-pandemic world
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1016/j.ymben.2020.10.005	Machine learning for metabolic engineering: A review
+10.1126/scirobotics.aat7544	Improving social skills in children with ASD using a long-term, in-home social robot
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills
+10.2196/15360	The Personalization of Conversational Agents in Health Care: Systematic Review
+10.36227/techrxiv.22683919.v2	Prompt Engineering For ChatGPT: A Quick Guide To Techniques, Tips, And Best Practices
+10.1007/s10956-006-9037-z	Mad City Mystery: Developing Scientific Argumentation Skills with a Place-based Augmented Reality Game on Handheld Computers
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.1145/3386867	Voice in Human–Agent Interaction
+10.1109/access.2024.3387941	ChatGPT for Robotics: Design Principles and Model Abilities
+10.1007/s10064-020-01766-2	The use of unmanned aerial vehicles (UAVs) for engineering geology applications
+10.62906/bs.book.178	Introduction to Environmental Engineering and Science
+10.1038/nnano.2014.261	Advancing the speed, sensitivity and accuracy of biomolecular detection using multi-length-scale engineering

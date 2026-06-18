@@ -1,0 +1,20 @@
+	AIRCC-Clim: a user-friendly tool for generating regional probabilistic climate change scenarios and risk measures
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Agentic Skill Discovery
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Hierarchical Cooperative Multi-Agent Reinforcement Learning with Skill Discovery
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	UI-Evol: Automatic Knowledge Evolving for Computer Use Agents
+	SoK: Agentic Skills -- Beyond Tool Use in LLM Agents
+	Establishing Shared Query Understanding in an Open Multi-Agent System
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+	Video-Skill-CoT: Skill-based Chain-of-Thoughts for Domain-Adaptive Video Reasoning
+	MOSAIC: A Skill-Centric Algorithmic Framework for Long-Horizon Manipulation Planning
+10.5220/0014234400004052	AI Agents with Decentralized Identifiers and Verifiable Credentials
+10.65109/adpl7324	Distributed Quantum Gaussian Processes for Multi-Agent Systems
+	Skill Preferences: Learning to Extract and Execute Robotic Skills from Human Feedback
+	Divide, Discover, Deploy: Factorized Skill Learning with Symmetry and Style Priors

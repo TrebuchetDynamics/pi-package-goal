@@ -1,0 +1,20 @@
+10.1016/j.lindif.2023.102274	ChatGPT for good? On opportunities and challenges of large language models for education
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.21832/9781783090563	Identity and Language Learning
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.1007/s12525-021-00475-2	Machine learning and deep learning
+10.1038/s43856-023-00370-1	The future landscape of large language models in medicine
+10.1007/s42979-021-00592-x	Machine Learning: Algorithms, Real-World Applications and Research Directions
+10.1017/s0140525x0999094x	The myth of language universals: Language diversity and its importance for cognitive science
+10.2196/45312	How Does ChatGPT Perform on the United States Medical Licensing Examination (USMLE)? The Implications of Large Language Models for Medical Education and Knowledge Assessment
+10.1038/s42256-024-00832-8	Augmenting large language models with chemistry tools
+10.1093/applin/amx039	Translanguaging as a Practical Theory of Language
+10.1075/sibil.48	Implicit and Explicit Learning of Languages
+10.1007/s10462-021-09996-w	Multi-agent deep reinforcement learning: a survey
+10.3386/w8337	The Skill Content of Recent Technological Change: An Empirical Exploration
+10.1145/3586183.3606763	Generative Agents: Interactive Simulacra of Human Behavior
+10.1038/s41586-023-06647-8	Role play with large language models
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.1111/bjet.13370	Practical and ethical challenges of large language models in education: A systematic scoping review
+10.15215/aupress/9781897425084.01	The Theory and Practice of Online Learning

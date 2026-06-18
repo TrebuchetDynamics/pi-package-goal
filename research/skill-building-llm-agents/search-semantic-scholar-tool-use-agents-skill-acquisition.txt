@@ -1,0 +1,20 @@
+10.48550/arxiv.2512.23880	CASCADE: Cumulative Agentic Skill Creation through Autonomous Development and Evolution
+	SkillPuzzler: A Self-Evolving Agentic Framework for Materials and Chemistry Research with Minimal Reliance on Predefined Tools
+10.1038/s41598-018-32001-4	Behavioral performance and visual strategies during skill acquisition using a novel tool use motor learning task
+10.48550/arxiv.2510.24563	OSWorld-MCP: Benchmarking MCP Tool Invocation In Computer-Use Agents
+10.48550/arxiv.2602.20867	SoK: Agentic Skills - Beyond Tool Use in LLM Agents
+10.48550/arxiv.2508.16260	MCPVerse: An Expansive, Real-World Benchmark for Agentic Tool Use
+10.1097/01.nep.0000000000000956	Development and Psychometric Testing of the Academic Clinical Nurse Educator Skill Acquisition Tool
+10.57125/fed.2024.03.25.05	21st Century Skill Acquisition in Business Education Programme: The Role of Digital Literacy and Tools
+10.48550/arxiv.2307.14535	Scaling Up and Distilling Down: Language-Guided Robot Skill Acquisition
+10.30880/ojtp.2023.08.02.012	Inculcating Digital Contents, Technological Tools: Agents for Enhancing Business Education Curriculum for Skill Acquisition in Nigerian Universities
+10.48550/arxiv.2506.14763	RobotSmith: Generative Robotic Tool Design for Acquisition of Complex Manipulation Skills
+10.48550/arxiv.2502.08820	Can a Single Model Master Both Multi-turn Conversations and Tool Use? CoALM: A Unified Conversational Agentic Language Model
+10.1007/s10270-023-01141-1	Assessing the testing skills transfer of model-based testing on testing skill acquisition
+10.1038/s42003-025-07885-4	Social tolerance and role model diversity increase tool use learning opportunities across chimpanzee ontogeny
+	SCIENCE EDUCATION: A TOOL FOR SKILL ACQUISITION AND ENTREPRENEURSHIP DEVELOPMENT OF NIGERIAN STUDENTS
+10.5555/3635637.3663286	Autonomous Skill Acquisition for Robots Using Graduated Learning
+10.3389/fped.2024.1406630	Efficacy of an online lung ultrasound module on skill acquisition by clinician: a new paradigm
+10.1177/20592043231151416	Practicing Musical Intention: The Effects of External Focus of Attention on Musicians’ Skill Acquisition
+10.1111/jsr.14309	Influence of sleep on motor skill acquisition in children: a systematic review
+10.5267/j.ijdns.2023.11.018	The impact of storytelling and narrative variables on skill acquisition in gamified learning

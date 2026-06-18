@@ -1,0 +1,20 @@
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1146/annurev.anthro.28.1.509	The Human Adaptation for Culture
+10.3390/educsci14010083	Using Generative Artificial Intelligence Tools to Explain and Enhance Experiential Learning for Authentic Assessment
+10.1007/s10462-021-09996-w	Multi-agent deep reinforcement learning: a survey
+10.1016/j.envsoft.2018.08.028	Tools and methods in participatory modeling: Selecting the right tool for the job
+10.1017/s030500091400049x	The ubiquity of frequency effects in first language acquisition
+10.1007/s11423-023-10203-6	Teachers’ AI digital competencies and twenty-first century skills in the post-pandemic world
+10.3389/frvir.2021.645153	A Review on Virtual Reality Skill Training Applications
+10.1101/cshperspect.a021691	The Striatum: Where Skills and Habits Meet
+10.1007/s10798-006-9010-4	The contribution of Project-based-learning to high-achievers’ acquisition of technological knowledge and skills
+10.1016/j.clinph.2009.08.016	Safety, ethical considerations, and application guidelines for the use of transcranial magnetic stimulation in clinical practice and research
+10.3389/fpsyg.2014.00310	The neural basis of human tool use
+10.1080/15265161.2022.2048739	Conversational Artificial Intelligence in Psychotherapy: A New Therapeutic Tool or Agent?
+10.1016/j.chb.2023.107903	Artificial intelligence and human behavioral development: A perspective on new skills and competences acquisition for the educational context
+10.1523/jneurosci.2040-09.2009	The Representation of Tool Use in Humans and Monkeys: Common and Uniquely Human Features
+10.1007/s11257-011-9106-8	A review of recent advances in learner and skill modeling in intelligent learning environments
+10.3390/su12135339	The Technological Challenge Facing Higher Education Professors: Perceptions of ICT Tools for Developing 21st Century Skills
+	A Model for Organizational Interaction: based on Agents, founded in Logic
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)

@@ -1,0 +1,20 @@
+10.5220/0014146900004052	Evaluation of Diversity in LLM-Based News Discovery through an Agent-Based System
+10.33774/coe-2026-4f53g	Harness Resilience: From LLM Availability to Toolchain Continuity in Agentic AI Engineering
+10.21203/rs.3.rs-10026792/v1	Measuring What Survives: Pressure-Filtered Persistence and a Masking Index for LLM-Agent Safety Evaluation
+10.1109/iclad65226.2025.00033	ASIC-Agent: An Autonomous Multi-Agent System for ASIC Design with Benchmark Evaluation
+10.64898/2026.03.29.713781	<i>Cirrina</i> : LLM-driven pharmacological reasoning agent enables preclinical CNS drug evaluation
+10.1145/3749421.3749436	ALAS: A Stateful Multi-LLM Agent Framework for Disruption-Aware Planning
+10.21203/rs.3.rs-8985839/v1	Architectural Transparency in LLM-Based Cognitive Assessment: A Multidimensional TRACE-ED Evaluation of Single-Agent and Multi-Agent Systems
+10.70393/6a696574.343135	A Comparative Empirical Evaluation of Single-Agent and Multi-Agent LLM Prompting Strategies for Automated Formative Feedback in Education
+10.2139/ssrn.6907642	Simulating Aesthetic Consensus and Divergence in Urban Landmarks: An LLM-based Multi-Agent System for Built Environment Evaluation
+10.2139/ssrn.6487378	Behaviorally Grounded Agent-Based Benign Traffic Generation with LLM-Driven Action Variability for Intrusion Detection Evaluation
+10.26434/chemrxiv.15004684/v1	Harness Engineered LLM Agents for Material Science: A Case Study on Perovskite Materials with Machine Learning and Materials Project
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.2139/ssrn.5076836	Design and Evaluation of an Autonomous Cyber Defence Agent Using Drl and an Augmented Llm
+10.20944/preprints202605.0711.v1	Stop Comparing LLM Agents Without Disclosing the Harness
+10.1109/cyber-ai66431.2025.11233474	Specification and Evaluation of Multi-Agent LLM Systems - Prototype and Cybersecurity Applications
+10.1145/3749421.3749430	SocraSynth: Adversarial Multi-LLM Reasoning
+10.5220/0014473600004052	Agent-as-a-Graph: Knowledge Graph-Based Tool and Agent Retrieval for LLM Multi-Agent Systems
+10.2139/ssrn.6796189	RALFuzz: Execution-Aware and Risk-Aware LLM-Assisted Fuzz Harness Generation for C Library APIs
+10.2139/ssrn.6136668	LLM-Powered Agent for Occupant-Centric Indoor Environment Control: Design, Implementation, and Evaluation
+10.3390/ai7040131	LLM-Based Control for Simulated Physical Reasoning: Modular Evaluation in the NeurIPS Embodied Agent Interface Challenge

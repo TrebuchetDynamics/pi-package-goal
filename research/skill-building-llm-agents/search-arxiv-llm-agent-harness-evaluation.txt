@@ -1,0 +1,20 @@
+	Code as Agent Harness
+	AutoHarness: improving LLM agents by automatically synthesizing a code harness
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+	A Plan Reuse Mechanism for LLM-Driven Agent
+	AutoMegaKernel: A Statically-Checked Agent Harness for Self-Retargeting Megakernel Synthesis
+	Evolving Agents in the Dark: Retrospective Harness Optimization via Self-Preference
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+	YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+	MedAide: Information Fusion and Anatomy of Medical Intents via LLM-based Agent Collaboration
+	What Twelve LLM Agent Benchmark Papers Disclose About Themselves: A Pilot Audit and an Open Scoring Schema
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+	AgentGuard: Repurposing Agentic Orchestrator for Safety Evaluation of Tool Orchestration
+	Generation-Time vs. Post-hoc Citation: A Holistic Evaluation of LLM Attribution
+10.1145/3731599.3767582	LLM Agents for Interactive Workflow Provenance: Reference Architecture and Evaluation Methodology
+	Stop Comparing LLM Agents Without Disclosing the Harness
+	FFT: Towards Harmlessness Evaluation and Analysis for LLMs with Factuality, Fairness, Toxicity
+	Adapting the Interface, Not the Model: Runtime Harness Adaptation for Deterministic LLM Agents
+	AEMA: Verifiable Evaluation Framework for Trustworthy and Controlled Agentic LLM Systems

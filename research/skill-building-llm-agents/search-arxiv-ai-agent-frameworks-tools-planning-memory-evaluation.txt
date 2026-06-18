@@ -1,0 +1,20 @@
+	AI Agents: Evolution, Architecture, and Real-World Applications
+	MRMMIA: Membership Inference Attacks on Memory in Chat Agents
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	Automating RT Planning at Scale: High Quality Data For AI Training
+	Provenance-Based Assessment of Plans in Context
+	AI prediction leads people to forgo guaranteed rewards
+	Foundations of GenIR
+	Competing Visions of Ethical AI: A Case Study of OpenAI
+	AMAP Agentic Planning Technical Report
+10.1007/978-3-031-98949-0_2	Balancing Power and Ethics: A Framework for Addressing Human Rights Concerns in Military AI
+10.20935/acadai8260	Towards trustworthy agentic AI: a comprehensive survey of safety, robustness, privacy, and system security
+	Distilling Feedback into Memory-as-a-Tool
+	Individual Planning in Agent Populations: Exploiting Anonymity and Frame-Action Hypergraphs
+10.1145/3786167.3788406	SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs
+	Code as Agent Harness
+	When Users Are Happy but Agents Are Wrong: Multi-Dimensional Evaluation of Tool-Augmented Dialogue
+	AAAI Workshop on AI Planning for Cyber-Physical Systems -- CAIPI24
+	POLARIS: Typed Planning and Governed Execution for Agentic AI in Back-Office Automation
+10.1007/978-3-319-11206-0_27	Planning in the Wild: Modeling Tools for PDDL
+	Toward AI VIS Co-Scientists: A General and End-to-End Agent Harness for Solving Complex Data Visualization Tasks

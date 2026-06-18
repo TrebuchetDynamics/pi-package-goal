@@ -1,0 +1,20 @@
+10.1080/0194262x.2026.2662994	Prompt Engineering for Academic Research and Literacy (PEARL): Guidelines for Prompt Engineering in Library Consultation Work
+10.21275/ms2504083238	Prompt-Driven Requirements Engineering: Large-Language-Model Agents for Continuous Backlog Refinement
+10.2196/50638	Prompt Engineering as an Important Emerging Skill for Medical Professionals: Tutorial
+10.2196/preprints.50638	Prompt Engineering as an Important Emerging Skill for Medical Professionals: Tutorial (Preprint)
+10.2139/ssrn.5783444	The Transformative Impact of Artificial Intelligence on US Labor Markets: Workforce Disruption, Skill Evolution, and the Emergence of Prompt Engineering
+10.1097/01.eem.0000000000000104	Prompt Engineering: A Critical Skill for Emergentologists and Toxicologists
+10.2139/ssrn.5441864	Randomized Controlled Trial in Vocational Education: Assessing ChatGPT’s Efficacy in Software Testing Skill Development through Multi-Stage Prompt Engineering
+10.20944/preprints202510.0671.v1	The Transformative Impact of Artificial Intelligence on US Labor Markets: Workforce Disruption, Skill Evolution, and the Emergence of Prompt Engineering
+10.31719/pjaw.v9i1.205	Archival Research for Community- and Skill-Building in the Online Writing Classroom
+10.3389/feduc.2024.1366434	Prompt engineering as a new 21st century skill
+10.59717/j.xinn-med.2024.100065	Transforming challenges into opportunities: Leveraging ChatGPT's limitations for active learning and prompt engineering skill
+10.1007/979-8-8688-0110-5_6	Advanced Prompt Engineering
+10.47363/jeast/2023(5)e117	Mastering Prompt Engineering: Optimizing Interaction with Generative AI Agents
+10.1007/979-8-8688-0110-5_5	Introduction to Prompt Engineering
+10.1515/9781501518898-010	Chapter 7: Advanced Prompt Engineering
+10.55277/researchhub.17y5c2oz	BioPromptLab: Prompt Protocols as a Validated Intervention for Three Biomedical GPT Agents
+10.24191/jeesr.v27i1.009	Engineering Malaysia’s Competitive Edge: Prompt Engineering as Critical Skill for Future Workforce Development
+10.1007/978-3-658-49218-2_7	AI Agents
+10.1201/9781032692319-1	Introduction to Prompt Engineering
+10.52398/gjsd.2025.v5.i3.pp87-108	Developing Prompt Engineering as a 21st-Century Skill

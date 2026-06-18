@@ -1,0 +1,20 @@
+10.2139/ssrn.6219015	Synthesis large language models and machine learning agent
+10.2139/ssrn.6682038	Multi-Agent Large Language Models with Reinforcement Learning for Quant Trading
+10.2139/ssrn.6192518	Language-Driven Coordination in Multi-Agent Reinforcement Learning with Large Language Models
+10.2139/ssrn.6192598	Hierarchical Integration of Large Language Models and Multi-Agent Reinforcement Learning
+10.2139/ssrn.6186879	Multi-Agent Post-Co-Training of Large Language Models via Reinforcement Learning
+10.18608/jla.2026.9133	Learning-Aware Reliability Estimation for Tutor Skill Assessment Using Large Language Models
+10.1007/979-8-8688-0273-7_12	Multi-Agent RL (MARL)
+10.20944/preprints202602.0689.v1	Hierarchical Integration of Large Language Models and Multi-Agent Reinforcement Learning
+10.1109/tale66047.2025.11346660	Assessing Multiple Student Skill Dimensions Using Large Language Models
+10.1109/fllm67465.2025.11391246	Evaluating Multi-Agent Defences Against Jailbreaking Attacks on Large Language Models
+10.2139/ssrn.5053570	Agent-Enhanced Large Language Models for Researching Political Institutions
+10.38007/ml.2026.060103	Research on a Robotic Natural Language Intelligent Decision-Making Framework Based on Large Language Models, Thinking Chain Reasoning, and Multi-Agent Collaboration
+10.1007/s44217-025-00856-1	Transforming English education in Japan by utilizing large language models for tailored learning and diverse skill development
+10.71465/csb224	Language-Driven Coordination in Multi-Agent Reinforcement Learning with Large Language Models
+10.1109/fllm67465.2025.11391123	Fine-Tuning Large Language Models for Vocabulary-Constrained Language Learning
+10.5220/0014480400004061	Evaluating the Effectiveness of Multi-Agent Large Language Models for Automated Vulnerable Code Repair
+10.2139/ssrn.5036294	Multi-Agent Large Language Models As Evolutionary Optimizers For Scheduling Optimization
+10.36227/techrxiv.174612312.28926018/v1	Mathematical Framework for Large Language Models in Multi-Agent Systems for Interaction and Optimization
+10.36227/techrxiv.174612312.28926018/v2	Mathematical Framework for Large Language Models in Multi-Agent Systems for Interaction and Optimization
+10.7551/mitpress/15517.003.0006	Learning from Humans

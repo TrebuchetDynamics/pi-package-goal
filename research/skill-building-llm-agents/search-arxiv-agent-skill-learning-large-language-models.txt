@@ -1,0 +1,20 @@
+	Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents
+	Hierarchical Multi-agent Large Language Model Reasoning for Autonomous Functional Materials Discovery
+	Bridging Large Language Models and Graph Structure Learning Models for Robust Representation Learning
+	Reinforcement Learning Meets Large Language Models: A Survey of Advancements and Applications Across the LLM Lifecycle
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Enhancing Human-Like Responses in Large Language Models
+	Agentic Skill Discovery
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Is Self-knowledge and Action Consistent or Not: Investigating Large Language Model's Personality
+	How do language models learn facts? Dynamics, curricula and hallucinations
+	Large Language Models Lack Understanding of Character Composition of Words
+	Unmasking the Shadows of AI: Investigating Deceptive Capabilities in Large Language Models
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Making Large Language Models Better Reasoners with Alignment
+	Knowledge-Driven Agentic Scientific Corpus Distillation Framework for Biomedical Large Language Models Training
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Self-Cognition in Large Language Models: An Exploratory Study
+	Beneath the Surface: Unveiling Harmful Memes with Multimodal Reasoning Distilled from Large Language Models
+	A Critical Review of Causal Reasoning Benchmarks for Large Language Models

@@ -1,0 +1,20 @@
+10.2139/ssrn.6871959	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+10.1145/3749421.3749436	ALAS: A Stateful Multi-LLM Agent Framework for Disruption-Aware Planning
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.1145/3749421.3749430	SocraSynth: Adversarial Multi-LLM Reasoning
+10.5220/0014473600004052	Agent-as-a-Graph: Knowledge Graph-Based Tool and Agent Retrieval for LLM Multi-Agent Systems
+10.7717/peerj-cs.2328/fig-7	Figure 7: Prompt for multi-agent LLM for best instruction choice.
+10.7717/peerj-cs.2328/fig-8	Figure 8: Prompt for multi-agent LLM for best instruction improvement.
+10.1109/icisessc68634.2026.11542788	Benchmarking Multi-Agent LLM and Single Agent LLM Efficiency for Contextual Text Generation
+10.2139/ssrn.6426760	Protocol-Mediated Execution Governance for LLM Agent Systems
+10.2139/ssrn.6119146	Emerging Trends in LLM Agent Development
+10.22541/au.177499233.37732392/v1	Emergent Misinformation Genesis in Multi-Agent LLM Clinical Pipelines
+10.5220/0012239100003598	A Taxonomy for Autonomous LLM-Powered Multi-Agent Architectures
+10.1145/3749421.3749432	Bias Correction and Data Synthesis through Reflective LLM Collaboration
+10.1109/iclad65226.2025.00013	Spec2RTL-Agent: Automated Hardware Code Generation from Complex Specifications Using LLM Agent Systems
+10.2139/ssrn.6000335	ChatSUMO Agent: An LLM-Based Agent for ConversationalTraffic Simulation in SUMO
+10.2139/ssrn.5295755	Llm-Dctsc: Llm as Agent for Dynamic and Coordinated Traffic Signal Control
+10.20517/aiagent.2025.06	From single-agent to multi-agent: a comprehensive review of LLM-based legal agents
+10.1101/2025.09.17.676717	A Biosecurity Agent for Lifecycle LLM Biosecurity Alignment
+10.2139/ssrn.6352164	Execution-Witness Binding: Proof-Carrying Authorization for LLM Agent Runtimes
+10.5220/0014456800004052	Sura.ai: Multi-Agent Infrastructure Recovery with LLM-Powered Autonomous Remediation

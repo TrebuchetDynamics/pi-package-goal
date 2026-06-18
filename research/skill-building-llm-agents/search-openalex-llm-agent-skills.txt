@@ -1,0 +1,20 @@
+10.48550/arxiv.2210.03629	Distributing Accountability, Not Capability: Phase Separation and the LLM Workflow Quadrant in Autonomous AI Agent Architectures
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1007/s11432-024-4222-0	The rise and potential of large language model based agents: a survey
+10.48550/arxiv.2305.14314	QLoRA: Efficient Finetuning of Quantized LLMs
+10.1145/3544548.3581388	Why Johnny Can’t Prompt: How Non-AI Experts Try (and Fail) to Design LLM Prompts
+10.1145/3610977.3634966	Understanding Large-Language Model (LLM)-powered Human-Robot Interaction
+10.1609/aaai.v38i17.29936	ExpeL: LLM Agents Are Experiential Learners
+10.48550/arxiv.2305.16291	Voyager: An Open-Ended Embodied Agent with Large Language Models
+10.18653/v1/2023.emnlp-main.814	Character-LLM: A Trainable Agent for Role-Playing
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1007/s10462-024-10888-y	Large language models (LLMs): survey, technical frameworks, and future challenges
+10.1007/978-3-031-64302-6_19	How to Teach Programming in the AI Era? Using LLMs as a Teachable Agent for Debugging
+10.3390/healthcare11060887	ChatGPT Utility in Healthcare Education, Research, and Practice: Systematic Review on the Promising Perspectives and Valid Concerns
+10.48550/arxiv.2304.04370	OpenAGI: When LLM Meets Domain Experts
+10.48550/arxiv.2207.05608	Inner Monologue: Embodied Reasoning through Planning with Language Models
+10.18653/v1/2024.findings-acl.738	MM-LLMs: Recent Advances in MultiModal Large Language Models
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1145/3652988.3673932	Virtual Agents for Alcohol Use Counseling: Exploring LLM-Powered Motivational Interviewing
+10.1109/etfa54631.2023.10275362	Towards autonomous system: flexible modular production system enhanced with large language model agents
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills

@@ -1,0 +1,20 @@
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1109/iros58592.2024.10802322	SMART-LLM: Smart Multi-Agent Robot Task Planning using Large Language Models
+10.1145/3643540	Mental-LLM
+10.48550/arxiv.2308.07201	ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate
+10.48550/arxiv.2306.03314	Multi-Agent Collaboration: Harnessing the Power of Intelligent LLM Agents
+10.1609/aaai.v38i17.29936	ExpeL: LLM Agents Are Experiential Learners
+10.48550/arxiv.2304.04370	OpenAGI: When LLM Meets Domain Experts
+10.1007/s10462-024-10888-y	Large language models (LLMs): survey, technical frameworks, and future challenges
+10.18653/v1/2024.findings-acl.738	MM-LLMs: Recent Advances in MultiModal Large Language Models
+10.1109/icra57147.2024.10610855	RoCo: Dialectic Multi-Robot Collaboration with Large Language Models
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.2139/ssrn.4607026	S3: Social-network Simulation System with Large Language Model-Empowered Agents
+10.1186/s42400-025-00361-w	When LLMs meet cybersecurity: a systematic literature review
+10.48550/arxiv.2307.15043	Code of "Sirens' Whisper: Inaudible Near-Ultrasonic Jailbreaks of Speech-Driven LLMs"
+10.1038/s42256-024-00832-8	Augmenting large language models with chemistry tools
+10.18653/v1/2023.emnlp-industry.69	Harnessing LLMs for Temporal Data - A Study on Explainable Financial Time Series Forecasting
+10.1039/d4sc03921a	A review of large language models and autonomous agents in chemistry
+10.18653/v1/2024.findings-acl.658	On LLMs-Driven Synthetic Data Generation, Curation, and Evaluation: A Survey
+10.1145/3711896.3736570	Evaluation and Benchmarking of LLM Agents: A Survey
+10.1038/s41598-024-60210-7	A multimodal approach to cross-lingual sentiment analysis with ensemble of transformer and LLM
