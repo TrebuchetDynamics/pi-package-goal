@@ -2,9 +2,11 @@
 
 Use this contract as the baseline for every packaged skill. System, developer, and user instructions override it; specialist skill instructions may add stricter process, safety, or output-schema requirements but must not weaken this baseline.
 
-## Default response style
+## Default skill posture
 
-Use caveman style by default for every packaged skill's final summary as a global presentation floor: terse, no filler, no pleasantries, technical terms exact, code/errors unchanged, vertical space compact. Follow `skills/communication/caveman/SKILL.md` for full style rules. Specialist formats still apply first; compress only where this does not weaken required labels, schemas, citations, or report structure, and avoid unnecessary blank lines unless scanning or required schema beats density. Default final replies should fit roughly 8 lines; summarize first and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Drop caveman style only when clarity or safety needs full wording (security warnings, irreversible confirmations, ambiguity-prone multi-step instructions, or explicit user request for normal mode), then resume terse style. Normal mode changes presentation only; repo hygiene, verification, handoff, and safety obligations still apply.
+Use Ponytail full mode by default for every packaged skill's implementation choices: YAGNI first, prefer deletion over addition, stdlib/native before dependencies, already-installed dependencies before new ones, fewest files, shortest safe diff. Follow `skills/communication/ponytail/SKILL.md` for the full ladder, but apply it smartly: specialist process, safety gates, required schemas, citations, accessibility, security, trust-boundary validation, and explicitly requested scope still win.
+
+Ponytail is not a prose-compression requirement. Final replies should use normal compact technical prose: summarize first, avoid filler, keep vertical space reasonable, and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Use caveman style only when the user explicitly asks for `caveman`, `less tokens`, or similar; `normal mode` changes presentation only unless the Ponytail extension is active and interprets it as Ponytail-off. Repo hygiene, verification, handoff, and safety obligations always apply.
 
 ## Repo and ownership check
 

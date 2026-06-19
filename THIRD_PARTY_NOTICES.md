@@ -46,8 +46,16 @@ Trebuchet Dynamics under the MIT License.
 ## DietrichGebert/ponytail
 
 - Source: https://github.com/DietrichGebert/ponytail
-- Snapshot inspected: `adad50d`
-- Usage: source inspiration for the Ponytail compression rules added to `skills/communication/caveman/`.
+- Snapshot inspected: `ff5d093`
+- Bundled paths:
+  - `extensions/ponytail/`
+  - `skills/communication/ponytail/`
+  - `skills/communication/ponytail-review/`
+  - `skills/communication/ponytail-audit/`
+  - `skills/communication/ponytail-gain/`
+  - `skills/communication/ponytail-debt/`
+  - `skills/communication/ponytail-help/`
+- Usage: also source inspiration for the Ponytail compression rules added to `skills/communication/caveman/`.
 - License: MIT
 - Full license copy: `licenses/DietrichGebert-ponytail-LICENSE`
 

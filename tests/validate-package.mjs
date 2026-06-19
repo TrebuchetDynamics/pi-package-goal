@@ -29,6 +29,12 @@ const expectedSkills = [
   "handoff",
   "lgtm",
   "caveman",
+  "ponytail",
+  "ponytail-review",
+  "ponytail-audit",
+  "ponytail-gain",
+  "ponytail-debt",
+  "ponytail-help",
   "write-a-skill",
   "greploop",
   "autoreview",
@@ -45,7 +51,7 @@ const expectedSkills = [
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 6500,
+  maxTotalChars: 9000,
 };
 
 function readJson(file) {
@@ -437,7 +443,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -679,17 +685,18 @@ async function testSkills() {
   assert.match(read("skills/planning/triage/SKILL.md"), /codebase-map-understand\.md/);
   assert.ok(exists("skills/shared/COMMON-CONTRACT.md"), "shared skill contract must exist");
   const commonContract = read("skills/shared/COMMON-CONTRACT.md");
-  assert.match(commonContract, /Default response style/);
-  assert.match(commonContract, /packaged skill's final summary/);
-  assert.match(commonContract, /global presentation floor/);
-  assert.match(commonContract, /Specialist formats still apply first/);
-  assert.match(commonContract, /does not weaken required labels, schemas, citations, or report structure/);
-  assert.match(commonContract, /roughly 8 lines/);
+  assert.match(commonContract, /Default skill posture/);
+  assert.match(commonContract, /Use Ponytail full mode by default/);
+  assert.match(commonContract, /YAGNI first/);
+  assert.match(commonContract, /stdlib\/native before dependencies/);
+  assert.match(commonContract, /apply it smartly/);
+  assert.match(commonContract, /required schemas, citations, accessibility, security/);
+  assert.match(commonContract, /not a prose-compression requirement/);
+  assert.match(commonContract, /normal compact technical prose/);
   assert.match(commonContract, /compact receipts/);
-  assert.match(commonContract, /vertical space compact/);
-  assert.match(commonContract, /avoid unnecessary blank lines/);
+  assert.match(commonContract, /Use caveman style only when the user explicitly asks/);
+  assert.match(read("skills/communication/ponytail/SKILL.md"), /The ladder/);
   assert.match(read("skills/communication/caveman/SKILL.md"), /Optimize vertical space too/);
-  assert.match(read("skills/communication/caveman/SKILL.md"), /Avoid one-item-per-line bullets/);
   assert.match(commonContract, /Repo and ownership check/);
   assert.match(commonContract, /Verification evidence/);
   assert.match(commonContract, /Handoff shape/);

@@ -63,8 +63,9 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Build or review Pi resources | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` | Uses Pi package, extension, and skill conventions. |
 | Build polished frontend UI | `ui-design` | Routes to the right frontend/design skill. |
 | Use terse responses | `caveman` | Switches to low-token communication. |
+| Prefer the smallest working solution | `/ponytail` or `ponytail` | Enforces YAGNI, stdlib/native-first choices, shortest diffs, and over-engineering review helpers. |
 
-Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled.
+Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands are enabled. Packaged skills default to Ponytail-style scope control (YAGNI, stdlib/native first, shortest safe diff) while keeping normal compact prose; use `caveman` only when you explicitly want low-token wording.
 
 ```text
 /goal improve the README until a new user can install and choose a skill
@@ -92,6 +93,20 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Shell helpers | Install a portable tmux profile and session launcher. | `tx` |
 
 ## Included extensions
+
+### `/ponytail`
+
+`/ponytail` is bundled from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail). It sets a session mode that appends Ponytail's minimalism instructions before agent runs.
+
+| Command | Use it for |
+| --- | --- |
+| `/ponytail` or `/ponytail full` | Enable default Ponytail mode. |
+| `/ponytail lite` | Build what was asked while naming the lazier alternative. |
+| `/ponytail ultra` | Prefer deletion/YAGNI aggressively and challenge unnecessary requirements. |
+| `/ponytail off` or `normal mode` | Disable Ponytail for the session. |
+| `/ponytail status` | Show current and default modes. |
+| `/ponytail default <off\|lite\|full\|ultra\|review>` | Persist the default mode in the Ponytail config. |
+| `/ponytail-review`, `/ponytail-audit`, `/ponytail-gain`, `/ponytail-debt`, `/ponytail-help` | Dispatch to the bundled Ponytail skills. |
 
 ### `/goal`
 
@@ -282,6 +297,12 @@ Theme discipline:
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
 | `lgtm` | Continue after you approve the agent's latest plan, or treat an advisor/reviewer verdict as advisory input from an ambiguous approval. |
 | `caveman` | Switch to terse, low-token communication. |
+| `ponytail` | Switch to lazy-senior-dev mode: simplest solution that actually works. |
+| `ponytail-review` | Review a diff for over-engineering and what to delete. |
+| `ponytail-audit` | Audit a whole repo for YAGNI, stdlib/native replacements, and shrink opportunities. |
+| `ponytail-gain` | Show Ponytail's published benchmark scoreboard. |
+| `ponytail-debt` | List `ponytail:` shortcut comments as a debt ledger. |
+| `ponytail-help` | Display Ponytail modes, skills, and commands. |
 
 ### Engineering workflows
 
