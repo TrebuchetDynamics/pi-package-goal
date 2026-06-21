@@ -443,7 +443,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/headroom", "./extensions/ponytail"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -521,11 +521,11 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorGuardrail, /scanFolderRefactorTarget/);
   assert.match(folderRefactorGuardrail, /auditFolderRefactorCompletion/);
 
-  const headroomExtension = read("extensions/headroom/index.js");
-  assert.match(headroomExtension, /registerCommand\("headroom"/);
-  assert.match(headroomExtension, /registerProvider\(/);
-  assert.match(headroomExtension, /proxyBaseUrl\(/);
-  assert.match(headroomExtension, /HEADROOM_DISABLED/);
+  const rtkExtension = read("extensions/rtk/index.js");
+  assert.match(rtkExtension, /registerCommand\("rtk"/);
+  assert.match(rtkExtension, /rtk-ai\/rtk/);
+  assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
+  assert.match(rtkExtension, /tool_call/);
 
 
   const lifecycle = read("lib/pi-bridge/lifecycle.js");

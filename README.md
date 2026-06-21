@@ -10,7 +10,7 @@ Prerequisites:
 
 - Pi installed from [pi.dev](https://pi.dev).
 - Node.js `>=22` available to Pi's package installer.
-- Optional tools only when you use those features: `tmux`, [headroom](https://github.com/chopratejas/headroom), or the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) checkout created by `/understand`.
+- Optional tools only when you use those features: `tmux`, [rtk](https://github.com/rtk-ai/rtk), or the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) checkout created by `/understand`.
 
 Check Pi:
 
@@ -194,33 +194,28 @@ Notes:
 
 Use it for bounded folder splits, shared-code extraction from proven duplicate call sites, and behavior-preserving module organization.
 
-### `/headroom`
+### `/rtk`
 
-This package includes `extensions/headroom/index.js`, a Pi extension for [headroom](https://github.com/chopratejas/headroom). When a local headroom proxy is reachable, the extension can route an opt-in set of Pi providers through it via `pi.registerProvider(..., { baseUrl })`, so the whole context is compressed in transit. Headroom is an external tool you install yourself (`pip install "headroom-ai[all]"`); the binary is not bundled.
+This package includes `extensions/rtk/index.js`, a Pi extension for [rtk-ai/rtk](https://github.com/rtk-ai/rtk). When the `rtk` binary is available in `PATH` or `~/.local/bin`, eligible Pi `bash` tool calls are rewritten through `rtk rewrite` before execution, for example `git status` can become `rtk git status`.
 
-**By default the extension routes nothing** — it is safe to load even with no proxy running. Opt in per provider with `HEADROOM_PROVIDERS` (comma-separated). It is verified working with API-key providers such as `openrouter`. **`openai-codex` (chatgpt.com) is not supported**: the proxy's relay to chatgpt.com is blocked by Cloudflare, so routing codex would break it — do not add `openai-codex` to `HEADROOM_PROVIDERS`.
+The extension fails open: missing, old, or broken RTK leaves commands unchanged. It also compacts noisy `bash`/`grep` tool results, strips ANSI/control noise, summarizes common test/build/git/search output, tracks per-session savings, and can run in suggestion-only mode.
 
-The extension fails open: if the proxy is not running (or no providers are opted in), Pi behaves exactly as before. Run the proxy with `headroom proxy` (or `/headroom start`); for an OpenAI-compatible provider like openrouter use `headroom proxy --backend openrouter`.
+Useful commands:
 
-Example opt-in for openrouter:
-
-```
-headroom proxy --backend openrouter        # in a separate terminal
-HEADROOM_PROVIDERS=openrouter pi            # routes openrouter through the proxy
-```
-
-Commands:
-
-```
-/headroom status
-/headroom stats
-/headroom start
-/headroom help
+```text
+/rtk status
+/rtk stats
+/rtk clear-stats
+/rtk install
 ```
 
-Environment flags: `HEADROOM_DISABLED=1` skips all routing, `HEADROOM_PORT=8787` and `HEADROOM_HOST=127.0.0.1` locate the proxy, `HEADROOM_PROVIDERS` (comma-separated, empty by default) selects which providers to route, `HEADROOM_BASE_URL` overrides the routing base URL (default `http://<host>:<port>/v1`, suited to OpenAI-compatible providers), and `HEADROOM_NOTIFY=0` silences notifications.
+Review and install RTK yourself, then reload Pi:
 
-For Claude Code, headroom is used separately via `headroom wrap claude` (it is not a Pi extension concern).
+```bash
+brew install rtk
+```
+
+For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
 ## Included CLI and tmux helpers
 
@@ -414,7 +409,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/goal-technical-auditor",
       "./extensions/understand",
       "./extensions/folder-refactor",
-      "./extensions/headroom"
+      "./extensions/rtk"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

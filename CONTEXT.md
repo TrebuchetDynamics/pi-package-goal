@@ -1,6 +1,6 @@
 # pi-package-goal Context
 
-This package ships Pi skills plus `/understand`, folder-refactor, and headroom proxy-routing extensions.
+This package ships Pi skills plus `/understand`, folder-refactor, and RTK bridge extensions.
 
 ## Language
 
@@ -56,8 +56,9 @@ _Avoid_: speculative utilities, one-call-site abstractions, test-first cleanup u
 The package-local extension at `extensions/folder-refactor/index.js` registers `/folder-refactor` plus deterministic `folder_refactor_scan`, `folder_refactor_audit`, and `folder_refactor_state` tools so agents must prove exact remaining root files are classified before reporting a refactor complete.
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
-**Headroom Extension**:
-The package-local extension at `extensions/headroom/index.js` integrates with external [headroom](https://github.com/chopratejas/headroom): it registers `/headroom status|stats|start`, and—when a local headroom proxy is reachable—routes an opt-in set of providers (`HEADROOM_PROVIDERS`, empty by default) through it via `pi.registerProvider(..., { baseUrl })`, failing open (no routing) when the proxy is unavailable, no providers are opted in, or `HEADROOM_DISABLED=1`. Verified with API-key providers (e.g. `openrouter`); `openai-codex` is unsupported because the proxy's chatgpt.com relay is Cloudflare-blocked.
+**RTK Extension**:
+The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
+_Avoid_: bundling the Rust binary, silently executing remote installers without a user command/confirmation, blocking commands for token optimization, rewriting non-bash Pi tools
 
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
