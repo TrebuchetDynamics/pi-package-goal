@@ -162,21 +162,11 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/TrebuchetDynamics-research-forge-LICENSE`
 
-## rtk-ai/rtk
+## chopratejas/headroom
 
-- Source: https://github.com/rtk-ai/rtk
-- Snapshot inspected: `6785a6c7695d7273e722214a295249a84819b6f0` (HEAD observed 2026-06-10)
-- Usage: source evidence for the package-local `extensions/rtk/index.js` Pi command-rewrite integration; the Rust RTK binary is not bundled in this package tarball.
-- License: Apache-2.0
-- Full license copy: `licenses/rtk-ai-rtk-LICENSE`
+- Source: https://github.com/chopratejas/headroom
 
-## MasuRii/pi-rtk-optimizer
-
-- Source: https://github.com/MasuRii/pi-rtk-optimizer
-- Snapshot inspected: `0ec4ea1fd13ca47dc22d9d0c61742356b290afd1`
-- Usage: source inspiration for the package-local `extensions/rtk/index.js` rewrite status cache, suggestion mode, session stats, and tool output compaction pipeline; the upstream extension is not bundled wholesale.
-- License: MIT
-- Full license copy: `licenses/MasuRii-pi-rtk-optimizer-LICENSE`
+- Usage: external tool referenced by the package-local `extensions/headroom/index.js` Pi proxy-routing integration. Headroom is installed by the user (`pip install "headroom-ai[all]"`); no headroom code is bundled in this package tarball.
 
 ## tolibear/goalbuddy
 
