@@ -153,3 +153,28 @@ Replace/remove rtk in:
 ## Open questions
 
 None blocking. Codex routing specifics are resolved by the smoke test in the plan.
+
+## Verification outcome (2026-06-21)
+
+The live smoke test changed the design. Findings:
+
+- **Codex (openai-codex) through the proxy: BLOCKED.** Routing Pi's codex provider
+  to the proxy made the proxy relay to `chatgpt.com/codex/responses`, which returned
+  a **Cloudflare managed-challenge page** instead of a model response. Codex
+  (chatgpt.com OAuth) cannot be compressed via the proxy, and routing it actively
+  breaks Pi. Risk 1/2 materialized as a hard blocker.
+- **OpenRouter (API-key provider) through the proxy: WORKS.** With
+  `headroom proxy --backend openrouter` and the openrouter provider routed to
+  `http://127.0.0.1:8787/v1`, the request reached OpenRouter with auth intact
+  (LiteLLM `provider=openrouter`; OpenRouter returned a real `402` credit-limit
+  message tied to the user's key — proof of correct routing, not a proxy failure).
+
+Resulting design changes (implemented):
+
+- **Route nothing by default.** `HEADROOM_PROVIDERS` is empty unless the user opts in,
+  so the extension can never break a working provider (especially codex).
+- **`HEADROOM_BASE_URL` + `/v1` default routing base** (`routedBaseUrl`), because
+  OpenAI-compatible providers (openrouter) need the `/v1` suffix.
+- **Docs state codex is unsupported** and give the openrouter opt-in recipe.
+- The Risk-1 fallback ("document `pi --provider <api-key-provider>` routing") is now
+  the primary supported path.

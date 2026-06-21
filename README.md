@@ -196,9 +196,18 @@ Use it for bounded folder splits, shared-code extraction from proven duplicate c
 
 ### `/headroom`
 
-This package includes `extensions/headroom/index.js`, a Pi extension for [headroom](https://github.com/chopratejas/headroom). When a local headroom proxy is reachable, the extension routes Pi's configured providers (default `openai-codex`) through it via `pi.registerProvider(..., { baseUrl })`, so the whole context is compressed in transit. Headroom is an external tool you install yourself (`pip install "headroom-ai[all]"`); the binary is not bundled.
+This package includes `extensions/headroom/index.js`, a Pi extension for [headroom](https://github.com/chopratejas/headroom). When a local headroom proxy is reachable, the extension can route an opt-in set of Pi providers through it via `pi.registerProvider(..., { baseUrl })`, so the whole context is compressed in transit. Headroom is an external tool you install yourself (`pip install "headroom-ai[all]"`); the binary is not bundled.
 
-The extension fails open: if the proxy is not running, Pi behaves exactly as before (no routing). Run the proxy with `headroom proxy` (or `/headroom start`).
+**By default the extension routes nothing** — it is safe to load even with no proxy running. Opt in per provider with `HEADROOM_PROVIDERS` (comma-separated). It is verified working with API-key providers such as `openrouter`. **`openai-codex` (chatgpt.com) is not supported**: the proxy's relay to chatgpt.com is blocked by Cloudflare, so routing codex would break it — do not add `openai-codex` to `HEADROOM_PROVIDERS`.
+
+The extension fails open: if the proxy is not running (or no providers are opted in), Pi behaves exactly as before. Run the proxy with `headroom proxy` (or `/headroom start`); for an OpenAI-compatible provider like openrouter use `headroom proxy --backend openrouter`.
+
+Example opt-in for openrouter:
+
+```
+headroom proxy --backend openrouter        # in a separate terminal
+HEADROOM_PROVIDERS=openrouter pi            # routes openrouter through the proxy
+```
 
 Commands:
 
@@ -209,7 +218,7 @@ Commands:
 /headroom help
 ```
 
-Environment flags: `HEADROOM_DISABLED=1` skips all routing, `HEADROOM_PORT=8787` and `HEADROOM_HOST=127.0.0.1` locate the proxy, `HEADROOM_PROVIDERS=openai-codex` (comma-separated) selects which providers to route, and `HEADROOM_NOTIFY=0` silences notifications.
+Environment flags: `HEADROOM_DISABLED=1` skips all routing, `HEADROOM_PORT=8787` and `HEADROOM_HOST=127.0.0.1` locate the proxy, `HEADROOM_PROVIDERS` (comma-separated, empty by default) selects which providers to route, `HEADROOM_BASE_URL` overrides the routing base URL (default `http://<host>:<port>/v1`, suited to OpenAI-compatible providers), and `HEADROOM_NOTIFY=0` silences notifications.
 
 For Claude Code, headroom is used separately via `headroom wrap claude` (it is not a Pi extension concern).
 

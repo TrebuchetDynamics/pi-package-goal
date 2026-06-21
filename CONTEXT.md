@@ -57,7 +57,7 @@ The package-local extension at `extensions/folder-refactor/index.js` registers `
 _Avoid_: relying on memory for completion audits, ending with unexecuted safe next candidates, hiding root files behind broad categories
 
 **Headroom Extension**:
-The package-local extension at `extensions/headroom/index.js` integrates with external [headroom](https://github.com/chopratejas/headroom): it registers `/headroom status|stats|start`, and—when a local headroom proxy is reachable—routes the configured providers (default `openai-codex`) through it via `pi.registerProvider(..., { baseUrl })`, failing open (no routing) when the proxy is unavailable or `HEADROOM_DISABLED=1`.
+The package-local extension at `extensions/headroom/index.js` integrates with external [headroom](https://github.com/chopratejas/headroom): it registers `/headroom status|stats|start`, and—when a local headroom proxy is reachable—routes an opt-in set of providers (`HEADROOM_PROVIDERS`, empty by default) through it via `pi.registerProvider(..., { baseUrl })`, failing open (no routing) when the proxy is unavailable, no providers are opted in, or `HEADROOM_DISABLED=1`. Verified with API-key providers (e.g. `openrouter`); `openai-codex` is unsupported because the proxy's chatgpt.com relay is Cloudflare-blocked.
 
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
