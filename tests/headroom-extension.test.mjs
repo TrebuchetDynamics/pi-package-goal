@@ -63,6 +63,7 @@ assert.equal(parseHeadroomVersion("garbage"), null);
 assert.deepEqual(parseHeadroomCommandArgs(""), { action: "status" });
 assert.deepEqual(parseHeadroomCommandArgs("stats"), { action: "stats" });
 assert.deepEqual(parseHeadroomCommandArgs("  start  "), { action: "start" });
+assert.deepEqual(parseHeadroomCommandArgs("help"), { action: "help" });
 assert.deepEqual(parseHeadroomCommandArgs('start "unclosed'), { action: "status" });
 
 // formatStatus
@@ -82,11 +83,17 @@ assert.match(formatStatus({ reachable: false }, { ...cfg, enabled: false }), /di
 // isProxyReachable with fake fetch
 const okFetch = async () => ({ ok: true, status: 200 });
 const unauthFetch = async () => ({ ok: false, status: 401 });
+const badRequestFetch = async () => ({ ok: false, status: 400 });
+const methodFetch = async () => ({ ok: false, status: 405 });
+const notFoundFetch = async () => ({ ok: false, status: 404 });
 const downFetch = async () => {
   throw new Error("ECONNREFUSED");
 };
 assert.equal(await isProxyReachable(cfg, 500, okFetch), true);
 assert.equal(await isProxyReachable(cfg, 500, unauthFetch), true);
+assert.equal(await isProxyReachable(cfg, 500, badRequestFetch), true);
+assert.equal(await isProxyReachable(cfg, 500, methodFetch), true);
+assert.equal(await isProxyReachable(cfg, 500, notFoundFetch), false);
 assert.equal(await isProxyReachable(cfg, 500, downFetch), false);
 
 console.log("headroom-extension tests passed");

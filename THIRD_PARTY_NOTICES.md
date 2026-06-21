@@ -166,6 +166,8 @@ Trebuchet Dynamics under the MIT License.
 
 - Source: https://github.com/chopratejas/headroom
 
+- License: none bundled — external tool, installed by the user; no headroom code ships in this package.
+
 - Usage: external tool referenced by the package-local `extensions/headroom/index.js` Pi proxy-routing integration. Headroom is installed by the user (`pip install "headroom-ai[all]"`); no headroom code is bundled in this package tarball.
 
 ## tolibear/goalbuddy

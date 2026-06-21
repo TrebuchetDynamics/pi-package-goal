@@ -3,7 +3,6 @@ import { spawn } from "node:child_process";
 
 const DEFAULT_PORT = 8787;
 const DEFAULT_HOST = "127.0.0.1";
-const DEFAULT_PROVIDERS = []; // route nothing unless explicitly opted in (codex unsupported: Cloudflare blocks the proxy relay)
 const HEALTH_TIMEOUT_MS = 1_500;
 
 export function normalizePort(value, fallback = DEFAULT_PORT) {
@@ -20,6 +19,7 @@ export function readHeadroomConfig(env = process.env) {
     enabled: env.HEADROOM_DISABLED !== "1",
     host: env.HEADROOM_HOST || DEFAULT_HOST,
     port: normalizePort(env.HEADROOM_PORT),
+    // Empty unless explicitly opted in. Codex is unsupported (Cloudflare blocks the proxy relay).
     providers: parseProviders(env.HEADROOM_PROVIDERS),
     baseUrl: env.HEADROOM_BASE_URL || null,
     showNotifications: env.HEADROOM_NOTIFY !== "0",
