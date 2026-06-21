@@ -43,8 +43,12 @@ export function parseHeadroomVersion(raw) {
 }
 
 export function parseHeadroomCommandArgs(args = "") {
-  const parts = splitCommandArgs(args);
-  return { action: parts[0] || "status" };
+  try {
+    const parts = splitCommandArgs(args);
+    return { action: parts[0] || "status" };
+  } catch {
+    return { action: "status" };
+  }
 }
 
 export function formatStatus(state, config) {
@@ -79,8 +83,10 @@ async function headroomVersion(pi) {
   }
 }
 
-function report(ctx, message, level = "info") {
-  if (ctx?.hasUI) ctx.ui.notify(message, level);
+function report(ctx, message, level = "info", config = null) {
+  if (ctx?.hasUI && (config === null || config.showNotifications)) {
+    ctx.ui.notify(message, level);
+  }
   console.log(message);
 }
 
@@ -95,6 +101,7 @@ function startProxyDetached(config) {
     detached: true,
     stdio: "ignore",
   });
+  child.on("error", () => {}); // suppress unhandled error if headroom is not installed
   child.unref();
 }
 
@@ -129,7 +136,9 @@ export default async function registerHeadroomExtension(pi) {
             "/headroom stats — token savings (headroom perf)",
             "/headroom start — launch `headroom proxy` in the background, then re-check",
             "Env: HEADROOM_DISABLED=1, HEADROOM_PORT=8787, HEADROOM_HOST=127.0.0.1, HEADROOM_PROVIDERS=openai-codex, HEADROOM_NOTIFY=0",
-          ].join("\n")
+          ].join("\n"),
+          "info",
+          liveConfig
         );
         return;
       }
@@ -138,7 +147,9 @@ export default async function registerHeadroomExtension(pi) {
         startProxyDetached(liveConfig);
         report(
           ctx,
-          `Starting headroom proxy on ${proxyBaseUrl(liveConfig)} ... run /headroom status in a moment. Provider routing applies on next Pi start.`
+          `Starting headroom proxy on ${proxyBaseUrl(liveConfig)} ... run /headroom status in a moment. Provider routing applies on next Pi start.`,
+          "info",
+          liveConfig
         );
         return;
       }
@@ -146,15 +157,15 @@ export default async function registerHeadroomExtension(pi) {
       if (action === "stats") {
         try {
           const r = await pi.exec("headroom", ["perf"], { timeout: 5_000 });
-          report(ctx, r.code === 0 ? r.stdout.trim() || "No headroom perf data yet." : "headroom perf failed; is headroom installed?");
+          report(ctx, r.code === 0 ? r.stdout.trim() || "No headroom perf data yet." : "headroom perf failed; is headroom installed?", "info", liveConfig);
         } catch (error) {
-          report(ctx, `headroom perf error: ${error.message}`, "warning");
+          report(ctx, `headroom perf error: ${error.message}`, "warning", liveConfig);
         }
         return;
       }
 
       const state = await getState(pi, liveConfig);
-      report(ctx, formatStatus(state, liveConfig), state.reachable ? "info" : "warning");
+      report(ctx, formatStatus(state, liveConfig), state.reachable ? "info" : "warning", liveConfig);
     },
   });
 }

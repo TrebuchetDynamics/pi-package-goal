@@ -56,6 +56,7 @@ assert.equal(parseHeadroomVersion("garbage"), null);
 assert.deepEqual(parseHeadroomCommandArgs(""), { action: "status" });
 assert.deepEqual(parseHeadroomCommandArgs("stats"), { action: "stats" });
 assert.deepEqual(parseHeadroomCommandArgs("  start  "), { action: "start" });
+assert.deepEqual(parseHeadroomCommandArgs('start "unclosed'), { action: "status" });
 
 // formatStatus
 const cfg = { enabled: true, host: "127.0.0.1", port: 8787, providers: ["openai-codex"], showNotifications: true };
