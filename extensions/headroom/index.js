@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 
 const DEFAULT_PORT = 8787;
 const DEFAULT_HOST = "127.0.0.1";
-const DEFAULT_PROVIDERS = ["openai-codex"];
+const DEFAULT_PROVIDERS = []; // route nothing unless explicitly opted in (codex unsupported: Cloudflare blocks the proxy relay)
 const HEALTH_TIMEOUT_MS = 1_500;
 
 export function normalizePort(value, fallback = DEFAULT_PORT) {
@@ -12,11 +12,7 @@ export function normalizePort(value, fallback = DEFAULT_PORT) {
 }
 
 export function parseProviders(raw) {
-  const list = String(raw ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return list.length ? [...new Set(list)] : [...DEFAULT_PROVIDERS];
+  return [...new Set(String(raw ?? "").split(",").map((s) => s.trim()).filter(Boolean))];
 }
 
 export function readHeadroomConfig(env = process.env) {
@@ -25,6 +21,7 @@ export function readHeadroomConfig(env = process.env) {
     host: env.HEADROOM_HOST || DEFAULT_HOST,
     port: normalizePort(env.HEADROOM_PORT),
     providers: parseProviders(env.HEADROOM_PROVIDERS),
+    baseUrl: env.HEADROOM_BASE_URL || null,
     showNotifications: env.HEADROOM_NOTIFY !== "0",
   };
 }
@@ -35,6 +32,12 @@ export function proxyBaseUrl(config) {
 
 export function healthUrl(config) {
   return `${proxyBaseUrl(config)}/v1/models`;
+}
+
+// Base URL for provider routing. OpenAI-compatible providers (e.g. openrouter) need the
+// /v1 suffix; override via HEADROOM_BASE_URL for other shapes (e.g. anthropic root).
+export function routedBaseUrl(config) {
+  return config.baseUrl || `${proxyBaseUrl(config)}/v1`;
 }
 
 export function parseHeadroomVersion(raw) {
@@ -56,7 +59,8 @@ export function formatStatus(state, config) {
     return "Headroom disabled (HEADROOM_DISABLED=1); no provider routing applied.";
   }
   if (state.reachable) {
-    return `Headroom active at ${proxyBaseUrl(config)} (${state.version ?? "version unknown"}); routing: ${state.routedProviders.join(", ") || "none"}.`;
+    const routing = state.routedProviders.length ? state.routedProviders.join(", ") : "none (set HEADROOM_PROVIDERS to opt in)";
+    return `Headroom active at ${proxyBaseUrl(config)} (${state.version ?? "version unknown"}); routing: ${routing}.`;
   }
   return `Headroom proxy not reachable at ${proxyBaseUrl(config)}; Pi running normally (no routing). Start it: headroom proxy --port ${config.port} (or /headroom start).`;
 }
@@ -113,7 +117,7 @@ export default async function registerHeadroomExtension(pi) {
     if (reachable) {
       for (const provider of config.providers) {
         try {
-          pi.registerProvider(provider, { baseUrl: proxyBaseUrl(config) });
+          pi.registerProvider(provider, { baseUrl: routedBaseUrl(config) });
         } catch (error) {
           console.warn(`[headroom] failed to route provider ${provider}; leaving default`, error);
         }
@@ -135,7 +139,18 @@ export default async function registerHeadroomExtension(pi) {
             "/headroom status — proxy reachability, version, routed providers",
             "/headroom stats — token savings (headroom perf)",
             "/headroom start — launch `headroom proxy` in the background, then re-check",
-            "Env: HEADROOM_DISABLED=1, HEADROOM_PORT=8787, HEADROOM_HOST=127.0.0.1, HEADROOM_PROVIDERS=openai-codex, HEADROOM_NOTIFY=0",
+            "",
+            "By default, NO providers are routed through the proxy. Opt in via HEADROOM_PROVIDERS (comma-separated list).",
+            "Example: HEADROOM_PROVIDERS=openrouter",
+            "",
+            "HEADROOM_BASE_URL overrides the routing base URL (default: http://<host>:<port>/v1).",
+            "Use this for providers that do not expect the /v1 suffix.",
+            "",
+            "NOTE: openai-codex (chatgpt.com) is NOT supported — Cloudflare blocks the proxy relay.",
+            "Use an API-key provider such as openrouter instead.",
+            "",
+            "Env vars: HEADROOM_DISABLED=1, HEADROOM_PORT=8787, HEADROOM_HOST=127.0.0.1,",
+            "          HEADROOM_PROVIDERS=<comma-separated>, HEADROOM_BASE_URL=<url>, HEADROOM_NOTIFY=0",
           ].join("\n"),
           "info",
           liveConfig

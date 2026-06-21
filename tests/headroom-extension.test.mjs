@@ -5,6 +5,7 @@ import {
   readHeadroomConfig,
   proxyBaseUrl,
   healthUrl,
+  routedBaseUrl,
   parseHeadroomVersion,
   parseHeadroomCommandArgs,
   formatStatus,
@@ -18,17 +19,18 @@ assert.equal(normalizePort("0"), 8787);
 assert.equal(normalizePort("notaport"), 8787);
 assert.equal(normalizePort("70000"), 8787);
 
-// parseProviders
-assert.deepEqual(parseProviders(undefined), ["openai-codex"]);
-assert.deepEqual(parseProviders(""), ["openai-codex"]);
-assert.deepEqual(parseProviders("anthropic, openai-codex ,anthropic"), ["anthropic", "openai-codex"]);
+// parseProviders — empty by default (route nothing unless explicitly opted in)
+assert.deepEqual(parseProviders(undefined), []);
+assert.deepEqual(parseProviders(""), []);
+assert.deepEqual(parseProviders("anthropic, openrouter ,anthropic"), ["anthropic", "openrouter"]);
 
 // readHeadroomConfig defaults
 assert.deepEqual(readHeadroomConfig({}), {
   enabled: true,
   host: "127.0.0.1",
   port: 8787,
-  providers: ["openai-codex"],
+  providers: [],
+  baseUrl: null,
   showNotifications: true,
 });
 
@@ -38,15 +40,20 @@ assert.deepEqual(
     HEADROOM_DISABLED: "1",
     HEADROOM_PORT: "9000",
     HEADROOM_HOST: "0.0.0.0",
-    HEADROOM_PROVIDERS: "anthropic",
+    HEADROOM_PROVIDERS: "openrouter",
+    HEADROOM_BASE_URL: "http://127.0.0.1:8787/v1",
     HEADROOM_NOTIFY: "0",
   }),
-  { enabled: false, host: "0.0.0.0", port: 9000, providers: ["anthropic"], showNotifications: false }
+  { enabled: false, host: "0.0.0.0", port: 9000, providers: ["openrouter"], baseUrl: "http://127.0.0.1:8787/v1", showNotifications: false }
 );
 
 // url builders
 assert.equal(proxyBaseUrl({ host: "127.0.0.1", port: 8787 }), "http://127.0.0.1:8787");
 assert.equal(healthUrl({ host: "127.0.0.1", port: 8787 }), "http://127.0.0.1:8787/v1/models");
+
+// routedBaseUrl — defaults to proxyBaseUrl + /v1; overridden by baseUrl
+assert.equal(routedBaseUrl({ host: "127.0.0.1", port: 8787, baseUrl: null }), "http://127.0.0.1:8787/v1");
+assert.equal(routedBaseUrl({ host: "127.0.0.1", port: 8787, baseUrl: "http://x:9/v1" }), "http://x:9/v1");
 
 // version
 assert.equal(parseHeadroomVersion("headroom, version 0.26.0"), "0.26.0");
@@ -59,10 +66,15 @@ assert.deepEqual(parseHeadroomCommandArgs("  start  "), { action: "start" });
 assert.deepEqual(parseHeadroomCommandArgs('start "unclosed'), { action: "status" });
 
 // formatStatus
-const cfg = { enabled: true, host: "127.0.0.1", port: 8787, providers: ["openai-codex"], showNotifications: true };
+const cfg = { enabled: true, host: "127.0.0.1", port: 8787, providers: ["openrouter"], showNotifications: true };
 assert.match(
-  formatStatus({ reachable: true, version: "0.26.0", routedProviders: ["openai-codex"] }, cfg),
-  /active.*0\.26\.0.*openai-codex/
+  formatStatus({ reachable: true, version: "0.26.0", routedProviders: ["openrouter"] }, cfg),
+  /active.*0\.26\.0.*openrouter/
+);
+// reachable with no routed providers shows helpful "none" hint
+assert.match(
+  formatStatus({ reachable: true, version: "0.26.0", routedProviders: [] }, cfg),
+  /none/
 );
 assert.match(formatStatus({ reachable: false, version: null, routedProviders: [] }, cfg), /not reachable/);
 assert.match(formatStatus({ reachable: false }, { ...cfg, enabled: false }), /disabled/);
