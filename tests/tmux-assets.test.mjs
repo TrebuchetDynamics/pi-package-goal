@@ -256,8 +256,8 @@ esac
 }
 
 async function testStatusHelpers() {
-  assert.equal(run("tmux/short-path.sh", ["/home/xel/git/gormes/gormes-agent"]).trim(), "gormes/gormes-agent");
-  assert.equal(run("tmux/short-path.sh", ["/home/xel/git/pi-package-development-goal"]).trim(), "git/pi-package-development-goal");
+  assert.equal(run("tmux/short-path.sh", ["/tmp/git/gormes/gormes-agent"]).trim(), "gormes/gormes-agent");
+  assert.equal(run("tmux/short-path.sh", ["/tmp/git/pi-package-development-goal"]).trim(), "git/pi-package-development-goal");
   assert.equal(run("tmux/git-status.sh", ["/"]).trim(), "");
 
   if (!hasCommand("git")) return;

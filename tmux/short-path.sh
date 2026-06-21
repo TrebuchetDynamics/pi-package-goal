@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Print only the last two path components.
-# Example: /home/xel/git/pi-package-development-goal -> git/pi-package-development-goal
+# Example: /tmp/git/pi-package-development-goal -> git/pi-package-development-goal
 
 path=${1:-}
 [ -n "$path" ] || exit 0

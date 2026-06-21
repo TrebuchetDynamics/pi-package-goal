@@ -104,7 +104,7 @@ assert.deepEqual(parseError("Validation passed, but the assistant forgot the fin
 assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   "Summary: Blocked Work: OBI artifact; Flutter validation. Pivoted Work Completed: no new pivot.",
   "Changed files:",
-  "- `/home/xel/git/pi-package-development-loop/extensions/development-goal/prompts.ts` — clarified report requirements.",
+  "- `/repo/pi-package-development-loop/extensions/development-goal/prompts.ts` — clarified report requirements.",
   "Validation evidence:",
   "- `npm test` (pass)",
   "- `git diff --check` (pass)",
@@ -118,7 +118,7 @@ assert.deepEqual(parserMod.parseLoopDeliveryEvidence([
   blockedWork: "OBI artifact; Flutter validation.",
   pivotedWorkCompleted: "no new pivot.",
   nextSteps: ["Continue with parser extraction cleanup."],
-  changedFiles: ["/home/xel/git/pi-package-development-loop/extensions/development-goal/prompts.ts"],
+  changedFiles: ["/repo/pi-package-development-loop/extensions/development-goal/prompts.ts"],
   validationCommands: ["npm test", "git diff --check"],
 });
 

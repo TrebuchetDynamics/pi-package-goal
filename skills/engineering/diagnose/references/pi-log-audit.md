@@ -3,12 +3,12 @@
 Use this read-only helper when you need to check `.pi` folders and goal logs across a workspace such as `~/git/sages-openclaw`.
 
 ```bash
-node skills/engineering/diagnose/scripts/pi-log-audit.mjs /home/xel/git/sages-openclaw
-node skills/engineering/diagnose/scripts/pi-log-audit.mjs --since=2h /home/xel/git/sages-openclaw
-node skills/engineering/diagnose/scripts/pi-log-audit.mjs --attention-only --since=2h /home/xel/git/sages-openclaw
+node skills/engineering/diagnose/scripts/pi-log-audit.mjs /workspace/sages-openclaw
+node skills/engineering/diagnose/scripts/pi-log-audit.mjs --since=2h /workspace/sages-openclaw
+node skills/engineering/diagnose/scripts/pi-log-audit.mjs --attention-only --since=2h /workspace/sages-openclaw
 ```
 
-If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /home/xel/git/sages-openclaw`.
+If the root path is misspelled, the helper exits without scanning and prints a sibling suggestion such as `Did you mean: /workspace/sages-openclaw`.
 
 The helper scans for `.pi` directories while skipping `.git` and `node_modules`, then summarizes every `.pi/*/logs.jsonl` file it finds, including `development-goal`, `e2e-goal`, and custom goal names. It reports config files matching `*-goal.json`, including custom goal configs. Add `--since=2h` or `--since=2026-05-22T02:30:00.000Z` to classify each log from timestamped records at or after the cutoff; records without parseable timestamps are excluded from the window and counted as `since_filtered=`. When `--attention-only` is combined with `--since`, logs with no in-window records, config-only `.pi` directories, and completed goals whose only issue is missing or malformed goal config are hidden so a recent audit is not dominated by stale goal hygiene.
 
