@@ -38,6 +38,14 @@ Before blocking on validation, prove at least one of:
 - multiple plausible repairs exist and choosing among them is an owner decision;
 - a focused repair was attempted and the failure moved to a genuinely different risky blocker.
 
+## Unblock and split-commit mandate
+
+In ship mode, unblock everything that can be safely isolated. Unrelated or review-needed dirt in the worktree is not automatically a stop sign: leave it unstaged and ship safe in-scope topics with explicit pathspecs. Block the whole delivery only when no safe topic can be isolated, a risky path overlaps the safe topic, validation cannot be made meaningful, or git/remote state prevents safe delivery.
+
+Before staging, make a small topic plan from the inspected paths. Prefer multiple coherent commits by topic (`tests`, `export UI`, `linux runner`, `docs`, etc.) over one mixed commit. For each topic: stage only its paths, show/inspect `git diff --cached --name-status`, commit it, then move to the next topic. Do not wait for unrelated review-needed paths if the current topic validates and stages cleanly.
+
+If anything remains uncommitted, report why it did not block the shipped topics or the exact reason it did. A blocker must name the path, the red line it crosses, what safe alternatives were tried or rejected (`leave unstaged`, `.gitignore`, restore, separate commit, temp validation), and the owner decision needed.
+
 ## Skill composition
 
 - If validation fails because behavior is broken, pause delivery and use `diagnose`; hand off with trigger, failing command/output artifact, next skill, and expected passing repro/regression signal.
@@ -54,17 +62,18 @@ Before blocking on validation, prove at least one of:
 4. Check whether generated junk, local state, logs, caches, temp files, or tool outputs should be ignored. In ship mode, fix safe hygiene directly: tighten `.gitignore`, remove/leave unstaged generated junk, run formatters already declared by the repo, update imports, and apply small mechanical fixes from validation.
 5. Classify each path:
    - **safe in-scope** — directly belongs to the requested work, including safe polish, formatting, import cleanup, and `.gitignore` hygiene;
-   - **review_needed** — plausibly useful but ownership/scope is unclear, or a fix would alter intended behavior/API;
-   - **blocked** — secrets, credentials, generated/binary junk that cannot be safely ignored, local state/logs, dependency lockfile surprises, unrelated user work, or validation failures without a safe in-scope fix.
+   - **review_needed** — plausibly useful but ownership/scope is unclear, unrelated owner work that can be left unstaged, or a fix would alter intended behavior/API;
+   - **blocked** — secrets, credentials, generated/binary junk that cannot be safely ignored, local state/logs, dependency lockfile surprises that overlap the delivery, unrelated work that cannot be isolated, or validation failures without a safe in-scope fix.
 6. In audit/status mode, stop after the classification and validation receipts; do not stage.
-7. In ship mode, keep working through safe polish loops until clean or blocked. Block before commit only if any path is `blocked`, or if `review_needed` paths are required for delivery and cannot be safely resolved without owner input.
+7. In ship mode, keep working through safe polish loops and safe topic commits until no more isolatable in-scope work remains. Do not block safe topic commits merely because unrelated `review_needed` paths remain unstaged.
 8. Run validation:
    - required user-specified commands;
    - inferred project tests;
    - `git diff --check`.
+   If unrelated dirty paths make whole-worktree validation noisy, first try the smallest non-destructive isolation that proves the staged topic: scoped validation, `git diff --check -- <topic paths>`, or a temporary worktree with only the safe patch applied. Say when validation is scoped instead of whole-repo.
 9. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
-10. Stage intentionally by explicit pathspec. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope.
-11. Prefer coherent split commits when changes are separable; otherwise make one clear commit. After committing, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
+10. Stage intentionally by explicit pathspec per topic. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope. Before every commit, inspect `git diff --cached --name-status` and ensure it contains only that topic.
+11. Make coherent split commits by topic whenever changes are separable; use one commit only when the safe paths form one topic. After each commit, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
 12. Push to the current branch's upstream. If no upstream exists, ask before choosing one. If push is rejected for fetch-first/non-fast-forward, stop and ask before rebase/merge.
 13. Verify final `git status --short --branch` and report commit hash(es), push result, remaining worktree state, and validation receipts.
 
@@ -91,14 +100,16 @@ Scope:
 - blocked: <paths/reason or none>
 Validation:
 - <command>: pass|fail|not run (<reason if needed>)
-Delivery: <commit/push result or why skipped>
+Delivery: <commit/push result, split commit list, or why skipped>
+Unblocked: <safe topics shipped or explicitly none>
+Still uncommitted: <review_needed/blocked paths left unstaged and why they did not/did block delivery>
 Final state: <git status --short --branch summary>
 Completion audit: <concise statement that all modified and untracked files were inspected/classified; note when untracked tests are absent from diff stat but included from status/inspection>
 GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
 
-Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, never because the user omitted explicit ship wording. Use `blocked` when validation cannot be safely fixed after a focused repair attempt, risky files are present, or git/remote state prevents safe delivery. If blocked by validation, include the repair attempts already made and the exact red-line reason the next fix cannot be performed safely. Use `shipped` only after validation passes, commit succeeds, push succeeds, and final git state is verified.
+Use `review_needed` when owner review or scope confirmation is genuinely needed before commit, never because the user omitted explicit ship wording. Use `blocked` when validation cannot be safely fixed after a focused repair attempt, risky files prevent safe isolation/delivery, or git/remote state prevents safe delivery. If blocked by validation, include the repair attempts already made and the exact red-line reason the next fix cannot be performed safely. Use `shipped` only after validation passes for the shipped scope, commit succeeds, push succeeds, and final git state is verified; remaining unrelated review-needed paths may be left unstaged if they are explicitly reported.
 
 ## Shared contract
 

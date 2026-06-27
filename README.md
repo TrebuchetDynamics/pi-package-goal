@@ -359,9 +359,10 @@ The skill:
 2. reviews changed/untracked files for secrets, local state, generated junk, and unrelated work;
 3. fixes obvious safe hygiene/validation issues in scope;
 4. runs requested or inferred validation, including `git diff --check`;
-5. commits only safe in-scope changes;
-6. pushes to the current upstream; and
-7. reports final markers:
+5. commits only safe in-scope changes, split by topic when separable;
+6. leaves unrelated/review-needed worktree dirt unstaged instead of blocking safe topics when isolation is possible;
+7. pushes to the current upstream; and
+8. reports final markers:
 
 ```text
 GIT_COMMIT_PUSH_VALIDATED: yes|no
