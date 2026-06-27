@@ -443,7 +443,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/loop-engineering"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -527,6 +527,12 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
 
+  const loopEngineeringExtension = read("extensions/loop-engineering/index.js");
+  assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop-engineering"\)/);
+  assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop"\)/);
+  assert.match(loopEngineeringExtension, /buildLoopEngineeringObjective/);
+  assert.ok(exists("lib/loop-engineering/command.js"), "loop-engineering command helper must exist");
+  assert.ok(exists("tests/loop-engineering-command.test.mjs"), "loop-engineering helper test must exist");
 
   const lifecycle = read("lib/pi-bridge/lifecycle.js");
   assert.match(lifecycle, /createRepoBackedSkillBridge/);

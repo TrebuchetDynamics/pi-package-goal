@@ -217,6 +217,19 @@ brew install rtk
 
 For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
+### `/loop-engineering` and `/loop`
+
+`/loop-engineering` turns [cobusgreyling/loop-engineering](https://github.com/cobusgreyling/loop-engineering) patterns into a goal-backed Pi workflow. It does not run third-party CLIs itself; it asks the agent to inspect the repo, then use `npx @cobusgreyling/loop-audit`, `loop-init`, `loop-cost`, or `goal-audit` only when safe.
+
+| Command | Use it for |
+| --- | --- |
+| `/loop-engineering audit .` | Audit loop readiness and suggest the smallest L1 report-only improvements. |
+| `/loop-engineering init daily-triage --tool grok` | Scaffold a starter after cost and dirty-worktree checks. |
+| `/loop-engineering cost ci-sweeper --level L1` | Estimate token spend before adding cadence. |
+| `/loop-engineering goal .` | Run the @cobusgreyling goal-audit path without shadowing Pi's bundled `/goal`. |
+| `/loop 1d Run loop-triage. Update STATE.md. No auto-fix in week one.` | Convert a Grok-style loop prompt into a Pi `/goal`. |
+| `/loop-engineering --dry-run audit .` | Preview the generated `/goal` command. |
+
 ## Included CLI and tmux helpers
 
 ### `autofolderrefactor`
