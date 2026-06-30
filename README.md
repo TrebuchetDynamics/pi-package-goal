@@ -117,11 +117,12 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | `/goal <objective>` | Start or replace a persistent objective for the current session. |
 | `/goal --tokens 50k <objective>` | Pursue the objective until complete or the token budget is reached. |
 | `/goal status` | Show the current goal, usage, and status bar setting. |
+| `/goal edit [--tokens 100k] <objective>` | Update the current objective or budget without resetting usage. |
 | `/goal pause` / `/goal resume` | Stop or resume autonomous continuation. |
 | `/goal clear` | Remove the current goal. |
 | `/goal statusbar on|off` | Toggle the footer status line. |
 
-While active, the extension exposes `get_goal` and `update_goal` tools so the agent can inspect the objective and mark it complete only after evidence-backed verification.
+While active, the extension exposes `get_goal`, `goal_complete`, and compatibility `update_goal` tools so the agent can inspect the objective and mark it complete only after evidence-backed verification.
 
 ### `/goal-technical-auditor`
 

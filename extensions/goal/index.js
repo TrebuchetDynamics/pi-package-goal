@@ -1,5 +1,13 @@
 import { Box, Spacer, Text } from "@earendil-works/pi-tui";
 import { emptyGoalCommandAction } from "../../lib/goal/command.js";
+import {
+	buildGoalSystemPrompt,
+	completionRejection,
+	findFinalAssistantMessage,
+	isRetryableGoalInterruption,
+	parseTokenBudget,
+	validateObjective,
+} from "../../lib/goal/extension-helpers.js";
 import { tokenDeltaFromUsage } from "./usage.js";
 
 const CUSTOM_TYPE = "pi-goal";
@@ -9,23 +17,6 @@ let goal = null;
 let statusBarEnabled = true;
 let activeTurnStartedAt = null;
 let continuationQueued = false;
-
-function parseTokenBudget(input) {
-	const match = input.match(/(?:^|\s)--tokens(?:=|\s+)([0-9]+(?:\.[0-9]+)?\s*[kKmM]?)(?:\s|$)/);
-	if (!match) return { objective: input.trim(), tokenBudget: null };
-
-	const raw = match[1].replace(/\s+/g, "");
-	const suffix = raw.slice(-1).toLowerCase();
-	const numeric = suffix === "k" || suffix === "m" ? raw.slice(0, -1) : raw;
-	const value = Number(numeric);
-	if (!Number.isFinite(value) || value <= 0) {
-		return { objective: input.trim(), tokenBudget: null, error: "Token budget must be positive." };
-	}
-	const multiplier = suffix === "m" ? 1_000_000 : suffix === "k" ? 1_000 : 1;
-	const tokenBudget = Math.round(value * multiplier);
-	const objective = (input.slice(0, match.index) + " " + input.slice((match.index ?? 0) + match[0].length)).trim();
-	return { objective, tokenBudget };
-}
 
 function formatTokens(value) {
 	if (value >= 1_000_000) return `${Math.round(value / 100_000) / 10}M`;
@@ -137,7 +128,7 @@ function updateStatusBar(ctx) {
 	ctx.ui.setStatus(CUSTOM_TYPE, statusBarEnabled ? statusLine(goal) ?? "" : "");
 }
 
-const GOAL_TOOL_NAMES = ["get_goal", "update_goal"];
+const GOAL_TOOL_NAMES = ["get_goal", "update_goal", "goal_complete"];
 
 // Expose goal tools to the LLM only while a goal is actively being pursued.
 // When no goal exists (or it is paused / complete / budget-limited), keep them
@@ -189,9 +180,9 @@ Before deciding that the goal is achieved, perform a completion audit against th
 - Identify any missing, incomplete, weakly verified, or uncovered requirement.
 - Treat uncertainty as not achieved; do more verification or continue the work.
 
-Do not rely on intent, partial progress, elapsed effort, memory of earlier work, or a plausible final answer as proof of completion. Only mark the goal achieved when the audit shows that the objective has actually been achieved and no required work remains. If any requirement is missing, incomplete, or unverified, keep working instead of marking the goal complete. If the objective is achieved, call update_goal with status \"complete\".
+Do not rely on intent, partial progress, elapsed effort, memory of earlier work, or a plausible final answer as proof of completion. Only mark the goal achieved when the audit shows that the objective has actually been achieved and no required work remains. If any requirement is missing, incomplete, or unverified, keep working instead of marking the goal complete. If the objective is achieved, call goal_complete with a verification summary.
 
-Do not call update_goal unless the goal is complete. Do not mark a goal complete merely because the budget is nearly exhausted or because you are stopping work.`;
+Do not call goal_complete or update_goal unless the goal is complete. Do not mark a goal complete merely because the budget is nearly exhausted or because you are stopping work.`;
 }
 
 function budgetLimitPrompt(state) {
@@ -210,7 +201,7 @@ Budget:
 
 The system has marked the goal as budget_limited, so do not start new substantive work for this goal. Wrap up this turn soon: summarize useful progress, identify remaining work or blockers, and leave the user with a clear next step.
 
-Do not call update_goal unless the goal is actually complete.`;
+Do not call goal_complete or update_goal unless the goal is actually complete.`;
 }
 
 function queueContinuation(pi, state) {
@@ -221,6 +212,32 @@ function queueContinuation(pi, state) {
 		if (!goal || goal.id !== state.id || goal.status !== "active") return;
 		emitGoalEvent(pi, "continuation", goal, { triggerTurn: true, deliverAs: "followUp" });
 	});
+}
+
+function normalizeActiveGoalStatus(state) {
+	if (state.status === "active" && state.tokenBudget != null && state.tokensUsed >= state.tokenBudget) {
+		return { ...state, status: "budget_limited" };
+	}
+	return state;
+}
+
+function completeGoal(pi, ctx, summary) {
+	if (!goal) return { content: [{ type: "text", text: "No goal is set." }], details: { goal: null } };
+	if (summary !== undefined) {
+		const rejection = completionRejection(summary);
+		if (rejection) {
+			return { content: [{ type: "text", text: `Goal completion rejected: ${rejection}.` }], details: { goal, summary } };
+		}
+	}
+	const now = Date.now();
+	const next = { ...goal, status: "complete", updatedAt: now };
+	persist(pi, ctx, next);
+	emitGoalEvent(pi, "complete", next);
+	return {
+		content: [{ type: "text", text: JSON.stringify({ goal: next, summary, remainingTokens: next.tokenBudget == null ? null : Math.max(0, next.tokenBudget - next.tokensUsed) }, null, 2) }],
+		details: { goal: next, summary },
+		terminate: true,
+	};
 }
 
 export default function piGoal(pi) {
@@ -265,13 +282,38 @@ export default function piGoal(pi) {
 	});
 
 	pi.registerTool({
+		name: "goal_complete",
+		label: "Goal Complete",
+		description: "Mark the active /goal complete after all required work is done and verified.",
+		promptSnippet: "Mark the active /goal complete with a verification summary",
+		promptGuidelines: [
+			"Use goal_complete only after auditing every explicit /goal requirement against concrete evidence.",
+			"Do not use goal_complete for partial progress, blockers, failing tests, or unverified work.",
+		],
+		parameters: {
+			type: "object",
+			properties: {
+				summary: {
+					type: "string",
+					description: "What was completed and what evidence verified it.",
+				},
+			},
+			required: ["summary"],
+			additionalProperties: false,
+		},
+		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+			return completeGoal(pi, ctx, params.summary);
+		},
+	});
+
+	pi.registerTool({
 		name: "update_goal",
 		label: "Update Goal",
-		description: "Mark the current thread goal complete. This tool only accepts status=complete.",
-		promptSnippet: "Mark the current goal complete after a strict completion audit",
+		description: "Compatibility tool: mark the current thread goal complete. Prefer goal_complete with a summary.",
+		promptSnippet: "Compatibility path to mark the current goal complete",
 		promptGuidelines: [
+			"Prefer goal_complete over update_goal because goal_complete requires a verification summary.",
 			"Use update_goal only when the current pi-goal objective is fully achieved and verified against concrete evidence.",
-			"Do not use update_goal to pause, resume, abandon, or budget-limit a goal.",
 		],
 		parameters: {
 			type: "object",
@@ -286,29 +328,17 @@ export default function piGoal(pi) {
 			additionalProperties: false,
 		},
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-			if (params.status !== "complete") {
-				return { content: [{ type: "text", text: "update_goal only accepts status=complete." }], isError: true };
-			}
-			if (!goal) {
-				return { content: [{ type: "text", text: "No goal is set." }], isError: true };
-			}
-			const now = Date.now();
-			const next = { ...goal, status: "complete", updatedAt: now };
-			persist(pi, ctx, next);
-			emitGoalEvent(pi, "complete", next);
-			return {
-				content: [{ type: "text", text: JSON.stringify({ goal: next, remainingTokens: next.tokenBudget == null ? null : Math.max(0, next.tokenBudget - next.tokensUsed) }, null, 2) }],
-				details: { goal: next },
-			};
+			if (params.status !== "complete") return { content: [{ type: "text", text: "update_goal only accepts status=complete." }] };
+			return completeGoal(pi, ctx);
 		},
 	});
 
 	pi.registerCommand("goal", {
-		description: "Set, view, pause, resume, clear, or configure a long-running goal",
+		description: "Set, edit, view, pause, resume, clear, or configure a long-running goal",
 		getArgumentCompletions: (prefix) => {
-			const values = ["pause", "resume", "clear", "status", "statusbar", "statusbar on", "statusbar off"];
+			const values = ["pause", "resume", "clear", "edit", "status", "--tokens ", "statusbar", "statusbar on", "statusbar off"];
 			const filtered = values.filter((value) => value.startsWith(prefix));
-			return filtered.length ? filtered.map((value) => ({ value, label: value })) : null;
+			return filtered.length ? filtered.map((value) => ({ value, label: value.trim() || value })) : null;
 		},
 		handler: async (args, ctx) => {
 			const trimmed = args.trim();
@@ -354,10 +384,41 @@ export default function piGoal(pi) {
 					return;
 				}
 				const status = trimmed === "pause" ? "paused" : "active";
-				const next = { ...goal, status, updatedAt: now };
+				let next = normalizeActiveGoalStatus({ ...goal, status, updatedAt: now });
+				if (status === "active" && next.status === "budget_limited") {
+					ctx.ui.notify("Goal token budget is still reached. Use /goal edit --tokens <larger> <objective> to continue.", "warning");
+					return;
+				}
 				persist(pi, ctx, next);
 				emitGoalEvent(pi, status === "active" ? "resumed" : "paused", next);
 				if (status === "active" && ctx.isIdle()) queueContinuation(pi, next);
+				return;
+			}
+
+			if (trimmed === "edit" || trimmed.startsWith("edit ")) {
+				if (!goal) {
+					ctx.ui.notify("No goal is set. Use /goal <objective> to start one.", "warning");
+					return;
+				}
+				const parsed = parseTokenBudget(trimmed.slice(4).trim());
+				if (parsed.error) {
+					ctx.ui.notify(parsed.error, "warning");
+					return;
+				}
+				const validationError = validateObjective(parsed.objective);
+				if (validationError) {
+					ctx.ui.notify(validationError.replace("/goal", "/goal edit"), "warning");
+					return;
+				}
+				const next = normalizeActiveGoalStatus({
+					...goal,
+					objective: parsed.objective,
+					tokenBudget: parsed.tokenBudget ?? goal.tokenBudget,
+					status: goal.status === "paused" ? "paused" : "active",
+					updatedAt: now,
+				});
+				persist(pi, ctx, next);
+				emitGoalEvent(pi, next.status === "active" ? "active" : "paused", next, next.status === "active" ? { triggerTurn: ctx.isIdle() } : undefined);
 				return;
 			}
 
@@ -366,8 +427,9 @@ export default function piGoal(pi) {
 				ctx.ui.notify(parsed.error, "warning");
 				return;
 			}
-			if (!parsed.objective) {
-				ctx.ui.notify("Usage: /goal [--tokens 50k] <objective>", "warning");
+			const validationError = validateObjective(parsed.objective);
+			if (validationError) {
+				ctx.ui.notify(validationError, "warning");
 				return;
 			}
 			if (goal && goal.status !== "complete") {
@@ -422,6 +484,11 @@ export default function piGoal(pi) {
 		}
 	});
 
+	pi.on("before_agent_start", (event) => {
+		if (!goal || goal.status !== "active") return;
+		return { systemPrompt: `${event.systemPrompt}\n\n${buildGoalSystemPrompt(goal)}` };
+	});
+
 	pi.on("turn_start", (_event, _ctx) => {
 		activeTurnStartedAt = Date.now();
 	});
@@ -446,8 +513,17 @@ export default function piGoal(pi) {
 		}
 	});
 
-	pi.on("agent_end", (_event, ctx) => {
-		if (!goal || goal.status !== "active" || ctx.hasPendingMessages()) return;
+	pi.on("agent_end", (event, ctx) => {
+		if (!goal || goal.status !== "active") return;
+		const finalAssistant = findFinalAssistantMessage(event.messages);
+		if (["aborted", "error"].includes(finalAssistant?.stopReason) && !isRetryableGoalInterruption(finalAssistant)) {
+			const next = { ...goal, status: "paused", updatedAt: Date.now() };
+			persist(pi, ctx, next);
+			emitGoalEvent(pi, "paused", next);
+			ctx.ui.notify("Goal paused after interrupted or errored turn. Use /goal resume to continue.", "warning");
+			return;
+		}
+		if (ctx.hasPendingMessages?.()) return;
 		queueContinuation(pi, goal);
 	});
 }

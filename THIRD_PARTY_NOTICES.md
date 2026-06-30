@@ -204,3 +204,11 @@ Trebuchet Dynamics under the MIT License.
 - Local changes: renamed the bundled extension path from `pi-goal` to `goal` and updated Pi core imports to `@earendil-works/*` package names.
 - License: MIT
 - Full license copy: `licenses/Michaelliv-pi-goal-LICENSE`
+
+## narumiruna/pi-extensions pi-goal
+
+- Source: https://github.com/narumiruna/pi-extensions/tree/main/extensions/pi-goal
+- Snapshot inspected: `6047a382ee50`
+- Usage: source inspiration and small validation-guard patterns for the local `extensions/goal/` revamp.
+- License: MIT
+- Full license copy: `licenses/narumiruna-pi-goal-LICENSE`
