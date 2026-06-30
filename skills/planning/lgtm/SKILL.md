@@ -1,73 +1,85 @@
 ---
 name: lgtm
-description: Use when the user says "lgtm", "looks good to me", "sounds good", "approved", "go ahead", accepts a recommendation, or gives ambiguous approval that should choose the best safe continuation.
+description: Resolve approval phrases to safest prior next action. Use when user says "lgtm", "looks good", "approved", "go ahead", or accepts a recommendation. Do not use for risky confirmation or new tasks.
 ---
 
 # LGTM
 
-Treat the user's approval as permission to continue with the most recent concrete recommendation or plan you proposed. If the approval is ambiguous, infer the best safe continuation from the prior assistant message instead of re-asking by default.
+Use this skill when a short approval is ambiguous approval that should choose the best safe continuation, not restart planning.
 
-## What To Do
+## Quick start
 
-1. Identify the recommendation, option, design, or plan the user's approval most likely accepts.
-2. Resolve ambiguity with the Approval Resolution Protocol below.
-3. Treat the resolved recommendation as selected.
-4. Continue with the next planned action without asking the same approval question again.
-5. Briefly state what was accepted, then act with the relevant specialist skill or workflow.
+1. Find the latest concrete recommendation, option, or `If you say lgtm` action.
+2. Accept the safest bounded interpretation.
+3. State `Accepted: <action>` and do it.
+4. Ask only if no safe bounded action exists or a red line would be crossed.
 
-When the approval accepts an advisor or reviewer verdict, treat that verdict as advisory input rather than authority — see [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md). Verify any codebase claim against source before continuing.
+## Operational basis
+
+Inspect, in order:
+
+- the latest assistant message;
+- any `If you say lgtm`, `Recommended next action`, `Top recommendation`, or numbered candidate line;
+- relevant specialist output from `goal`, `technical-auditor`, `candidates-folder-refactor`, advisors/reviewers, or the active workflow;
+- `codebase-map-understand.md` only when approval is for codebase-wide exploration/refactor/review, then verify named files against live source.
+
+When approval accepts an advisor/reviewer verdict, treat it as input, not authority; follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md) and verify code claims before editing.
 
 ## Approval Resolution Protocol
 
-Use this protocol as the module interface for approval handling: approval phrase plus recent assistant context goes in; one accepted action, one blocker, or one clarifying question comes out.
+Choose the first safe match:
 
-Prefer the first matching safe candidate:
+1. Explicit `If you say lgtm` action from the latest assistant message.
+2. `Recommended next action` from a Goal slice result.
+3. `Top recommendation` from an audit or architecture review.
+4. #1 candidate from a `candidates-folder-refactor` report.
+5. Latest named option or plan the assistant explicitly recommended.
+6. Otherwise choose the safest bounded continuation: the smallest reversible action with a clear validation path.
 
-1. An explicit `If you say lgtm` action from the latest assistant message.
-2. A `Recommended next action` from a Goal slice result.
-3. A `Top recommendation` from an architecture review.
-4. The #1 candidate from a `candidates-folder-refactor` report.
-5. The latest named option or plan the assistant explicitly recommended.
-6. If multiple plausible candidates remain, choose the safest bounded continuation: the smallest reversible action with the clearest validation path and no red-line side effects.
+Special continuations:
 
-Ask only when no safe bounded action can be inferred, when the inferred action would cross a guardrail below, or when ownership/product intent is genuinely unclear. When asking, include your recommended interpretation so the user can approve it directly.
+- Goal slice: continue the exact approved next action; do not restate the whole goal.
+- Architecture/audit: carry the evidence, inspect live files, then make the smallest safe cleanup or enter the documented design-grilling loop for design-bearing changes.
+- `candidates-folder-refactor`: treat `lgtm` as selecting the #1 top candidate and immediately run `/folder-refactor <candidate #1>` so the extension invokes `skill-folder-refactor`. Carry candidate metrics, boundary, inspected paths, and validation hints as handoff evidence.
 
-If the approved recommendation came from a Goal slice result, treat `Recommended next action` / `If you say lgtm` as the approved plan and continue that exact next action without restating the whole goal.
+## Skill contract
 
-If the approved recommendation came from an architecture review, preserve the review's evidence base: treat approval of `Top recommendation` as selecting that candidate, carry any codebase map query/results from the review, inspect the exact live files before editing, and either make the smallest safe mechanical cleanup with validation or enter the architecture grilling loop for design-bearing refactors.
+### Entry protocol
 
-If the approved recommendation came from `candidates-folder-refactor`, treat `lgtm` as selecting the #1 top candidate and immediately run `/folder-refactor <candidate #1>` so the extension invokes `skill-folder-refactor` with scan/audit/state guardrails. Carry the candidate metrics, suggested boundary, inspected paths, and validation hints as handoff evidence. Do not ask the owner to pick again unless #1 is blocked by a red line.
+- Trivial approval with one obvious prior action: proceed directly.
+- Multiple plausible actions: choose the safest bounded one and name it.
+- Ask only when no safe bounded action can be inferred: `What should I treat as approved? My read: <recommended interpretation>.`
 
-Examples:
+### Topology check
 
-- Assistant: "Recommended: create a root README and keep app/README Flutter-local. Approve?"
-- User: "lgtm"
-- You: "Accepted: create the root README and keep app/README Flutter-local. I’ll write it now."
-- Assistant: "Option A is safest; Option B is faster but riskier. Recommended next action: implement Option A."
-- User: "sounds good"
-- You: "Accepted: Option A, the safest bounded continuation. I’ll implement it now."
+Before acting, ensure ownership, blast radius, validation signal, and ordering are clear enough for the accepted action.
 
-## Guardrails
+### Verification gate
 
-Do not use `lgtm` as approval for:
+Use the accepted workflow's verification. If this skill only resolves approval, the proof is the accepted action plus the next specialist/tool handoff.
 
-- destructive actions
-- spending money
-- publishing secrets or private data
-- production deployments
-- irreversible Git history changes
-- broad scope not already proposed
+### Red lines
 
-For those, ask for explicit confirmation naming the risky action.
+Do not treat `lgtm` as enough approval for destructive actions, spending money, secrets/private-data publication, production deployment, irreversible Git history changes, broad unproposed scope, force-push, rebase, or merge. Ask explicit confirmation naming the risky action.
 
-If there is no clear prior recommendation after applying the Approval Resolution Protocol, ask one clarifying question: "What should I treat as approved?" If `codebase-map-understand.md` exists and approval is for codebase-wide exploration/refactor/review, use codebase map to recover the relevant candidate context before acting.
+### Output contract
 
-## Common Mistakes
+- Acting now: `Accepted: <resolved action>.` Then perform it.
+- Handoff: include trigger, artifact/context, next skill, and success signal.
+- Blocked: name the red line or ambiguity and ask one focused question.
 
-- Do not reinterpret `lgtm` as a new request.
-- Do not restart brainstorming after approval.
-- Do not ask "do you want me to proceed?" when the user already approved.
-- Do not expand scope beyond the accepted recommendation.
+## Common mistakes
+
+- Do not reinterpret approval as a new request.
+- Do not brainstorm again after approval.
+- Do not ask "should I proceed?" when the user already approved.
+- Do not expand beyond the accepted recommendation.
+
+## Example
+
+User: `lgtm`
+
+Agent: `Accepted: implement Option A, the safest bounded continuation. I’ll edit the files and run the named check now.`
 
 ## Shared contract
 
