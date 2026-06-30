@@ -129,7 +129,7 @@ While active, the extension exposes `get_goal`, `goal_complete`, and compatibili
 
 ### `/goal-technical-auditor`
 
-`/goal-technical-auditor [--tokens 700k] [folder]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`).
+`/goal-technical-auditor [--tokens 700k] [--dry-run] [--focus bug-hunt-refactor] [folder|prompt]` starts a persistent `/goal` that runs `technical-auditor` in default Full mode, then turns the audit task plan into safe validated development slices. It is an autonomous improver loop: it works through all safe audit recommendations, reruns the audit on the same scope, and stops only when recommendations are fixed, deferred with reason, or blocked with an owner decision. The optional folder argument scopes the work; when omitted, it audits and improves the current Pi working directory (`.`). Natural-language prompts such as `bug hunt` or `audit current repo` are treated as current-repo intent, not paths; unquoted path-like values must exist, so quote prompts that look like folder names.
 
 Examples:
 
@@ -137,6 +137,8 @@ Examples:
 /goal-technical-auditor
 /goal-technical-auditor skills/engineering
 /goal-technical-auditor --tokens 500k .
+/goal-technical-auditor --dry-run --focus bug-hunt-refactor lib
+/goal-technical-auditor "bug hunt"
 ```
 
 ### `/understand`

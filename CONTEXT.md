@@ -89,7 +89,7 @@ An in-conversation objective discipline skill that tracks active/paused/complete
 _Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
 **Goal Technical Auditor Extension**:
-The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus a safe prioritized development loop.
+The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus an autonomous safe improvement loop. The loop works through all safe audit recommendations, reruns the audit on the same scope, and stops only when recommendations are fixed, deferred with reason, or blocked with an owner decision.
 _Avoid_: hidden workflow modes, silently starting broad automation for invalid arguments, weakening the command's predictable Full-mode meaning
 
 **Skill Router Skill**:

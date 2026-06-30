@@ -2,20 +2,21 @@ import {
   buildGoalTechnicalAuditorObjective,
   DEFAULT_TOKEN_BUDGET,
   GOAL_TECHNICAL_AUDITOR_USAGE,
-  validateScopeInsideCwd,
+  goalTechnicalAuditorCompletions,
+  validateGoalTechnicalAuditorLaunch,
 } from "../../lib/goal-technical-auditor/command.js";
 
 export default function goalTechnicalAuditor(pi) {
   pi.registerCommand("goal-technical-auditor", {
     description: "Start a goal-driven technical-auditor Full-mode automation loop",
-    getArgumentCompletions: (prefix) => {
-      const values = [".", "--tokens 700k .", "--tokens 500k .", "--tokens 200k .", "--dry-run .", "--focus bug-hunt-refactor .", "skills", "extensions", "lib"];
-      const filtered = values.filter((value) => value.startsWith(prefix));
-      return filtered.length ? filtered.map((value) => ({ value, label: value })) : null;
+    getArgumentCompletions: (prefix, ctx = {}) => {
+      const completions = goalTechnicalAuditorCompletions(prefix, ctx.cwd ?? process.cwd());
+      return completions.length ? completions : null;
     },
     handler: async (args, ctx) => {
-      const { scope, scopeLabel, tokenBudget, goalCommand, dryRun, help, error } = buildGoalTechnicalAuditorObjective(args);
-      const scopeError = error ? null : validateScopeInsideCwd(ctx.cwd ?? process.cwd(), scope);
+      const objective = buildGoalTechnicalAuditorObjective(args);
+      const { scopeLabel, tokenBudget, goalCommand, dryRun, help, error, focus } = objective;
+      const scopeError = error ? null : validateGoalTechnicalAuditorLaunch(ctx.cwd ?? process.cwd(), objective);
       if (help) {
         ctx.ui.notify(GOAL_TECHNICAL_AUDITOR_USAGE, "info");
         return;
@@ -25,7 +26,7 @@ export default function goalTechnicalAuditor(pi) {
         return;
       }
       if (dryRun) {
-        ctx.ui.notify(`DRY RUN: ${goalCommand}`, "info");
+        ctx.ui.notify(`DRY RUN: /goal-technical-auditor\nscope: ${scopeLabel}\nfocus: ${focus || "none"}\ntokens: ${tokenBudget || DEFAULT_TOKEN_BUDGET}\ncommand: ${goalCommand}`, "info");
         return;
       }
       ctx.ui.notify(
