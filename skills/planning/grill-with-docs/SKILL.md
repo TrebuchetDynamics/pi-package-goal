@@ -5,108 +5,105 @@ description: Stress-test plans against project language and documented decisions
 
 # Grill With Docs
 
-Stress-test a plan against the repo's domain model and documented decisions until there is shared understanding. This adapts the upstream Matt Pocock `grill-with-docs` discipline for Pi: relentless one-question-at-a-time interviewing, codebase exploration before asking, inline glossary updates, and sparse ADRs.
-
-## What to do
-
-Default behavior, without needing the user to ask:
-
-- Check `CONTEXT.md`, `CONTEXT-MAP.md`, ADRs, relevant tests, manifests, and code before asking the owner anything the repo can answer.
-- Ask one hard owner-decision question at a time and wait for feedback before continuing.
-- Put `Recommended answer:` before `Why it matters:` so the owner sees the concrete proposal before the rationale.
-- Update `CONTEXT.md` only after the owner accepts the terminology; never write speculative terms.
-
-Interview the owner relentlessly about every load-bearing aspect of the plan. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. If a question can be answered by exploring the codebase or docs, explore instead of asking.
+Stress-test a plan against the repo's glossary, ADRs, code, and validation reality. This is `grill-me` with documented language and durable decisions in scope.
 
 ## Quick start
 
-1. Restate the plan in one sentence, name the current design branch, and identify the next hard uncertainty.
-2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, and codebase-map-understand.md when present. Query the map for relationship evidence when the plan spans modules, then verify named files. Classify dirty files as in-scope evidence, unrelated owner work, or blocker before using them.
-3. Answer anything the code/docs can answer; ask the user only owner-decision questions.
-4. If the user asks for a council, or the decision is high-leverage (irreversible, cross-context, glossary-conflicting, production/security-impacting, or validation-order-sensitive), run a docs-council pass before asking: language steward, architecture skeptic, delivery realist. Use external LLMs only when explicitly requested/approved and available.
-5. Ask one question at a time and wait for feedback. Include your recommended answer.
-6. Capture accepted domain terms in `CONTEXT.md` immediately; offer ADRs sparingly for durable trade-offs.
+1. Restate the plan in one sentence and name the current decision branch.
+2. Inspect repo instructions, git state, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, relevant tests/manifests, live code, and `codebase-map-understand.md when present` for cross-module relationship leads.
+3. Classify dirty files as in-scope evidence, unrelated owner work, or blocker before using them.
+4. Answer evidence questions from docs/code; ask only one owner-decision question at a time.
+5. Put `Recommended answer:` before `Why it matters:`.
+6. Update `CONTEXT.md` only after the owner accepts the terminology. Offer ADRs only for hard-to-reverse trade-offs.
 
-## Entry protocol
+## Operational basis
 
-- Clear plan: begin grilling after the repo/documentation scan.
-- Medium ambiguity: propose the most likely context and ask one clarifying question.
-- High risk, production impact, or unclear dirty-file ownership: stop and identify the blocker before editing docs.
-- Council request: disclose whether this is a local docs-council pass or approved external LLM consultation; never imply external models were queried when they were not.
+Read before asking:
 
-## Documentation topology
+- `CONTEXT-MAP.md` first in multi-context repos, then the relevant context-local `CONTEXT.md` and ADRs;
+- root `CONTEXT.md` and `docs/adr/` in single-context repos;
+- README, task docs, manifests, tests, and live code that bear on the plan;
+- `codebase-map-understand.md` for relationship/caller/impact leads when the plan spans modules, then verify named files;
+- [Council review mode](references/council-review.md) when a docs-council, clean-context advisor, or external-model critique is requested or risk-justified.
 
-Most repos have a root `CONTEXT.md` and optional `docs/adr/`. Multi-context repos should have `CONTEXT-MAP.md` pointing to context-local `CONTEXT.md` and ADR directories. If `CONTEXT-MAP.md` exists, read it first and choose the relevant context; if unclear, ask which context owns the plan.
+Create docs lazily: create `CONTEXT.md` only when the first term is accepted; create `docs/adr/` only when the first ADR is accepted.
 
-Create docs lazily: create `CONTEXT.md` only when the first term is resolved, and create `docs/adr/` only when the first ADR is accepted.
+## Workflow
 
-## Grilling loop
+Interview the owner by resolving dependencies between decisions one-by-one. For each branch:
 
-Interview relentlessly about every load-bearing aspect of the plan. Walk the design tree branch-by-branch, resolving dependencies between decisions in order. Do not proceed to a dependent branch until the current decision is answered, evidenced, or blocked.
+1. Identify the dependency: state which prior decision this branch depends on, or say `root branch`.
+2. Check glossary fit: conflict with `CONTEXT.md`, term ambiguity, aliases to avoid, and context ownership.
+3. Check documented decisions: ADRs, README promises, package/resource boundaries, and existing constraints.
+4. Check code reality: tests/manifests/source behavior that confirms or contradicts the plan.
+5. Run a docs-council pass when the branch crosses language, architecture, and delivery risk, or when the user asks for council/advisor input.
+6. Ask exactly one owner-decision question, then wait.
+7. After the answer, restate the resolved decision, apply accepted doc updates, and move to the next dependent branch.
 
-For each branch:
+Prefer evidence over questions. Do not proceed to dependent branches until the current decision is answered, evidenced, or blocked.
 
-- Identify the dependency: state which prior decision this branch depends on, or say `root branch`.
-- Challenge against the glossary: if the plan conflicts with `CONTEXT.md`, call it out immediately.
-- Sharpen fuzzy language: propose one canonical term and list aliases to avoid.
-- Run council mode when useful: separate language, architecture, and delivery critiques, then synthesize one recommendation with attribution.
-- Use concrete scenarios: invent edge cases that test boundaries between concepts.
-- Cross-reference code: if user intent conflicts with code behaviour, surface the contradiction.
-- Prefer evidence over questions: inspect files/tests/manifests instead of asking questions the repo can answer.
-- Treat dirty worktree content as evidence, not permission: only cite it after classifying ownership and relevance.
-- Separate evidence questions from owner decisions: code/docs answer evidence questions; the user answers trade-offs, priorities, and domain intent.
-- Make progress through the design tree: after each answer, summarize the resolved branch and move to the next dependent branch instead of restarting the interview.
-- Ask exactly one owner-decision question at a time and wait for feedback.
+## Council and delegation
 
-Useful challenge shapes adapted from upstream:
+Default council is local docs-council role lenses: language steward, architecture skeptic, and delivery realist. Label it as local/in-context unless a clean-context dispatch tool or approved external LLM was actually used.
 
-- Glossary conflict: "`CONTEXT.md` defines **Cancellation** as an order-level event, but this plan uses it for line-item removal. Which meaning is correct?"
-- Fuzzy term split: "You said **account** — do you mean Customer, User, workspace, or billing account? Recommended answer: pick one canonical term and list the others under `_Avoid_`."
-- Code contradiction: "The code cancels whole Orders, but the plan says partial cancellation is allowed. Should the code change, or is the plan using the wrong term?"
-- Scenario probe: "If a customer edits an order after invoice creation, which context owns the truth, and what event crosses the boundary?"
+When a clean-context advisor tool is available, prefer one advisor delegate for high-leverage plan decisions and brief it without your preferred answer. Follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md): verdicts are advisory and codebase claims must be verified locally.
 
-Question format:
-
-```text
-Decision branch: <what part of the plan this question unlocks>
-Question: <one hard decision>
-Recommended answer: <your best answer and why>
-Council synthesis: none | <language/architecture/delivery or external-model insight summary>
-Why it matters: <what this unlocks or prevents>
-Evidence checked: <files/docs/tests inspected, graph query if used, dirty-path classification, or none yet>
-Doc impact: none | CONTEXT.md term | ADR candidate
-```
-
-After the user answers, restate the resolved decision in one sentence, apply any accepted doc update through the Updating docs flow, then move to the next dependent branch.
+Use external LLMs only when explicitly requested/approved. Disclose network/cost/credential implications, do not read credential files, and never imply external models were queried when they were not.
 
 ## Updating docs
 
-When a term is resolved and accepted, re-check `git status --short --branch`, then update the relevant `CONTEXT.md` inline; do not batch terms until the end. Use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). If the user has not accepted the canonical term, keep grilling instead of writing.
+When a term is accepted, re-check `git status --short --branch`, update the relevant `CONTEXT.md` inline, and keep the entry glossary-shaped using [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). `CONTEXT.md` is not a spec or scratch pad; do not add general programming concepts or implementation details.
 
-`CONTEXT.md` is a glossary, not a spec or scratch pad. Keep it free of implementation details. Only add domain concepts specific to the project context; do not add general programming concepts.
+If the user has not accepted the canonical term, keep grilling instead of writing.
 
-Offer an ADR only when all three are true: the decision is hard to reverse, surprising without context, and the result of a real trade-off. If accepted, write it with [ADR-FORMAT.md](./ADR-FORMAT.md); otherwise continue grilling.
+Offer an ADR only when all three are true: hard to reverse, surprising without context, and a real trade-off. If accepted, write the smallest ADR using [ADR-FORMAT.md](./ADR-FORMAT.md). Otherwise continue grilling.
 
 ## Skill handoffs
 
-- From `improve-codebase-architecture`: preserve selected candidate, evidence base, and success signal; settle domain terms, seams, and ADR-sensitive decisions before code edits.
-- To `tdd`: hand off behaviour, public interface, edge scenarios, and validation target.
-- To `prototype`: hand off competing interface/state options when a throwaway model can answer faster than discussion.
-- To `goal`: report compact evidence after each resolved branch so broad plans can continue slice-by-slice.
+- From `technical-auditor` / `improve-codebase-architecture`: preserve selected candidate, evidence base, and success signal; settle terms, seams, and ADR-sensitive decisions before edits.
+- To `prototype`: hand off competing state/interface options when a throwaway model answers faster than discussion.
+- To `tdd`: hand off accepted behavior, edge scenarios, public interface, and validation target.
+- To `goal`: report resolved branch, evidence, doc changes, and next branch.
 
-## Verification gate
+## Skill contract
+
+### Entry protocol
+
+- Clear plan: scan docs/code, then grill the first load-bearing branch.
+- Medium ambiguity: propose the likely context and ask one context/ownership question.
+- High risk, production impact, external-model request, or unclear dirty-file ownership: stop and name the blocker or approval needed.
+
+### Topology check
+
+Before each question, verify context ownership, prior-decision dependency, validation path, blast radius, dirty-file classification, and doc-update target.
+
+### Verification gate
 
 Before declaring the grilling useful, report evidence checked and ensure at least one is true: next implementation decision is unblocked; council critiques were synthesized or explicitly skipped; `CONTEXT.md` was updated; an ADR was created or rejected with reason; a blocker/owner decision is named with the exact next question.
 
-## Red lines
+### Red lines
 
-- Do not ask broad questionnaires; ask one hard question at a time.
-- Do not edit production code as part of grilling.
-- Do not write docs for decisions the user has not accepted.
-- Do not use unrelated dirty files as plan evidence or overwrite them while updating docs.
-- Do not add implementation details to `CONTEXT.md`.
-- Do not create ADRs for obvious, reversible, or non-trade-off choices.
-- Do not make paid/network external LLM calls, read credential files, or run council scripts without explicit approval.
+Do not ask broad questionnaires, edit production code, write docs for unaccepted decisions, use unrelated dirty files as plan evidence, add implementation details to `CONTEXT.md`, create ADRs for obvious/reversible choices, or run paid/network external LLM calls without explicit approval.
+
+### Output contract
+
+Use this shape for each question:
+
+```text
+Decision branch: <what part of the plan this unlocks>
+Question: <one hard decision>
+Recommended answer: <your best answer and why>
+Council synthesis: none | <local docs-council/advisor/external insight summary>
+Why it matters: <what this unlocks or prevents>
+Evidence checked: <files/docs/tests inspected, graph/map use, dirty-path classification>
+Doc impact: none | CONTEXT.md term | ADR candidate
+```
+
+## Example
+
+User: `Grill this auth refactor against our docs.`
+
+Agent: read `CONTEXT.md`, ADRs, auth tests/source, and map leads; identify the root branch; ask one decision about ownership/term boundary with a recommended answer and doc impact.
 
 ## References
 
