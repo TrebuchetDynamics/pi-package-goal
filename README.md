@@ -48,6 +48,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 
 | If you want to... | Start with | Why |
 | --- | --- | --- |
+| Choose the right skill automatically | `skill-router` | Selects one primary skill for the task; with no task, starts autonomous repo improvement. |
 | Keep a long-running objective on track | `/goal <objective>` or `goal` | Tracks progress and requires evidence before completion. |
 | Improve a repo autonomously but safely | `autonomous-codebase-improver` or `/goal-technical-auditor [folder]` | Picks one validated slice from repo evidence, then routes to the right specialist. |
 | Hunt for one fixable bug from repo evidence | `bug-harvest` | Finds a high-confidence bug candidate, then uses a repro-first fix loop. |
@@ -57,6 +58,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
+| Create or update project docs/wiki | `wiki-docs` | Maintains source-backed README, architecture, onboarding, or Karpathy-style wiki pages. |
 | Run provenance-first research | `research-forge` | Installs/uses `rforge` for literature search, OSS research, evidence extraction, meta-analysis, and auditable reports. |
 | Plan a graph-backed refactor | `/understand-refactor <focus>` | Generates a deterministic plan, then starts docs-backed grilling. |
 | Refactor one noisy folder | `/folder-refactor <folder>` | Uses scan/state/audit guardrails to avoid lazy completion. |
@@ -85,7 +87,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
 | Engineering loops | Improve one safe repo slice, hunt bugs, debug, test-drive, prototype, review, improve architecture, run technical audits, or audit prompt caching. | `autonomous-codebase-improver`, `bug-harvest`, `diagnose`, `tdd`, `prototype`, `technical-auditor`, `prompt-cache-auditor` |
 | Clean-context review | Get an unbiased advisor (plan-time) or reviewer (change-time) second opinion, dispatched to a clean context when a fork/subagent tool is available — see [clean-context delegation](skills/shared/CLEAN-CONTEXT-DELEGATION.md). | `autoreview`, `grill-with-docs` |
-| Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
+| Planning and handoff | Route to the right skill, update source-backed docs, turn context into PRDs/issues, triage work, summarize for the next agent. | `skill-router`, `wiki-docs`, `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
 | Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |

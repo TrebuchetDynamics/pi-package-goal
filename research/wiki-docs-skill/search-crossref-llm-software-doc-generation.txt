@@ -1,0 +1,20 @@
+10.1109/msr66628.2025.00077	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+10.1109/icsme58944.2024.00058	Can Developers Prompt? A Controlled Experiment for Code Documentation Generation
+10.1109/icsm.2015.7332498	Query by example in large-scale code repositories
+10.55640/ijdsml-06-01-04	Trustworthy and Secure LLM-Assisted Code Generation for Enterprise Software Development
+10.2139/ssrn.5875028	An Exploratory Study on LLM-Generated Code and Comments in Code Repositories
+10.1109/icsm.2013.50	Latent Co-development Analysis Based Semantic Search for Large Code Repositories
+10.1016/j.jss.2026.113010	Can federated fine-tuning improve LLM-based code summarization? An empirical investigation on open-source repositories
+10.1109/icsme58846.2023.00071	Wait, wasn’t that code here before? Detecting Outdated Software Documentation
+10.1145/3524842.3528475	Comments on comments
+10.1109/icse-seip66354.2025.00027	On Mitigating Code LLM Hallucinations with API Documentation
+10.1109/csmr.2013.58	Extraction of Documentation from Fortran 90 Source Code: An Industrial Experience
+10.1109/msr59073.2023.00062	DocMine: A Software Documentation-Related Dataset of 950 GitHub Repositories
+10.1109/icsme64153.2025.00065	AskGraph: A Dependency-Aware Code Assistant Powered by Code Graphs and LLM-Generated Cypher Queries
+10.1109/icsme.2017.73	Behavior-Informed Algorithms for Automatic Documentation Generation
+10.1109/icsme46990.2020.00114	Source Code based On-demand Class Documentation Generation
+10.1109/icsm.2000.883003	Information retrieval models for recovering traceability links between code and documentation
+10.5220/0011279300003266	A Mechanism for Automatically Extracting Reusable and Maintainable Code Idioms from Software Repositories
+10.1109/fosm.2008.4659248	The road ahead for Mining Software Repositories
+10.1109/icse.2015.288	Automatic Documentation Generation via Source Code Summarization
+10.1109/msr59073.2023.00023	Evaluating Software Documentation Quality

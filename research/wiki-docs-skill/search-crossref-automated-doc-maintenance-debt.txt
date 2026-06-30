@@ -1,0 +1,20 @@
+10.1109/icsm.1988.10140	Partially automated in-line documentation (PAID): design and implementation of a software maintenance tool
+10.2190/posc10	Automated Documentation: A Complete Cycle
+10.1109/icsme46990.2020.00108	From Transient Information to Persistent Documentation: Enhancing Software Documentation
+10.4324/9781315223919-13	Automated Documentation: A Complete Cycle
+10.1145/74311.74325	Software maintenance documentation
+10.1145/10563.10567	Software maintenance documentation
+10.1109/icsm.1988.10135	Documentation for maintenance: a hypertext design
+10.22215/etd/2005-08303	The impact of UML documentation on software maintenance; an experimental evaluation
+10.1109/icsm.1988.10141	Documentation in a software maintenance environment
+10.1016/0950-5849(90)90142-e	Automated retrieval of consistent documentation for rapid prototyping systems and software maintenance
+10.1145/800065.801301	Software documentation an automated approach
+10.1109/icsm.1996.565018	A documentation suite for maintenance programmers
+10.1109/icsme.2018.00090	Context-Aware Software Documentation
+10.5220/0013286800003928	Supporting Automated Documentation Updates in Continuous Software Development with Large Language Models
+10.3403/30163968	Maintenance. Documentation for maintenance
+10.3403/02574592u	Maintenance. Documentation for maintenance
+10.70675/21ab1b17z6c10z4836z9badzf2c12d841c2e	ARIANE : Automated Re-Documentation to Improve software Architecture uNderstanding and Evolution
+10.1201/b15577-41	Modern methods of documentation for conservation—digital mapping and automated 3D object documentation in software metigo®
+10.1109/csmr.2003.1192406	Software documentation: how much is enough?
+10.1109/icsm.2001.972748	The state of documentation practice within corrective maintenance

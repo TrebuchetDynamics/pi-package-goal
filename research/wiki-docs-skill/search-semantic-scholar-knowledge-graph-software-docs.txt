@@ -1,0 +1,20 @@
+10.1109/asiancon66527.2025.11281189	HybridCode: A Dual-Database Framework for Intelligent Codebase Analysis and Article Generation
+10.1109/icse-companion66252.2025.00079	CKGFuzzer: LLM-Based Fuzz Driver Generation Enhanced By Code Knowledge Graph
+10.1109/asens64990.2025.11011131	Research on Intelligent Generation of Spaceborne Software Code Based on Knowledge Graph
+10.1109/apsec66846.2025.00095	KG-Code: A Knowledge Graph Guided Pre-Training Approach for Code Representation
+10.1145/3746252.3761514	LinkML for Collaborative Petrochemical Knowledge Graph Development
+10.1007/s10515-022-00341-1	Code comment generation based on graph neural network enhanced transformer model for code understanding in open-source software ecosystems
+10.48550/arxiv.2503.04359	LONGCODEU: Benchmarking Long-Context Language Models on Long Code Understanding
+10.1145/3597503.3639130	Recovering Trace Links Between Software Documentation And Code
+10.48550/arxiv.2411.11532	A Code Knowledge Graph-Enhanced System for LLM-Based Fuzz Driver Generation
+10.48550/arxiv.2410.14684	RepoGraph: Enhancing AI Software Engineering with Repository-level Code Graph
+10.48550/arxiv.2503.21710	Enhancing Repository-Level Software Repair via Repository-Aware Knowledge Graphs
+10.1145/3641850	CodeKGC: Code Language Model for Generative Knowledge Graph Construction
+10.1145/3597206	Semantic-Enriched Code Knowledge Graph to Reveal Unknowns in Smart Contract Code Reuse
+10.1145/3611643.3616305	Recommending Analogical APIs via Knowledge Graph Embedding
+10.1109/iccv51701.2025.00099	Aligning Vision to Language: Annotation-Free Multimodal Knowledge Graph Construction for Enhanced LLMs Reasoning
+10.1145/3702976	Non-Linear Software Documentation with Interactive Code Examples
+	Graph4Code: A Machine Interpretable Knowledge Graph for Code
+10.1145/3691620.3695054	GraphCoder: Enhancing Repository-Level Code Completion via Coarse-to-fine Retrieval Based on Code Context Graph
+10.1109/icse-companion58688.2023.00025	A Multi-faceted Vulnerability Searching Website Powered by Aspect-level Vulnerability Knowledge Graph
+	A Demonstration of CodeBreaker: A Machine Interpretable Knowledge Graph for Code

@@ -1,0 +1,20 @@
+	Automated Summarization of Software Documents: An LLM-based Multi-Agent Approach
+	Documentation of Machine Learning Software
+	Beyond Accuracy: Assessing Software Documentation Quality
+	Supporting Software Maintenance with Dynamically Generated Document Hierarchies
+10.1109/techdebt52882.2021.00017	Business-Driven Technical Debt Prioritization: An Industrial Case Study
+	Effects of Visualizing Technical Debts on a Software Maintenance Project
+10.1109/techdebt59074.2023.00015	Towards identifying and minimizing customer-facing documentation debt
+10.1145/3383219.3383245	Documentation of quality requirements in agile software development
+	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+	STABLAB Documentation for KdV : Numerical proof of stability of roll waves in the small-amplitude limit for inclined thin film flow
+10.1109/saner53432.2022.00069	An Empirical Investigation into the Use of Image Captioning for Automated Software Documentation
+	Towards optimal quality requirement documentation in agile software development: a multiple case study
+	Debt-Prone Bugs: Technical Debt in Software Maintenance
+	A Proposal for the Measurement and Documentation of Research Software Sustainability in Interactive Metadata Repositories
+	Documentation Practices in Agile Software Development: A Systematic Literature Review
+	CIAO - Code In Architecture Out - Automated Software Architecture Documentation with Large Language Models
+10.1145/3639475.3640112	An Empirical Study on Compliance with Ranking Transparency in the Software Documentation of EU Online Platforms
+	DocSync: Agentic Documentation Maintenance via Critic-Guided Reflexion
+	Temporal Discounting in Technical Debt: How do Software Practitioners Discount the Future?
+10.1007/978-3-319-69926-4_41	Non-functional Requirements Documentation in Agile Software Development: Challenges and Solution Proposal

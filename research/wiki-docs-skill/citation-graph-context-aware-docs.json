@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "057d7afcd2f1a2f58473f0cfb36357f7e8f1820e"
+    },
+    {
+      "id": "10.1109/icsme.2018.00090"
+    },
+    {
+      "id": "1c75fb85125541566a89562a0fbc8b8531e3e9a0"
+    },
+    {
+      "id": "5a833f434681af3b6299cd5da8c1235a3bcbd60b"
+    },
+    {
+      "id": "6fe0b4c693fc343d962b76b84737ae828592a980"
+    },
+    {
+      "id": "87b227832b8a574926a40d98c13bf7199deaa583"
+    },
+    {
+      "id": "a283edefe91f6b51ce4f74180ef6cc7abfb8efe3"
+    }
+  ],
+  "edges": [
+    {
+      "source": "057d7afcd2f1a2f58473f0cfb36357f7e8f1820e",
+      "target": "10.1109/icsme.2018.00090"
+    },
+    {
+      "source": "1c75fb85125541566a89562a0fbc8b8531e3e9a0",
+      "target": "10.1109/icsme.2018.00090"
+    },
+    {
+      "source": "5a833f434681af3b6299cd5da8c1235a3bcbd60b",
+      "target": "10.1109/icsme.2018.00090"
+    },
+    {
+      "source": "6fe0b4c693fc343d962b76b84737ae828592a980",
+      "target": "10.1109/icsme.2018.00090"
+    },
+    {
+      "source": "87b227832b8a574926a40d98c13bf7199deaa583",
+      "target": "10.1109/icsme.2018.00090"
+    },
+    {
+      "source": "a283edefe91f6b51ce4f74180ef6cc7abfb8efe3",
+      "target": "10.1109/icsme.2018.00090"
+    }
+  ]
+}

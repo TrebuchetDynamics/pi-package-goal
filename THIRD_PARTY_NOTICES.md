@@ -156,7 +156,7 @@ Trebuchet Dynamics under the MIT License.
 ## TrebuchetDynamics/research-forge
 
 - Source: https://github.com/TrebuchetDynamics/research-forge
-- Snapshot inspected: `a488ca282b26d610a7d4b2fecdf94af2807099a4`
+- Snapshot inspected: `3f7c113e48fb` (local checkout inspected; upstream docs/skill workflow)
 - Bundled paths:
   - `skills/research/research-forge/`
 - License: MIT

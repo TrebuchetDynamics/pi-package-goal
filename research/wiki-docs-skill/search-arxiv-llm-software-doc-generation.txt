@@ -1,0 +1,20 @@
+10.1109/msr.2019.0006	A Manually-Curated Dataset of Fixes to Vulnerabilities of Open-Source Software
+	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+10.1109/qsw67625.2025.00029	Analyzing the Evolution and Maintenance of Quantum Software Repositories
+10.1109/msr.2019.00063	Automated Software Vulnerability Assessment with Concept Drift
+	A Proposal for the Measurement and Documentation of Research Software Sustainability in Interactive Metadata Repositories
+10.1145/3793302.3793334	Source Code Hotspots: A Diagnostic Method for Quality Issues
+	Thirteen Years of Mining Software Repositories (MSR) Conference - What is the Bibliography Data Telling Us?
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+	Supporting Software Maintenance with Dynamically Generated Document Hierarchies
+	Quality Classifiers for Open Source Software Repositories
+	Teaching Mining Software Repositories
+	CIAO - Code In Architecture Out - Automated Software Architecture Documentation with Large Language Models
+	GitRank: A Framework to Rank GitHub Repositories
+	Detecting Outdated Code Element References in Software Repository Documentation
+	Synergizing LLMs and Knowledge Graphs: A Novel Approach to Software Repository-Related Question Answering
+10.1145/3379597.3387450	Forking Without Clicking: on How to Identify Software Repository Forks
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)
+	Automated Summarization of Software Documents: An LLM-based Multi-Agent Approach
+	RepoSummary: Feature-Oriented Summarization and Documentation Generation for Code Repositories

@@ -1,0 +1,20 @@
+10.1109/kbse.1994.342671	Graphical support for code-level software understanding
+10.1109/apsec66846.2025.00095	KG-Code: A Knowledge Graph Guided Pre-Training Approach for Code Representation
+10.1109/icsm.2007.4362619	JTourBus: Simplifying Program Understanding by Documentation that Provides Tours Through the Source Code
+10.1109/icsm.2006.28	Event Views and Graph Reductions for Understanding System Level C Code
+10.18293/seke2022-078	Utilizing Edge Attention in Graph-Based Code Search
+10.2190/posc3	A Schematic Approach to User Knowledge and Software Documentation Production
+10.1109/vissof.2007.4290719	CGA Call Graph Analyzer - Locating and Understanding Functionality within the Gnu Compiler Collection's Million Lines of Code
+10.1109/icca66035.2025.11430945	Unlocking Code Understanding: A Local-First Hybrid Knowledge Graph Approach
+10.1109/iccsmt54525.2021.00057	Knowledge Graph Based on Defect Detection of Aerospace FPGA Software Code
+10.18293/seke2023-192	GraphPLBART: Code Summarization Based on Graph Embedding and Pre-Trained Model
+10.4324/9781315223919-5	A Schematic Approach to User Knowledge and Software Documentation Production
+10.1109/ms.2010.95	Code Documentation
+10.1063/5.0342522	AI-powered knowledge extraction from source code developing natural language processing models to enhance software documentation and understanding
+10.1109/asens64990.2025.11011131	Research on Intelligent Generation of Spaceborne Software Code Based on Knowledge Graph
+10.1145/3733822.3764673	Toward Inferring Structural Semantics from Binary Code Using Graph Neural Networks
+10.1109/iscait69154.2026.11477215	Software Defect Propagation Analysis and Impact Domain Prediction Based on Code Knowledge Graph
+10.1142/s0218194005002543	RECOVERY OF TRACEABILITY LINKS BETWEEN SOFTWARE DOCUMENTATION AND SOURCE CODE
+10.18293/seke2023-115	Fine-Grained Source Code Vulnerability Detection via Graph Neural Networks (S)
+10.5220/0005643700220026	Lido – Wiki based Living Documentation with Domain Knowledge
+10.32657/10356/181931	Comprehensively understanding of software project code reuse for Java

@@ -1,6 +1,6 @@
 ---
 name: bug-harvest
-description: Find and fix one evidence-backed bug. Use when asked to hunt bugs, fix something broken, improve by finding a bug, or patch failing validation.
+description: Find and fix one evidence-backed bug. Use for bug hunts, broken behavior, or failing validation.
 ---
 
 # Bug Harvest

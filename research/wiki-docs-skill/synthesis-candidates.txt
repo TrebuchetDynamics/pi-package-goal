@@ -1,0 +1,164 @@
+Docs candidates:
+10.1007/978-3-319-69926-4_41	Non-functional Requirements Documentation in Agile Software Development: Challenges and Solution Proposal
+10.1007/979-8-8688-0242-3_3	Crafting Exceptional Documentation
+10.1016/0950-5849(90)90142-e	Automated retrieval of consistent documentation for rapid prototyping systems and software maintenance
+10.1016/j.array.2026.100881	Enhancing printed circuit boards operational efficiency through multimodal retrieval-augmented generation chatbots: Bridging textual and visual documentation
+10.1063/5.0342522	AI-powered knowledge extraction from source code developing natural language processing models to enhance software documentation and understanding
+10.1109/bmsb65076.2025.11165690	CodeDocAgent: Leveraging Large Language Models for Accurate and Contextual Code Documentation
+10.1109/csmr.2003.1192406	Software documentation: how much is enough?
+10.1109/csmr.2013.58	Extraction of Documentation from Fortran 90 Source Code: An Industrial Experience
+10.1109/icse.2015.288	Automatic Documentation Generation via Source Code Summarization
+10.1109/icse-seip66354.2025.00027	On Mitigating Code LLM Hallucinations with API Documentation
+10.1109/icsm.1988.10135	Documentation for maintenance: a hypertext design
+10.1109/icsm.1988.10140	Partially automated in-line documentation (PAID): design and implementation of a software maintenance tool
+10.1109/icsm.1988.10141	Documentation in a software maintenance environment
+10.1109/icsm.1996.565018	A documentation suite for maintenance programmers
+10.1109/icsm.2000.883003	Information retrieval models for recovering traceability links between code and documentation
+10.1109/icsm.2001.972748	The state of documentation practice within corrective maintenance
+10.1109/icsm.2007.4362619	JTourBus: Simplifying Program Understanding by Documentation that Provides Tours Through the Source Code
+10.1109/icsme.2017.73	Behavior-Informed Algorithms for Automatic Documentation Generation
+10.1109/icsme.2018.00090	Context-Aware Software Documentation
+10.1109/icsme46990.2020.00108	From Transient Information to Persistent Documentation: Enhancing Software Documentation
+10.1109/icsme46990.2020.00114	Source Code based On-demand Class Documentation Generation
+10.1109/icsme58846.2023.00071	Wait, wasn’t that code here before? Detecting Outdated Software Documentation
+10.1109/icsme58944.2024.00058	Can Developers Prompt? A Controlled Experiment for Code Documentation Generation
+10.1109/ipcc.2011.6087219	Using the wiki to deliver paperless software documentation
+10.1109/llm4code66737.2025.00020	Metamon: Finding Inconsistencies between Program Documentation and Behavior using Metamorphic LLM Queries
+10.1109/ms.2010.95	Code Documentation
+10.1109/msr59073.2023.00023	Evaluating Software Documentation Quality
+10.1109/msr59073.2023.00062	DocMine: A Software Documentation-Related Dataset of 950 GitHub Repositories
+10.1109/msr66628.2025.00077	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+10.1109/naecon.1990.112920	Knowledge base documentation: a productivity tool for large knowledge bases
+10.1109/saner53432.2022.00069	An Empirical Investigation into the Use of Image Captioning for Automated Software Documentation
+10.1109/southeastcon56624.2025.10971575	Extended Abstract: Enhancing Accessibility to MODTRAN Documentation: A Chatbot Framework Using Retrieval-Augmented Generation (RAG)
+10.1109/techdebt59074.2023.00015	Towards identifying and minimizing customer-facing documentation debt
+10.1142/s0218194005002543	RECOVERY OF TRACEABILITY LINKS BETWEEN SOFTWARE DOCUMENTATION AND SOURCE CODE
+10.1145/10563.10567	Software maintenance documentation
+10.1145/3383219.3383245	Documentation of quality requirements in agile software development
+10.1145/3597503.3639130	Recovering Trace Links Between Software Documentation And Code
+10.1145/3639475.3640112	An Empirical Study on Compliance with Ranking Transparency in the Software Documentation of EU Online Platforms
+10.1145/3702976	Non-Linear Software Documentation with Interactive Code Examples
+10.1145/74311.74325	Software maintenance documentation
+10.1145/800065.801301	Software documentation an automated approach
+10.1201/b15577-41	Modern methods of documentation for conservation—digital mapping and automated 3D object documentation in software metigo®
+10.20517/scierxiv202605.0291.v1	Does the Wiki Grow Smarter? A Pilot Evaluation of LLM-Maintained Knowledge Bases in an Exception-Dense Decision-Support Task
+10.20517/scierxiv202606.0425.v1	WikiPlanner: Wiki-Derived Temporal Monitors for Safe LLM Agent Planning
+10.21236/ada446186	Experience Using the Web-Based Tool Wiki for Architecture Documentation
+10.2172/208341	Further perspectives on computer documentation: System developer vs. technical writer
+10.2172/968675	MRDAP User/Developer Documentation
+10.2190/posc10	Automated Documentation: A Complete Cycle
+10.2190/posc3	A Schematic Approach to User Knowledge and Software Documentation Production
+10.2196/preprints.65483	Automating Emergency Medicine Documentation Using LLMs with Retrieval-Augmented Text Generation: Analytical Study (Preprint)
+10.22215/etd/2005-08303	The impact of UML documentation on software maintenance; an experimental evaluation
+10.31979/etd.r7bw-faye	SDEBuddy - Code Documentation using Large Language Models
+10.3403/02574592u	Maintenance. Documentation for maintenance
+10.3403/30163968	Maintenance. Documentation for maintenance
+10.4324/9781315223919-13	Automated Documentation: A Complete Cycle
+10.4324/9781315223919-5	A Schematic Approach to User Knowledge and Software Documentation Production
+10.5121/csit.2025.152211	Mycroft - Retrieval Augmented Generation for SDK Documentation
+10.5220/0005506003930400	Conceptual Wiki Page Simulation - A Discrete Space Agent-based Approach
+10.5220/0005643700220026	Lido – Wiki based Living Documentation with Domain Knowledge
+10.5220/0013286800003928	Supporting Automated Documentation Updates in Continuous Software Development with Large Language Models
+10.55041/ijsrem63072	Smart Developer Assistant (SDA): An AI-Driven Multi-Agent Framework for Automated Code Generation, Debugging, and Documentation
+10.62970/ijirct.v12.i3.2606010	Automated Context Generation for AI Code Assistants: An LLM-Powered Framework for Developer Intent Capture and Documentation Automation
+10.63282/3050-9246.ijetcsit-v4i1p113	Large Language Models for Automated Financial Code Generation and Documentation in Data Pipelines
+10.70675/21ab1b17z6c10z4836z9badzf2c12d841c2e	ARIANE : Automated Re-Documentation to Improve software Architecture uNderstanding and Evolution
+	A Proposal for the Measurement and Documentation of Research Software Sustainability in Interactive Metadata Repositories
+	Beyond Accuracy: Assessing Software Documentation Quality
+	CIAO - Code In Architecture Out - Automated Software Architecture Documentation with Large Language Models
+	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+	DeepCodeSeek: Real-Time API Retrieval for Context-Aware Code Generation
+	Detecting Outdated Code Element References in Software Repository Documentation
+	Developer Experience with AI Coding Agents: HTTP Behavioral Signatures in Documentation Portals
+	DocSync: Agentic Documentation Maintenance via Critic-Guided Reflexion
+	Documentation of Machine Learning Software
+	Documentation Practices in Agile Software Development: A Systematic Literature Review
+	Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation
+	RepoSummary: Feature-Oriented Summarization and Documentation Generation for Code Repositories
+	Retrieval as Reasoning: Self-Evolving Agent-Native Retrieval via LLM-Wiki
+	STABLAB Documentation for KdV : Numerical proof of stability of roll waves in the small-amplitude limit for inclined thin film flow
+	The integral field spectroscopy (IFS) wiki
+	Towards optimal quality requirement documentation in agile software development: a multiple case study
+	Using Large Language Models for Knowledge Engineering (LLMKE): A Case Study on Wikidata
+	WiCER: Wiki-memory Compile, Evaluate, Refine Iterative Knowledge Compilation for LLM Wiki Systems
+
+RAG/KG candidates:
+10.1007/s10515-022-00341-1	Code comment generation based on graph neural network enhanced transformer model for code understanding in open-source software ecosystems
+10.1016/0950-5849(90)90142-e	Automated retrieval of consistent documentation for rapid prototyping systems and software maintenance
+10.1016/j.array.2026.100881	Enhancing printed circuit boards operational efficiency through multimodal retrieval-augmented generation chatbots: Bridging textual and visual documentation
+10.1016/j.softx.2026.102636	RAGdeterm: Deterministic retrieval-augmented generation for code generation
+10.1109/apsec65559.2024.00061	Enhancing Source Code Comment Generation via Retrieval-Augmented Generation with Design Document Term Dictionary
+10.1109/apsec66846.2025.00095	KG-Code: A Knowledge Graph Guided Pre-Training Approach for Code Representation
+10.1109/asens64990.2025.11011131	Research on Intelligent Generation of Spaceborne Software Code Based on Knowledge Graph
+10.1109/asew67777.2025.00060	GRACG: Graph Retrieval Augmented Code Generation
+10.1109/bmsb65076.2025.11165690	CodeDocAgent: Leveraging Large Language Models for Accurate and Contextual Code Documentation
+10.1109/fllm67465.2025.11391177	Investigating Retrieval Augmented Generation for LLM-Based Code Generation
+10.1109/icca66035.2025.11430945	Unlocking Code Understanding: A Local-First Hybrid Knowledge Graph Approach
+10.1109/iccsmt54525.2021.00057	Knowledge Graph Based on Defect Detection of Aerospace FPGA Software Code
+10.1109/iccv51701.2025.00099	Aligning Vision to Language: Annotation-Free Multimodal Knowledge Graph Construction for Enhanced LLMs Reasoning
+10.1109/icse-companion58688.2023.00025	A Multi-faceted Vulnerability Searching Website Powered by Aspect-level Vulnerability Knowledge Graph
+10.1109/icse-companion66252.2025.00079	CKGFuzzer: LLM-Based Fuzz Driver Generation Enhanced By Code Knowledge Graph
+10.1109/icsm.2000.883003	Information retrieval models for recovering traceability links between code and documentation
+10.1109/icsm.2006.28	Event Views and Graph Reductions for Understanding System Level C Code
+10.1109/icsme58944.2024.00040	Improving Retrieval-Augmented Code Comment Generation by Retrieving for Generation
+10.1109/icsme64153.2025.00065	AskGraph: A Dependency-Aware Code Assistant Powered by Code Graphs and LLM-Generated Cypher Queries
+10.1109/iscait69154.2026.11477215	Software Defect Propagation Analysis and Impact Domain Prediction Based on Code Knowledge Graph
+10.1109/kbse.1994.342671	Graphical support for code-level software understanding
+10.1109/llm4code66737.2025.00026	Knowledge Graph Based Repository-Level Code Generation
+10.1109/southeastcon56624.2025.10971575	Extended Abstract: Enhancing Accessibility to MODTRAN Documentation: A Chatbot Framework Using Retrieval-Augmented Generation (RAG)
+10.1109/tkde.2024.3352100	Unifying Large Language Models and Knowledge Graphs: A Roadmap
+10.1109/vissof.2007.4290719	CGA Call Graph Analyzer - Locating and Understanding Functionality within the Gnu Compiler Collection's Million Lines of Code
+10.1109/wincom65874.2025.11313399	CodeWisp: AST Guided Retrieval Augmented Generation for Code Generation and Completion
+10.1145/3597206	Semantic-Enriched Code Knowledge Graph to Reveal Unknowns in Smart Contract Code Reuse
+10.1145/3597503.3639130	Recovering Trace Links Between Software Documentation And Code
+10.1145/3611643.3616305	Recommending Analogical APIs via Knowledge Graph Embedding
+10.1145/3641850	CodeKGC: Code Language Model for Generative Knowledge Graph Construction
+10.1145/3691620.3695054	GraphCoder: Enhancing Repository-Level Code Completion via Coarse-to-fine Retrieval Based on Code Context Graph
+10.1145/3726302.3730023	Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval
+10.1145/3733822.3764673	Toward Inferring Structural Semantics from Binary Code Using Graph Neural Networks
+10.1145/3746252.3761514	LinkML for Collaborative Petrochemical Knowledge Graph Development
+10.1145/3773966.3777982	Proficient Graph Neural Network Design by Accumulating Knowledge on Large Language Models
+10.18293/seke2022-078	Utilizing Edge Attention in Graph-Based Code Search
+10.18293/seke2023-115	Fine-Grained Source Code Vulnerability Detection via Graph Neural Networks (S)
+10.18293/seke2023-192	GraphPLBART: Code Summarization Based on Graph Embedding and Pre-Trained Model
+10.18653/v1/2023.findings-emnlp.90	Syntax-Aware Retrieval Augmented Code Generation
+10.18653/v1/2024.findings-emnlp.652	Retrieval-Augmented Code Generation for Situated Action Generation: A Case Study on Minecraft
+10.18653/v1/2025.emnlp-main.1187	CodeRAG: Finding Relevant and Necessary Knowledge for Retrieval-Augmented Repository-Level Code Completion
+10.2139/ssrn.5253805	A Comparative Study of Retrieval-Augmented Generation, Graph Retrieval-Augmented Generation, and Fine-Tuned Large Language Models for Fire Engineering Knowledge Retrieval
+10.2139/ssrn.5986423	RAGdeterm: Deterministic Retrieval-Augmented Generation for Code Generator
+10.2196/preprints.65483	Automating Emergency Medicine Documentation Using LLMs with Retrieval-Augmented Text Generation: Analytical Study (Preprint)
+10.31274/cc-20260223-58	Retrieval Augmented Generation for HPC Code Optimization
+10.31274/cc-20260223-73	Benchmarking the Impact of Retrieval Augmented Generation on HPC Source Code
+10.48550/arxiv.2410.14684	RepoGraph: Enhancing AI Software Engineering with Repository-level Code Graph
+10.48550/arxiv.2411.11532	A Code Knowledge Graph-Enhanced System for LLM-Based Fuzz Driver Generation
+10.48550/arxiv.2503.21710	Enhancing Repository-Level Software Repair via Repository-Aware Knowledge Graphs
+10.5121/csit.2025.152211	Mycroft - Retrieval Augmented Generation for SDK Documentation
+10.5281/zenodo.16913321	AI Agent-Driven Framework for Automated Product Knowledge Graph Construction in E-Commerce
+10.5281/zenodo.16913321	A Multi-Agent System for Semantic Mapping of Relational Data to Knowledge Graphs
+10.59350/q2pq3-0fv85	Efficient Information Retrieval and Response Generation with Retrieval-Augmented Generation (RAG)
+10.59350/r9dj1-zkx52	Efficient Information Retrieval and Response Generation with Retrieval-Augmented Generation (RAG)
+	A Demonstration of CodeBreaker: A Machine Interpretable Knowledge Graph for Code
+	AR-RAG: Autoregressive Retrieval Augmentation for Image Generation
+	Automated Literature Review Using NLP Techniques and LLM-Based Retrieval-Augmented Generation
+	Code Definition Analysis for Call Graph Generation
+	CodeRAG: Finding Relevant and Necessary Knowledge for Retrieval-Augmented Repository-Level Code Completion
+	DeepCodeSeek: Real-Time API Retrieval for Context-Aware Code Generation
+	Do the Findings of Document and Passage Retrieval Generalize to the Retrieval of Responses for Dialogues?
+	EHR-RAGp: Retrieval-Augmented Prototype-Guided Foundation Model for Electronic Health Records
+	Engineering the RAG Stack: A Comprehensive Review of the Architecture and Trust Frameworks for Retrieval-Augmented Generation Systems
+	Evaluating Class Membership Relations in Knowledge Graphs using Large Language Models
+	EVOR: Evolving Retrieval for Code Generation
+	FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation
+	FS-RAG: A Frame Semantics Based Approach for Improved Factual Accuracy in Large Language Models
+	Graph4Code: A Machine Interpretable Knowledge Graph for Code
+	KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph
+	KGLens: Towards Efficient and Effective Knowledge Probing of Large Language Models with Knowledge Graphs
+	MUST-RAG: MUSical Text Question Answering with Retrieval Augmented Generation
+	Ragas: Automated Evaluation of Retrieval Augmented Generation
+	RAGPart & RAGMask: Retrieval-Stage Defenses Against Corpus Poisoning in Retrieval-Augmented Generation
+	Retrieval as Reasoning: Self-Evolving Agent-Native Retrieval via LLM-Wiki
+	Retrieval Augmented Structured Generation: Business Document Information Extraction As Tool Use
+	Riddle Me This! Stealthy Membership Inference for Retrieval-Augmented Generation
+	Synergizing LLMs and Knowledge Graphs: A Novel Approach to Software Repository-Related Question Answering
+	Thirteen Years of Mining Software Repositories (MSR) Conference - What is the Bibliography Data Telling Us?
+	Utilizing Metadata for Better Retrieval-Augmented Generation

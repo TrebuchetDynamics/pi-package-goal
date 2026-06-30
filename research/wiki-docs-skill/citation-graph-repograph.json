@@ -1,0 +1,184 @@
+{
+  "nodes": [
+    {
+      "id": "000f964393dafe113a8e66734d63b2a145844159"
+    },
+    {
+      "id": "0b0debb710366cdff461938c80763eace1651af6"
+    },
+    {
+      "id": "0e0ea3593dda3039cb93d2ec795a87420006ec08"
+    },
+    {
+      "id": "10.48550/arxiv.2410.14684"
+    },
+    {
+      "id": "13fa4bcdec6d1f7d9a05cdb485b92335a850ce45"
+    },
+    {
+      "id": "1c3c531fc0fbe79f97f367ed3648de8467caeeaa"
+    },
+    {
+      "id": "1d07e5b6f978cf69c0186f3d5f434fa92d471e46"
+    },
+    {
+      "id": "1f2a20a6efaf83214861dddae4a38a83ae18fe32"
+    },
+    {
+      "id": "329e8f3c261c82c72ba3b739269721f6bb4c4e8c"
+    },
+    {
+      "id": "3e4085e5869f1b7959707a1e1d7d273b6057eb4e"
+    },
+    {
+      "id": "4fbd174e80502f8f3c4b9f48054872b028e2445a"
+    },
+    {
+      "id": "514e4e91e0fbddaa85857760d4f206a18228d614"
+    },
+    {
+      "id": "5182f0746ba2d420f943e91e65235650a896bf5a"
+    },
+    {
+      "id": "62454a3694e2e52b8698458440612505a3f7404b"
+    },
+    {
+      "id": "6974eeca4aa3e2fc904364ac7b3eca9cbdf9ca7c"
+    },
+    {
+      "id": "94a5f96308729e31c1ffbc0f0618db87795092fe"
+    },
+    {
+      "id": "a12958761a391db12b0bd80e6121fc9de3b8040a"
+    },
+    {
+      "id": "a30bd328bc36a3f75aa18f653919611b1a8ea23d"
+    },
+    {
+      "id": "a82a1be7639301ea47ebcb346f6119065b68b3d0"
+    },
+    {
+      "id": "ae50c8e255ba55bdbbb05ea470aa63437534438e"
+    },
+    {
+      "id": "af5c7848417882012203ac21399977ebda695a2b"
+    },
+    {
+      "id": "d4e3aa50b3d822021628d7c8d89519ec0389fbd8"
+    },
+    {
+      "id": "e03f41877da45c04a38aa37af99cfdec9a0379dd"
+    },
+    {
+      "id": "e56aa728aaa32c087c8f7bc56a7eb225675dd8ae"
+    },
+    {
+      "id": "f1bd7ea3a63b78a60b5d90d91fdb4a1d7ac0de8e"
+    },
+    {
+      "id": "f81a1b4510631d14b5b565c4701ee056f8d5c72f"
+    }
+  ],
+  "edges": [
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "000f964393dafe113a8e66734d63b2a145844159"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "0b0debb710366cdff461938c80763eace1651af6"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "0e0ea3593dda3039cb93d2ec795a87420006ec08"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "13fa4bcdec6d1f7d9a05cdb485b92335a850ce45"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "1c3c531fc0fbe79f97f367ed3648de8467caeeaa"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "1d07e5b6f978cf69c0186f3d5f434fa92d471e46"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "1f2a20a6efaf83214861dddae4a38a83ae18fe32"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "329e8f3c261c82c72ba3b739269721f6bb4c4e8c"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "3e4085e5869f1b7959707a1e1d7d273b6057eb4e"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "4fbd174e80502f8f3c4b9f48054872b028e2445a"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "514e4e91e0fbddaa85857760d4f206a18228d614"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "5182f0746ba2d420f943e91e65235650a896bf5a"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "62454a3694e2e52b8698458440612505a3f7404b"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "6974eeca4aa3e2fc904364ac7b3eca9cbdf9ca7c"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "94a5f96308729e31c1ffbc0f0618db87795092fe"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "a12958761a391db12b0bd80e6121fc9de3b8040a"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "a30bd328bc36a3f75aa18f653919611b1a8ea23d"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "a82a1be7639301ea47ebcb346f6119065b68b3d0"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "ae50c8e255ba55bdbbb05ea470aa63437534438e"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "af5c7848417882012203ac21399977ebda695a2b"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "d4e3aa50b3d822021628d7c8d89519ec0389fbd8"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "e03f41877da45c04a38aa37af99cfdec9a0379dd"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "e56aa728aaa32c087c8f7bc56a7eb225675dd8ae"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "f1bd7ea3a63b78a60b5d90d91fdb4a1d7ac0de8e"
+    },
+    {
+      "source": "10.48550/arxiv.2410.14684",
+      "target": "f81a1b4510631d14b5b565c4701ee056f8d5c72f"
+    }
+  ]
+}

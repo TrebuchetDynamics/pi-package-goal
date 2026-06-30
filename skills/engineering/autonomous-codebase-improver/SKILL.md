@@ -1,6 +1,6 @@
 ---
 name: autonomous-codebase-improver
-description: Safely improve a codebase one validated slice at a time. Use when asked to let the agent loose, autonomously improve a repo, fix bugs, improve architecture, or polish UI without a specific ticket.
+description: Improve a codebase one validated slice at a time. Use for autonomous repo improvement, architecture, bugs, or UI polish.
 ---
 
 # Autonomous Codebase Improver
@@ -38,6 +38,7 @@ Skip slices that need secrets, production access, deploy/publish, dependency upg
 - Architecture, refactor, seams, testability, module boundaries → `technical-auditor` Architecture mode; success signal: locality/caller/test evidence for one safe slice.
 - UI layout, visual hierarchy, accessibility, responsive states → `ui-design`; success signal: visual-state evidence plus build/test/lint where available.
 - Folder topology or shared code in one noisy directory → `skill-folder-refactor` or `share-code`; success signal: guarded scan/audit or proven duplicate extraction.
+- Source-backed README/docs/wiki drift → `wiki-docs`; success signal: docs slice cites live files and validates links/examples/tests where practical.
 - Pi extension/package resources → `pi-extensions-helper`; success signal: package manifest and extension tests/smoke evidence.
 - Finished work the user wants shipped → `git-commit-push`; success signal: validation, commit, push, final clean or classified state.
 

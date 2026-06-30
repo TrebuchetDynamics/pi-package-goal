@@ -1,0 +1,20 @@
+10.20517/scierxiv202606.0425.v1	WikiPlanner: Wiki-Derived Temporal Monitors for Safe LLM Agent Planning
+10.62970/ijirct.v12.i3.2606010	Automated Context Generation for AI Code Assistants: An LLM-Powered Framework for Developer Intent Capture and Documentation Automation
+10.5220/0005643700220026	Lido – Wiki based Living Documentation with Domain Knowledge
+10.1109/acdsa65407.2025.11166656	An LLM-based software developer agent demonstrated through a port-logistic optimization case study
+10.2172/968675	MRDAP User/Developer Documentation
+10.1109/tse.2026.3663599/mm1	Towards Refining Developer Questions using LLM-Based Named Entity Recognition for Developer Chatroom Conversations_supp1-3663599.pdf
+10.21203/rs.3.rs-6793970/v1	InfraMLForge: Developer Tooling for Rapid LLM Development and Scalable Deployment
+10.1007/979-8-8688-0242-3_3	Crafting Exceptional Documentation
+10.22215/etd/2025-16815	Summarizing Code-Centric Developer Conversations: Analysis and Comparison of Human and LLM-based Approaches
+10.55041/ijsrem63072	Smart Developer Assistant (SDA): An AI-Driven Multi-Agent Framework for Automated Code Generation, Debugging, and Documentation
+10.1016/j.cmpbup.2026.100261	An LLM-based multi-agent system for patient discharge assessment
+10.2172/208341	Further perspectives on computer documentation: System developer vs. technical writer
+10.1093/ref:odnb/14628	James, William (1771–1837), land agent and railway developer
+10.5220/0005506003930400	Conceptual Wiki Page Simulation - A Discrete Space Agent-based Approach
+10.53846/goediss-7551	Mining Developer Dynamics for Agent-Based Simulation of Software Evolution
+10.1109/ipcc.2011.6087219	Using the wiki to deliver paperless software documentation
+10.2139/ssrn.6270560	LLM-Enabled Developer Copilots: Integrating Compiler-Level Semantics and Language Models for Intelligent Code Understanding in .NET Systems
+10.1145/3749421.3749436	ALAS: A Stateful Multi-LLM Agent Framework for Disruption-Aware Planning
+10.21236/ada446186	Experience Using the Web-Based Tool Wiki for Architecture Documentation
+10.20517/scierxiv202605.0291.v1	Does the Wiki Grow Smarter? A Pilot Evaluation of LLM-Maintained Knowledge Bases in an Exception-Dense Decision-Support Task

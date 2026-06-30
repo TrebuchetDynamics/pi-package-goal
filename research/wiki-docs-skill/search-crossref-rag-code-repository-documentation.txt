@@ -1,0 +1,20 @@
+10.31274/cc-20260223-58	Retrieval Augmented Generation for HPC Code Optimization
+10.31274/cc-20260223-73	Benchmarking the Impact of Retrieval Augmented Generation on HPC Source Code
+10.2139/ssrn.5986423	RAGdeterm: Deterministic Retrieval-Augmented Generation for Code Generator
+10.31979/etd.fenk-k7vc	Optimizing Web Design Code Generation
+10.1016/j.softx.2026.102636	RAGdeterm: Deterministic retrieval-augmented generation for code generation
+10.2196/preprints.65483	Automating Emergency Medicine Documentation Using LLMs with Retrieval-Augmented Text Generation: Analytical Study (Preprint)
+10.5121/csit.2025.152211	Mycroft - Retrieval Augmented Generation for SDK Documentation
+10.1109/icsme58944.2024.00040	Improving Retrieval-Augmented Code Comment Generation by Retrieving for Generation
+10.1109/fllm67465.2025.11391177	Investigating Retrieval Augmented Generation for LLM-Based Code Generation
+10.1109/southeastcon56624.2025.10971575	Extended Abstract: Enhancing Accessibility to MODTRAN Documentation: A Chatbot Framework Using Retrieval-Augmented Generation (RAG)
+10.18653/v1/2024.findings-emnlp.652	Retrieval-Augmented Code Generation for Situated Action Generation: A Case Study on Minecraft
+10.1109/apsec65559.2024.00061	Enhancing Source Code Comment Generation via Retrieval-Augmented Generation with Design Document Term Dictionary
+10.18653/v1/2023.findings-emnlp.90	Syntax-Aware Retrieval Augmented Code Generation
+10.59350/r9dj1-zkx52	Efficient Information Retrieval and Response Generation with Retrieval-Augmented Generation (RAG)
+10.59350/q2pq3-0fv85	Efficient Information Retrieval and Response Generation with Retrieval-Augmented Generation (RAG)
+10.1109/asew67777.2025.00060	GRACG: Graph Retrieval Augmented Code Generation
+10.18653/v1/2025.emnlp-main.1187	CodeRAG: Finding Relevant and Necessary Knowledge for Retrieval-Augmented Repository-Level Code Completion
+10.1109/wincom65874.2025.11313399	CodeWisp: AST Guided Retrieval Augmented Generation for Code Generation and Completion
+10.1016/j.array.2026.100881	Enhancing printed circuit boards operational efficiency through multimodal retrieval-augmented generation chatbots: Bridging textual and visual documentation
+10.2139/ssrn.5253805	A Comparative Study of Retrieval-Augmented Generation, Graph Retrieval-Augmented Generation, and Fine-Tuned Large Language Models for Fire Engineering Knowledge Retrieval

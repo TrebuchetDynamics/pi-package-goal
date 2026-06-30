@@ -1,0 +1,177 @@
+{
+  "nodes": [
+    {
+      "id": "02872bb678867e146c3af3493ca9997a1dc17d8e"
+    },
+    {
+      "id": "0b2cd976c48578790f2293b803e46563607ed0e3"
+    },
+    {
+      "id": "0e7ec9be3e2c2af5f9919ebd4fdb624ebf015a3c"
+    },
+    {
+      "id": "10.1109/icse.2015.288"
+    },
+    {
+      "id": "12a52df8738c46951b28094f77626d9e424baaae"
+    },
+    {
+      "id": "14a962864168671143b1b11e10fda72d39a9adee"
+    },
+    {
+      "id": "1906c757436f4829ac29a2b66921d92bfe6fcc91"
+    },
+    {
+      "id": "1fd84ab238c5bf9fc135d135b960b647b965d060"
+    },
+    {
+      "id": "21c266df8000ace552a0ddf92a75d8b184f9ca56"
+    },
+    {
+      "id": "39829e05a2ff5402d50bd4560441feaf5ba27f80"
+    },
+    {
+      "id": "4a16d4f20266b39b7c1c3b953e52704b264ba38d"
+    },
+    {
+      "id": "54259aadaf0220516de4e835c9e2f2a6b025d4ca"
+    },
+    {
+      "id": "6dcee3458b4e39f7a75c9df57845fd3107984dd7"
+    },
+    {
+      "id": "6e2b1038682cd116b2e38bec19b5721196c41eea"
+    },
+    {
+      "id": "7dae1f5816bd3c453f21afc148d210ef2f8e5059"
+    },
+    {
+      "id": "84a90cd5578109ae1f6537365f1381fcc93f12bd"
+    },
+    {
+      "id": "91670df8aae26546da4fac58599e6ecc14708776"
+    },
+    {
+      "id": "a9e50a97cc7fa77ffd69a74c38cc23663506b1f6"
+    },
+    {
+      "id": "b1e616c8c7eb7f735fd83fa185d76b04742ad27a"
+    },
+    {
+      "id": "bb6d31d659b5c28f07551305f0186907c111b045"
+    },
+    {
+      "id": "bdb5323aca0aee2f0ef6301467cffc0c105fad9b"
+    },
+    {
+      "id": "bf1d5cea4249e603280fee6653baf2ad6f744e0d"
+    },
+    {
+      "id": "cd5648e9ab3fc647e9667e83e871f45ee3b1aa42"
+    },
+    {
+      "id": "ce5aa985cae326c6f39cd38eb5df0fe1994ff24c"
+    },
+    {
+      "id": "fa04c8eb13cf8bec778fa97e8bbdd9e786000224"
+    }
+  ],
+  "edges": [
+    {
+      "source": "02872bb678867e146c3af3493ca9997a1dc17d8e",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "0b2cd976c48578790f2293b803e46563607ed0e3",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "0e7ec9be3e2c2af5f9919ebd4fdb624ebf015a3c",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "12a52df8738c46951b28094f77626d9e424baaae",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "14a962864168671143b1b11e10fda72d39a9adee",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "1906c757436f4829ac29a2b66921d92bfe6fcc91",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "1fd84ab238c5bf9fc135d135b960b647b965d060",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "21c266df8000ace552a0ddf92a75d8b184f9ca56",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "39829e05a2ff5402d50bd4560441feaf5ba27f80",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "4a16d4f20266b39b7c1c3b953e52704b264ba38d",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "54259aadaf0220516de4e835c9e2f2a6b025d4ca",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "6dcee3458b4e39f7a75c9df57845fd3107984dd7",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "6e2b1038682cd116b2e38bec19b5721196c41eea",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "7dae1f5816bd3c453f21afc148d210ef2f8e5059",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "84a90cd5578109ae1f6537365f1381fcc93f12bd",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "91670df8aae26546da4fac58599e6ecc14708776",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "a9e50a97cc7fa77ffd69a74c38cc23663506b1f6",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "b1e616c8c7eb7f735fd83fa185d76b04742ad27a",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "bb6d31d659b5c28f07551305f0186907c111b045",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "bdb5323aca0aee2f0ef6301467cffc0c105fad9b",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "bf1d5cea4249e603280fee6653baf2ad6f744e0d",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "cd5648e9ab3fc647e9667e83e871f45ee3b1aa42",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "ce5aa985cae326c6f39cd38eb5df0fe1994ff24c",
+      "target": "10.1109/icse.2015.288"
+    },
+    {
+      "source": "fa04c8eb13cf8bec778fa97e8bbdd9e786000224",
+      "target": "10.1109/icse.2015.288"
+    }
+  ]
+}

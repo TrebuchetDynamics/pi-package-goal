@@ -1,0 +1,1 @@
+search: source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)

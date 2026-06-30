@@ -1,0 +1,20 @@
+	EVOR: Evolving Retrieval for Code Generation
+	AR-RAG: Autoregressive Retrieval Augmentation for Image Generation
+	Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation
+	DeepCodeSeek: Real-Time API Retrieval for Context-Aware Code Generation
+10.1145/3726302.3730023	Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval
+	Factually: Exploring Wearable Fact-Checking for Augmented Truth Discernment
+	Designing AI Systems that Augment Human Performed vs. Demonstrated Critical Thinking
+	Riddle Me This! Stealthy Membership Inference for Retrieval-Augmented Generation
+	Automated Literature Review Using NLP Techniques and LLM-Based Retrieval-Augmented Generation
+	EHR-RAGp: Retrieval-Augmented Prototype-Guided Foundation Model for Electronic Health Records
+	Engineering the RAG Stack: A Comprehensive Review of the Architecture and Trust Frameworks for Retrieval-Augmented Generation Systems
+	Utilizing Metadata for Better Retrieval-Augmented Generation
+	Ragas: Automated Evaluation of Retrieval Augmented Generation
+	JaCoText: A Pretrained Model for Java Code-Text Generation
+	MUST-RAG: MUSical Text Question Answering with Retrieval Augmented Generation
+	FAIR-RAG: Faithful Adaptive Iterative Refinement for Retrieval-Augmented Generation
+	Retrieval Augmented Structured Generation: Business Document Information Extraction As Tool Use
+	CodeRAG: Finding Relevant and Necessary Knowledge for Retrieval-Augmented Repository-Level Code Completion
+	Do the Findings of Document and Passage Retrieval Generalize to the Retrieval of Responses for Dialogues?
+	RAGPart & RAGMask: Retrieval-Stage Defenses Against Corpus Poisoning in Retrieval-Augmented Generation

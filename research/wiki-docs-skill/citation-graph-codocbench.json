@@ -1,0 +1,163 @@
+{
+  "nodes": [
+    {
+      "id": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "id": "34453ae8caec00b624c1264ef755d1c5ab0f1ce2"
+    },
+    {
+      "id": "3445a761c6b80249b7959a5162c2eca60ef1d0f6"
+    },
+    {
+      "id": "38c90416352d35cbbffa4ba7486cabd04f21e951"
+    },
+    {
+      "id": "40e8af970329135ec95057d73e239dab805ad128"
+    },
+    {
+      "id": "411114f989a3d1083d90afd265103132fee94ebe"
+    },
+    {
+      "id": "4393e3d118269f374df7f9828a7be034b645336b"
+    },
+    {
+      "id": "455e1168304e0eb2909093d5ab9b5ec85cda5028"
+    },
+    {
+      "id": "47ced790a563344efae66588b5fb7fe6cca29ed3"
+    },
+    {
+      "id": "55132e171bd51ebb361686ccf2dab9b548fe9b25"
+    },
+    {
+      "id": "5aec1050fd62971f2b40b597ef7526fbc820beab"
+    },
+    {
+      "id": "7b5f909e1ab4d076116d11e1e7754b3c12471db8"
+    },
+    {
+      "id": "8c15ea504e7e93b15f41ce5c8fb399596e8fa435"
+    },
+    {
+      "id": "8fe768e14de0bd5ff69eb0ba3d88ca193818f27c"
+    },
+    {
+      "id": "a12e889f0121ad04a845c52ef4e82c2dcf36731a"
+    },
+    {
+      "id": "b094498779d2d1dd1f2552133eab3046d36eb773"
+    },
+    {
+      "id": "b2f8876482c97e804bb50a5e2433881ae31d0cdd"
+    },
+    {
+      "id": "b639ceb04499fa42903b9ae7eadf0ddfeb7fa6ef"
+    },
+    {
+      "id": "c82513ad177a849e22ad9eb3cd93430bef4e6591"
+    },
+    {
+      "id": "d83ac1cf560cda623f271190866c9d55a06ff015"
+    },
+    {
+      "id": "e001232a2876989f52a7b4ac12bd9ed550d41240"
+    },
+    {
+      "id": "f3a13fedd19b714a5e01305a10bcf8ec6efa06c2"
+    },
+    {
+      "id": "fbe25e4f069a19dc63daca27b7c98cff338663b9"
+    }
+  ],
+  "edges": [
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "38c90416352d35cbbffa4ba7486cabd04f21e951"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "40e8af970329135ec95057d73e239dab805ad128"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "411114f989a3d1083d90afd265103132fee94ebe"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "4393e3d118269f374df7f9828a7be034b645336b"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "455e1168304e0eb2909093d5ab9b5ec85cda5028"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "47ced790a563344efae66588b5fb7fe6cca29ed3"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "5aec1050fd62971f2b40b597ef7526fbc820beab"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "7b5f909e1ab4d076116d11e1e7754b3c12471db8"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "8c15ea504e7e93b15f41ce5c8fb399596e8fa435"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "b094498779d2d1dd1f2552133eab3046d36eb773"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "b2f8876482c97e804bb50a5e2433881ae31d0cdd"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "b639ceb04499fa42903b9ae7eadf0ddfeb7fa6ef"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "c82513ad177a849e22ad9eb3cd93430bef4e6591"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "e001232a2876989f52a7b4ac12bd9ed550d41240"
+    },
+    {
+      "source": "10.1109/msr66628.2025.00077",
+      "target": "fbe25e4f069a19dc63daca27b7c98cff338663b9"
+    },
+    {
+      "source": "34453ae8caec00b624c1264ef755d1c5ab0f1ce2",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "3445a761c6b80249b7959a5162c2eca60ef1d0f6",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "55132e171bd51ebb361686ccf2dab9b548fe9b25",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "8fe768e14de0bd5ff69eb0ba3d88ca193818f27c",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "a12e889f0121ad04a845c52ef4e82c2dcf36731a",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "d83ac1cf560cda623f271190866c9d55a06ff015",
+      "target": "10.1109/msr66628.2025.00077"
+    },
+    {
+      "source": "f3a13fedd19b714a5e01305a10bcf8ec6efa06c2",
+      "target": "10.1109/msr66628.2025.00077"
+    }
+  ]
+}

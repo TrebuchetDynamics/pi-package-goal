@@ -1,0 +1,20 @@
+	Using Large Language Models for Knowledge Engineering (LLMKE): A Case Study on Wikidata
+	Evaluating Class Membership Relations in Knowledge Graphs using Large Language Models
+	Prompting as Probing: Using Language Models for Knowledge Base Construction
+	Is Self-knowledge and Action Consistent or Not: Investigating Large Language Model's Personality
+	Knowledge-Driven Agentic Scientific Corpus Distillation Framework for Biomedical Large Language Models Training
+	WizardCoder: Empowering Code Large Language Models with Evol-Instruct
+10.1145/3773966.3777982	Proficient Graph Neural Network Design by Accumulating Knowledge on Large Language Models
+	Neuron-Level Knowledge Attribution in Large Language Models
+	Enhancing Human-Like Responses in Large Language Models
+	Beneath the Surface: Unveiling Harmful Memes with Multimodal Reasoning Distilled from Large Language Models
+10.1109/tkde.2024.3352100	Unifying Large Language Models and Knowledge Graphs: A Roadmap
+	The integral field spectroscopy (IFS) wiki
+	Large Language Models Lack Understanding of Character Composition of Words
+10.1016/j.knosys.2025.114215	Reviewing Clinical Knowledge in Medical Large Language Models: Training and Beyond
+	FS-RAG: A Frame Semantics Based Approach for Improved Factual Accuracy in Large Language Models
+	Unmasking the Shadows of AI: Investigating Deceptive Capabilities in Large Language Models
+	Not All Experts are Equal: Efficient Expert Pruning and Skipping for Mixture-of-Experts Large Language Models
+	FlexKBQA: A Flexible LLM-Powered Framework for Few-Shot Knowledge Base Question Answering
+	The Araucaria Project: Improving the cosmic distance scale
+	KGLens: Towards Efficient and Effective Knowledge Probing of Large Language Models with Knowledge Graphs

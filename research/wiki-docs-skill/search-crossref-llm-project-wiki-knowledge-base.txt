@@ -1,0 +1,20 @@
+10.31979/etd.r7bw-faye	SDEBuddy - Code Documentation using Large Language Models
+10.1039/d2dd00087c/v1/review3	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v2/review2	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v1/review2	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v1/review1	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v2/review3	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v2/review1	Review for "Assessment of chemistry knowledge in large language models that generate code"
+10.2139/ssrn.4951342	Geo-Fub: A Method for Constructing an Operator-Function Knowledge Base for Geospatial Code Generation Tasks Using Large Language Models
+10.5220/0005643700220026	Lido – Wiki based Living Documentation with Domain Knowledge
+10.1039/d2dd00087c/v1/decision1	Decision letter for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v2/decision1	Decision letter for "Assessment of chemistry knowledge in large language models that generate code"
+10.1039/d2dd00087c/v3/decision1	Decision letter for "Assessment of chemistry knowledge in large language models that generate code"
+10.1109/llm4code66737.2025.00026	Knowledge Graph Based Repository-Level Code Generation
+10.1016/j.knosys.2025.113624	Geo-FuB: A method for constructing an Operator-Function knowledge base for geospatial code generation with large language models
+10.63282/3050-9246.ijetcsit-v4i1p113	Large Language Models for Automated Financial Code Generation and Documentation in Data Pipelines
+10.1109/naecon.1990.112920	Knowledge base documentation: a productivity tool for large knowledge bases
+10.1109/bmsb65076.2025.11165690	CodeDocAgent: Leveraging Large Language Models for Accurate and Contextual Code Documentation
+10.1109/llm4code66737.2025.00020	Metamon: Finding Inconsistencies between Program Documentation and Behavior using Metamorphic LLM Queries
+10.2139/ssrn.4967641	Ide-Kbqa: Intent Detection Enhanced Model for Knowledge Base Question Answering with Large Language Models
+10.5220/0014803700004015	Benchmarking Cross-Language Code Smell Detection with Pretrained and Large Language Models
