@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Memento-Skills: Let Agents Design Agents
+	Agentic Skill Discovery
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	OpenClaw-Skill: Collective Skill Tree Search for Agentic Large Language Models
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	Agent Skills: A Data-Driven Analysis of Claude Skills for Extending Large Language Model Functionality
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	Hierarchical Multi-agent Large Language Model Reasoning for Autonomous Functional Materials Discovery
+	Discriminating Similar Languages: Evaluations and Explorations
+	A Framework for Evaluating Agentic Skills at Scale
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	Piano Skills Assessment
+	Unearthing Skill-Level Insights for Understanding Trade-Offs of Foundation Models
+	Thanos: Enhancing Conversational Agents with Skill-of-Mind-Infused Large Language Model

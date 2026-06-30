@@ -1,0 +1,18 @@
+10.1039/d5sc08794e/v1/review2	Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v3/review1	Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v2/review2	Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v2/review1	Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v1/review1	Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1109/ictc66702.2025.11388233	Ontology-Driven LLM Service Protocol for HPC Platforms: Design for Workflow Interoperability and Provenance-Aware Automation
+10.2139/ssrn.5343855	Machine Learning Copilot Agent: An Llm-Guided Workflow for Prognostic Gene Discovery
+10.1109/mlcipr68329.2025.11407347	LLM-Driven Agentic AI Multi-Agent Workflow for Visual Design within the Double Diamond Model: Framework and Prototype System
+10.1021/acs.jcim.4c01653.s002	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1021/acs.jcim.4c01653.s003	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1021/acs.jcim.4c01653.s001	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1021/acs.jcim.4c01653.s004	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1039/d5sc08794e/v3/decision1	Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v1/decision1	Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1039/d5sc08794e/v2/decision1	Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning"
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.1109/iclad65226.2025.00015	MenTeR: A fully-automated Multi-agenT workflow for end-to-end RF/Analog Circuits Netlist Design
+10.1007/s44336-024-00009-2	A survey on LLM-based multi-agent systems: workflow, infrastructure, and challenges

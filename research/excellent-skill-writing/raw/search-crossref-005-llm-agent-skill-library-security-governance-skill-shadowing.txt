@@ -1,0 +1,20 @@
+10.5860/llm.v29i3.7149	New and Noteworthy: Blowing Our Own Horns - Library Marketing as an Essential Management Skill
+10.2139/ssrn.6871959	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+10.53330/qggu3545	LLM Meets Job Advertisements: Unmasking Skill Premia in the UK
+10.18326/rgt.v9i2.703	Improving Students’ Listening Skill Through Shadowing
+10.18326/rgt.v9i2.124-136	Improving Students’ Listening Skill Through Shadowing
+10.2139/ssrn.4790564	Skill Matters: Dynamic Skill Learning for Multi-Agent Cooperative Reinforcement Learning
+10.2139/ssrn.6438922	Beyond Prescribed Intelligence: Toward Self-Directed Skill Acquisition in LLM-Based Cybersecurity Agents
+10.1016/j.lisr.2007.04.012	Attaining information literacy: An investigation of the relationship between skill level, self-estimates of skill, and library anxiety
+10.36227/techrxiv.177204917.78786098/v1	Agent, Sub-Agent, Skill, or Tool? A Practitioner's Guide to Extending Agentic AI Systems
+10.64898/2026.05.13.724757	S2F-agent: Skill-grounded agent for Sequence-to-Function computational genomics workflows
+10.33087/jiubj.v24i3.5682	The Effectiveness of Using Shadowing Technique Towards Students’ Pronunciation Skill
+10.1109/cars67163.2025.11337769	COALESCE: Economic and Security Dynamics of Skill-Based Task Outsourcing Among Team of Autonomous LLM Agents
+10.2139/ssrn.6426760	Protocol-Mediated Execution Governance for LLM Agent Systems
+10.31227/osf.io/27fr5	Hak Kekayaan Intelektual (HKI)-Hak Cipta Panduan Soft Skill "Adaptation Skill, Motivation Skill, Problem Solving Skill, Spiritual Skill"
+10.23887/jpbi.v9i2.32516	Shadowing Technique To Improve Student’s Listening Skill
+10.5539/ijel.v7n5p184	The Impact of Shadowing Technique on Tertiary EFL Learners’ Listening Skill Achievements
+10.61955/swsmkg	Influence of Social Media Platforms on Library Skill Acquisition and Academic Performance of Library and Information Science Students in Public Universities in South-South, Nigeria
+10.21203/rs.3.rs-9323974/v1	LLM-Skill Orchestration: Achieving 202/202 Subtask Completion via Rule-Augmented Multi-Model Collaboration in 50 Agentic Tasks
+10.5070/l29132493	The Impact of a Computer-Mediated Shadowing Activity on ESL Speaking Skill Development: A Pilot Study
+10.29322/ijsrp.14.04.2023.p14809	Effectiveness of using shadowing technique on improving students’ speaking skill

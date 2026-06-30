@@ -1,0 +1,20 @@
+10.31219/osf.io/nbm4f	CoordiLang: Assessing Multi-Agent Coordination Skills in Large Language Models
+10.1007/978-1-4613-3724-9_44	Symbolic Skill Acquisition in Language: Introduction
+10.4018/978-1-59140-515-3.ch007	Japanese IT-Skill Dilemma
+10.63317/3twvjs5vmuwt	A Scalable Pipeline for Novelty Detection in Skill Extraction Using Large Language Models
+10.4324/9781410607133-8	MODELS OF ADULT COMMUNICATION SKILL ACQUISITION: PRACTICE AND THE COURSE OF PERFORMANCE IMPROVEMENT
+10.1016/j.surg.2006.09.017	Emotional evaluation and skill acquisition for proficiency-based laparoscopic skills training
+10.2139/ssrn.6219015	Synthesis large language models and machine learning agent
+10.1109/icnlp65360.2025.11108634	Evaluation and Benchmarking the Agent Marketing Dialogue Scenarios with Large Language Models
+10.5120/ijca2025925510	A Conversational Multi‑Agent Framework for Prompt Evaluation across Large Language Models
+10.1201/9781003492252-7	Transforming Software Engineering and Software Acquisition with Large Language Models
+10.1109/fllm67465.2025.11391149	MAMA: A Decentralized Multi-Agent Model AI Framework for Dynamic Knowledge Acquisition and Orchestration
+10.1109/fllm67465.2025.11391246	Evaluating Multi-Agent Defences Against Jailbreaking Attacks on Large Language Models
+10.1037/e443652005-001	Male and Female Causal Models of Pilot Skill Acquisition: A Preliminary Evaluation
+10.2139/ssrn.5053570	Agent-Enhanced Large Language Models for Researching Political Institutions
+10.4324/9780203646564-26	Musculoskeletal constraints on the acquisition of motor skills
+10.4324/9780203728178-8	Skill in Algebra: Clayton Lewis
+10.21236/ada339589	Male and Female Causal Models of Pilot Skill Acquisition: A Preliminary Evaluation
+10.4324/9780429503986-5	Skill Acquisition Theory
+10.1037/e536932009-001	Male and female casual models of pilot skill acquisition: A preliminary evaluation
+10.5220/0014480400004061	Evaluating the Effectiveness of Multi-Agent Large Language Models for Automated Vulnerable Code Repair

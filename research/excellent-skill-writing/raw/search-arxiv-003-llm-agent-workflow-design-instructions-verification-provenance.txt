@@ -1,0 +1,20 @@
+10.1145/3731599.3767582	LLM Agents for Interactive Workflow Provenance: Reference Architecture and Evaluation Methodology
+	PROV-AGENT: Unified Provenance for Tracking AI Agent Interactions in Agentic Workflows
+10.1002/cpe.3035	Provenance and data differencing for workflow reproducibility analysis
+	Delayed Verification Destabilizes Multi-Agent LLM Belief: Instability Thresholds and Optimal Corrector Placement
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Thucy: An LLM-based Multi-Agent System for Claim Verification across Relational Databases
+	A Plan Reuse Mechanism for LLM-Driven Agent
+	Securing Generative AI Agentic Workflows: Risks, Mitigation, and a Proposed Firewall Architecture
+	HDP: A Lightweight Cryptographic Protocol for Human Delegation Provenance in Agentic AI Systems
+10.1109/iclad65226.2025.00033	ASIC-Agent: An Autonomous Multi-Agent System for ASIC Design with Benchmark Evaluation
+	MedAide: Information Fusion and Anatomy of Medical Intents via LLM-based Agent Collaboration
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+	YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+	Ask-EDA: A Design Assistant Empowered by LLM, Hybrid RAG and Abbreviation De-hallucination
+	Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+	Automatic vs Manual Provenance Abstractions: Mind the Gap
+	Agentic Social Affordance Framework (ASAF): Agent Identity Design as a Collaboration Interface in Multi-Agent Systems
+10.1109/lad62341.2024.10691856	C2HLSC: Can LLMs Bridge the Software-to-Hardware Design Gap?
+	KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph
+	Evaluation of Provenance Serialisations for Astronomical Provenance

@@ -1,0 +1,20 @@
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Agentic Skill Discovery
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+10.3390/math10183338	Advanced Drone Swarm Security by Using Blockchain Governance Game
+	More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	Video-Skill-CoT: Skill-based Chain-of-Thoughts for Domain-Adaptive Video Reasoning
+	MOSAIC: A Skill-Centric Algorithmic Framework for Long-Horizon Manipulation Planning
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Skill Preferences: Learning to Extract and Execute Robotic Skills from Human Feedback
+	Unearthing Skill-Level Insights for Understanding Trade-Offs of Foundation Models
+	Divide, Discover, Deploy: Factorized Skill Learning with Symmetry and Style Priors
+	Skill-Based Mixture-of-Experts: Adaptive Routing for Heterogeneous Reasoning via Inferred Skills
+	$\texttt{SPIN}$: distilling $\texttt{Skill-RRT}$ for long-horizon prehensile and non-prehensile manipulation
+	Runtime Skill Audit: Targeted Runtime Probing for Agent Skill Security
+	Reinforcement Learning for Self-Improving Agent with Skill Library
+	Skill-Aligned Annotation for Reliable Evaluation in Text-to-Image Generation

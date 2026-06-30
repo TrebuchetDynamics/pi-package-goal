@@ -1,0 +1,20 @@
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Memento-Skills: Let Agents Design Agents
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	Agentic Skill Discovery
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries
+	SoK: Agentic Skills -- Beyond Tool Use in LLM Agents
+	Reinforcement Learning for Self-Improving Agent with Skill Library
+	SkillOps: Managing LLM Agent Skill Libraries as Self-Maintaining Software Ecosystems
+	SkillJect: Effectively Automating Skill-Based Prompt Injection for Skill-Enabled Agents
+	SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+	Group of Skills: Group-Structured Skill Retrieval for Agent Skill Libraries
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	TDD Governance for Multi-Agent Code Generation via Prompt Engineering
+	CUA-Skill: Develop Skills for Computer Using Agent

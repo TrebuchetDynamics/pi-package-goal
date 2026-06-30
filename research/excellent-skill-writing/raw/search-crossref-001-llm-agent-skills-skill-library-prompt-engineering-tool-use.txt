@@ -1,0 +1,20 @@
+10.7717/peerj-cs.2328/fig-7	Figure 7: Prompt for multi-agent LLM for best instruction choice.
+10.7717/peerj-cs.2328/fig-8	Figure 8: Prompt for multi-agent LLM for best instruction improvement.
+10.2139/ssrn.6871959	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+10.1145/3749421.3749427	Prompt Engineering: Few Shots, Chain of Thought, and Retrieval-Augmented Generation
+10.3390/software5020026	Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance
+10.21203/rs.3.rs-7070323/v1	Breaking Barriers: Multi-Agent Prompt Fusion for Automated LLM Jailbreaks
+10.31649/vitce/2.2025.35	Prompt-guided LLM agent for end-to-end ontology learning
+10.1201/9781003674702-11	The DeepSeek Prompt Library
+10.5860/llm.v33i3.7347	Communities of Practice as a Professional Development Tool for Management and Leadership Skills in Libraries
+10.59350/ztzqt-ygh07	Use R to prompt a local LLM with ollamar
+10.31979/etd.azur-9jbv	DISEASE DIAGNOSIS USING RAG LLM WITH SMART PROMPT ENGINEERING
+10.59350/wmz8j-fgp98	Use R to prompt a local LLM with ollamar
+10.35808/ersj/4220	Prompt Engineering in Finance: An LLM-Based Multi-Agent Architecture for Decision Support
+10.21203/rs.3.rs-4304633/v1	Ergonomic LLM or LLM for Ergonomics? Prompt engineering insights for an interventional case study
+10.59350/8ac6c-hcx65	Use R to prompt a local LLM with ollamar
+10.59350/trg64-4jr22	Use R to prompt a local LLM with ollamar
+10.5220/0014473600004052	Agent-as-a-Graph: Knowledge Graph-Based Tool and Agent Retrieval for LLM Multi-Agent Systems
+10.2139/ssrn.5851148	LLM Enhancement with Domain Expert Mental Model to Reduce LLM Hallucination with Causal Prompt Engineering
+10.5860/llm.v31i2.7191	The Accidental Director: Critical Skills in Library Leadership
+10.5220/0014355600004052	Tool-Augmented Disambiguation LLM Agent Utilizing UMLS for Biomedical Entity Linking

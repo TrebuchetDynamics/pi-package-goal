@@ -1,0 +1,16 @@
+Source coverage for .
+  stats                    9 records (1 files)
+
+Total unique DOIs: 9
+
+Failed queries (10):
+  [openalex] "LLM agent skills skill library prompt engineering tool use" — source HTTP status 429: rate limited; retry after 9h10m14s; try again later or configure an API key (check connector env vars)
+  [semantic-scholar] "LLM agent skills skill library prompt engineering tool use" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [openalex] "agent skills large language models skill acquisition evaluation" — source HTTP status 429: rate limited; retry after 9h9m59s; try again later or configure an API key (check connector env vars)
+  [semantic-scholar] "agent skills large language models skill acquisition evaluation" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [openalex] "LLM agent workflow design instructions verification provenance" — source HTTP status 429: rate limited; retry after 9h9m39s; try again later or configure an API key (check connector env vars)
+  [openalex] "prompt engineering agent skills task decomposition tool use evaluation" — source HTTP status 429: rate limited; retry after 9h9m27s; try again later or configure an API key (check connector env vars)
+  [crossref] "prompt engineering agent skills task decomposition tool use evaluation" — paper title is required
+  [semantic-scholar] "prompt engineering agent skills task decomposition tool use evaluation" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [openalex] "LLM agent skill library security governance skill shadowing" — source HTTP status 429: rate limited; retry after 9h9m9s; try again later or configure an API key (check connector env vars)
+  [semantic-scholar] "LLM agent skill library security governance skill shadowing" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)

@@ -1,0 +1,183 @@
+# Search batch results
+
+Deduped records: 166
+
+- Figure 7: Prompt for multi-agent LLM for best instruction choice. — DOI: `10.7717/peerj-cs.2328/fig-7`
+- Figure 8: Prompt for multi-agent LLM for best instruction improvement. — DOI: `10.7717/peerj-cs.2328/fig-8`
+- Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents — DOI: `10.2139/ssrn.6871959`
+- Prompt Engineering: Few Shots, Chain of Thought, and Retrieval-Augmented Generation — DOI: `10.1145/3749421.3749427`
+- Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance — DOI: `10.3390/software5020026`
+- Breaking Barriers: Multi-Agent Prompt Fusion for Automated LLM Jailbreaks — DOI: `10.21203/rs.3.rs-7070323/v1`
+- Prompt-guided LLM agent for end-to-end ontology learning — DOI: `10.31649/vitce/2.2025.35`
+- The DeepSeek Prompt Library — DOI: `10.1201/9781003674702-11`
+- Communities of Practice as a Professional Development Tool for Management and Leadership Skills in Libraries — DOI: `10.5860/llm.v33i3.7347`
+- Use R to prompt a local LLM with ollamar — DOI: `10.59350/ztzqt-ygh07`
+- DISEASE DIAGNOSIS USING RAG LLM WITH SMART PROMPT ENGINEERING — DOI: `10.31979/etd.azur-9jbv`
+- Use R to prompt a local LLM with ollamar — DOI: `10.59350/wmz8j-fgp98`
+- Prompt Engineering in Finance: An LLM-Based Multi-Agent Architecture for Decision Support — DOI: `10.35808/ersj/4220`
+- Ergonomic LLM or LLM for Ergonomics? Prompt engineering insights for an interventional case study — DOI: `10.21203/rs.3.rs-4304633/v1`
+- Use R to prompt a local LLM with ollamar — DOI: `10.59350/8ac6c-hcx65`
+- Use R to prompt a local LLM with ollamar — DOI: `10.59350/trg64-4jr22`
+- Agent-as-a-Graph: Knowledge Graph-Based Tool and Agent Retrieval for LLM Multi-Agent Systems — DOI: `10.5220/0014473600004052`
+- LLM Enhancement with Domain Expert Mental Model to Reduce LLM Hallucination with Causal Prompt Engineering — DOI: `10.2139/ssrn.5851148`
+- The Accidental Director: Critical Skills in Library Leadership — DOI: `10.5860/llm.v31i2.7191`
+- Tool-Augmented Disambiguation LLM Agent Utilizing UMLS for Biomedical Entity Linking — DOI: `10.5220/0014355600004052`
+- SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+- Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+- Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+- Memento-Skills: Let Agents Design Agents
+- Toward User Comprehension Supports for LLM Agent Skill Specifications
+- ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+- Agentic Skill Discovery
+- Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+- Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+- Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+- More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries
+- SoK: Agentic Skills -- Beyond Tool Use in LLM Agents
+- Reinforcement Learning for Self-Improving Agent with Skill Library
+- SkillOps: Managing LLM Agent Skill Libraries as Self-Maintaining Software Ecosystems
+- SkillJect: Effectively Automating Skill-Based Prompt Injection for Skill-Enabled Agents
+- SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+- Group of Skills: Group-Structured Skill Retrieval for Agent Skill Libraries
+- Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+- TDD Governance for Multi-Agent Code Generation via Prompt Engineering
+- CUA-Skill: Develop Skills for Computer Using Agent
+- CoordiLang: Assessing Multi-Agent Coordination Skills in Large Language Models — DOI: `10.31219/osf.io/nbm4f`
+- Symbolic Skill Acquisition in Language: Introduction — DOI: `10.1007/978-1-4613-3724-9_44`
+- Japanese IT-Skill Dilemma — DOI: `10.4018/978-1-59140-515-3.ch007`
+- A Scalable Pipeline for Novelty Detection in Skill Extraction Using Large Language Models — DOI: `10.63317/3twvjs5vmuwt`
+- MODELS OF ADULT COMMUNICATION SKILL ACQUISITION: PRACTICE AND THE COURSE OF PERFORMANCE IMPROVEMENT — DOI: `10.4324/9781410607133-8`
+- Emotional evaluation and skill acquisition for proficiency-based laparoscopic skills training — DOI: `10.1016/j.surg.2006.09.017`
+- Synthesis large language models and machine learning agent — DOI: `10.2139/ssrn.6219015`
+- Evaluation and Benchmarking the Agent Marketing Dialogue Scenarios with Large Language Models — DOI: `10.1109/icnlp65360.2025.11108634`
+- A Conversational Multi‑Agent Framework for Prompt Evaluation across Large Language Models — DOI: `10.5120/ijca2025925510`
+- Transforming Software Engineering and Software Acquisition with Large Language Models — DOI: `10.1201/9781003492252-7`
+- MAMA: A Decentralized Multi-Agent Model AI Framework for Dynamic Knowledge Acquisition and Orchestration — DOI: `10.1109/fllm67465.2025.11391149`
+- Evaluating Multi-Agent Defences Against Jailbreaking Attacks on Large Language Models — DOI: `10.1109/fllm67465.2025.11391246`
+- Male and Female Causal Models of Pilot Skill Acquisition: A Preliminary Evaluation — DOI: `10.1037/e443652005-001`
+- Agent-Enhanced Large Language Models for Researching Political Institutions — DOI: `10.2139/ssrn.5053570`
+- Musculoskeletal constraints on the acquisition of motor skills — DOI: `10.4324/9780203646564-26`
+- Skill in Algebra: Clayton Lewis — DOI: `10.4324/9780203728178-8`
+- Male and Female Causal Models of Pilot Skill Acquisition: A Preliminary Evaluation — DOI: `10.21236/ada339589`
+- Skill Acquisition Theory — DOI: `10.4324/9780429503986-5`
+- Male and female casual models of pilot skill acquisition: A preliminary evaluation — DOI: `10.1037/e536932009-001`
+- Evaluating the Effectiveness of Multi-Agent Large Language Models for Automated Vulnerable Code Repair — DOI: `10.5220/0014480400004061`
+- Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents
+- OpenClaw-Skill: Collective Skill Tree Search for Agentic Large Language Models
+- Agent Skills: A Data-Driven Analysis of Claude Skills for Extending Large Language Model Functionality
+- Hierarchical Multi-agent Large Language Model Reasoning for Autonomous Functional Materials Discovery
+- Discriminating Similar Languages: Evaluations and Explorations
+- A Framework for Evaluating Agentic Skills at Scale
+- ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+- Piano Skills Assessment
+- Unearthing Skill-Level Insights for Understanding Trade-Offs of Foundation Models
+- Thanos: Enhancing Conversational Agents with Skill-of-Mind-Infused Large Language Model
+- Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v1/review2`
+- Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v3/review1`
+- Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v2/review2`
+- Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v2/review1`
+- Review for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v1/review1`
+- Ontology-Driven LLM Service Protocol for HPC Platforms: Design for Workflow Interoperability and Provenance-Aware Automation — DOI: `10.1109/ictc66702.2025.11388233`
+- Machine Learning Copilot Agent: An Llm-Guided Workflow for Prognostic Gene Discovery — DOI: `10.2139/ssrn.5343855`
+- LLM-Driven Agentic AI Multi-Agent Workflow for Visual Design within the Double Diamond Model: Framework and Prototype System — DOI: `10.1109/mlcipr68329.2025.11407347`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s002`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s003`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s001`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s004`
+- Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v3/decision1`
+- Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v1/decision1`
+- Decision letter for "Unlocking azobenzene isomerization mechanisms via an LLM agent-driven workflow integrating simulation, experiment, and machine learning" — DOI: `10.1039/d5sc08794e/v2/decision1`
+- LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures — DOI: `10.1016/j.inffus.2025.103865`
+- MenTeR: A fully-automated Multi-agenT workflow for end-to-end RF/Analog Circuits Netlist Design — DOI: `10.1109/iclad65226.2025.00015`
+- A survey on LLM-based multi-agent systems: workflow, infrastructure, and challenges — DOI: `10.1007/s44336-024-00009-2`
+- FROAV: A Framework for RAG Observation and Agent Verification - Lowering the Barrier to LLM Agent Research — DOI: `10.48550/arxiv.2601.07504`
+- Perceive, Reflect, and Plan: Designing LLM Agent for Goal-Directed City Navigation without Instructions — DOI: `10.48550/arxiv.2408.04168`
+- LLM Agents for Interactive Workflow Provenance: Reference Architecture and Evaluation Methodology — DOI: `10.1145/3731599.3767582`
+- Closing the Loop in LLM-Based Hardware Generation: An Autonomous Agentic Workflow for Robust TPU Design — DOI: `10.1109/vts69484.2026.11563407`
+- TurboAgent: An LLM-Driven Autonomous Multi-Agent Framework for Turbomachinery Aerodynamic Design — DOI: `10.48550/arxiv.2604.06747`
+- Benchmarking and Studying the LLM-based Agent System in End-to-End Software Development — DOI: `10.48550/arxiv.2511.04064`
+- Zero-shot 3D Map Generation with LLM Agents: A Dual-Agent Architecture for Procedural Content Generation — DOI: `10.48550/arxiv.2512.10501`
+- VoCare AI: A Multi-Agent LLM Workflow for Improved Clinic Operational Efficiency — DOI: `10.1109/tencon66050.2025.11375163`
+- Data Interpreter: An LLM Agent For Data Science — DOI: `10.48550/arxiv.2402.18679`
+- LLM-Based Processor Verification: A Case Study for Neuronnorphic Processor — DOI: `10.23919/date58400.2024.10546707`
+- Routine: A Structural Planning Framework for LLM Agent System in Enterprise — DOI: `10.48550/arxiv.2507.14447`
+- MemLineage: Lineage-Guided Enforcement for LLM Agent Memory
+- Circuit-AI: An Advanced Large Language Model (LLM) Based AI-Agent for Bill of Materials (BoM) Optimization, Circuit Simulations & Design — DOI: `10.1109/ecce58356.2025.11260366`
+- Coupling of input and output signals of electrical equipment using an LLM agent — DOI: `10.1109/iciice69672.2026.11565467`
+- AeroTherm-GPT: A Verification-Centered LLM Framework for Thermal Protection System Engineering Workflows — DOI: `10.48550/arxiv.2604.01738`
+- AutoBeaVer: Automating Behavioral Modeling and Verification in Library Characterization with LLM Agents — DOI: `10.1109/isqed69900.2026.11534699`
+- Benchmarking Multi-Agent Collaboration Against Single LLM Systems in E-Commerce — DOI: `10.1109/icoecit68303.2026.11496721`
+- BPMN-Based Design of Multi-Agent Systems: Personalized Language Learning Workflow Automation with RAG-Enhanced Knowledge Access — DOI: `10.3390/info16090809`
+- PROV-AGENT: Unified Provenance for Tracking AI Agent Interactions in Agentic Workflows
+- Provenance and data differencing for workflow reproducibility analysis — DOI: `10.1002/cpe.3035`
+- Delayed Verification Destabilizes Multi-Agent LLM Belief: Instability Thresholds and Optimal Corrector Placement
+- Focus Agent: LLM-Powered Virtual Focus Group — DOI: `10.1145/3652988.3673918`
+- Thucy: An LLM-based Multi-Agent System for Claim Verification across Relational Databases
+- A Plan Reuse Mechanism for LLM-Driven Agent
+- Securing Generative AI Agentic Workflows: Risks, Mitigation, and a Proposed Firewall Architecture
+- HDP: A Lightweight Cryptographic Protocol for Human Delegation Provenance in Agentic AI Systems
+- ASIC-Agent: An Autonomous Multi-Agent System for ASIC Design with Benchmark Evaluation — DOI: `10.1109/iclad65226.2025.00033`
+- MedAide: Information Fusion and Anatomy of Medical Intents via LLM-based Agent Collaboration
+- Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+- YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+- Ask-EDA: A Design Assistant Empowered by LLM, Hybrid RAG and Abbreviation De-hallucination
+- Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+- Automatic vs Manual Provenance Abstractions: Mind the Gap
+- Agentic Social Affordance Framework (ASAF): Agent Identity Design as a Collaboration Interface in Multi-Agent Systems
+- C2HLSC: Can LLMs Bridge the Software-to-Hardware Design Gap? — DOI: `10.1109/lad62341.2024.10691856`
+- KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph
+- Evaluation of Provenance Serialisations for Astronomical Provenance
+- Prompt Engineering Strategies for LLM-based Qualitative Coding of Psychological Safety in Software Engineering Communities: A Controlled Empirical Study
+- AIRCC-Clim: a user-friendly tool for generating regional probabilistic climate change scenarios and risk measures
+- When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents
+- Power Systems Agent Benchmark: Executable Evaluation of AI Agents in Electric Power Engineering
+- Towards Goal-oriented Prompt Engineering for Large Language Models: A Survey
+- Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+- PPTC Benchmark: Evaluating Large Language Models for PowerPoint Task Completion
+- SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs — DOI: `10.1145/3786167.3788406`
+- Advancing Agentic Systems: Dynamic Task Decomposition, Tool Integration and Evaluation using Novel Metrics and Dataset
+- Prompt Engineering Guidelines for Using Large Language Models in Requirements Engineering
+- Promptware Engineering: Software Engineering for Prompt-Enabled Systems
+- Text and Team: What Article Metadata Characteristics Drive Citations in Software Engineering? — DOI: `10.1145/3530019.3530022`
+- HealthAdminBench: Evaluating Computer-Use Agents on Healthcare Administration Tasks
+- New and Noteworthy: Blowing Our Own Horns - Library Marketing as an Essential Management Skill — DOI: `10.5860/llm.v29i3.7149`
+- LLM Meets Job Advertisements: Unmasking Skill Premia in the UK — DOI: `10.53330/qggu3545`
+- Improving Students’ Listening Skill Through Shadowing — DOI: `10.18326/rgt.v9i2.703`
+- Improving Students’ Listening Skill Through Shadowing — DOI: `10.18326/rgt.v9i2.124-136`
+- Skill Matters: Dynamic Skill Learning for Multi-Agent Cooperative Reinforcement Learning — DOI: `10.2139/ssrn.4790564`
+- Beyond Prescribed Intelligence: Toward Self-Directed Skill Acquisition in LLM-Based Cybersecurity Agents — DOI: `10.2139/ssrn.6438922`
+- Attaining information literacy: An investigation of the relationship between skill level, self-estimates of skill, and library anxiety — DOI: `10.1016/j.lisr.2007.04.012`
+- Agent, Sub-Agent, Skill, or Tool? A Practitioner's Guide to Extending Agentic AI Systems — DOI: `10.36227/techrxiv.177204917.78786098/v1`
+- S2F-agent: Skill-grounded agent for Sequence-to-Function computational genomics workflows — DOI: `10.64898/2026.05.13.724757`
+- The Effectiveness of Using Shadowing Technique Towards Students’ Pronunciation Skill — DOI: `10.33087/jiubj.v24i3.5682`
+- COALESCE: Economic and Security Dynamics of Skill-Based Task Outsourcing Among Team of Autonomous LLM Agents — DOI: `10.1109/cars67163.2025.11337769`
+- Protocol-Mediated Execution Governance for LLM Agent Systems — DOI: `10.2139/ssrn.6426760`
+- Hak Kekayaan Intelektual (HKI)-Hak Cipta Panduan Soft Skill "Adaptation Skill, Motivation Skill, Problem Solving Skill, Spiritual Skill" — DOI: `10.31227/osf.io/27fr5`
+- Shadowing Technique To Improve Student’s Listening Skill — DOI: `10.23887/jpbi.v9i2.32516`
+- The Impact of Shadowing Technique on Tertiary EFL Learners’ Listening Skill Achievements — DOI: `10.5539/ijel.v7n5p184`
+- Influence of Social Media Platforms on Library Skill Acquisition and Academic Performance of Library and Information Science Students in Public Universities in South-South, Nigeria — DOI: `10.61955/swsmkg`
+- LLM-Skill Orchestration: Achieving 202/202 Subtask Completion via Rule-Augmented Multi-Model Collaboration in 50 Agentic Tasks — DOI: `10.21203/rs.3.rs-9323974/v1`
+- The Impact of a Computer-Mediated Shadowing Activity on ESL Speaking Skill Development: A Pilot Study — DOI: `10.5070/l29132493`
+- Effectiveness of using shadowing technique on improving students’ speaking skill — DOI: `10.29322/ijsrp.14.04.2023.p14809`
+- Advanced Drone Swarm Security by Using Blockchain Governance Game — DOI: `10.3390/math10183338`
+- Video-Skill-CoT: Skill-based Chain-of-Thoughts for Domain-Adaptive Video Reasoning
+- MOSAIC: A Skill-Centric Algorithmic Framework for Long-Horizon Manipulation Planning
+- Skill Preferences: Learning to Extract and Execute Robotic Skills from Human Feedback
+- Divide, Discover, Deploy: Factorized Skill Learning with Symmetry and Style Priors
+- Skill-Based Mixture-of-Experts: Adaptive Routing for Heterogeneous Reasoning via Inferred Skills
+- $\texttt{SPIN}$: distilling $\texttt{Skill-RRT}$ for long-horizon prehensile and non-prehensile manipulation
+- Runtime Skill Audit: Targeted Runtime Probing for Agent Skill Security
+- Skill-Aligned Annotation for Reliable Evaluation in Text-to-Image Generation
+
+## Failures
+
+- openalex / "LLM agent skills skill library prompt engineering tool use": source HTTP status 429: rate limited; retry after 9h10m14s; try again later or configure an API key (check connector env vars)
+- semantic-scholar / "LLM agent skills skill library prompt engineering tool use": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- openalex / "agent skills large language models skill acquisition evaluation": source HTTP status 429: rate limited; retry after 9h9m59s; try again later or configure an API key (check connector env vars)
+- semantic-scholar / "agent skills large language models skill acquisition evaluation": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- openalex / "LLM agent workflow design instructions verification provenance": source HTTP status 429: rate limited; retry after 9h9m39s; try again later or configure an API key (check connector env vars)
+- openalex / "prompt engineering agent skills task decomposition tool use evaluation": source HTTP status 429: rate limited; retry after 9h9m27s; try again later or configure an API key (check connector env vars)
+- crossref / "prompt engineering agent skills task decomposition tool use evaluation": paper title is required
+- semantic-scholar / "prompt engineering agent skills task decomposition tool use evaluation": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- openalex / "LLM agent skill library security governance skill shadowing": source HTTP status 429: rate limited; retry after 9h9m9s; try again later or configure an API key (check connector env vars)
+- semantic-scholar / "LLM agent skill library security governance skill shadowing": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)

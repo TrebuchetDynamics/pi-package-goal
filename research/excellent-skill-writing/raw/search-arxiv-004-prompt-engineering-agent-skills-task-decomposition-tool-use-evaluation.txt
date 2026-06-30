@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	TDD Governance for Multi-Agent Code Generation via Prompt Engineering
+	Memento-Skills: Let Agents Design Agents
+	Prompt Engineering Strategies for LLM-based Qualitative Coding of Psychological Safety in Software Engineering Communities: A Controlled Empirical Study
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	AIRCC-Clim: a user-friendly tool for generating regional probabilistic climate change scenarios and risk measures
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents
+	Power Systems Agent Benchmark: Executable Evaluation of AI Agents in Electric Power Engineering
+	Towards Goal-oriented Prompt Engineering for Large Language Models: A Survey
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	SoK: Agentic Skills -- Beyond Tool Use in LLM Agents
+	SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+	PPTC Benchmark: Evaluating Large Language Models for PowerPoint Task Completion
+10.1145/3786167.3788406	SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs
+	Advancing Agentic Systems: Dynamic Task Decomposition, Tool Integration and Evaluation using Novel Metrics and Dataset
+	Prompt Engineering Guidelines for Using Large Language Models in Requirements Engineering
+	Promptware Engineering: Software Engineering for Prompt-Enabled Systems
+10.1145/3530019.3530022	Text and Team: What Article Metadata Characteristics Drive Citations in Software Engineering?
+	HealthAdminBench: Evaluating Computer-Use Agents on Healthcare Administration Tasks

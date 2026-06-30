@@ -1,0 +1,20 @@
+10.1109/ictc66702.2025.11388233	Ontology-Driven LLM Service Protocol for HPC Platforms: Design for Workflow Interoperability and Provenance-Aware Automation
+10.48550/arxiv.2601.07504	FROAV: A Framework for RAG Observation and Agent Verification - Lowering the Barrier to LLM Agent Research
+10.48550/arxiv.2408.04168	Perceive, Reflect, and Plan: Designing LLM Agent for Goal-Directed City Navigation without Instructions
+10.1145/3731599.3767582	LLM Agents for Interactive Workflow Provenance: Reference Architecture and Evaluation Methodology
+10.1109/vts69484.2026.11563407	Closing the Loop in LLM-Based Hardware Generation: An Autonomous Agentic Workflow for Robust TPU Design
+10.31649/vitce/2.2025.35	Prompt-guided LLM agent for end-to-end ontology learning
+10.48550/arxiv.2604.06747	TurboAgent: An LLM-Driven Autonomous Multi-Agent Framework for Turbomachinery Aerodynamic Design
+10.48550/arxiv.2511.04064	Benchmarking and Studying the LLM-based Agent System in End-to-End Software Development
+10.48550/arxiv.2512.10501	Zero-shot 3D Map Generation with LLM Agents: A Dual-Agent Architecture for Procedural Content Generation
+10.1109/tencon66050.2025.11375163	VoCare AI: A Multi-Agent LLM Workflow for Improved Clinic Operational Efficiency
+10.48550/arxiv.2402.18679	Data Interpreter: An LLM Agent For Data Science
+10.23919/date58400.2024.10546707	LLM-Based Processor Verification: A Case Study for Neuronnorphic Processor
+10.48550/arxiv.2507.14447	Routine: A Structural Planning Framework for LLM Agent System in Enterprise
+	MemLineage: Lineage-Guided Enforcement for LLM Agent Memory
+10.1109/ecce58356.2025.11260366	Circuit-AI: An Advanced Large Language Model (LLM) Based AI-Agent for Bill of Materials (BoM) Optimization, Circuit Simulations & Design
+10.1109/iciice69672.2026.11565467	Coupling of input and output signals of electrical equipment using an LLM agent
+10.48550/arxiv.2604.01738	AeroTherm-GPT: A Verification-Centered LLM Framework for Thermal Protection System Engineering Workflows
+10.1109/isqed69900.2026.11534699	AutoBeaVer: Automating Behavioral Modeling and Verification in Library Characterization with LLM Agents
+10.1109/icoecit68303.2026.11496721	Benchmarking Multi-Agent Collaboration Against Single LLM Systems in E-Commerce
+10.3390/info16090809	BPMN-Based Design of Multi-Agent Systems: Personalized Language Learning Workflow Automation with RAG-Enhanced Knowledge Access
