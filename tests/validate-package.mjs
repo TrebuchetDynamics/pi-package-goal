@@ -584,6 +584,8 @@ async function testSkills() {
   assert.match(goal, /goal status` — show current Goal state without starting new work/);
   assert.match(goal, /status is `complete`\/`cleared`, auto-discover/);
   assert.match(goal, /dirty worktree changes as evidence, not permission/);
+  assert.match(goal, /repeats a just-completed objective/);
+  assert.match(goal, /do not restart identical work/);
   assert.match(goal, /Slice continuation/);
   assert.match(goal, /do not stop after one validated slice/);
   assert.match(goal, /continue_next_slice/);
@@ -592,6 +594,8 @@ async function testSkills() {
   assert.match(goal, /Do not convert a learn, study, or scout request into repo edits/);
   const goalContract = read("skills/planning/goal/references/operating-contract.md");
   assert.match(goalContract, /No-arg status semantics/);
+  assert.match(goalContract, /Repeated objective protection/);
+  assert.match(goalContract, /Restart only when the user explicitly asks to rerun/);
   assert.match(goalContract, /Multi-slice continuation/);
   assert.match(goalContract, /DEV_GOAL_DECISION: continue_next_slice/);
 

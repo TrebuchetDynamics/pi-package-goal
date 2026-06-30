@@ -50,6 +50,10 @@ Ask before replacing an existing objective only when current status is `active`,
 
 Do not ask replacement confirmation when status is `complete` or `cleared`; starting new work is safe because there is no live objective to interrupt.
 
+## Repeated objective protection
+
+If the user repeats an objective that was just completed in this conversation, do not treat the words alone as proof that the work must run again. First run the completion audit against current files, validation receipts, and git state. If every requirement is still satisfied, report the evidence and keep/mark the goal complete. Restart only when the user explicitly asks to rerun, validation/evidence has changed, or the repeated objective names new scope or acceptance criteria.
+
 ## Multi-slice continuation
 
 Broad objectives such as ports, migrations, parity work, audits, or module-by-module improvements should progress through repeated bounded slices.

@@ -28,6 +28,8 @@ Treat `/goal ...`, `/skill:goal ...`, and plain language as intent:
 - `goal clear` — clear the objective.
 - `goal complete` — complete only after the completion audit passes.
 
+If the latest objective repeats a just-completed objective, run a fresh completion audit first; do not restart identical work unless evidence changed or the user asks to rerun. See [Goal operating contract](references/operating-contract.md).
+
 ## Auto-discovered objectives
 
 When no-arg `goal` should start work, do not stop at `status: cleared`. Find a useful objective, record discovery evidence, and take the first concrete action.
@@ -95,6 +97,4 @@ Before accepting `goal complete` or declaring completion: restate deliverables, 
 
 ## References
 
-- [Goal operating contract](references/operating-contract.md)
-- [Claude Goal adaptation notes](references/claude-goal.md)
-- [Shared skill contract](../../shared/COMMON-CONTRACT.md)
+[Goal operating contract](references/operating-contract.md); [Claude Goal adaptation notes](references/claude-goal.md); [Shared skill contract](../../shared/COMMON-CONTRACT.md)
