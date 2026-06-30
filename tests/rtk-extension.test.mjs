@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {
+import registerRtkExtension, {
   compareSemver,
   isSupportedRtkVersion,
   localRtkBin,
@@ -17,6 +17,7 @@ import {
   RTK_INSTALL_COMMAND,
   shouldSkipRewrite,
   stripAnsi,
+  stripRtkNoise,
   truncateText,
   uniquePaths,
 } from "../extensions/rtk/index.js";
@@ -76,6 +77,7 @@ assert.deepEqual(parseRtkCommandArgs("install"), { action: "install" });
 assert.doesNotMatch(RTK_INSTALL_COMMAND, /refs\/heads\/master|\|\s*sh/);
 
 assert.equal(stripAnsi("\u001b[31mred\u001b[0m"), "red");
+assert.equal(stripRtkNoise("ok\n[rtk] rewrite failed; passing through original command\nnext"), "ok\nnext");
 assert.match(truncateText("x".repeat(200), 120), /RTK compacted output/);
 
 const noisyGitStatus = ["On branch main", "Changes not staged for commit:", ...Array.from({ length: 30 }, (_, i) => ` modified: file-${i}.js`)].join("\n");
@@ -86,6 +88,9 @@ assert.match(compactSearchOutput(noisySearch), /45 matches in 3 files/);
 
 const noisyTest = ["PASS unit", ...Array.from({ length: 45 }, () => "ok"), "FAIL integration", "AssertionError: nope"].join("\n");
 assert.match(compactTestOutput(noisyTest, "npm test"), /RTK test summary/);
+const sourceListingWithPassFail = ["const noisyTest = ['PASS unit', 'FAIL integration'];", ...Array.from({ length: 45 }, (_, index) => `${index}: ok`)];
+assert.equal(compactTestOutput(sourceListingWithPassFail.join("\n"), "perl -ne print"), null);
+assert.equal(compactTestOutput(sourceListingWithPassFail.join("\n"), "git diff -- tests/rtk-extension.test.mjs"), null);
 
 const noisyBuild = ["vite building", ...Array.from({ length: 45 }, () => "chunk"), "error TS1234: nope"].join("\n");
 assert.match(compactBuildOutput(noisyBuild, "npm run build"), /RTK build summary/);
@@ -105,5 +110,34 @@ const readExact = compactToolContent({
   content: [{ type: "text", text: "a\n".repeat(20) }],
 }, readRtkConfig({ RTK_COMPACT_READ: "1" }));
 assert.equal(readExact.changed, false);
+
+const rtkNoiseCompacted = compactToolContent({
+  toolName: "bash",
+  input: { command: "echo ok" },
+  content: [{ type: "text", text: "ok\n[rtk] rewrite failed; passing through original command\n" }],
+});
+assert.equal(rtkNoiseCompacted.changed, true);
+assert.equal(rtkNoiseCompacted.metadata.techniques.includes("rtk-noise"), true);
+assert.equal(rtkNoiseCompacted.content[0].text, "ok");
+
+let registeredRtk;
+const notices = [];
+const originalLog = console.log;
+console.log = () => {};
+try {
+  registerRtkExtension({
+    registerCommand: (name, definition) => {
+      if (name === "rtk") registeredRtk = definition;
+    },
+    on: () => {},
+    exec: async () => ({ code: 1, stdout: "", stderr: "missing rtk" }),
+  });
+  await registeredRtk.handler("install", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+} finally {
+  console.log = originalLog;
+}
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /Manual RTK install required/);
+assert.match(notices.at(-1).message, /brew install rtk/);
 
 console.log("rtk-extension ok");

@@ -108,7 +108,12 @@ export function truncateText(text, maxChars = DEFAULT_MAX_OUTPUT_CHARS) {
 }
 
 export function compactTestOutput(text, command = "") {
-  if (!/\b(?:test|spec|vitest|jest|mocha|pytest|cargo\s+test|go\s+test)\b/i.test(command) && !/\b(?:PASS|FAIL|Tests?:|passing|failing)\b/.test(text)) return null;
+  const commandLooksLikeTest = /(^|\s)(?:npm|pnpm|yarn)\s+(?:run\s+)?(?:test|spec)\b/i.test(command)
+    || /(^|\s)(?:vitest|jest|mocha|pytest)\b/i.test(command)
+    || /\b(?:cargo\s+test|go\s+test)\b/i.test(command)
+    || /(^|\s)node\s+\S*(?:test|spec)\.[cm]?js\b/i.test(command);
+  const outputLooksLikeTest = /^(?:PASS|FAIL|ok|not ok)\b/m.test(text) || /^\s*(?:Tests?:|\d+\s+(?:passing|failing|passed|failed))\b/mi.test(text);
+  if (!commandLooksLikeTest && !outputLooksLikeTest) return null;
   const lines = text.split(/\r?\n/);
   const important = lines.filter((line) => /\b(?:FAIL|Failed|Error|Exception|AssertionError|panic|not ok|✖|×)\b/i.test(line));
   const passCount = (text.match(/\b(?:PASS|passed|ok)\b/gi) ?? []).length;
@@ -165,6 +170,13 @@ export function compactSearchOutput(text) {
   ].join("\n");
 }
 
+export function stripRtkNoise(text) {
+  return String(text ?? "")
+    .split(/\r?\n/)
+    .filter((line) => !/^\[rtk\]\s/i.test(line))
+    .join("\n");
+}
+
 export function compactToolText({ toolName, text, input = {} }, config = readRtkConfig()) {
   let next = String(text ?? "");
   const techniques = [];
@@ -178,9 +190,9 @@ export function compactToolText({ toolName, text, input = {} }, config = readRtk
     }
   }
 
-  const rtkNoiseStripped = next.replace(/^.*(?:RTK|rtk).*(?:hook|warning).*$/gim, "");
-  if (rtkNoiseStripped !== next) {
-    next = rtkNoiseStripped.trimEnd();
+  const withoutRtkNoise = stripRtkNoise(next);
+  if (withoutRtkNoise !== next) {
+    next = withoutRtkNoise.trimEnd();
     techniques.push("rtk-noise");
   }
 
@@ -345,7 +357,11 @@ async function handleRtkCommand(pi, args, ctx, runtime) {
 
   if (parsed.action === "install") {
     const before = await checkRtk(pi, runtime).catch((error) => ({ ok: false, reason: error.message, version: "" }));
-    report(ctx, before.ok ? formatStatus(before, config) : `Manual RTK install required. Review and run yourself: ${RTK_INSTALL_COMMAND}`, before.ok ? "info" : "warning");
+    report(
+      ctx,
+      before.ok ? formatStatus(before, config) : `Manual RTK install required (${before.reason}). Review and run manually: ${RTK_INSTALL_COMMAND}`,
+      before.ok ? "info" : "warning",
+    );
     return;
   }
 
