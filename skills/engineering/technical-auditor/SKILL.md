@@ -54,6 +54,10 @@ Create milestones:
 
 Each task needs title, description, affected files/areas, acceptance criteria, effort (`S`, `M`, `L`, `XL`), change risk, dependencies, and quick-win marker when high-impact and `S`. Include implementation sketches for the top 3 tasks.
 
+### Agentic improvement handoff
+
+When an autonomous improvement run needs an implementable next slice, convert only the top safe finding into a handoff: choose `delete`, `move`, `extract`, or `adapter`; name locality/caller evidence; name the validation command or missing test seam; and route to `diagnose`, `tdd`, `skill-folder-refactor`, `share-code`, or implementation directly. Do not hand off multiple broad refactors at once.
+
 ## Contract
 
 ### Entry protocol

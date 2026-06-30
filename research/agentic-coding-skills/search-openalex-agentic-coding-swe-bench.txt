@@ -1,0 +1,20 @@
+10.48550/arxiv.2310.06770	Persistent memory for AI coding agents: a pre-registered SWE-bench Verified benchmark
+10.1145/3650212.3680384	AutoCodeRover: Autonomous Program Improvement
+10.48550/arxiv.2405.15793	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+10.1145/3715754	Demystifying LLM-Based Software Engineering Agents
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.18653/v1/2024.acl-long.737	CodeAgent: Enhancing Code Generation with Tool-Integrated Agent Systems for Real-World Repo-level Coding Challenges
+10.48550/arxiv.2407.01489	Agentless: Demystifying LLM-based Software Engineering Agents
+10.48550/arxiv.2204.14198	Flamingo: a Visual Language Model for Few-Shot Learning
+10.1609/aaai.v39i1.32007	VerilogCoder: Autonomous Verilog Coding Agents with Graph-based Planning and Abstract Syntax Tree (AST)-based Waveform Tracing Tool
+10.48550/arxiv.2410.06992	SWE-Bench+: Enhanced Coding Benchmark for LLMs
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.1145/3711896.3736570	Evaluation and Benchmarking of LLM Agents: A Survey
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.48550/arxiv.2406.00515	A Survey on Large Language Models for Code Generation
+10.48550/arxiv.2310.03533	Large Language Models for Software Engineering: Survey and Open Problems
+10.48550/arxiv.2409.02977	Large Language Model-Based Agents for Software Engineering: A Survey
+10.48550/arxiv.2311.07989	Unifying the Perspectives of NLP and Software Engineering: A Survey on Language Models for Code
+10.48550/arxiv.2410.07095	MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering
+10.18653/v1/2024.emnlp-main.748	DA-Code: Agent Data Science Code Generation Benchmark for Large Language Models
+10.48550/arxiv.2409.16299	HyperAgent: Generalist Software Engineering Agents to Solve Coding Tasks at Scale

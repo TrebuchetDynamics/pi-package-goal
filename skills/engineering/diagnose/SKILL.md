@@ -16,6 +16,10 @@ When exploring the codebase, use the project's domain glossary to get a clear me
 - [Codex local storage failures](references/codex-storage.md) — safe local cleanup path for `No space left on device`, `database or disk is full`, and damaged `~/.codex/state_*.sqlite` startup errors.
 - [Pi goal log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-goal`, `e2e-goal`, and custom goal logs across repo trees.
 
+## Bug-harvest entry
+
+Use this when an autonomous improvement pass asks to find one fixable bug without a specific user report. Harvest only from repo evidence: failing tests, issue/task docs, TODOs tied to executable behavior, reproducible commands, logs already in scope, or stale validation scripts. Pick one high-confidence candidate, build the feedback loop first, and stop if no deterministic or high-rate repro can be made. Do not speculate from code smells alone.
+
 ## Skill handoffs
 
 - If a reproducible bug needs a new guardrail, hand the minimized failing case to `tdd` with trigger, repro artifact, next skill, and expected RED→GREEN regression signal.

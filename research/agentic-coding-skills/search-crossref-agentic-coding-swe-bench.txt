@@ -1,0 +1,18 @@
+10.1109/aiware69974.2025.00039	SWE-Sharp-Bench: A Reproducible Benchmark for C# Software Engineering Tasks
+10.1007/978-3-319-00738-0_8	VC-Bench: A Video Coding Benchmark Suite for Evaluation of Processor Capability
+10.52783/jisem.v11i1s.14079	Enhancing SWE Bench with Context Engineering: A Comparative Study Against Prompt Engineering in LLM-Based Software Tasks
+10.1109/icse-companion66252.2025.00075	Revisiting SWE-Bench: On the Importance of Data Quality for LLM-Based Code Models
+10.55041/isjem07720	VDA-SDLC: Validation-Driven Adaptive Agentic Software Development Life Cycle Framework for Autonomous Software Engineering
+10.1002/spe.2189	Benchmark frameworks and<i>τ</i>Bench
+10.64388/irev9i9-1714825	Agentic AI in Software Systems: A New Paradigm for Autonomous Decision-Making in Distributed Architectures
+10.70593/978-93-7185-592-1_7	Agentic AI and the Rise of Autonomous Digital Agents
+10.1109/esem.2017.24	Delta-Bench: Differential Benchmark for Static Analysis Security Testing Tools
+10.56726/irjmets89141	The Agentic Product Lifecycle (APL): A New Framework for Autonomous Software Governance and Product Management
+10.64898/2026.06.12.731250	AutoZyme: An Autonomous Agentic Framework to Optimize Bioinformatics Software
+10.21275/sr251115051642	Amazon Kiro: Transforming Software Development Through AI-Powered Autonomous Coding
+10.18653/v1/2025.acl-long.189	UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench
+10.1145/3822180	Agentic Much? Adoption of Coding Agents on GitHub
+10.1016/j.patcog.2026.113679	ATCMD-Bench: Agentic Traditional Chinese Medicine diagnosis benchmark for Large Language Models via multi-agent simulation
+10.1109/eras63351.2025.11135911	Automation Testing Framework for Reliable Autonomous Agentic AI
+10.1145/3786167.3788422	Toward Agentic Software Engineering Beyond Code: Framing Vision, Values, and Vocabulary
+10.36227/techrxiv.177220787.72010996/v1	GABBE: A Neurocognitive Swarm Architecture for Agentic AI Software Engineering

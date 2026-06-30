@@ -1,0 +1,20 @@
+	From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms
+10.5753/wesaac.2025.37549	Software Development Using a Multi-agent Approach
+10.48550/arxiv.2511.03153	RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+10.1109/aibthings66987.2025.11296271	CodeProphet: A Predictive LLM Based Framework for Proactive Software Development Planning
+10.1145/3715754	Demystifying LLM-Based Software Engineering Agents
+10.48550/arxiv.2507.19902	AgentMesh: A Cooperative Multi-Agent Generative AI Framework for Software Development Automation
+10.1145/3712003	LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision, and the Road Ahead
+	CodePori: Large-Scale System for Autonomous Software Development Using Multi-Agent Technology
+10.1109/icmla66185.2025.00212	SecureFixAgent: A Hybrid LLM Agent for Automated Python Static Vulnerability Repair
+10.1109/acdsa65407.2025.11166656	An LLM-based software developer agent demonstrated through a port-logistic optimization case study
+10.48550/arxiv.2508.11120	Towards Reliable Multi-Agent Systems for Marketing Applications via Reflection, Memory, and Planning
+10.5753/wesaac.2025.37536	Enhancing LLM Agent Effectiveness via Reflective Multi-Agent System
+10.48550/arxiv.2405.16376	STRIDE: A Tool-Assisted LLM Agent Framework for Strategic and Interactive Decision-Making
+10.1109/isctis65944.2025.11066037	Adaptive Multi-Agent AI Framework for Real-Time Energy Optimization and Context-Aware Code Review in Software Development
+10.48550/arxiv.2510.19747	Review of Tools for Zero-Code LLM Based Application Development
+10.1109/icirca69024.2026.11570324	A Survey on Multi-Agent LLM Frameworks with Semantic Memory Integration and Dynamic DAG Orchestration
+10.48550/arxiv.2409.11393	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Integration of Multi Active/Passive Core-Agents
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.48550/arxiv.2407.01489	Agentless: Demystifying LLM-based Software Engineering Agents
+10.48550/arxiv.2510.04851	LEGOMem: Modular Procedural Memory for Multi-agent LLM Systems for Workflow Automation

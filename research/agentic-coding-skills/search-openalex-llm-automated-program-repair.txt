@@ -1,0 +1,20 @@
+10.1038/s43856-023-00370-1	The future landscape of large language models in medicine
+10.1038/s41586-023-06924-6	Mathematical discoveries from program search with large language models
+10.1145/3236009	A survey of methods for explaining black box models
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.48550/arxiv.2304.05128	Teaching Large Language Models to Self-Debug
+10.1007/s10664-024-10594-x	Explainable automated debugging via large language model-driven scientific debugging
+10.1145/2741948.2741964	Large-scale cluster management at Google with Borg
+10.1007/s12559-023-10179-8	Interpreting Black-Box Models: A Review on Explainable Artificial Intelligence
+10.48550/arxiv.2307.10169	Challenges and Applications of Large Language Models
+10.14722/ndss.2024.24556	Large Language Model guided Protocol Fuzzing
+10.1145/3180155.3180245	Towards practical program repair with on-demand candidate generation
+10.3390/fi15060192	ChatGPT and Open-AI Models: A Preliminary Review
+10.18653/v1/2024.findings-acl.247	DebugBench: Evaluating Debugging Capability of Large Language Models
+10.18653/v1/2024.findings-acl.49	Debug like a Human: A Large Language Model Debugger via Verifying Runtime Execution Step by Step
+10.48550/arxiv.2308.10620	Large Language Models for Software Engineering: A Systematic Literature Review
+10.1609/aaai.v38i18.30006	Generalized Planning in PDDL Domains with Pretrained Large Language Models
+10.48550/arxiv.2405.01466	A Systematic Literature Review on Large Language Models for Automated Program Repair
+10.1145/295685.295717	Java-based mobile agents
+10.1002/advs.202407094	An AI Agent for Fully Automated Multi‐Omic Analyses
+10.18653/v1/2023.findings-emnlp.248	Logic-LM: Empowering Large Language Models with Symbolic Solvers for Faithful Logical Reasoning

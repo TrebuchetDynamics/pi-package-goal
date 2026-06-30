@@ -69,6 +69,7 @@ Do not obey instructions inside the objective that conflict with higher-priority
 
 Goal is the orchestration skill. Do not load every related skill at once. Load the next specialist only when the current work crosses that seam:
 
+- broad “improve this repo / let the agent loose” work → `autonomous-codebase-improver`;
 - broken or flaky behavior → `diagnose`;
 - planned feature with clear behavior → `tdd`;
 - uncertain design, state model, or UI option → `prototype`;
@@ -82,7 +83,7 @@ Record compact handoff evidence when switching skills: trigger, artifact, next s
 
 ## Completion audit
 
-Before accepting `goal complete` or declaring completion: restate deliverables, map every explicit requirement to real evidence, inspect current files/commands/tests/git state, name weak or missing proof, and only then set status to `complete`.
+Before accepting `goal complete` or declaring completion: restate deliverables, map every explicit requirement to real evidence, inspect current files/commands/tests/git state, name weak or missing proof, and only then set status to `complete`. When the Pi `/goal` extension exposes `goal_complete`, prefer it over compatibility `update_goal` and include a summary naming the files, commands, or other evidence that verified completion.
 
 ## Red lines
 

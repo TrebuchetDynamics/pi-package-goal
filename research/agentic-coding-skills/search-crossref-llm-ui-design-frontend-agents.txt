@@ -1,0 +1,20 @@
+10.29303/jbegati.v6i1.1326	Frontend Implementation of UI/UX Design of Sumbawa District Agricultural Service Website using React JS Framework
+10.2139/ssrn.6297816	Vibe Design: Human-in-the-loop Agentic Framework for UI Design with Large Language Models
+10.48047/jocaaa.2025.34.12.64	Autonomous ETL Workflow Generation Using Semantic Embeddings and Large Language Model Planning Agents
+10.24251/hicss.2026.530	Vibe Design: Human-in-the-loop AI Agents for UI Design with Large Language Models
+10.2139/ssrn.4862474	Large Language Model Assisted Experiment Design with Generative Human-Behavior Agents
+10.2139/ssrn.6384778	Gen-UI-Lang: A Compact Language for LLM-Driven UI Generation
+10.20944/preprints202604.0339.v1	Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation
+10.5220/0014756900004940	Large Language Model Generation Safety: A Comprehensive Investigation
+10.1007/978-3-031-92285-5_8	Large Language Model Agents
+10.14711/thesis-hdl152429	Multimodal Large Language Model for Medical Report Generation
+10.5220/0014378900004918	Exploring Large Language Model Agents in Game Theory: A Comprehensive Survey
+10.2139/ssrn.5684807	Integrating Large Language Model Agents in Data Science Education
+10.23919/date69613.2026.11539185	Focus Session: Large Language Models in Physical Design: From Data Generation to Intelligent Agents
+10.3390/electronics13163127	UISGPT: Automated Mobile UI Design Smell Detection with Large Language Models
+10.21275/ms2504083238	Prompt-Driven Requirements Engineering: Large-Language-Model Agents for Continuous Backlog Refinement
+10.1109/lad62341.2024.10691683	A Multi-Expert Large Language Model Architecture for Verilog Code Generation
+10.2139/ssrn.6295236	DesignCoder: Hierarchy-Aware and Self-Correcting UI Code Generation with Large Language Models
+10.5220/0014479300004052	Comparison of Text-Based and Image-Based Retrieval in Modern Multimodal Retrieval Augmented Generation Large Language Model Systems
+10.1115/detc2024-143598	Elicitron: A Framework for Simulating Design Requirements Elicitation Using Large Language Model Agents
+10.1109/indiscon66021.2025.11252136	AI-Powered UI Generation: Evaluating Interactive Design Paradigms with Vision-Language Models

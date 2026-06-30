@@ -1,0 +1,20 @@
+10.1109/icsa-c57050.2023.00046	Multi-objective Software Architecture Refactoring driven by Quality Attributes
+10.1109/icsa-c57050.2023.00061	Quality Attributes Optimization of Software Architecture: Research Challenges and Directions
+10.1016/j.jss.2019.110394	How does Object-Oriented Code Refactoring Influence Software Quality? Research Landscape and Challenges
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1145/2797433.2797493	Architectural Consistency Checking in Plugin-Based Software Systems
+10.1016/j.infsof.2023.107159	Many-Objective Optimization of Non-Functional Attributes based on Refactoring of Software Models
+10.1007/978-3-031-42592-9_9	Towards Assessing Spread in Sets of Software Architecture Designs
+	RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+	CIAO - Code In Architecture Out - Automated Software Architecture Documentation with Large Language Models
+10.1109/icsme55016.2022.00033	RMove: Recommending Move Method Refactoring Opportunities using Structural and Semantic Representations of Code
+	ArchBench: Benchmarking Generative-AI for Software Architecture Tasks
+	Agentic Refactoring: An Empirical Study of AI Coding Agents
+	Symptoms of Architecture Erosion in Code Reviews: A Study of Two OpenStack Projects
+10.1145/3661167.3661171	Agent-Driven Automatic Software Improvement
+10.1109/ase56229.2023.00205	Assessing the Impact of Refactoring Energy-Inefficient Code Patterns on Software Sustainability: An Industry Case Study
+	CAPRA: Scaling Feedback on Software Architecture Deliverables with a Multi-Agent LLM System
+	Toward an Architectural Blueprint to Observe Sustainability in and by Software Systems
+	A Software Architecture Teacher's Dilemmas
+	LLM-based Multi-Agent System for Intelligent Refactoring of Haskell Code
+	Role-playing software architecture styles

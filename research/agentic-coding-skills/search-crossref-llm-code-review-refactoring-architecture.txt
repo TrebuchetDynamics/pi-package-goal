@@ -1,0 +1,20 @@
+10.34218/jse_03_02_003	LLM-ASSISTED JAVA CODE MODERNIZATION AND REFACTORING
+10.1016/j.jss.2025.112519	Comparative analysis of design pattern implementation validity in LLM-based code refactoring
+10.1109/cascon66301.2025.00101	LLM-Powered Code Quality Bot: Automating Refactoring in CI/CD
+10.5220/0010557800002992	Refactoring Monolithic Object-Oriented Source Code to Materialize Microservice-oriented Architecture
+10.5220/0010557800780089	Refactoring Monolithic Object-Oriented Source Code to Materialize Microservice-oriented Architecture
+10.5220/0006868006660673	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+10.21275/sr231208200259	Code Smells in Software Development: A Review of Common Issues and Refactoring Approaches
+10.21203/rs.3.rs-6688473/v1	Self-Programming AI: Code-Learning Agents for Autonomous Refactoring and Architectural Evolution
+10.5220/0006868006320639	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+10.2139/ssrn.5320778	AI-Driven Transformation of Code Review and Refactoring in Software Engineering: A Practitioner's Perspective
+10.1016/b978-0-12-407772-0.00003-4	Refactoring Software Architectures
+10.2139/ssrn.4934460	How AI is Transforming Code Review and Refactoring in Software Development
+10.1145/2975945.2975946	Refactoring for software architecture smells
+10.5753/sbes.2025.11033	Refactoring Python Code with LLM-Based Multi-Agent Systems: An Empirical Study in ML Software Projects
+10.20944/preprints202605.1638.v1	A Systematic Literature Review on Generative AI in Software Engineering: Code Generation and Refactoring
+10.5220/0006815304550462	Automated Refactoring of Software using Version History and a Code Element Recentness Measure
+10.1007/979-8-8688-1411-2_1	Refactoring Apex Code: First Steps
+10.21203/rs.3.rs-2955190/v1	The Study on Software Architecture Smell Refactoring
+10.37745/bjesr.2013/vol14n25175	Software Architecture Optimization for Mission-Critical ISR Systems Using Adaptive Code Refactoring Models
+10.1016/j.infsof.2024.107596	Deciphering refactoring branch dynamics in modern code review: An empirical study on Qt

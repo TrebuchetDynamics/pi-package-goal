@@ -1,0 +1,20 @@
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.48550/arxiv.2308.10620	Large Language Models for Software Engineering: A Systematic Literature Review
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+10.3389/fcomp.2025.1519437	Research directions for using LLM in software requirement engineering: a systematic review
+10.1145/3706598.3713726	Understanding the LLM-ification of CHI: Unpacking the Impact of LLMs at CHI through a Systematic Literature Review
+10.1145/3660788	Beyond Code Generation: An Observational Study of ChatGPT Usage in Software Engineering Practice
+10.36227/techrxiv.23589741.v1	A Survey on Large Language Models: Applications, Challenges, Limitations, and Practical Usage
+10.48550/arxiv.2406.00515	A Survey on Large Language Models for Code Generation
+10.48550/arxiv.2310.10508	Prompt Engineering or Fine-Tuning: An Empirical Assessment of LLMs for Code
+10.1145/3613905.3650896	Evaluating Human-AI Partnership for LLM-based Code Migration
+10.3390/electronics13091644	AI-Driven Refactoring: A Pipeline for Identifying and Correcting Data Clumps in Git Repositories
+10.48550/arxiv.2310.03533	Large Language Models for Software Engineering: Survey and Open Problems
+10.1007/s11432-023-4127-5	Deep learning-based software engineering: progress, challenges, and opportunities
+10.48550/arxiv.2505.19443	Vibe Coding vs. Agentic Coding: Fundamentals and Practical Implications of Agentic AI
+10.48550/arxiv.2310.03659	Balancing Autonomy and Alignment: A Multi-Dimensional Taxonomy for Autonomous LLM-powered Multi-Agent Architectures
+10.48550/arxiv.2404.18496	AI-powered Code Review with LLMs: Early Results
+10.48550/arxiv.2403.16971	AIOS: LLM Agent Operating System
+10.1016/j.metrad.2023.100022	A comprehensive survey of ChatGPT: Advancements, applications, prospects, and challenges
+10.48550/arxiv.2310.14735	Unleashing the potential of prompt engineering for large language models
+10.4230/oasics.icpec.2023.9	Knowledge Engineering Using Large Language Models

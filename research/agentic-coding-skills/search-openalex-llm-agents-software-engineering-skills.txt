@@ -1,0 +1,20 @@
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.4230/lipics.cosit.2024.11	GPT-4 Technical Report
+10.48550/arxiv.2308.10620	Large Language Models for Software Engineering: A Systematic Literature Review
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+10.48550/arxiv.2405.15793	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+10.3390/s25061666	Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities
+10.48550/arxiv.2406.06608	The Prompt Report: A Systematic Survey of Prompt Engineering Techniques
+10.1109/access.2025.3533217	Exploring LLMs Applications in Law: A Literature Review on Current Legal NLP Approaches
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.48550/arxiv.2312.15223	A Survey on Large Language Models for Software Engineering
+10.48550/arxiv.2312.02003	A Survey on Large Language Model (LLM) Security and Privacy: The Good, the Bad, and the Ugly
+10.48550/arxiv.2404.04834	LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision and the Road Ahead
+10.48550/arxiv.2409.04109	Can LLMs Generate Novel Research Ideas? A Large-Scale Human Study with 100+ NLP Researchers
+10.18653/v1/2025.acl-long.1266	LLM Agents Making Agent Tools
+10.3390/info16060469	AI-Powered Educational Agents: Opportunities, Innovations, and Ethical Challenges
+10.3390/bdcc9070184	LLMs in Cyber Security: Bridging Practice and Education
+10.56726/irjmets45213	Contribution and performance of ChatGPT and other Large Language Models (LLM) for scientific and research advancements: a double-edged sword
+10.1038/s41746-025-01475-8	Large language model agents can use tools to perform clinical calculations
+10.48550/arxiv.2409.09030	Agents in Software Engineering: Survey, Landscape, and Vision

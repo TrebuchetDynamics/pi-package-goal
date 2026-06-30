@@ -19,6 +19,7 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 | Request shape | Primary skill | Support skills |
 | --- | --- | --- |
 | Broad UI/UX decision, visual system, colors, typography, layout, accessibility, motion | `ui-ux-pro-max` | `modern-web-guidance` for browser APIs/perf |
+| UI design-smell audit, AI-slop detection, hierarchy/accessibility/state review | `hallmark` | `ui-ux-pro-max`; `modern-web-guidance` when browser behavior matters |
 | Fresh distinctive web UI, page, component, or app | `frontend-design` | `hallmark` for anti-slop structure; `ui-ux-pro-max` for checks |
 | React + TypeScript + Tailwind product UI, including shadcn-style systems | `frontend-design` | `ui-ux-pro-max`; `modern-web-guidance` |
 | Landing page, portfolio, or marketing redesign where taste matters | `design-taste-frontend` | `hallmark`; `frontend-design` |
@@ -41,8 +42,12 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 2. **Repo/UI study**: inspect existing components, routes, tokens, screenshots, tests, design docs, and `codebase-map-understand.md` when present. Query codebase map for route/component/data-flow leads on broad UI changes, then verify named files.
 3. **Plan**: list exact files expected to change; ask before destructive route/component removal.
 4. **Execute**: load/read the selected skill guidance and apply only relevant checks.
-5. **Verify**: run available tests/build/lint; inspect responsive states, focus/keyboard behavior, contrast, loading/error/empty states, and reduced-motion where applicable.
-6. **Report**: name selected skills, important design decisions, files changed, and validation results.
+5. **Verify**: run available tests/build/lint; inspect responsive states, focus/keyboard behavior, contrast, loading/error/empty states, and reduced-motion where applicable. For autonomous layout/design changes, gather visual-state evidence: screenshot/browser inspection when tooling exists, or explicitly state the limitation and use DOM/CSS/test evidence instead.
+6. **Report**: name selected skills, important design decisions, files changed, visual evidence or limitation, and validation results.
+
+## Design-smell audit checklist
+
+Before implementing broad UI polish, scan for generic-template smell, weak hierarchy, inconsistent spacing rhythm, poor contrast, missing focus/keyboard states, loading/error/empty-state gaps, responsive breakage, excessive motion, and mismatch with the existing design system. Fix only issues visible in the scoped surface.
 
 ## Red lines
 

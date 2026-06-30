@@ -49,7 +49,8 @@ Security note: Pi packages can include extensions and skills that run with your 
 | If you want to... | Start with | Why |
 | --- | --- | --- |
 | Keep a long-running objective on track | `/goal <objective>` or `goal` | Tracks progress and requires evidence before completion. |
-| Improve a repo autonomously but safely | `/goal-technical-auditor [folder]` | Runs `technical-auditor`, then implements validated safe slices. |
+| Improve a repo autonomously but safely | `autonomous-codebase-improver` or `/goal-technical-auditor [folder]` | Picks one validated slice from repo evidence, then routes to the right specialist. |
+| Hunt for one fixable bug from repo evidence | `bug-harvest` | Finds a high-confidence bug candidate, then uses a repro-first fix loop. |
 | Debug broken, flaky, or slow behavior | `diagnose` | Reproduce, minimize, instrument, fix, and regression-test. |
 | Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
 | Ship finished work | `git-commit-push` | Polishes, validates, commits safe in-scope changes, and pushes. |
@@ -82,7 +83,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
 | Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
-| Engineering loops | Debug, test-drive, prototype, review, improve architecture, run technical audits, or audit prompt caching. | `diagnose`, `tdd`, `prototype`, `technical-auditor`, `prompt-cache-auditor` |
+| Engineering loops | Improve one safe repo slice, hunt bugs, debug, test-drive, prototype, review, improve architecture, run technical audits, or audit prompt caching. | `autonomous-codebase-improver`, `bug-harvest`, `diagnose`, `tdd`, `prototype`, `technical-auditor`, `prompt-cache-auditor` |
 | Clean-context review | Get an unbiased advisor (plan-time) or reviewer (change-time) second opinion, dispatched to a clean context when a fork/subagent tool is available — see [clean-context delegation](skills/shared/CLEAN-CONTEXT-DELEGATION.md). | `autoreview`, `grill-with-docs` |
 | Planning and handoff | Turn context into PRDs/issues, triage work, summarize for the next agent. | `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |

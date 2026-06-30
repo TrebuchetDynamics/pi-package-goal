@@ -1,0 +1,169 @@
+Software agents:
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1016/j.metrad.2023.100022	A comprehensive survey of ChatGPT: Advancements, applications, prospects, and challenges
+10.1109/icirca69024.2026.11570324	A Survey on Multi-Agent LLM Frameworks with Semantic Memory Integration and Dynamic DAG Orchestration
+10.1109/icse-companion66252.2025.00075	Revisiting SWE-Bench: On the Importance of Data Quality for LLM-Based Code Models
+10.1145/3236009	A survey of methods for explaining black box models
+10.1145/3650212.3680384	AutoCodeRover: Autonomous Program Improvement
+10.1145/3711896.3736570	Evaluation and Benchmarking of LLM Agents: A Survey
+10.1145/3715754	Demystifying LLM-Based Software Engineering Agents
+10.14711/thesis-hdl152429	Multimodal Large Language Model for Medical Report Generation
+10.18653/v1/2024.acl-long.737	CodeAgent: Enhancing Code Generation with Tool-Integrated Agent Systems for Real-World Repo-level Coding Challenges
+10.18653/v1/2025.acl-long.189	UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench
+10.3390/electronics13091644	AI-Driven Refactoring: A Pipeline for Identifying and Correcting Data Clumps in Git Repositories
+10.36227/techrxiv.23589741.v1	A Survey on Large Language Models: Applications, Challenges, Limitations, and Practical Usage
+10.4230/lipics.cosit.2024.11	GPT-4 Technical Report
+10.48550/arxiv.2310.03533	Large Language Models for Software Engineering: Survey and Open Problems
+10.48550/arxiv.2310.06770	Persistent memory for AI coding agents: a pre-registered SWE-bench Verified benchmark
+10.48550/arxiv.2311.07989	Unifying the Perspectives of NLP and Software Engineering: A Survey on Language Models for Code
+10.48550/arxiv.2312.02003	A Survey on Large Language Model (LLM) Security and Privacy: The Good, the Bad, and the Ugly
+10.48550/arxiv.2312.15223	A Survey on Large Language Models for Software Engineering
+10.48550/arxiv.2405.15793	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+10.48550/arxiv.2406.00515	A Survey on Large Language Models for Code Generation
+10.48550/arxiv.2406.06608	The Prompt Report: A Systematic Survey of Prompt Engineering Techniques
+10.48550/arxiv.2407.01489	Agentless: Demystifying LLM-based Software Engineering Agents
+10.48550/arxiv.2409.02977	Large Language Model-Based Agents for Software Engineering: A Survey
+10.48550/arxiv.2409.09030	Agents in Software Engineering: Survey, Landscape, and Vision
+10.48550/arxiv.2409.16299	HyperAgent: Generalist Software Engineering Agents to Solve Coding Tasks at Scale
+10.48550/arxiv.2410.06992	SWE-Bench+: Enhanced Coding Benchmark for LLMs
+10.48550/arxiv.2410.07095	MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering
+10.5220/0014378900004918	Exploring Large Language Model Agents in Game Theory: A Comprehensive Survey
+	A Comprehensive Survey of AI-Driven Advancements and Techniques in Automated Program Repair and Code Generation
+	Demystifying Instruction Mixing for Fine-tuning Large Language Models
+	Evolutionary Computation in the Era of Large Language Model: Survey and Roadmap
+	From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms
+	Kodezi Chronos: A Debugging-First Language Model for Repository-Scale Code Understanding
+	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+	SWE-bench Goes Live!
+	SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?
+
+Debug/APR:
+10.1007/s10664-024-10594-x	Explainable automated debugging via large language model-driven scientific debugging
+10.1109/apr52552.2021.00012	Domain invariant-based spreadsheet debugging
+10.1109/apr59189.2023.00008	Quick Repair of Semantic Errors for Debugging
+10.1109/ase63991.2025.00320	Debugging the Undebuggable: Why Multi-Fault Programs Break Debugging and Repair Tools
+10.1109/ase63991.2025.00385	LLMORPH: Automated Metamorphic Testing of Large Language Models
+10.1109/eras63351.2025.11135911	Automation Testing Framework for Reliable Autonomous Agentic AI
+10.1109/esem.2017.24	Delta-Bench: Differential Benchmark for Static Analysis Security Testing Tools
+10.1109/icipcn67432.2026.11438429	Reviewing the Tools Of Creation: Large Language models and AI Agents in Automated software Engineering and Debugging
+10.1109/icmla66185.2025.00212	SecureFixAgent: A Hybrid LLM Agent for Automated Python Static Vulnerability Repair
+10.1109/icnsoc66817.2025.00123	AI-Driven Circuit Debugging: Leveraging Large Language Models for Automated Fault Detection and Diagnosis
+10.1109/isctis70043.2026.11572607	Impact of Different Buggy Code Information on Large Language Model-Based Automated Program Repair
+10.1109/issrew.2019.00027	Automated and algorithmic debugging and program repair [IDEAR 2019 Workshop Keynote]
+10.1145/3180155.3180245	Towards practical program repair with on-demand candidate generation
+10.1145/3643788.3648011	ASAP-Repair: API-Specific Automated Program Repair Based on API Usage Graphs
+10.1145/3643788.3648020	RepairCAT: Applying Large Language Model to Fix Bugs in AI-Generated Programs
+10.1201/9780429332111-27	Model-Based Program Debugging and Repair*
+10.18653/v1/2024.findings-acl.247	DebugBench: Evaluating Debugging Capability of Large Language Models
+10.18653/v1/2024.findings-acl.49	Debug like a Human: A Large Language Model Debugger via Verifying Runtime Execution Step by Step
+10.2139/ssrn.5396508	Large Language Model Guided Self-Debugging Code Generation
+10.36227/techrxiv.175339471.17113065/v1	Bridging AI and Software Security: A Comparative Vulnerability Assessment of LLM Agent Deployment Paradigms
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.48550/arxiv.2304.05128	Teaching Large Language Models to Self-Debug
+10.48550/arxiv.2405.01466	A Systematic Literature Review on Large Language Models for Automated Program Repair
+10.5220/0014480400004061	Evaluating the Effectiveness of Multi-Agent Large Language Models for Automated Vulnerable Code Repair
+10.5220/0014491100004058	Automatic Program Repair Using Large Language Models in Model-Based Development
+10.5220/0014980700004015	On the Soundness and Consistency of LLM Agents for Executing Test Cases Written in Natural Language
+10.54254/2755-2721/2024.18303	Large Language Models Meet Automated Program Repair: Innovations, Challenges and Solutions
+10.61808/jsrt230	A Model For Automated Code Debugging Using Small Language Models
+	A Comprehensive Survey of AI-Driven Advancements and Techniques in Automated Program Repair and Code Generation
+	AIBugHunter: A Practical Tool for Predicting, Classifying and Repairing Software Vulnerabilities
+	Automated Debugging In Java Using OCL And JDI
+	Collaborative Agents for Automated Program Repair in Ruby
+	Combining Logic with Large Language Models for Automatic Debugging and Repair of ASP Programs
+	Explainable Automated Debugging via Large Language Model-driven Scientific Debugging
+	Extended Abstract - Model-Based Debugging of Java Programs
+	Extension Language Automation of Embedded System Debugging
+	Kodezi Chronos: A Debugging-First Language Model for Repository-Scale Code Understanding
+	Model and Program Repair via SAT Solving
+	PracRepair: LLM-Empowered Automated Program Repair Inspired by Human-Like Debugging Practices
+	SoK: Automated Vulnerability Repair: Methods, Tools, and Assessments
+	Support for Debugging Automatically Parallelized Programs
+	The Impact of Fine-tuning Large Language Models on Automated Program Repair
+	Towards Practical and Useful Automated Program Repair for Debugging
+
+Architecture/refactoring:
+10.1007/978-3-031-42592-9_9	Towards Assessing Spread in Sets of Software Architecture Designs
+10.1007/979-8-8688-1411-2_1	Refactoring Apex Code: First Steps
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1016/b978-0-12-407772-0.00003-4	Refactoring Software Architectures
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.1016/j.infsof.2023.107159	Many-Objective Optimization of Non-Functional Attributes based on Refactoring of Software Models
+10.1016/j.infsof.2024.107596	Deciphering refactoring branch dynamics in modern code review: An empirical study on Qt
+10.1016/j.jss.2019.110394	How does Object-Oriented Code Refactoring Influence Software Quality? Research Landscape and Challenges
+10.1016/j.jss.2025.112519	Comparative analysis of design pattern implementation validity in LLM-based code refactoring
+10.1109/ase56229.2023.00205	Assessing the Impact of Refactoring Energy-Inefficient Code Patterns on Software Sustainability: An Industry Case Study
+10.1109/cascon66301.2025.00101	LLM-Powered Code Quality Bot: Automating Refactoring in CI/CD
+10.1109/icsa-c57050.2023.00046	Multi-objective Software Architecture Refactoring driven by Quality Attributes
+10.1109/icsa-c57050.2023.00061	Quality Attributes Optimization of Software Architecture: Research Challenges and Directions
+10.1109/icse-companion66252.2025.00075	Revisiting SWE-Bench: On the Importance of Data Quality for LLM-Based Code Models
+10.1109/icsme55016.2022.00033	RMove: Recommending Move Method Refactoring Opportunities using Structural and Semantic Representations of Code
+10.1109/isctis65944.2025.11066037	Adaptive Multi-Agent AI Framework for Real-Time Energy Optimization and Context-Aware Code Review in Software Development
+10.1109/lad62341.2024.10691683	A Multi-Expert Large Language Model Architecture for Verilog Code Generation
+10.1145/2975945.2975946	Refactoring for software architecture smells
+10.20944/preprints202605.1638.v1	A Systematic Literature Review on Generative AI in Software Engineering: Code Generation and Refactoring
+10.21203/rs.3.rs-2955190/v1	The Study on Software Architecture Smell Refactoring
+10.21203/rs.3.rs-6688473/v1	Self-Programming AI: Code-Learning Agents for Autonomous Refactoring and Architectural Evolution
+10.21275/sr231208200259	Code Smells in Software Development: A Review of Common Issues and Refactoring Approaches
+10.2139/ssrn.4934460	How AI is Transforming Code Review and Refactoring in Software Development
+10.2139/ssrn.5320778	AI-Driven Transformation of Code Review and Refactoring in Software Engineering: A Practitioner's Perspective
+10.2139/ssrn.6616122	Layered Convergence in Autonomous Agent Memory: A Multi-Model Cognitive Architecture for Persistent Recall in Long-Running LLM Agents
+10.3390/electronics13091644	AI-Driven Refactoring: A Pipeline for Identifying and Correcting Data Clumps in Git Repositories
+10.3390/electronics13163127	UISGPT: Automated Mobile UI Design Smell Detection with Large Language Models
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.3390/software5020026	Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance
+10.34218/jse_03_02_003	LLM-ASSISTED JAVA CODE MODERNIZATION AND REFACTORING
+10.36227/techrxiv.177220787.72010996/v1	GABBE: A Neurocognitive Swarm Architecture for Agentic AI Software Engineering
+10.37745/bjesr.2013/vol14n25175	Software Architecture Optimization for Mission-Critical ISR Systems Using Adaptive Code Refactoring Models
+10.48550/arxiv.2310.03659	Balancing Autonomy and Alignment: A Multi-Dimensional Taxonomy for Autonomous LLM-powered Multi-Agent Architectures
+10.48550/arxiv.2404.18496	AI-powered Code Review with LLMs: Early Results
+10.48550/arxiv.2511.03153	RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+10.5220/0006815304550462	Automated Refactoring of Software using Version History and a Code Element Recentness Measure
+10.5220/0006868006320639	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+10.5220/0006868006660673	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+10.5220/0010557800002992	Refactoring Monolithic Object-Oriented Source Code to Materialize Microservice-oriented Architecture
+10.5220/0010557800780089	Refactoring Monolithic Object-Oriented Source Code to Materialize Microservice-oriented Architecture
+10.5753/sbes.2025.11033	Refactoring Python Code with LLM-Based Multi-Agent Systems: An Empirical Study in ML Software Projects
+10.64388/irev9i9-1714825	Agentic AI in Software Systems: A New Paradigm for Autonomous Decision-Making in Distributed Architectures
+	Agentic Refactoring: An Empirical Study of AI Coding Agents
+	ArchBench: Benchmarking Generative-AI for Software Architecture Tasks
+	A Software Architecture Teacher's Dilemmas
+	CAPRA: Scaling Feedback on Software Architecture Deliverables with a Multi-Agent LLM System
+	CIAO - Code In Architecture Out - Automated Software Architecture Documentation with Large Language Models
+	Cognitive Architectures for Language Agents
+	LLM-based Multi-Agent System for Intelligent Refactoring of Haskell Code
+	RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+	Role-playing software architecture styles
+	Symptoms of Architecture Erosion in Code Reviews: A Study of Two OpenStack Projects
+
+UI/design:
+10.1007/978-3-031-42592-9_9	Towards Assessing Spread in Sets of Software Architecture Designs
+10.1007/978-3-319-00738-0_8	VC-Bench: A Video Coding Benchmark Suite for Evaluation of Processor Capability
+10.1016/j.inffus.2025.103865	LLM-Agent-UMF: LLM-based Agent Unified Modeling Framework for Seamless Design of Multi Active/Passive Core-Agent Architectures
+10.1016/j.jss.2025.112519	Comparative analysis of design pattern implementation validity in LLM-based code refactoring
+10.1109/apr59189.2023.00008	Quick Repair of Semantic Errors for Debugging
+10.1109/ase63991.2025.00339	LLM-Guided Genetic Improvement: Envisioning Semantic Aware Automated Software Evolution
+10.1109/icnsoc66817.2025.00123	AI-Driven Circuit Debugging: Leveraging Large Language Models for Automated Fault Detection and Diagnosis
+10.1109/indiscon66021.2025.11252136	AI-Powered UI Generation: Evaluating Interactive Design Paradigms with Vision-Language Models
+10.1109/tbdata.2025.3593370/mm1	: A Performance-Enhanced LLM Trading Agent With Layered Memory and Character Design_supp1-3593370.pdf
+10.1115/detc2024-143598	Elicitron: A Framework for Simulating Design Requirements Elicitation Using Large Language Model Agents
+10.1145/3644815.3644951	An Exploratory Study of V-Model in Building ML-Enabled Software: A Systems Engineering Perspective
+10.1145/3734524	C2HLSC: Leveraging Large Language Models to Bridge the Software-to-Hardware Design Gap
+10.1145/3773966.3777982	Proficient Graph Neural Network Design by Accumulating Knowledge on Large Language Models
+10.14722/ndss.2024.24556	Large Language Model guided Protocol Fuzzing
+10.21275/ms2504083238	Prompt-Driven Requirements Engineering: Large-Language-Model Agents for Continuous Backlog Refinement
+10.2139/ssrn.4862474	Large Language Model Assisted Experiment Design with Generative Human-Behavior Agents
+10.2139/ssrn.5396508	Large Language Model Guided Self-Debugging Code Generation
+10.2139/ssrn.6295236	DesignCoder: Hierarchy-Aware and Self-Correcting UI Code Generation with Large Language Models
+10.2139/ssrn.6297816	Vibe Design: Human-in-the-loop Agentic Framework for UI Design with Large Language Models
+10.2139/ssrn.6384778	Gen-UI-Lang: A Compact Language for LLM-Driven UI Generation
+10.23919/date69613.2026.11539185	Focus Session: Large Language Models in Physical Design: From Data Generation to Intelligent Agents
+10.24251/hicss.2026.530	Vibe Design: Human-in-the-loop AI Agents for UI Design with Large Language Models
+10.29303/jbegati.v6i1.1326	Frontend Implementation of UI/UX Design of Sumbawa District Agricultural Service Website using React JS Framework
+10.3389/fcomp.2025.1519437	Research directions for using LLM in software requirement engineering: a systematic review
+10.3390/electronics13163127	UISGPT: Automated Mobile UI Design Smell Detection with Large Language Models
+10.5220/0006868006320639	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+10.5220/0006868006660673	A Refactoring Architecture for Measuring and Identifying Spots of Design Patterns Insertion in Source Code
+	Designing with Language: Wireframing UI Design Intent with Generative Large Language Models
+	UI-Genie: A Self-Improving Approach for Iteratively Boosting MLLM-based Mobile GUI Agents
+	UI-R1: Enhancing Efficient Action Prediction of GUI Agents by Reinforcement Learning

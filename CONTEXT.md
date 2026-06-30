@@ -29,8 +29,8 @@ The curated set of bundled skills under `skills/`. Skills load on demand through
 _Avoid_: hidden behavior not represented in docs or manifests, unlisted resource paths
 
 **Skill Composition**:
-Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` is the only orchestrator for long-running objectives; there is no separate global choreography layer.
-_Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill
+Lightweight handoff guidance embedded inside high-traffic seam skills. It names when to switch to another skill and what evidence should cross that seam. `goal` orchestrates long-running objectives; `autonomous-codebase-improver` is the bounded repo-improvement front door that chooses one validated slice and routes to one specialist.
+_Avoid_: vague "use related skills" advice, handoffs without evidence, duplicating long protocol text in every skill, broad choreography layers that hide validation ownership
 
 **Skill Lifecycle**:
 The package-level discipline for skill changes: author or import a skill, preserve provenance, validate trigger quality and contract coverage, enable it through the package manifest, evaluate it against realistic use, and deprecate or split it when overlap appears.
@@ -91,6 +91,14 @@ _Avoid_: invented persistent state, hook installation, filesystem state writes, 
 **Goal Technical Auditor Extension**:
 The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus a safe prioritized development loop.
 _Avoid_: hidden workflow modes, silently starting broad automation for invalid arguments, weakening the command's predictable Full-mode meaning
+
+**Autonomous Codebase Improver Skill**:
+A bounded repo-improvement skill under `skills/engineering/autonomous-codebase-improver/` that applies the research-backed loop from `research/agentic-coding-skills/`: inspect repo evidence, pick one safe slice, route to exactly one specialist, validate, and defer shipping to `git-commit-push` when requested.
+_Avoid_: multi-agent scaffolding by default, broad repo-wide rewrites, self-approved completion, stacking specialists without a real seam
+
+**Bug Harvest Skill**:
+A narrow engineering skill under `skills/engineering/bug-harvest/` that finds one evidence-backed bug candidate from failing validation, issues, TODOs tied to behavior, or reproducible logs, then hands the repro/fix loop to `diagnose` and regression coverage to `tdd` when needed.
+_Avoid_: inventing bugs from code smells, scanning forever, broad architecture edits disguised as bug fixes
 
 **Bug-Hunt Refactor Focus**:
 An opt-in `/goal-technical-auditor --focus bug-hunt-refactor` objective emphasis for code reduction, proven shared-code extraction, and pre/during/post refactor bug hunts while preserving the command's technical-auditor Full-mode launch shape.

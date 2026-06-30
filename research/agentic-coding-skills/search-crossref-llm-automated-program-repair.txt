@@ -1,0 +1,18 @@
+10.5220/0014491100004058	Automatic Program Repair Using Large Language Models in Model-Based Development
+10.1145/3643788.3648012	Large Language Models in Automated Repair of Haskell Type Errors
+10.1109/apr52552.2021.00012	Domain invariant-based spreadsheet debugging
+10.1109/icipcn67432.2026.11438429	Reviewing the Tools Of Creation: Large Language models and AI Agents in Automated software Engineering and Debugging
+10.1145/3643788.3648020	RepairCAT: Applying Large Language Model to Fix Bugs in AI-Generated Programs
+10.1109/isctis70043.2026.11572607	Impact of Different Buggy Code Information on Large Language Model-Based Automated Program Repair
+10.1109/issrew.2019.00027	Automated and algorithmic debugging and program repair [IDEAR 2019 Workshop Keynote]
+10.2139/ssrn.5396508	Large Language Model Guided Self-Debugging Code Generation
+10.54254/2755-2721/2024.18303	Large Language Models Meet Automated Program Repair: Innovations, Challenges and Solutions
+10.1109/apr59189.2023.00008	Quick Repair of Semantic Errors for Debugging
+10.5220/0014480400004061	Evaluating the Effectiveness of Multi-Agent Large Language Models for Automated Vulnerable Code Repair
+10.1109/icnsoc66817.2025.00123	AI-Driven Circuit Debugging: Leveraging Large Language Models for Automated Fault Detection and Diagnosis
+10.20944/preprints202604.0339.v1	Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation
+10.61808/jsrt230	A Model For Automated Code Debugging Using Small Language Models
+10.1201/9780429332111-27	Model-Based Program Debugging and Repair*
+10.1109/asew67777.2025.00033	On Effectiveness of Formal Model Repair by Large Language Models
+10.2196/preprints.97652	Large Language Model–Based Agents for Automated Research Reproducibility: An Exploratory Evaluation Study in Alzheimer’s Disease (Preprint)
+10.1109/ase63991.2025.00320	Debugging the Undebuggable: Why Multi-Fault Programs Break Debugging and Repair Tools

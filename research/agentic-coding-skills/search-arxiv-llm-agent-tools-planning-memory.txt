@@ -1,0 +1,20 @@
+	Using Software Categories for the Development of Generative Software
+	A Plan Reuse Mechanism for LLM-Driven Agent
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1145/3661167.3661171	Agent-Driven Automatic Software Improvement
+	AIBugHunter: A Practical Tool for Predicting, Classifying and Repairing Software Vulnerabilities
+10.1145/3183519.3183549	We Don't Need Another Hero? The Impact of "Heroes" on Software Development
+10.1109/icse.2012.6227139	Semi-Automatically Extracting FAQs to Improve Accessibility of Software Development Knowledge
+	Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+	MRMMIA: Membership Inference Attacks on Memory in Chat Agents
+	Transforming Software Development with Generative AI: Empirical Insights on Collaboration and Workflow
+10.1109/ms.2024.3374821	Overwhelmed Software Developers
+	Human-In-The-Loop Software Development Agents: Challenges and Future Directions
+10.5334/jors.ad	A Web-based modeling tool for the SEMAT Essence theory of Software Engineering
+10.1109/semotion.2017.5	Consequences of Unhappiness While Developing Software
+	Distilling Feedback into Memory-as-a-Tool
+	Towards LLM Accelerated Rapid Reviews for Software Tool Discovery -- Case for Log Anomaly Detection
+10.1145/3084226.3084242	On the Unhappiness of Software Developers
+10.1049/iet-sen.2018.5295	Agile Risk Management for Multi-Cloud Software Development
+	Quantum Software Development Lifecycle
+10.1109/ms.2022.3176864	The Present and Future of Bots in Software Engineering

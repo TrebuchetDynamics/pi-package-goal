@@ -1,0 +1,20 @@
+	A Comprehensive Survey of AI-Driven Advancements and Techniques in Automated Program Repair and Code Generation
+10.1145/3643788.3648011	ASAP-Repair: API-Specific Automated Program Repair Based on API Usage Graphs
+	Extension Language Automation of Embedded System Debugging
+	Automated Debugging In Java Using OCL And JDI
+	Towards Practical and Useful Automated Program Repair for Debugging
+	Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents
+	Kodezi Chronos: A Debugging-First Language Model for Repository-Scale Code Understanding
+	Combining Logic with Large Language Models for Automatic Debugging and Repair of ASP Programs
+	Large Language Model Evaluation Via Multi AI Agents: Preliminary results
+	Automated Repair of C Programs Using Large Language Models
+	SoK: Automated Vulnerability Repair: Methods, Tools, and Assessments
+	PracRepair: LLM-Empowered Automated Program Repair Inspired by Human-Like Debugging Practices
+	Explainable Automated Debugging via Large Language Model-driven Scientific Debugging
+	Model and Program Repair via SAT Solving
+	Collaborative Agents for Automated Program Repair in Ruby
+	The Impact of Fine-tuning Large Language Models on Automated Program Repair
+10.1109/ase63991.2025.00385	LLMORPH: Automated Metamorphic Testing of Large Language Models
+	Automated Repair of Programs from Large Language Models
+	Extended Abstract - Model-Based Debugging of Java Programs
+	Support for Debugging Automatically Parallelized Programs

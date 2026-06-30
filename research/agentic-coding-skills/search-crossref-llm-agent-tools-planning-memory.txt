@@ -1,0 +1,20 @@
+10.1016/j.infsof.2026.108022	Artifact validity under varying agent configurations in LLM-assisted software development: A comparative analysis
+10.1145/3749421.3749436	ALAS: A Stateful Multi-LLM Agent Framework for Disruption-Aware Planning
+10.2139/ssrn.6576151	Learned Importance Scoring for Adaptive Memory Compaction in LLM-Based Agent Systems
+10.20517/scierxiv202606.0425.v1	WikiPlanner: Wiki-Derived Temporal Monitors for Safe LLM Agent Planning
+10.36227/techrxiv.176539617.79044553/v1	Memory in LLM-based Multi-agent Systems: Mechanisms, Challenges, and Collective Intelligence
+10.18653/v1/2025.emnlp-main.659	Coarse-to-Fine Grounded Memory for LLM Agent Planning
+10.1145/3816713.3818807	A Validation and Governance Framework for Multi-Agent LLM Scientific Software Development
+10.1109/icmla66185.2025.00174	Analyzing Code Injection Attacks on LLM-based Multi-Agent Systems in Software Development
+10.1145/3696630.3728717	Facilitating Trustworthy Human-Agent Collaboration in LLM-based Multi-Agent System oriented Software Engineering
+10.1109/snpd65828.2025.11254718	Fuzzy-LLM: Multi-Agent Task Planning with Large Language Models
+10.2139/ssrn.6119146	Emerging Trends in LLM Agent Development
+10.38071/2026-00397-5	Developing and Evaluating an LLM-based Agent for ExplorViz Using CopilotKit
+10.3390/software5020026	Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance
+10.1007/3-540-28554-7_4	Caste-centric Modelling of Multi-agent Systems: The CAMLE Modelling Language and Automated Tools
+10.1109/tbdata.2025.3593370/mm1	: A Performance-Enhanced LLM Trading Agent With Layered Memory and Character Design_supp1-3593370.pdf
+10.36227/techrxiv.175339471.17113065/v1	Bridging AI and Software Security: A Comparative Vulnerability Assessment of LLM Agent Deployment Paradigms
+10.2139/ssrn.6616122	Layered Convergence in Autonomous Agent Memory: A Multi-Model Cognitive Architecture for Persistent Recall in Long-Running LLM Agents
+10.64388/irev9i11-1718160	M.A.K.S: Multidimensional Access Knowledge Scoring for Long-Horizon LLM Agent Memory Management
+10.17485/ijst/2015/v8i23/79981	Orchestrating Agent for Software Development Process Supporting Tools
+10.1109/tvcg.2024.3496112/mm1	LightVA: Lightweight Visual Analytics with LLM Agent-Based Task Planning and Execution_supp1-3496112.pdf
