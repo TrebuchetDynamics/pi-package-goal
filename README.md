@@ -1,8 +1,30 @@
 # pi-package-goal
 
-A Pi package that bundles curated agent skills, Pi UX extensions, a theme, tmux helpers, and `/understand` bridge commands.
+`pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-Use it when you want Pi to keep an objective in view, choose a focused engineering workflow, understand a codebase, or ship changes with safer validation and commit discipline.
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/headroom`, `/onklaud`, and `/loop-engineering`;
+- agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
+- the `trebuchet-neon` TUI theme; and
+- `tx` tmux plus `autofolderrefactor` helper bins.
+
+Use it when you want Pi to keep an objective in view, choose a focused workflow, understand a codebase, or ship changes with validation discipline.
+
+## Start here by audience
+
+| You are... | Read first | Try first |
+| --- | --- | --- |
+| New to Pi or this package | [Quick start](#quick-start), then [Pi words used below](#pi-words-used-below) | `/goal improve the README until a new user can install and choose a skill` |
+| A package evaluator | [What you get](#what-you-get), [Included extensions](#included-extensions), [Package shape](#package-shape) | `/understand` in a disposable repo |
+| A contributor or maintainer | [Development](#development), [Package shape](#package-shape), [`AGENTS.md`](AGENTS.md) | `npm test` |
+| An agent working in this repo | [Pick the right entrypoint](#pick-the-right-entrypoint), [Safe delivery](#safe-delivery-with-git-commit-push), [`AGENTS.md`](AGENTS.md) | `git status --short --branch` |
+
+## Pi words used below
+
+- **Pi package** — installable bundle discovered by Pi through `package.json`'s `pi.extensions`, `pi.skills`, and `pi.themes` fields.
+- **Extension** — JavaScript code that adds slash commands, tools, hooks, providers, or TUI behavior to Pi.
+- **Skill** — Markdown instructions Pi can load for a specific workflow, such as `diagnose`, `tdd`, or `git-commit-push`.
+- **Slash command** — a command typed inside Pi, such as `/goal status` or `/understand`.
+- **Theme** — TUI color tokens selectable from Pi settings.
 
 ## Quick start
 
@@ -35,6 +57,15 @@ Reload any open Pi session after installing or updating:
 ```text
 /reload
 ```
+
+Smoke-test the installed commands inside Pi:
+
+```text
+/goal status
+/ponytail status
+```
+
+If those commands are unknown, reload Pi again and check the install command output.
 
 To also install the bundled skills for Claude Code from a checkout:
 
