@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import {
   buildOnklaudObjective,
   onklaudCompletions,
+  ONKLAUD_EXPLANATION,
   ONKLAUD_REPO_URL,
   ONKLAUD_USAGE,
 } from "../../lib/onklaud/command.js";
@@ -14,7 +15,7 @@ function outputText(result) {
 
 function report(ctx, message, level = "info") {
   if (ctx?.hasUI) ctx.ui.notify(message, level);
-  console.log(message);
+  else console.log(message);
 }
 
 function expandHome(path, fallback) {
@@ -82,17 +83,25 @@ export default function onklaud(pi) {
       const { action, tokenBudget, dryRun, help, error, goalCommand } = objective;
 
       if (help) {
-        report(ctx, ONKLAUD_USAGE, "info");
+        report(ctx, `${ONKLAUD_USAGE}\n\n${ONKLAUD_EXPLANATION}`, "info");
         return;
       }
       if (error) {
         report(ctx, error, "warning");
         return;
       }
+      if (action === "explain") {
+        report(ctx, ONKLAUD_EXPLANATION, "info");
+        return;
+      }
       if (action === "status") {
-        const result = await pi.exec("onklaud", ["status"], { signal: ctx.signal, timeout: 120_000 });
-        const text = outputText(result) || `onklaud status exited with code ${result.code}`;
-        report(ctx, text, result.code === 0 ? "info" : "warning");
+        try {
+          const result = await pi.exec("onklaud", ["status"], { signal: ctx.signal, timeout: 120_000 });
+          const text = outputText(result) || `onklaud status exited with code ${result.code}`;
+          report(ctx, text, result.code === 0 ? "info" : "warning");
+        } catch (error) {
+          report(ctx, `Onklaud status failed: ${error.message}`, "warning");
+        }
         return;
       }
       if (action === "install") {
@@ -108,7 +117,7 @@ export default function onklaud(pi) {
         return;
       }
 
-      report(ctx, `Starting Onklaud-backed autonomous workflow. Token budget: ${tokenBudget}.`, "info");
+      report(ctx, `Starting Onklaud-backed workflow: this queues a /goal prompt. Token budget: ${tokenBudget}. Pi still owns edits, tests, and validation.`, "info");
       pi.sendUserMessage(goalCommand);
     },
   });

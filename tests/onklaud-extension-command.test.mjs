@@ -3,6 +3,7 @@ import registerOnklaud from "../extensions/onklaud/index.js";
 import {
   buildOnklaudObjective,
   DEFAULT_TOKEN_BUDGET,
+  ONKLAUD_EXPLANATION,
   ONKLAUD_REPO_URL,
   onklaudCompletions,
   parseOnklaudArgs,
@@ -14,13 +15,17 @@ assert.equal(DEFAULT_TOKEN_BUDGET, "700k");
 assert.equal(ONKLAUD_REPO_URL, "https://github.com/KorroAi/onklaud-5.git");
 assert.deepEqual(parseOnklaudArgs(""), { action: "run", task: "", autonomous: true, ...defaults });
 assert.deepEqual(parseOnklaudArgs("status"), { action: "status", task: "", autonomous: false, ...defaults });
+assert.deepEqual(parseOnklaudArgs("explain"), { action: "explain", task: "", autonomous: false, ...defaults });
 assert.deepEqual(parseOnklaudArgs("install --yes --dir ~/ok --bin-dir ~/.local/bin"), { action: "install", task: "", autonomous: false, ...defaults, yes: true, installDir: "~/ok", binDir: "~/.local/bin" });
 assert.deepEqual(parseOnklaudArgs("--tokens 300k fix tests"), { action: "run", task: "fix tests", autonomous: false, ...defaults, tokenBudget: "300k" });
 assert.deepEqual(parseOnklaudArgs("--dry-run improve this repo"), { action: "run", task: "improve this repo", autonomous: false, ...defaults, dryRun: true });
 assert.equal(parseOnklaudArgs("--help").help, true);
+assert.match(ONKLAUD_EXPLANATION, /thin Pi extension/);
+assert.match(ONKLAUD_EXPLANATION, /Pi owns edits/);
 assert.match(parseOnklaudArgs("--tokens 0 fix").error, /Token budget must be positive/);
 assert.match(parseOnklaudArgs("--mode auto").error, /Unknown option: --mode/);
 assert.deepEqual(onklaudCompletions("st"), [{ value: "status", label: "status" }]);
+assert.deepEqual(onklaudCompletions("ex"), [{ value: "explain", label: "explain" }]);
 
 const explicit = buildOnklaudObjective("--tokens 500k fix auth bug");
 assert.equal(explicit.action, "run");
@@ -58,6 +63,14 @@ assert.deepEqual(sentMessages, []);
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /Token budget must be positive/);
 
+await commands.get("onklaud").handler("explain", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.match(notices.at(-1).message, /thin Pi extension/);
+assert.match(notices.at(-1).message, /Use it when/);
+
+await commands.get("onklaud").handler("--help", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.match(notices.at(-1).message, /Usage:/);
+assert.match(notices.at(-1).message, /thin Pi extension/);
+
 await commands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
 assert.deepEqual(execCalls.at(-1).args, ["status"]);
 assert.equal(notices.at(-1).message, "onklaud healthy");
@@ -77,6 +90,18 @@ assert.match(notices.at(-1).message, /^DRY RUN: \/goal --tokens 700k Use Onklaud
 await commands.get("onklaud").handler("fix bug", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.equal(sentMessages.length, 1);
 assert.match(sentMessages[0], /^\/goal --tokens 700k Use Onklaud 5/);
-assert.match(notices.at(-1).message, /Starting Onklaud-backed autonomous workflow/);
+assert.match(notices.at(-1).message, /queues a \/goal prompt/);
+assert.match(notices.at(-1).message, /Pi still owns edits/);
+
+const failingStatusCommands = new Map();
+registerOnklaud({
+  registerCommand: (name, definition) => failingStatusCommands.set(name, definition),
+  exec: async () => {
+    throw new Error("not found");
+  },
+});
+await failingStatusCommands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /Onklaud status failed: not found/);
 
 console.log("onklaud-extension-command ok");

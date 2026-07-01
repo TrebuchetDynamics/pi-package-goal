@@ -1,6 +1,6 @@
 # pi-package-goal Context
 
-This package ships Pi skills plus `/understand`, folder-refactor, and RTK bridge extensions.
+This package ships Pi skills plus `/understand`, folder-refactor, RTK bridge, headroom proxy-routing, and Onklaud advisory extensions.
 
 ## Language
 
@@ -60,9 +60,13 @@ _Avoid_: relying on memory for completion audits, ending with unexecuted safe ne
 The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
 _Avoid_: bundling the Rust binary, silently executing remote installers without a user command/confirmation, blocking commands for token optimization, rewriting non-bash Pi tools
 
+**Headroom Extension**:
+The package-local extension at `extensions/headroom/index.js` registers `/headroom status|stats|start|help` for a local external `headroom` compression proxy. Provider routing is opt-in: only `HEADROOM_ENABLED=1` plus a reachable proxy causes `pi.registerProvider(..., { baseUrl })`; otherwise Pi provider routing is unchanged.
+_Avoid_: auto-routing provider traffic without an explicit env flag, bundling the proxy tool, broad proxy hosts by default, treating proxy reachability as proof of savings
+
 **Onklaud Extension**:
-The package-local extension at `extensions/onklaud/index.js` registers `/onklaud` to start a `/goal` objective that uses Onklaud 5 as an advisory council while Pi keeps ownership of edits, validation, commits, and pushes; `/onklaud status` checks CLI health, and `/onklaud install` explicitly installs the CLI into user-local paths after confirmation or `--yes`.
-_Avoid_: installing Onklaud implicitly, writing outside user-local install/bin paths by default, sending secrets or credential-bearing logs to external model councils, treating Onklaud advice as verified source truth, letting external CLIs mutate the repo directly
+The package-local extension at `extensions/onklaud/index.js` is a thin `/goal` launcher plus CLI helper: `/onklaud explain` describes the boundary, `/onklaud status` checks CLI health, `/onklaud install` explicitly installs the CLI into user-local paths after confirmation or `--yes`, and `/onklaud <task>` queues a goal prompt that uses Onklaud 5 as an advisory council while Pi keeps ownership of edits, validation, commits, and pushes.
+_Avoid_: presenting Onklaud as a separate repo-mutating coding agent, installing implicitly, writing outside user-local install/bin paths by default, sending secrets or credential-bearing logs to external model councils, treating Onklaud advice as verified source truth, letting external CLIs mutate the repo directly
 
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.

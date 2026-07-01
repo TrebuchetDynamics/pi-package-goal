@@ -223,9 +223,38 @@ brew install rtk
 
 For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
+### `/headroom`
+
+`/headroom` checks or starts a local [headroom](https://github.com/chopratejas/headroom) compression proxy. Provider routing is opt-in: set `HEADROOM_ENABLED=1` and run a local proxy before restarting Pi. Without that flag, the command is available but Pi provider routing is unchanged.
+
+Commands:
+
+```text
+/headroom status
+/headroom stats
+/headroom start
+/headroom help
+```
+
+Environment flags: `HEADROOM_ENABLED=1`, `HEADROOM_DISABLED=1`, `HEADROOM_HOST=127.0.0.1`, `HEADROOM_PORT=8787`, and `HEADROOM_PROVIDERS=openai-codex`.
+
 ### `/onklaud`
 
-`/onklaud [task]` starts a `/goal` objective that asks Pi to do the work while using the installed [Onklaud 5](https://github.com/KorroAi/onklaud-5) CLI as an advisory council. With no task, it asks Pi to choose and execute major safe development progress from repo evidence. `/onklaud status` runs `onklaud status`; `/onklaud --dry-run <task>` previews the generated goal.
+`/onklaud` is a thin Pi extension around `/goal`, not a separate coding agent. It exists because a slash command can reliably generate the long safe-council prompt, check/install the external [Onklaud 5](https://github.com/KorroAi/onklaud-5) CLI, and keep Pi in charge of repo mutation.
+
+Use it when you want a second-opinion council on a meaningful Pi task. Skip it for tiny edits, secrets-heavy debugging, or when you only want to run the raw `onklaud` CLI yourself.
+
+Commands:
+
+```text
+/onklaud explain
+/onklaud status
+/onklaud --dry-run fix the failing tests
+/onklaud fix the failing tests
+/onklaud install --yes
+```
+
+`/onklaud [task]` starts a `/goal` objective that asks Pi to do the work while using the installed CLI as an advisory council. With no task, it asks Pi to choose and execute major safe development progress from repo evidence. `/onklaud --dry-run <task>` previews the generated goal.
 
 `/onklaud install` interactively installs Onklaud on the current machine by cloning `KorroAi/onklaud-5`, creating a local Python virtualenv, installing `fpdf2`/`pyyaml`, and writing an `onklaud` launcher under the user bin directory. Use `/onklaud install --yes` for non-interactive installs, or `--dir` / `--bin-dir` to override locations.
 
@@ -438,6 +467,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/understand",
       "./extensions/folder-refactor",
       "./extensions/rtk",
+      "./extensions/headroom",
       "./extensions/ponytail",
       "./extensions/loop-engineering",
       "./extensions/onklaud"
