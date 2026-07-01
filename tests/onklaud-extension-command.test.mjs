@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import registerOnklaud from "../extensions/onklaud/index.js";
@@ -114,6 +114,7 @@ assert.equal(busySentMessages.length, 1);
 assert.equal(busySentMessages[0].options.deliverAs, "followUp");
 
 const existingDir = await mkdtemp(join(tmpdir(), "onklaud-nonrepo-"));
+await writeFile(join(existingDir, "keep.txt"), "not onklaud\n");
 const installCommands = new Map();
 registerOnklaud({
   registerCommand: (name, definition) => installCommands.set(name, definition),
@@ -122,7 +123,26 @@ registerOnklaud({
 await installCommands.get("onklaud").handler(`install --yes --dir ${existingDir}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /not a git repository/);
+assert.match(notices.at(-1).message, /--dir <empty-dir>/);
 await rm(existingDir, { recursive: true, force: true });
+
+const sshOriginDir = await mkdtemp(join(tmpdir(), "onklaud-ssh-origin-"));
+const sshOriginCommands = new Map();
+const sshOriginExecs = [];
+registerOnklaud({
+  registerCommand: (name, definition) => sshOriginCommands.set(name, definition),
+  exec: async (cmd, args) => {
+    sshOriginExecs.push({ cmd, args });
+    if (args.includes("rev-parse")) return { code: 0, stdout: "true\n", stderr: "" };
+    if (args.includes("remote")) return { code: 0, stdout: "git@github.com:KorroAi/onklaud-5.git\n", stderr: "" };
+    return { code: 0, stdout: "ok", stderr: "" };
+  },
+});
+await sshOriginCommands.get("onklaud").handler(`install --yes --dir ${sshOriginDir} --bin-dir ${join(sshOriginDir, "bin")}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "info");
+assert.match(notices.at(-1).message, /Installed Onklaud 5/);
+assert.ok(sshOriginExecs.some((call) => call.args.includes("pull")));
+await rm(sshOriginDir, { recursive: true, force: true });
 
 const failingStatusCommands = new Map();
 registerOnklaud({

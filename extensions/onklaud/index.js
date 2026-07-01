@@ -1,4 +1,4 @@
-import { chmod, mkdir, stat, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
@@ -48,7 +48,21 @@ async function exists(path) {
 }
 
 function normalizeRepoUrl(url) {
-  return String(url || "").trim().replace(/\.git$/, "").toLowerCase();
+  let value = String(url || "").trim().replace(/\/+$/, "").replace(/\.git$/i, "");
+  value = value.replace(/^git\+/, "");
+  const scp = /^git@([^:]+):(.+)$/.exec(value);
+  if (scp) value = `${scp[1]}/${scp[2]}`;
+  else value = value.replace(/^[a-z]+:\/\/(?:git@)?/, "");
+  return value.toLowerCase();
+}
+
+async function isEmptyDir(path) {
+  try {
+    return (await readdir(path)).length === 0;
+  } catch (error) {
+    if (error?.code === "ENOTDIR") return false;
+    throw error;
+  }
 }
 
 async function prepareRepo(pi, installDir, ctx) {
@@ -58,9 +72,18 @@ async function prepareRepo(pi, installDir, ctx) {
   }
 
   const inside = await pi.exec("git", ["-C", installDir, "rev-parse", "--is-inside-work-tree"], { signal: ctx.signal, timeout: 120_000 });
-  if (inside.code !== 0 || outputText(inside) !== "true") throw new Error(`Install directory exists but is not a git repository: ${installDir}`);
+  if (inside.code !== 0 || outputText(inside) !== "true") {
+    if (await isEmptyDir(installDir)) {
+      await run(pi, "git", ["clone", "--depth", "1", ONKLAUD_REPO_URL, installDir], ctx);
+      return;
+    }
+    throw new Error(`Install directory exists but is not a git repository: ${installDir}\nUse /onklaud install --dir <empty-dir> or move the existing directory.`);
+  }
   const remote = await run(pi, "git", ["-C", installDir, "remote", "get-url", "origin"], ctx, 120_000);
-  if (normalizeRepoUrl(outputText(remote)) !== normalizeRepoUrl(ONKLAUD_REPO_URL)) throw new Error(`Install directory is not an Onklaud checkout: ${installDir}`);
+  const remoteUrl = outputText(remote);
+  if (normalizeRepoUrl(remoteUrl) !== normalizeRepoUrl(ONKLAUD_REPO_URL)) {
+    throw new Error(`Install directory is a git repo but origin is not Onklaud: ${installDir}\norigin: ${remoteUrl}\nUse /onklaud install --dir <empty-dir> or move the existing directory.`);
+  }
   await run(pi, "git", ["-C", installDir, "pull", "--ff-only"], ctx);
 }
 
