@@ -1,4 +1,4 @@
-import { splitCommandArgs } from "../../lib/pi-bridge/command-grammar.js";
+import { splitCommandArgs } from "../_shared/pi-bridge/command-grammar.js";
 
 const REWRITE_TIMEOUT_MS = 2_000;
 const STATUS_TTL_MS = 30_000;

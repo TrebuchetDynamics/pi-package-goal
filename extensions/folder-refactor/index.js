@@ -7,7 +7,7 @@ import {
   scanTextResult,
   textResult,
   writeFolderRefactorState,
-} from "../../lib/folder-refactor/guardrail.js";
+} from "./lib/guardrail.js";
 
 export {
   auditFolderRefactorCompletion,
@@ -18,7 +18,7 @@ export {
   scanFolderRefactorTarget,
   stableStringify,
   writeFolderRefactorState,
-} from "../../lib/folder-refactor/guardrail.js";
+} from "./lib/guardrail.js";
 
 const Type = {
   String: (options = {}) => ({ type: "string", ...options }),

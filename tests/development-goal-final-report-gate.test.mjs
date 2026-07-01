@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const gateMod = await import(path.join(root, "lib", "goal", "final-report-gate.ts"));
+const gateMod = await import(path.join(root, "extensions", "goal", "lib", "final-report-gate.ts"));
 
 assert.equal(typeof gateMod.evaluateFinalReportGate, "function");
 

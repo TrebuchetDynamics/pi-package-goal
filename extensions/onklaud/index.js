@@ -7,7 +7,7 @@ import {
   ONKLAUD_EXPLANATION,
   ONKLAUD_REPO_URL,
   ONKLAUD_USAGE,
-} from "../../lib/onklaud/command.js";
+} from "./command.js";
 
 function outputText(result) {
   return [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();

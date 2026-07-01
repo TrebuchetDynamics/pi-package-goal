@@ -1,5 +1,5 @@
 import { Box, Spacer, Text } from "@earendil-works/pi-tui";
-import { emptyGoalCommandAction } from "../../lib/goal/command.js";
+import { emptyGoalCommandAction } from "./lib/command.js";
 import {
 	buildGoalSystemPrompt,
 	completionRejection,
@@ -7,7 +7,7 @@ import {
 	isRetryableGoalInterruption,
 	parseTokenBudget,
 	validateObjective,
-} from "../../lib/goal/extension-helpers.js";
+} from "./lib/extension-helpers.js";
 import { tokenDeltaFromUsage } from "./usage.js";
 
 const CUSTOM_TYPE = "pi-goal";

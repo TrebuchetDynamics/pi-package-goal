@@ -10,7 +10,7 @@ import {
   ONKLAUD_REPO_URL,
   onklaudCompletions,
   parseOnklaudArgs,
-} from "../lib/onklaud/command.js";
+} from "../extensions/onklaud/command.js";
 
 const defaults = { tokenBudget: "700k", dryRun: false, help: false, yes: false, installDir: "", binDir: "", error: null };
 
@@ -21,6 +21,8 @@ assert.deepEqual(parseOnklaudArgs("status"), { action: "status", task: "", auton
 assert.deepEqual(parseOnklaudArgs("explain"), { action: "explain", task: "", autonomous: false, ...defaults });
 assert.deepEqual(parseOnklaudArgs("install --yes --dir ~/ok --bin-dir ~/.local/bin"), { action: "install", task: "", autonomous: false, ...defaults, yes: true, installDir: "~/ok", binDir: "~/.local/bin" });
 assert.deepEqual(parseOnklaudArgs("--tokens 300k fix tests"), { action: "run", task: "fix tests", autonomous: false, ...defaults, tokenBudget: "300k" });
+assert.deepEqual(parseOnklaudArgs("Autonomous pass SQLX_OFFLINE=true cargo test --quiet"), { action: "run", task: "Autonomous pass SQLX_OFFLINE=true cargo test --quiet", autonomous: false, ...defaults });
+assert.deepEqual(parseOnklaudArgs("--tokens 300k fix cargo test --quiet"), { action: "run", task: "fix cargo test --quiet", autonomous: false, ...defaults, tokenBudget: "300k" });
 assert.deepEqual(parseOnklaudArgs("--dry-run improve this repo"), { action: "run", task: "improve this repo", autonomous: false, ...defaults, dryRun: true });
 assert.equal(parseOnklaudArgs("--help").help, true);
 assert.match(ONKLAUD_EXPLANATION, /thin Pi extension/);
@@ -38,7 +40,10 @@ assert.equal(explicit.task, "fix auth bug");
 assert.match(explicit.goalCommand, /^\/goal --tokens 500k Use Onklaud 5 as an advisory council/);
 assert.match(explicit.goalCommand, /Task: fix auth bug/);
 assert.match(explicit.goalCommand, /onklaud status/);
+assert.match(explicit.goalCommand, /source-backed checkpoint brief/);
 assert.match(explicit.goalCommand, /onklaud loop --type code/);
+assert.match(explicit.goalCommand, /wrong language\/runtime/);
+assert.match(explicit.goalCommand, /times out, or fails/);
 assert.match(explicit.goalCommand, /Pi owns all file edits, tests, validation, commits, and pushes/);
 assert.match(explicit.goalCommand, /Do not send secrets/);
 

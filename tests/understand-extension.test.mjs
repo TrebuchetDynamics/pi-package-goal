@@ -31,7 +31,7 @@ import {
   resolveContainedOutputPath as resolveContainedRefactorOutputPath,
   splitArgs,
   summarizePreviousRefactorPlan,
-} from "../lib/understand/refactor-workflow.js";
+} from "../extensions/understand/lib/refactor-workflow.js";
 
 assert.deepEqual(splitFirstArg(" chat how does auth work? "), {
   first: "chat",

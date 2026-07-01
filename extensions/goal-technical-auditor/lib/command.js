@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
-import { splitCommandArgs } from "../pi-bridge/command-grammar.js";
+import { splitCommandArgs } from "../../_shared/pi-bridge/command-grammar.js";
 
 export const DEFAULT_TOKEN_BUDGET = "700k";
 export const BUG_HUNT_REFACTOR_FOCUS = "bug-hunt-refactor";

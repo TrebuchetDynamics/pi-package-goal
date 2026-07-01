@@ -1,8 +1,8 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
-import { popTrailingToken, splitCommandArgs } from "../pi-bridge/command-grammar.js";
+import { popTrailingToken, splitCommandArgs } from "../../_shared/pi-bridge/command-grammar.js";
 
-export { splitCommandArgs as splitArgs } from "../pi-bridge/command-grammar.js";
+export { splitCommandArgs as splitArgs } from "../../_shared/pi-bridge/command-grammar.js";
 
 function normalizeFolderToken(folder) {
   const withoutAt = String(folder ?? "").replace(/^@/, "").trim();

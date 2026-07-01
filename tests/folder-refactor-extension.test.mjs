@@ -14,7 +14,7 @@ import {
   scanFolderRefactorTarget,
   stableStringify,
   writeFolderRefactorState,
-} from "../lib/folder-refactor/guardrail.js";
+} from "../extensions/folder-refactor/lib/guardrail.js";
 
 const execFile = promisify(execFileCallback);
 const git = (cwd, args) => execFile("git", args, { cwd });

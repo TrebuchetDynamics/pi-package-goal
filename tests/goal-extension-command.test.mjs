@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { emptyGoalCommandAction } from "../lib/goal/command.js";
+import { emptyGoalCommandAction } from "../extensions/goal/lib/command.js";
 
 assert.equal(emptyGoalCommandAction(null), "start-skill");
 assert.equal(emptyGoalCommandAction({ status: "complete" }), "start-skill");

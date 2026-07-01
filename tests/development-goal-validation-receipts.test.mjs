@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const receiptsMod = await import(path.join(root, "lib", "goal", "validation-receipts.ts"));
+const receiptsMod = await import(path.join(root, "extensions", "goal", "lib", "validation-receipts.ts"));
 
 assert.equal(typeof receiptsMod.recordValidationReceipt, "function");
 assert.equal(typeof receiptsMod.validationReceiptsPassed, "function");

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const auditMod = await import(path.join(root, "lib", "goal", "terminal-audit.ts"));
+const auditMod = await import(path.join(root, "extensions", "goal", "lib", "terminal-audit.ts"));
 
 assert.equal(typeof auditMod.terminalAuditEvent, "function");
 

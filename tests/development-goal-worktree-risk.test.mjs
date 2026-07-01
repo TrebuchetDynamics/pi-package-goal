@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const riskMod = await import(path.join(root, "lib", "goal", "worktree-risk.ts"));
+const riskMod = await import(path.join(root, "extensions", "goal", "lib", "worktree-risk.ts"));
 
 assert.equal(typeof riskMod.evaluateWorktreeRisk, "function");
 

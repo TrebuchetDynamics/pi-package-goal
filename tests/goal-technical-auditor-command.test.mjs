@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import registerGoalTechnicalAuditor from "../extensions/goal-technical-auditor/index.js";
-import { buildGoalTechnicalAuditorObjective, DEFAULT_TOKEN_BUDGET, formatScopeForObjective, goalTechnicalAuditorCompletions, interpretScopeOrPrompt, parseGoalTechnicalAuditorArgs, validateGoalTechnicalAuditorLaunch, validateScopeInsideCwd } from "../lib/goal-technical-auditor/command.js";
+import { buildGoalTechnicalAuditorObjective, DEFAULT_TOKEN_BUDGET, formatScopeForObjective, goalTechnicalAuditorCompletions, interpretScopeOrPrompt, parseGoalTechnicalAuditorArgs, validateGoalTechnicalAuditorLaunch, validateScopeInsideCwd } from "../extensions/goal-technical-auditor/lib/command.js";
 
 assert.equal(DEFAULT_TOKEN_BUDGET, "700k");
 assert.deepEqual(parseGoalTechnicalAuditorArgs(""), { scope: ".", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "", error: null });
@@ -102,14 +102,14 @@ assert.deepEqual(sentMessages, []);
 assert.deepEqual(notices, [{ message: "Token budget must be positive.", level: "warning" }]);
 
 notices.length = 0;
-await registeredHandler("--dry-run --tokens 300k lib", { cwd: process.cwd(), ui: { notify: (message, level) => notices.push({ message, level }) } });
+await registeredHandler("--dry-run --tokens 300k extensions", { cwd: process.cwd(), ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.deepEqual(sentMessages, []);
 assert.equal(notices.at(-1).level, "info");
 assert.match(notices.at(-1).message, /^DRY RUN: \/goal-technical-auditor/);
-assert.match(notices.at(-1).message, /scope: folder\/path `lib`/);
+assert.match(notices.at(-1).message, /scope: folder\/path `extensions`/);
 assert.match(notices.at(-1).message, /focus: none/);
 assert.match(notices.at(-1).message, /tokens: 300k/);
-assert.match(notices.at(-1).message, /command: \/goal --tokens 300k Run technical-auditor Full mode for folder\/path `lib`/);
+assert.match(notices.at(-1).message, /command: \/goal --tokens 300k Run technical-auditor Full mode for folder\/path `extensions`/);
 
 notices.length = 0;
 await registeredHandler("../outside", { cwd: process.cwd(), ui: { notify: (message, level) => notices.push({ message, level }) } });

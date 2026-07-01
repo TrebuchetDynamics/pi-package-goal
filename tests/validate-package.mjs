@@ -501,13 +501,13 @@ async function testUnderstandExtension() {
   assert.match(goalExtension, /registerCommand\("goal"/);
   assert.match(goalExtension, /emptyGoalCommandAction/);
   assert.match(goalExtension, /sendUserMessage\("\/skill:goal"\)/);
-  assert.ok(exists("lib/goal/command.js"), "goal command helper must exist");
+  assert.ok(exists("extensions/goal/lib/command.js"), "goal command helper must exist");
   assert.ok(exists("tests/goal-extension-command.test.mjs"), "goal command helper test must exist");
   const goalTechnicalAuditorExtension = read("extensions/goal-technical-auditor/index.js");
   assert.match(goalTechnicalAuditorExtension, /registerCommand\("goal-technical-auditor"/);
   assert.match(goalTechnicalAuditorExtension, /buildGoalTechnicalAuditorObjective/);
   assert.match(goalTechnicalAuditorExtension, /sendUserMessage\(goalCommand\)/);
-  assert.ok(exists("lib/goal-technical-auditor/command.js"), "goal-technical-auditor command helper must exist");
+  assert.ok(exists("extensions/goal-technical-auditor/lib/command.js"), "goal-technical-auditor command helper must exist");
   assert.ok(exists("tests/goal-technical-auditor-command.test.mjs"), "goal-technical-auditor helper test must exist");
   assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
   assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
@@ -520,7 +520,7 @@ async function testUnderstandExtension() {
   assert.match(folderRefactorExtension, /folder_refactor_audit/);
   assert.match(folderRefactorExtension, /folder_refactor_state/);
   assert.match(folderRefactorExtension, /registerCommand\("folder-refactor"/);
-  const folderRefactorGuardrail = read("lib/folder-refactor/guardrail.js");
+  const folderRefactorGuardrail = read("extensions/folder-refactor/lib/guardrail.js");
   assert.match(folderRefactorGuardrail, /FOLDER_REFACTOR_AUDIT:/);
   assert.match(folderRefactorGuardrail, /scanFolderRefactorTarget/);
   assert.match(folderRefactorGuardrail, /auditFolderRefactorCompletion/);
@@ -541,17 +541,17 @@ async function testUnderstandExtension() {
   assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop-engineering"\)/);
   assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop"\)/);
   assert.match(loopEngineeringExtension, /buildLoopEngineeringObjective/);
-  assert.ok(exists("lib/loop-engineering/command.js"), "loop-engineering command helper must exist");
+  assert.ok(exists("extensions/loop-engineering/lib/command.js"), "loop-engineering command helper must exist");
   assert.ok(exists("tests/loop-engineering-command.test.mjs"), "loop-engineering helper test must exist");
 
   const onklaudExtension = read("extensions/onklaud/index.js");
   assert.match(onklaudExtension, /registerCommand\("onklaud"/);
   assert.match(onklaudExtension, /buildOnklaudObjective/);
   assert.match(onklaudExtension, /sendUserMessage\(goalCommand, options\)/);
-  assert.ok(exists("lib/onklaud/command.js"), "onklaud command helper must exist");
+  assert.ok(exists("extensions/onklaud/command.js"), "onklaud command helper must live with the extension");
   assert.ok(exists("tests/onklaud-extension-command.test.mjs"), "onklaud helper test must exist");
 
-  const lifecycle = read("lib/pi-bridge/lifecycle.js");
+  const lifecycle = read("extensions/_shared/pi-bridge/lifecycle.js");
   assert.match(lifecycle, /createRepoBackedSkillBridge/);
   assert.match(lifecycle, /ensureInstalled/);
   assert.match(lifecycle, /sendSkillInvocation/);

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const parserMod = await import(path.join(root, "lib", "goal", "report-parser.ts"));
+const parserMod = await import(path.join(root, "extensions", "goal", "lib", "report-parser.ts"));
 
 assert.equal(typeof parserMod.parseFinalReport, "function");
 assert.equal(typeof parserMod.parseLoopDeliveryEvidence, "function");

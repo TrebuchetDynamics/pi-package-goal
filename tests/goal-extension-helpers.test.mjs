@@ -6,7 +6,7 @@ import {
   isRetryableGoalInterruption,
   parseTokenBudget,
   validateObjective,
-} from "../lib/goal/extension-helpers.js";
+} from "../extensions/goal/lib/extension-helpers.js";
 
 assert.deepEqual(parseTokenBudget("--tokens 1.5k ship it"), {
   objective: "ship it",

@@ -1,4 +1,4 @@
-import { splitCommandArgs } from "../pi-bridge/command-grammar.js";
+import { splitCommandArgs } from "../_shared/pi-bridge/command-grammar.js";
 
 export const DEFAULT_TOKEN_BUDGET = "700k";
 export const ONKLAUD_EXPLANATION = `Onklaud is a thin Pi extension around /goal, not a separate coding agent.
@@ -32,6 +32,11 @@ export function parseOnklaudArgs(input = "") {
 
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
+    const firstWord = words[0]?.toLowerCase();
+    if (words.length > 0 && firstWord !== "install" && firstWord !== "status" && firstWord !== "explain") {
+      words.push(...tokens.slice(index));
+      break;
+    }
     if (token === "--help" || token === "-h") {
       help = true;
       continue;
@@ -133,8 +138,9 @@ ${taskText}
 
 Onklaud protocol:
 - Run \`onklaud status\` before relying on Onklaud. If it is unavailable or unhealthy, continue with the normal Pi workflow and record that Onklaud was unavailable.
-- Use Onklaud for planning/review/gate checkpoints on meaningful work, for example: \`onklaud loop --type code --prompt "<question>" --draft-file <tmp-file>\` or \`onklaud gate --domain coding --text "<summary>" --json\`.
-- Treat Onklaud output as advice, not authority. Verify every recommendation against live files before editing.
+- Before asking Onklaud, write a source-backed checkpoint brief: repo language/runtime from manifests, exact files/functions under review, relevant snippets or diff summary, validation commands/results, and the specific decision requested.
+- Use Onklaud for planning/review/gate checkpoints on meaningful work, for example: \`onklaud loop --type code --prompt "<source-backed question>" --draft-file <tmp-file>\` or \`onklaud gate --domain coding --text "<structured summary>" --json\`.
+- Treat Onklaud output as advice, not authority. Ignore advice that names the wrong language/runtime, invents files/APIs, lacks source backing, times out, or fails; record it as unusable for that checkpoint and continue with normal Pi validation.
 - Pi owns all file edits, tests, validation, commits, and pushes. Do not delegate tool execution or repo mutation to Onklaud.
 - Do not send secrets, credentials, private keys, .env contents, or sensitive logs to Onklaud; redact if needed.
 - Capture git status and dirty-file ownership before edits. Do not overwrite unrelated dirty work.

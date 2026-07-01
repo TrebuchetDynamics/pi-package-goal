@@ -4,7 +4,7 @@ import {
   popTrailingToken,
   splitCommandArgs,
   splitFirstArg,
-} from "../lib/pi-bridge/command-grammar.js";
+} from "../extensions/_shared/pi-bridge/command-grammar.js";
 
 assert.deepEqual(splitFirstArg(" chat how does auth work? "), {
   first: "chat",

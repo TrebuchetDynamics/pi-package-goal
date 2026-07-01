@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { splitCommandArgs } from "../../lib/pi-bridge/command-grammar.js";
+import { splitCommandArgs } from "../_shared/pi-bridge/command-grammar.js";
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 8787;

@@ -1,4 +1,4 @@
-import { splitCommandArgs } from "../pi-bridge/command-grammar.js";
+import { splitCommandArgs } from "../../_shared/pi-bridge/command-grammar.js";
 
 export const DEFAULT_TOKEN_BUDGET = "300k";
 export const DEFAULT_PATTERN = "daily-triage";

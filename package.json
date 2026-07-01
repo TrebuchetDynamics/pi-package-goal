@@ -36,7 +36,6 @@
     "understand-anything"
   ],
   "files": [
-    "lib",
     "extensions",
     "skills",
     "licenses",

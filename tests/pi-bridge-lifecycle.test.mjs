@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { commandOutput, createRepoBackedSkillBridge } from "../lib/pi-bridge/lifecycle.js";
+import { commandOutput, createRepoBackedSkillBridge } from "../extensions/_shared/pi-bridge/lifecycle.js";
 
 assert.equal(commandOutput({ stdout: "out\n", stderr: "err\n" }), "out\n\nerr");
 

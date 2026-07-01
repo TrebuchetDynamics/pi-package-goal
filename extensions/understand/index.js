@@ -1,7 +1,7 @@
 import { lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
-import { createRepoBackedSkillBridge, pathExists } from "../../lib/pi-bridge/lifecycle.js";
-import { splitCommandArgs, splitFirstArg } from "../../lib/pi-bridge/command-grammar.js";
+import { createRepoBackedSkillBridge, pathExists } from "../_shared/pi-bridge/lifecycle.js";
+import { splitCommandArgs, splitFirstArg } from "../_shared/pi-bridge/command-grammar.js";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import {
@@ -12,7 +12,7 @@ import {
   ignoreRefactorCandidate,
   parseRefactorInstruction,
   writeRefactorPlan,
-} from "../../lib/understand/refactor-workflow.js";
+} from "./lib/refactor-workflow.js";
 
 
 export {
@@ -25,7 +25,7 @@ export {
   parseRefactorArgs,
   parseRefactorInstruction,
   summarizePreviousRefactorPlan,
-} from "../../lib/understand/refactor-workflow.js";
+} from "./lib/refactor-workflow.js";
 
 const DEFAULT_REPO_URL = "https://github.com/Lum1104/Understand-Anything.git";
 const SKILL_NAMES = new Set([
@@ -90,7 +90,7 @@ export function parseUnderstandCommand(commandName, args = "") {
   return { type: "skill", skillName: "understand", args: args.trim() };
 }
 
-export { splitCommandArgs as splitArgs, splitFirstArg } from "../../lib/pi-bridge/command-grammar.js";
+export { splitCommandArgs as splitArgs, splitFirstArg } from "../_shared/pi-bridge/command-grammar.js";
 
 function normalizeFolderToken(folder) {
   const withoutAt = String(folder ?? "").replace(/^@/, "").trim();

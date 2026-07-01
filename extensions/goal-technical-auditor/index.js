@@ -4,7 +4,7 @@ import {
   GOAL_TECHNICAL_AUDITOR_USAGE,
   goalTechnicalAuditorCompletions,
   validateGoalTechnicalAuditorLaunch,
-} from "../../lib/goal-technical-auditor/command.js";
+} from "./lib/command.js";
 
 export default function goalTechnicalAuditor(pi) {
   pi.registerCommand("goal-technical-auditor", {

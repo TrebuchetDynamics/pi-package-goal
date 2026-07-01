@@ -7,7 +7,7 @@ import {
   DEFAULT_TOKEN_BUDGET,
   DEFAULT_TOOL,
   parseLoopEngineeringArgs,
-} from "../lib/loop-engineering/command.js";
+} from "../extensions/loop-engineering/lib/command.js";
 
 assert.equal(DEFAULT_TOKEN_BUDGET, "300k");
 assert.equal(DEFAULT_PATTERN, "daily-triage");

@@ -1,7 +1,7 @@
 import {
   buildLoopEngineeringObjective,
   LOOP_ENGINEERING_USAGE,
-} from "../../lib/loop-engineering/command.js";
+} from "./lib/command.js";
 
 function registerLoopCommand(pi, name) {
   pi.registerCommand(name, {
