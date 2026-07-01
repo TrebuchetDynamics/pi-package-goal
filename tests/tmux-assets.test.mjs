@@ -47,6 +47,10 @@ function escapeRegExp(value) {
   return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
 
+function shellQuote(value) {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
 async function testPackageManifest() {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
@@ -194,6 +198,26 @@ async function testInstallScript() {
   }
 }
 
+async function testInstallScriptQuotesHelperPaths() {
+  const tmp = tempDir("tx-install-space-");
+  try {
+    const home = path.join(tmp, "home space");
+    const bin = path.join(tmp, "bin space");
+    const helperDir = path.join(tmp, "helper dir it's");
+    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_INSTALL_COMPLETIONS: "0" };
+    const output = run("sh", ["tmux/install.sh"], { env });
+    const installedConfig = path.join(home, ".tmux.conf");
+    const config = fs.readFileSync(installedConfig, "utf8");
+    assert.match(config, new RegExp(escapeRegExp(`#(${shellQuote(path.join(helperDir, "short-path.sh"))} `)));
+    assert.match(config, new RegExp(escapeRegExp(`#(${shellQuote(path.join(helperDir, "git-status.sh"))} `)));
+    assert.match(output, new RegExp(`next: tmux source-file ${escapeRegExp(shellQuote(installedConfig))}`));
+    assert.match(output, new RegExp(`next: ${escapeRegExp(shellQuote(path.join(bin, "tx")))} init`));
+    if (hasCommand("tmux")) run("tmux", ["source-file", "-n", installedConfig], { env });
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 async function testTxListFormattingAndColorPortability() {
   const tmp = tempDir("tx-list-format-");
   try {
@@ -321,6 +345,7 @@ await testTxDefaultConfigPath();
 await testTxConfigLifecycleWithoutTmuxSessions();
 await testTxListFormattingAndColorPortability();
 await testInstallScript();
+await testInstallScriptQuotesHelperPaths();
 await testKillAllOrdersCurrentSessionLast();
 await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();

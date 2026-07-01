@@ -47,15 +47,26 @@ install_file_if_missing() {
   printf 'installed: %s\n' "$dest"
 }
 
+shell_quote() {
+  printf "'"
+  printf '%s' "$1" | sed "s/'/'\\\\''/g"
+  printf "'"
+}
+
+sed_replacement_escape() {
+  printf '%s' "$1" | sed 's/[&|\\]/\\&/g'
+}
+
 install_tmux_conf() {
   src=$1
   dest=$2
-  helper_dir_escaped=$(printf '%s' "$TMUX_HELPER_DIR" | sed 's/[&|\\]/\\&/g')
+  short_path_cmd=$(sed_replacement_escape "$(shell_quote "$TMUX_HELPER_DIR/short-path.sh")")
+  git_status_cmd=$(sed_replacement_escape "$(shell_quote "$TMUX_HELPER_DIR/git-status.sh")")
   tmp=$(mktemp "${TMPDIR:-/tmp}/tx-tmux.conf.XXXXXX")
   trap 'rm -f "$tmp"' EXIT HUP INT TERM
   sed \
-    -e "s|~/.tmux/short-path.sh|$helper_dir_escaped/short-path.sh|g" \
-    -e "s|~/.tmux/git-status.sh|$helper_dir_escaped/git-status.sh|g" \
+    -e "s|~/.tmux/short-path.sh|$short_path_cmd|g" \
+    -e "s|~/.tmux/git-status.sh|$git_status_cmd|g" \
     "$src" > "$tmp"
   install_file 0644 "$tmp" "$dest"
   rm -f "$tmp"
@@ -100,8 +111,8 @@ case ":$PATH:" in
     ;;
 esac
 
-printf 'next: tmux source-file %s\n' "$TMUX_CONF_TARGET"
-printf 'next: %s init  # if you do not have a tx config yet\n' "$TX_BIN_DIR/$TX_BIN_NAME"
+printf 'next: tmux source-file %s\n' "$(shell_quote "$TMUX_CONF_TARGET")"
+printf 'next: %s init  # if you do not have a tx config yet\n' "$(shell_quote "$TX_BIN_DIR/$TX_BIN_NAME")"
 if [ "$TX_INSTALL_COMPLETIONS" = "1" ]; then
-  printf 'next: source %s  # enable tx alias completion in this shell\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+  printf 'next: source %s  # enable tx alias completion in this shell\n' "$(shell_quote "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME")"
 fi
