@@ -67,6 +67,7 @@ async function isEmptyDir(path) {
 
 async function prepareRepo(pi, installDir, ctx) {
   if (!(await exists(installDir))) {
+    report(ctx, `Onklaud install: cloning ${ONKLAUD_REPO_URL} into ${installDir}...`);
     await run(pi, "git", ["clone", "--depth", "1", ONKLAUD_REPO_URL, installDir], ctx);
     return;
   }
@@ -74,6 +75,7 @@ async function prepareRepo(pi, installDir, ctx) {
   const inside = await pi.exec("git", ["-C", installDir, "rev-parse", "--is-inside-work-tree"], { signal: ctx.signal, timeout: 120_000 });
   if (inside.code !== 0 || outputText(inside) !== "true") {
     if (await isEmptyDir(installDir)) {
+      report(ctx, `Onklaud install: cloning ${ONKLAUD_REPO_URL} into empty directory ${installDir}...`);
       await run(pi, "git", ["clone", "--depth", "1", ONKLAUD_REPO_URL, installDir], ctx);
       return;
     }
@@ -84,6 +86,7 @@ async function prepareRepo(pi, installDir, ctx) {
   if (normalizeRepoUrl(remoteUrl) !== normalizeRepoUrl(ONKLAUD_REPO_URL)) {
     throw new Error(`Install directory is a git repo but origin is not Onklaud: ${installDir}\norigin: ${remoteUrl}\nUse /onklaud install --dir <empty-dir> or move the existing directory.`);
   }
+  report(ctx, `Onklaud install: updating existing checkout in ${installDir}...`);
   await run(pi, "git", ["-C", installDir, "pull", "--ff-only"], ctx);
 }
 
@@ -101,17 +104,22 @@ async function installOnklaud(pi, params, ctx) {
     if (!ok) return "Onklaud install cancelled.";
   }
 
+  report(ctx, `Onklaud install: repo ${installDir}; launcher ${wrapper}.`);
   await mkdir(dirname(installDir), { recursive: true });
   await prepareRepo(pi, installDir, ctx);
+  report(ctx, `Onklaud install: creating Python virtualenv at ${join(installDir, ".venv")}...`);
   if (process.platform === "win32") {
     await run(pi, "py", ["-3", "-m", "venv", join(installDir, ".venv")], ctx);
   } else {
     await run(pi, "python3", ["-m", "venv", join(installDir, ".venv")], ctx);
   }
+  report(ctx, "Onklaud install: upgrading pip...");
   await run(pi, python, ["-m", "pip", "install", "--upgrade", "pip"], ctx);
+  report(ctx, "Onklaud install: installing fpdf2 and pyyaml...");
   await run(pi, python, ["-m", "pip", "install", "fpdf2", "pyyaml"], ctx);
 
   await mkdir(binDir, { recursive: true });
+  report(ctx, `Onklaud install: writing launcher ${wrapper}...`);
   if (process.platform === "win32") {
     await writeFile(wrapper, `@echo off\r\n"${python}" "${join(installDir, "council.py")}" %*\r\n`, "utf8");
   } else {

@@ -114,13 +114,14 @@ assert.equal(busySentMessages.length, 1);
 assert.equal(busySentMessages[0].options.deliverAs, "followUp");
 
 const existingDir = await mkdtemp(join(tmpdir(), "onklaud-nonrepo-"));
+const existingBinDir = join(existingDir, "bin");
 await writeFile(join(existingDir, "keep.txt"), "not onklaud\n");
 const installCommands = new Map();
 registerOnklaud({
   registerCommand: (name, definition) => installCommands.set(name, definition),
   exec: async (cmd, args) => ({ code: cmd === "git" && args.includes("rev-parse") ? 1 : 0, stdout: "", stderr: "not a repo" }),
 });
-await installCommands.get("onklaud").handler(`install --yes --dir ${existingDir}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+await installCommands.get("onklaud").handler(`install --yes --dir ${existingDir} --bin-dir ${existingBinDir}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /not a git repository/);
 assert.match(notices.at(-1).message, /--dir <empty-dir>/);
@@ -141,6 +142,12 @@ registerOnklaud({
 await sshOriginCommands.get("onklaud").handler(`install --yes --dir ${sshOriginDir} --bin-dir ${join(sshOriginDir, "bin")}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.equal(notices.at(-1).level, "info");
 assert.match(notices.at(-1).message, /Installed Onklaud 5/);
+const installProgress = notices.map((notice) => notice.message).join("\n");
+assert.match(installProgress, /Onklaud install: repo /);
+assert.match(installProgress, /updating existing checkout/);
+assert.match(installProgress, /creating Python virtualenv/);
+assert.match(installProgress, /installing fpdf2 and pyyaml/);
+assert.match(installProgress, /writing launcher/);
 assert.ok(sshOriginExecs.some((call) => call.args.includes("pull")));
 await rm(sshOriginDir, { recursive: true, force: true });
 
