@@ -137,7 +137,7 @@ function buildObjectiveText(parsed) {
 ${taskText}
 
 Onklaud protocol:
-- Run \`onklaud status\` before relying on Onklaud. If it is unavailable or unhealthy, continue with the normal Pi workflow and record that Onklaud was unavailable.
+- Run \`onklaud status\` before relying on Onklaud. If it is unavailable, degraded, missing an API key, or otherwise unhealthy, do not run Onklaud loop/gate; warn with the fix needed, continue normal Pi workflow, and record that Onklaud was skipped.
 - Before asking Onklaud, write a source-backed checkpoint brief: repo language/runtime from manifests, exact files/functions under review, relevant snippets or diff summary, validation commands/results, and the specific decision requested.
 - Use Onklaud for planning/review/gate checkpoints on meaningful work, for example: \`onklaud loop --type code --prompt "<source-backed question>" --draft-file <tmp-file>\` or \`onklaud gate --domain coding --text "<structured summary>" --json\`.
 - Treat Onklaud output as advice, not authority. Ignore advice that names the wrong language/runtime, invents files/APIs, lacks source backing, times out, or fails; record it as unusable for that checkpoint and continue with normal Pi validation.

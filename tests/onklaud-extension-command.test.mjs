@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import registerOnklaud from "../extensions/onklaud/index.js";
@@ -40,6 +40,8 @@ assert.equal(explicit.task, "fix auth bug");
 assert.match(explicit.goalCommand, /^\/goal --tokens 500k Use Onklaud 5 as an advisory council/);
 assert.match(explicit.goalCommand, /Task: fix auth bug/);
 assert.match(explicit.goalCommand, /onklaud status/);
+assert.match(explicit.goalCommand, /missing an API key/);
+assert.match(explicit.goalCommand, /do not run Onklaud loop\/gate/);
 assert.match(explicit.goalCommand, /source-backed checkpoint brief/);
 assert.match(explicit.goalCommand, /onklaud loop --type code/);
 assert.match(explicit.goalCommand, /wrong language\/runtime/);
@@ -84,6 +86,17 @@ assert.match(notices.at(-1).message, /thin Pi extension/);
 await commands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
 assert.deepEqual(execCalls.at(-1).args, ["status"]);
 assert.equal(notices.at(-1).message, "onklaud healthy");
+
+const degradedCommands = new Map();
+registerOnklaud({
+  registerCommand: (name, definition) => degradedCommands.set(name, definition),
+  exec: async () => ({ code: 0, stdout: 'OpenRouter key: MISSING\n{"api_key": false, "status": "degraded"}', stderr: "" }),
+});
+await degradedCommands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /advisory gates unavailable \(API key missing\)/);
+assert.match(notices.at(-1).message, /Configure Onklaud\/OpenRouter credentials/);
+assert.match(notices.at(-1).message, /skip Onklaud loop\/gate/);
 
 await commands.get("onklaud").handler("install --dry-run --dir /tmp/onklaud-test --bin-dir /tmp/bin", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.match(notices.at(-1).message, /DRY RUN:/);
@@ -148,6 +161,9 @@ assert.match(installProgress, /updating existing checkout/);
 assert.match(installProgress, /creating Python virtualenv/);
 assert.match(installProgress, /installing fpdf2 and pyyaml/);
 assert.match(installProgress, /writing launcher/);
+const installedWrapper = await readFile(join(sshOriginDir, "bin", "onklaud"), "utf8");
+assert.match(installedWrapper, /\.env/);
+assert.match(installedWrapper, /set -a/);
 assert.ok(sshOriginExecs.some((call) => call.args.includes("pull")));
 await rm(sshOriginDir, { recursive: true, force: true });
 

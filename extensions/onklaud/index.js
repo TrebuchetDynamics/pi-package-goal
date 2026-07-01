@@ -18,6 +18,27 @@ function report(ctx, message, level = "info") {
   else console.log(message);
 }
 
+function classifyStatus(text, code) {
+  const parsed = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("{") && line.endsWith("}"))
+    .map((line) => {
+      try { return JSON.parse(line); } catch { return null; }
+    })
+    .findLast(Boolean);
+  const status = String(parsed?.status || "").toLowerCase();
+  const missingKey = parsed?.api_key === false || /OpenRouter key:\s*MISSING|api_key"\s*:\s*false/i.test(text);
+  if (code !== 0 || (status && status !== "operational") || missingKey) {
+    const reason = missingKey ? "API key missing" : status ? `status: ${status}` : `exit code ${code}`;
+    return {
+      level: "warning",
+      message: `${text}\n\nOnklaud advisory gates unavailable (${reason}). Configure Onklaud/OpenRouter credentials and rerun /onklaud status; until then skip Onklaud loop/gate and rely on normal Pi validation.`,
+    };
+  }
+  return { level: "info", message: text };
+}
+
 function expandHome(path, fallback) {
   const value = String(path || fallback);
   return value === "~" || value.startsWith("~/") ? join(homedir(), value.slice(2)) : value;
@@ -123,7 +144,7 @@ async function installOnklaud(pi, params, ctx) {
   if (process.platform === "win32") {
     await writeFile(wrapper, `@echo off\r\n"${python}" "${join(installDir, "council.py")}" %*\r\n`, "utf8");
   } else {
-    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nexec "${python}" "${join(installDir, "council.py")}" "$@"\n`, { mode: 0o755 });
+    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nif [ -f "${join(installDir, ".env")}" ]; then\n  set -a\n  . "${join(installDir, ".env")}"\n  set +a\nfi\nexec "${python}" "${join(installDir, "council.py")}" "$@"\n`, { mode: 0o755 });
     await chmod(wrapper, 0o755);
   }
   return `Installed Onklaud 5. If needed, add ${binDir} to PATH, then run: onklaud status`;
@@ -153,7 +174,8 @@ export default function onklaud(pi) {
         try {
           const result = await pi.exec("onklaud", ["status"], { signal: ctx.signal, timeout: 120_000 });
           const text = outputText(result) || `onklaud status exited with code ${result.code}`;
-          report(ctx, text, result.code === 0 ? "info" : "warning");
+          const status = classifyStatus(text, result.code);
+          report(ctx, status.message, status.level);
         } catch (error) {
           report(ctx, `Onklaud status failed: ${error.message}`, "warning");
         }
