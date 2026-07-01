@@ -547,7 +547,7 @@ async function testUnderstandExtension() {
   const onklaudExtension = read("extensions/onklaud/index.js");
   assert.match(onklaudExtension, /registerCommand\("onklaud"/);
   assert.match(onklaudExtension, /buildOnklaudObjective/);
-  assert.match(onklaudExtension, /sendUserMessage\(goalCommand\)/);
+  assert.match(onklaudExtension, /sendUserMessage\(goalCommand, options\)/);
   assert.ok(exists("lib/onklaud/command.js"), "onklaud command helper must exist");
   assert.ok(exists("tests/onklaud-extension-command.test.mjs"), "onklaud helper test must exist");
 

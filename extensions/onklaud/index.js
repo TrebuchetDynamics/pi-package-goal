@@ -1,4 +1,4 @@
-import { chmod, mkdir, writeFile } from "node:fs/promises";
+import { chmod, mkdir, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
@@ -37,6 +37,33 @@ async function run(pi, command, args, ctx, timeout = 600_000) {
   return result;
 }
 
+async function exists(path) {
+  try {
+    await stat(path);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
+function normalizeRepoUrl(url) {
+  return String(url || "").trim().replace(/\.git$/, "").toLowerCase();
+}
+
+async function prepareRepo(pi, installDir, ctx) {
+  if (!(await exists(installDir))) {
+    await run(pi, "git", ["clone", "--depth", "1", ONKLAUD_REPO_URL, installDir], ctx);
+    return;
+  }
+
+  const inside = await pi.exec("git", ["-C", installDir, "rev-parse", "--is-inside-work-tree"], { signal: ctx.signal, timeout: 120_000 });
+  if (inside.code !== 0 || outputText(inside) !== "true") throw new Error(`Install directory exists but is not a git repository: ${installDir}`);
+  const remote = await run(pi, "git", ["-C", installDir, "remote", "get-url", "origin"], ctx, 120_000);
+  if (normalizeRepoUrl(outputText(remote)) !== normalizeRepoUrl(ONKLAUD_REPO_URL)) throw new Error(`Install directory is not an Onklaud checkout: ${installDir}`);
+  await run(pi, "git", ["-C", installDir, "pull", "--ff-only"], ctx);
+}
+
 async function installOnklaud(pi, params, ctx) {
   const installDir = resolve(expandHome(params.installDir, defaultInstallDir()));
   const binDir = resolve(expandHome(params.binDir, defaultBinDir()));
@@ -52,10 +79,7 @@ async function installOnklaud(pi, params, ctx) {
   }
 
   await mkdir(dirname(installDir), { recursive: true });
-  await run(pi, "git", ["clone", "--depth", "1", ONKLAUD_REPO_URL, installDir], ctx).catch(async (error) => {
-    if (!/already exists|exist/i.test(error.message)) throw error;
-    await run(pi, "git", ["-C", installDir, "pull", "--ff-only"], ctx);
-  });
+  await prepareRepo(pi, installDir, ctx);
   if (process.platform === "win32") {
     await run(pi, "py", ["-3", "-m", "venv", join(installDir, ".venv")], ctx);
   } else {
@@ -117,8 +141,9 @@ export default function onklaud(pi) {
         return;
       }
 
+      const options = typeof ctx.isIdle === "function" && !ctx.isIdle() ? { deliverAs: "followUp" } : undefined;
       report(ctx, `Starting Onklaud-backed workflow: this queues a /goal prompt. Token budget: ${tokenBudget}. Pi still owns edits, tests, and validation.`, "info");
-      pi.sendUserMessage(goalCommand);
+      pi.sendUserMessage(goalCommand, options);
     },
   });
 }

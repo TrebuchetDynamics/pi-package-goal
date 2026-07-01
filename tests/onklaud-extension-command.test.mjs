@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import registerOnklaud from "../extensions/onklaud/index.js";
 import {
   buildOnklaudObjective,
@@ -23,6 +26,8 @@ assert.equal(parseOnklaudArgs("--help").help, true);
 assert.match(ONKLAUD_EXPLANATION, /thin Pi extension/);
 assert.match(ONKLAUD_EXPLANATION, /Pi owns edits/);
 assert.match(parseOnklaudArgs("--tokens 0 fix").error, /Token budget must be positive/);
+assert.match(parseOnklaudArgs("--yes").error, /Install options/);
+assert.match(parseOnklaudArgs("--dir ~/ok fix").error, /Install options/);
 assert.match(parseOnklaudArgs("--mode auto").error, /Unknown option: --mode/);
 assert.deepEqual(onklaudCompletions("st"), [{ value: "status", label: "status" }]);
 assert.deepEqual(onklaudCompletions("ex"), [{ value: "explain", label: "explain" }]);
@@ -92,6 +97,27 @@ assert.equal(sentMessages.length, 1);
 assert.match(sentMessages[0], /^\/goal --tokens 700k Use Onklaud 5/);
 assert.match(notices.at(-1).message, /queues a \/goal prompt/);
 assert.match(notices.at(-1).message, /Pi still owns edits/);
+
+const busyCommands = new Map();
+const busySentMessages = [];
+registerOnklaud({
+  registerCommand: (name, definition) => busyCommands.set(name, definition),
+  sendUserMessage: (message, options) => busySentMessages.push({ message, options }),
+});
+await busyCommands.get("onklaud").handler("fix busy", { isIdle: () => false, hasUI: true, ui: { notify: () => {} } });
+assert.equal(busySentMessages.length, 1);
+assert.equal(busySentMessages[0].options.deliverAs, "followUp");
+
+const existingDir = await mkdtemp(join(tmpdir(), "onklaud-nonrepo-"));
+const installCommands = new Map();
+registerOnklaud({
+  registerCommand: (name, definition) => installCommands.set(name, definition),
+  exec: async (cmd, args) => ({ code: cmd === "git" && args.includes("rev-parse") ? 1 : 0, stdout: "", stderr: "not a repo" }),
+});
+await installCommands.get("onklaud").handler(`install --yes --dir ${existingDir}`, { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /not a git repository/);
+await rm(existingDir, { recursive: true, force: true });
 
 const failingStatusCommands = new Map();
 registerOnklaud({
