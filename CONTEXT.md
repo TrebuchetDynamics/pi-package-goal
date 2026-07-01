@@ -60,6 +60,10 @@ _Avoid_: relying on memory for completion audits, ending with unexecuted safe ne
 The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
 _Avoid_: bundling the Rust binary, silently executing remote installers without a user command/confirmation, blocking commands for token optimization, rewriting non-bash Pi tools
 
+**Onklaud Extension**:
+The package-local extension at `extensions/onklaud/index.js` registers `/onklaud` to start a `/goal` objective that uses Onklaud 5 as an advisory council while Pi keeps ownership of edits, validation, commits, and pushes; `/onklaud status` checks CLI health, and `/onklaud install` explicitly installs the CLI into user-local paths after confirmation or `--yes`.
+_Avoid_: installing Onklaud implicitly, writing outside user-local install/bin paths by default, sending secrets or credential-bearing logs to external model councils, treating Onklaud advice as verified source truth, letting external CLIs mutate the repo directly
+
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
 _Avoid_: bundling provider proxies by default, silently reading credential files, letting upstream CLIs edit files outside Pi's tools, treating prompt-bridged tool calls as native reliability

@@ -447,7 +447,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/loop-engineering"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/loop-engineering", "./extensions/onklaud"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -537,6 +537,13 @@ async function testUnderstandExtension() {
   assert.match(loopEngineeringExtension, /buildLoopEngineeringObjective/);
   assert.ok(exists("lib/loop-engineering/command.js"), "loop-engineering command helper must exist");
   assert.ok(exists("tests/loop-engineering-command.test.mjs"), "loop-engineering helper test must exist");
+
+  const onklaudExtension = read("extensions/onklaud/index.js");
+  assert.match(onklaudExtension, /registerCommand\("onklaud"/);
+  assert.match(onklaudExtension, /buildOnklaudObjective/);
+  assert.match(onklaudExtension, /sendUserMessage\(goalCommand\)/);
+  assert.ok(exists("lib/onklaud/command.js"), "onklaud command helper must exist");
+  assert.ok(exists("tests/onklaud-extension-command.test.mjs"), "onklaud helper test must exist");
 
   const lifecycle = read("lib/pi-bridge/lifecycle.js");
   assert.match(lifecycle, /createRepoBackedSkillBridge/);

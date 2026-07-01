@@ -223,6 +223,14 @@ brew install rtk
 
 For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
+### `/onklaud`
+
+`/onklaud [task]` starts a `/goal` objective that asks Pi to do the work while using the installed [Onklaud 5](https://github.com/KorroAi/onklaud-5) CLI as an advisory council. With no task, it asks Pi to choose and execute major safe development progress from repo evidence. `/onklaud status` runs `onklaud status`; `/onklaud --dry-run <task>` previews the generated goal.
+
+`/onklaud install` interactively installs Onklaud on the current machine by cloning `KorroAi/onklaud-5`, creating a local Python virtualenv, installing `fpdf2`/`pyyaml`, and writing an `onklaud` launcher under the user bin directory. Use `/onklaud install --yes` for non-interactive installs, or `--dir` / `--bin-dir` to override locations.
+
+The extension treats Onklaud output as advice, not authority: Pi still owns file edits, tests, validation, commits, and pushes. It does not send secrets intentionally; review CLI auth outside Pi before relying on model-backed council calls.
+
 ### `/loop-engineering` and `/loop`
 
 `/loop-engineering` turns [cobusgreyling/loop-engineering](https://github.com/cobusgreyling/loop-engineering) patterns into a goal-backed Pi workflow. It does not run third-party CLIs itself; it asks the agent to inspect the repo, then use `npx @cobusgreyling/loop-audit`, `loop-init`, `loop-cost`, or `goal-audit` only when safe.
@@ -429,7 +437,10 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/goal-technical-auditor",
       "./extensions/understand",
       "./extensions/folder-refactor",
-      "./extensions/rtk"
+      "./extensions/rtk",
+      "./extensions/ponytail",
+      "./extensions/loop-engineering",
+      "./extensions/onklaud"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
