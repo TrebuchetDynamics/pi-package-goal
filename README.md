@@ -85,7 +85,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Hunt for one fixable bug from repo evidence | `bug-harvest` | Finds a high-confidence bug candidate, then uses a repro-first fix loop. |
 | Debug broken, flaky, or slow behavior | `diagnose` | Reproduce, minimize, instrument, fix, and regression-test. |
 | Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
-| Ship finished work | `git-commit-push` | Polishes, validates, commits safe in-scope changes, and pushes. |
+| Ship finished work | `git-commit-push` | Polishes, validates, split-commits safe in-scope changes, and pushes. |
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
@@ -458,9 +458,9 @@ The skill:
 2. reviews changed/untracked files for secrets, local state, generated junk, and unrelated work;
 3. fixes obvious safe hygiene/validation issues in scope;
 4. runs requested or inferred validation, including `git diff --check`;
-5. commits only safe in-scope changes, split by topic when separable;
+5. commits only safe in-scope changes, split as far as practical by reviewable topic or hunk;
 6. leaves unrelated/review-needed worktree dirt unstaged instead of blocking safe topics when isolation is possible;
-7. pushes to the current upstream; and
+7. fetches/fast-forwards when safe, asks before true merge/rebase unless explicitly requested, then pushes; and
 8. reports final markers:
 
 ```text
@@ -468,7 +468,7 @@ GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
 
-It does not deploy, publish, force-push, rewrite history, rebase, or merge remote changes unless explicitly asked.
+It does not deploy, publish, force-push, rewrite history, rebase, or non-fast-forward merge remote changes unless explicitly asked.
 
 ## Clean-context advisor and reviewer
 
