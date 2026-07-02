@@ -96,9 +96,22 @@ Trebuchet Dynamics under the MIT License.
 ## Leonxlnx/taste-skill
 
 - Source: https://github.com/Leonxlnx/taste-skill
-- Snapshot inspected: `3c7017d`
+- Snapshot inspected: `06d6028`
 - Bundled paths:
+  - `skills/frontend/brandkit/`
   - `skills/frontend/design-taste-frontend/`
+  - `skills/frontend/design-taste-frontend-v1/`
+  - `skills/frontend/full-output-enforcement/`
+  - `skills/frontend/gpt-taste/`
+  - `skills/frontend/high-end-visual-design/`
+  - `skills/frontend/image-to-code/`
+  - `skills/frontend/imagegen-frontend-mobile/`
+  - `skills/frontend/imagegen-frontend-web/`
+  - `skills/frontend/industrial-brutalist-ui/`
+  - `skills/frontend/minimalist-ui/`
+  - `skills/frontend/redesign-existing-projects/`
+  - `skills/frontend/stitch-design-taste/`
+- Local changes: package-local trigger descriptions and shared-contract references were added to fit this package's skill quality gates.
 - License: MIT
 - Full license copy: `licenses/Leonxlnx-taste-skill-LICENSE`
 

@@ -120,7 +120,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Clean-context review | Get an unbiased advisor (plan-time) or reviewer (change-time) second opinion, dispatched to a clean context when a fork/subagent tool is available — see [clean-context delegation](skills/shared/CLEAN-CONTEXT-DELEGATION.md). | `autoreview`, `grill-with-docs` |
 | Planning and handoff | Route to the right skill, update source-backed docs, turn context into PRDs/issues, triage work, summarize for the next agent. | `skill-router`, `wiki-docs`, `to-prd`, `to-issues`, `triage`, `handoff` |
 | Pi ecosystem work | Scout, build, or review Pi skills/extensions/packages. | `pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill` |
-| Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
+| Frontend/design craft | Build polished frontend UIs, avoid generic AI aesthetics, generate frontend reference images, and convert Stitch designs. | `ui-design`, `frontend-design`, `design-taste-frontend`, `gpt-taste`, `image-to-code`, `hallmark`, `stitch-react-components`, `ui-ux-pro-max` |
 | Visual theme | Use a complete neon-inspired TUI token map with top-level HTML export colors. | `trebuchet-neon` |
 | Codebase understanding | Run Understand-Anything from Pi and generate agent-readable maps, compare maps, and refactor plans. | `/understand` |
 | Research workflow | Install/use ResearchForge `rforge` for provenance-first literature discovery, OSS study, systematic reviews, and auditable reports. | `research-forge` |
@@ -431,7 +431,19 @@ Theme discipline:
 | `ui-design` | Orchestrate the UI/UX skills and pick the right frontend/design workflow for the task. |
 | `ui-ux-pro-max` | Apply broad UI/UX design-system, typography, color, layout, accessibility, and motion guidance. |
 | `frontend-design` | Create distinctive production-grade frontend interfaces that avoid generic AI aesthetics. |
-| `design-taste-frontend` | Use anti-slop taste rules for landing pages, portfolios, and redesigns. |
+| `design-taste-frontend` | Use Taste Skill v2 anti-slop rules for landing pages, portfolios, and redesigns. |
+| `design-taste-frontend-v1` | Use the original Taste Skill v1 when exact legacy behavior is needed. |
+| `gpt-taste` | Apply stricter GPT/Codex-oriented taste rules for high-variance layouts and GSAP-heavy pages. |
+| `image-to-code` | Generate/analyze website reference images before implementing matching frontend code. |
+| `redesign-existing-projects` | Audit and upgrade an existing website or app UI without breaking functionality. |
+| `high-end-visual-design` | Apply soft, expensive, agency-style visual polish. |
+| `minimalist-ui` | Build clean editorial minimalist interfaces with restrained color and crisp structure. |
+| `industrial-brutalist-ui` | Build raw brutalist, Swiss-grid, terminal, or mechanical frontend interfaces. |
+| `full-output-enforcement` | Require complete unabridged output and avoid placeholder/truncation patterns. |
+| `imagegen-frontend-web` | Generate section-by-section website reference images. |
+| `imagegen-frontend-mobile` | Generate premium mobile app screen and flow reference images. |
+| `brandkit` | Generate brand-kit, logo-system, identity-board, and visual-guideline prompts. |
+| `stitch-design-taste` | Create Stitch-friendly DESIGN.md guidance with anti-generic UI standards. |
 | `hallmark` | Apply Hallmark's anti-AI-slop design flows for builds, audits, redesigns, and design extraction. |
 | `stitch-react-components` | Convert Stitch designs into modular Vite/React components with validation. |
 | `greploop` | Use Greptile-driven PR/MR/CL cleanup when explicitly requested and available. |

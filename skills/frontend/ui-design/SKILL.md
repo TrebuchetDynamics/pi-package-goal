@@ -22,8 +22,13 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 | UI design-smell audit, AI-slop detection, hierarchy/accessibility/state review | `hallmark` | `ui-ux-pro-max`; `modern-web-guidance` when browser behavior matters |
 | Fresh distinctive web UI, page, component, or app | `frontend-design` | `hallmark` for anti-slop structure; `ui-ux-pro-max` for checks |
 | React + TypeScript + Tailwind product UI, including shadcn-style systems | `frontend-design` | `ui-ux-pro-max`; `modern-web-guidance` |
-| Landing page, portfolio, or marketing redesign where taste matters | `design-taste-frontend` | `hallmark`; `frontend-design` |
+| Landing page, portfolio, or marketing redesign where taste matters | `design-taste-frontend` | `gpt-taste` for stricter Codex/GPT taste; `hallmark`; `frontend-design` |
+| Existing-site visual upgrade | `redesign-existing-projects` | `design-taste-frontend`; `hallmark` |
+| Specific aesthetic already chosen: minimalist, brutalist, or soft premium | `minimalist-ui`, `industrial-brutalist-ui`, or `high-end-visual-design` | `design-taste-frontend`; `ui-ux-pro-max` |
+| Image-first website implementation | `image-to-code` | `imagegen-frontend-web`; `frontend-design` |
+| Website, mobile, or brand-kit reference image generation | `imagegen-frontend-web`, `imagegen-frontend-mobile`, or `brandkit` | `design-taste-frontend` for web taste constraints |
 | Anti-AI-slop build, audit, redesign, or study from URL/screenshot | `hallmark` | `design-taste-frontend`; `ui-ux-pro-max` |
+| Create Stitch design guidance | `stitch-design-taste` | `ui-ux-pro-max` |
 | Convert Stitch designs into Vite/React components | `stitch-react-components` | `frontend-design`; `ui-ux-pro-max` |
 | Browser UX behavior, HTML/CSS/Web APIs, performance, forms, or accessibility details | `modern-web-guidance` | `ui-ux-pro-max` |
 | Chrome/browser extension UI or extension APIs | `chrome-extensions` | `modern-web-guidance`; `ui-ux-pro-max` |

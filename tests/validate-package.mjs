@@ -49,6 +49,18 @@ const expectedSkills = [
   "ui-design",
   "frontend-design",
   "design-taste-frontend",
+  "design-taste-frontend-v1",
+  "gpt-taste",
+  "image-to-code",
+  "redesign-existing-projects",
+  "high-end-visual-design",
+  "minimalist-ui",
+  "industrial-brutalist-ui",
+  "full-output-enforcement",
+  "imagegen-frontend-web",
+  "imagegen-frontend-mobile",
+  "brandkit",
+  "stitch-design-taste",
   "hallmark",
   "stitch-react-components",
   "receiving-code-review",
@@ -58,7 +70,7 @@ const expectedSkills = [
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 9400,
+  maxTotalChars: 11000,
 };
 
 function readJson(file) {
