@@ -1,11 +1,11 @@
 ---
 name: git-commit-push
-description: Polish, validate, commit, and push safe git worktree changes. Use for git commit push, commit and push, ship changes, delivery audit, or GIT_COMMIT_PUSH blockers.
+description: Polish, validate, commit, and push safe git worktree changes with aggressive split commits. Use for git commit push, split commits, commit and push, ship changes, delivery audit, pull-before-push, or GIT_COMMIT_PUSH blockers.
 ---
 
 # Git Commit Push
 
-Use this skill for the final delivery step after implementation work. It replaces the former `/git-commit-push` extension with an agent-run workflow. The job is to polish obvious safe issues, prove the patch is safe, then commit and push with worktree, validation, staging, commit, push, and final-state evidence.
+Use this skill for the final delivery step after implementation work. It replaces the former `/git-commit-push` extension with an agent-run workflow. The job is to polish obvious safe issues, prove the patch is safe, then split-commit by topic and push with worktree, validation, staging, commit, push, and final-state evidence.
 
 ## Entry protocol
 
@@ -17,7 +17,7 @@ Resolve mode before acting:
 
 If validation commands are provided, use them. Otherwise infer project validation, with `npm test` when `package.json` has a test script, plus `git diff --check`.
 
-Ask only if ownership/scope is unclear, a fix would change product behavior or broaden scope, destructive git operations are needed, no upstream exists, push is rejected, or credentials/remote state require an owner decision. Do not ask merely to approve safe formatting, import cleanup, `.gitignore` hygiene, missing test fixtures/templates/helpers, or obvious validation fixes in ship mode.
+Ask only if ownership/scope is unclear, a fix would change product behavior or broaden scope, destructive git operations are needed, remote integration is non-fast-forward without explicit pull/merge approval, or credentials/remote state require an owner decision. Do not ask merely to approve safe formatting, import cleanup, `.gitignore` hygiene, missing test fixtures/templates/helpers, obvious validation fixes, safe split commits, leaving unrelated dirt unstaged, `git fetch`, `git merge --ff-only`, or `git push -u origin HEAD` when there is exactly one remote named `origin` and the user asked to push.
 
 ## Ship-mode repair mandate
 
@@ -42,9 +42,11 @@ Before blocking on validation, prove at least one of:
 
 In ship mode, unblock everything that can be safely isolated. Unrelated or review-needed dirt in the worktree is not automatically a stop sign: leave it unstaged and ship safe in-scope topics with explicit pathspecs. Block the whole delivery only when no safe topic can be isolated, a risky path overlaps the safe topic, validation cannot be made meaningful, or git/remote state prevents safe delivery.
 
-Before staging, make a small topic plan from the inspected paths. Prefer multiple coherent commits by topic (`tests`, `export UI`, `linux runner`, `docs`, etc.) over one mixed commit. For each topic: stage only its paths, show/inspect `git diff --cached --name-status`, commit it, then move to the next topic. Do not wait for unrelated review-needed paths if the current topic validates and stages cleanly.
+Before staging, make the smallest reviewable topic plan from the inspected paths. Split as much as possible without breaking validation: docs separate from code, tests separate when they are useful alone, independent fixes separate, generated/lockfile/hygiene separate, and mixed files split with `git add -p` or explicit hunk staging when practical. Do not collapse unrelated topics just to make fewer commits.
 
-If anything remains uncommitted, report why it did not block the shipped topics or the exact reason it did. A blocker must name the path, the red line it crosses, what safe alternatives were tried or rejected (`leave unstaged`, `.gitignore`, restore, separate commit, temp validation), and the owner decision needed.
+For each topic: stage only its files/hunks, inspect `git diff --cached --name-status` and the cached diff when hunks were split, run the smallest meaningful validation for that topic when available, commit it, then move to the next topic. Rerun the full delivery validation set before push. Do not wait for unrelated review-needed paths if the current topic validates and stages cleanly.
+
+If anything remains uncommitted, report why it did not block the shipped topics or the exact reason it did. A blocker must name the path, the red line it crosses, what safe alternatives were tried or rejected (`leave unstaged`, `.gitignore`, restore, separate commit, hunk split, scoped validation, temp validation), and the owner decision needed.
 
 ## Skill composition
 
@@ -66,22 +68,23 @@ If anything remains uncommitted, report why it did not block the shipped topics 
    - **blocked** — secrets, credentials, generated/binary junk that cannot be safely ignored, local state/logs, dependency lockfile surprises that overlap the delivery, unrelated work that cannot be isolated, or validation failures without a safe in-scope fix.
 6. In audit/status mode, stop after the classification and validation receipts; do not stage.
 7. In ship mode, keep working through safe polish loops and safe topic commits until no more isolatable in-scope work remains. Do not block safe topic commits merely because unrelated `review_needed` paths remain unstaged.
-8. Run validation:
+8. Build a split-commit plan before staging. Prefer many small coherent commits over one mixed commit. Use `git add -p` for mixed files when a clean hunk split is practical; otherwise keep the file with the topic that needs it and say why it could not split safely.
+9. Run validation:
    - required user-specified commands;
    - inferred project tests;
    - `git diff --check`.
    If unrelated dirty paths make whole-worktree validation noisy, first try the smallest non-destructive isolation that proves the staged topic: scoped validation, `git diff --check -- <topic paths>`, or a temporary worktree with only the safe patch applied. Say when validation is scoped instead of whole-repo.
-9. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
-10. Stage intentionally by explicit pathspec per topic. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope. Before every commit, inspect `git diff --cached --name-status` and ensure it contains only that topic.
-11. Make coherent split commits by topic whenever changes are separable; use one commit only when the safe paths form one topic. After each commit, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
-12. Push to the current branch's upstream. If no upstream exists, ask before choosing one. If push is rejected for fetch-first/non-fast-forward, stop and ask before rebase/merge.
-13. Verify final `git status --short --branch` and report commit hash(es), push result, remaining worktree state, and validation receipts.
+10. If validation fails, enter the ship-mode repair loop: fix safe in-scope issues directly and rerun validation. Use `diagnose` for behavior failures that need debugging, but continue delivery after the regression is fixed and validation is green. Missing validation artifacts such as templates, fixtures, helper scripts, or stale path references are presumed repairable until inspected. Report blocked only when the next fix is risky, broad, unclear, outside scope, or explicitly crosses a red line.
+11. Stage intentionally by explicit pathspec or hunk per topic. Include safe polish files such as formatter results, import cleanup, or `.gitignore` hygiene in the smallest topic they belong to. Never use broad staging (`git add .`, `git add -A`) unless every changed/untracked path has been inspected and classified safe in-scope. Before every commit, inspect `git diff --cached --name-status` and ensure it contains only that topic; inspect `git diff --cached` too when hunk staging was used.
+12. Make coherent split commits whenever changes are separable; use one commit only when the safe paths form one topic or cannot be split without invalid intermediate states. After each commit, capture `git rev-parse --short HEAD` and `git show --stat --oneline --no-renames HEAD`.
+13. Before push, run the full delivery validation set once more unless it was already run after the last commit. Then push to the current branch's upstream. If no upstream exists and there is exactly one remote named `origin`, use `git push -u origin HEAD`; otherwise ask before choosing. If push is rejected for fetch-first/non-fast-forward, run `git fetch` and inspect incoming commits. Use `git merge --ff-only @{u}` only when it fast-forwards cleanly. For divergent history, only merge/rebase if the user explicitly requested pull/merge/rebase or resolving the push rejection; inspect incoming changes first, stop on conflicts or overlap with uncommitted work, and rerun validation before pushing.
+14. Verify final `git status --short --branch` and report commit hash(es), push result, remaining worktree state, and validation receipts.
 
 ## Red lines
 
 - Do not commit secrets, `.env` files, private keys, credentials, or personal machine state.
 - Do not include `.pi/*/logs.jsonl`, caches, build output, generated Understand artifacts, generated codebase map artifacts, or unrelated user edits unless explicitly requested.
-- Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes, change remotes, or delete branches unless explicitly requested.
+- Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes except fast-forward-only, change remotes, or delete branches unless explicitly requested. `git fetch`, `git merge --ff-only`, and `git push -u origin HEAD` under the workflow rules are allowed.
 - Do not make product/architecture changes, dependency upgrades, lockfile churn, or broad rewrites under the label of polish unless explicitly in scope.
 - Do not stage broadly before every path has been inspected.
 - Do not mark delivery successful without real command output proving validation and push status.
@@ -100,7 +103,7 @@ Scope:
 - blocked: <paths/reason or none>
 Validation:
 - <command>: pass|fail|not run (<reason if needed>)
-Delivery: <commit/push result, split commit list, or why skipped>
+Delivery: <commit/push result, split commit plan/list, pull/merge result if any, or why skipped>
 Unblocked: <safe topics shipped or explicitly none>
 Still uncommitted: <review_needed/blocked paths left unstaged and why they did not/did block delivery>
 Final state: <git status --short --branch summary>
