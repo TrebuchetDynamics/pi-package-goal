@@ -212,3 +212,15 @@ Trebuchet Dynamics under the MIT License.
 - Usage: source inspiration and small validation-guard patterns for the local `extensions/goal/` revamp.
 - License: MIT
 - Full license copy: `licenses/narumiruna-pi-goal-LICENSE`
+
+## obra/superpowers
+
+- Source: https://github.com/obra/superpowers
+- Snapshot inspected: `f268f7c953744036f0fa7e9d4b73535c04e57cb8`
+- Bundled paths:
+  - `skills/superpowers/receiving-code-review/`
+  - `skills/superpowers/using-git-worktrees/`
+  - `skills/superpowers/verification-before-completion/`
+- Local selection: bundled the complementary review, isolation, and verification skills; excluded broad/invasive or duplicate skills such as `using-superpowers`, upstream TDD/debugging, subagent orchestration, and brainstorming.
+- License: MIT
+- Full license copy: `licenses/obra-superpowers-LICENSE`
