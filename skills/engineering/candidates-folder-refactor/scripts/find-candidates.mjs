@@ -42,6 +42,12 @@ const rolePatterns = [
   /style|css|theme/i,
   /hook|store|state|context/i,
   /config|constant|env/i,
+  /cmd|command|cli/i,
+  /store|db|repo|repository/i,
+  /middleware|interceptor|filter/i,
+  /serialize|deserialize|marshal|codec/i,
+  /error|result|option/i,
+  /widget|bloc|cubit|provider/i,
 ];
 const maxContentFileBytes = positiveEnvInt("PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES", 1024 * 1024);
 const maxTotalContentBytes = positiveEnvInt("PI_CANDIDATES_FOLDER_REFACTOR_MAX_TOTAL_CONTENT_BYTES", 50 * 1024 * 1024);
@@ -221,7 +227,10 @@ function noteRoles(stat, relativeFile) {
 }
 
 function isLikelyTest(file) {
-  return /(^|[/\\])(__tests__|test|tests|spec|fixtures?|mocks?)([/\\]|$)|\.(test|spec)\.[cm]?[jt]sx?$/i.test(file);
+  return /(^|[/\\])(__tests__|test|tests|spec|fixtures?|mocks?)([/\\]|$)/i.test(file)
+    || /\.(test|spec)\.[cm]?[jt]sx?$/i.test(file)
+    || /_test\.(go|rs|dart)$/i.test(file)
+    || /^test_.*\.py$/i.test(file) || /_test\.py$/i.test(file);
 }
 
 function isTextSource(ext) {
@@ -327,6 +336,7 @@ function relativeImportSpecifiers(content) {
   const patterns = [
     /(?:import|export)\s+(?:[^'";]+?\s+from\s+)?["'](\.{1,2}\/[^"']+)["']/g,
     /(?:require|import)\(\s*["'](\.{1,2}\/[^"']+)["']\s*\)/g,
+    /^\s*import\s+['"](\.{1,2}\/[^'"]+)['"]\s*;/gm,
   ];
   for (const pattern of patterns) {
     for (const match of content.matchAll(pattern)) specs.push(match[1]);
@@ -363,6 +373,9 @@ function symbolsIn(content) {
     /\b(?:function|class|interface|type|const|let|var)\s+([A-Za-z_$][\w$]*)/g,
     /\bdef\s+([A-Za-z_]\w*)/g,
     /\bfunc\s+(?:\([^)]*\)\s*)?([A-Za-z_]\w*)/g,
+    /\b(?:pub\s+)?(?:fn|struct|enum|trait|impl|mod)\s+([A-Za-z_]\w*)/g,
+    /\b(?:async\s+)?fn\s+([A-Za-z_]\w*)/g,
+    /\b(?:class|mixin|extension|typedef|enum)\s+([A-Za-z_]\w*)/g,
   ];
   for (const pattern of patterns) {
     for (const match of content.matchAll(pattern)) symbols.push(match[1].toLowerCase());

@@ -187,7 +187,7 @@ export function buildFolderRefactorPrompt(args = "") {
     "Use the folder-refactor guardrail extension while working:",
     `- Start with folder_refactor_scan on ${targetText}; note its scanHash as a receipt, and pass baselineHash to folder_refactor_audit only when verifying the current inventory still matches a recent scan.`,
     "- Before any final report, call folder_refactor_audit with exact remaining root file basenames classified as facadeFiles, outOfScopeFiles, or nextCandidateFiles.",
-    "- Treat same-stem root files plus directories (for example Rust `activation.rs` beside `activation/`) as move candidates unless they are proven public compatibility facades; move the implementation into the directory (for Rust, usually `<name>/mod.rs`) while validation is green.",
+    "- Treat same-stem root files plus directories (e.g. `activation.rs` beside `activation/`, `auth.go` beside `auth/`, `utils.py` beside `utils/`, `Button.tsx` beside `Button/`) as move candidates unless they are proven public compatibility facades; move the implementation into the directory (Rust: `<name>/mod.rs`, Go/Python/JS/TS: `<name>/<entry-point>`) while validation is green.",
     "- If folder_refactor_audit fails, do not report done; either continue safe slices or report the specific blocker.",
     "- If nextCandidateFiles is non-empty and validation is green, execute the next candidate instead of stopping.",
   ].join("\n");
@@ -350,9 +350,13 @@ function annotateRootModulePairs(rootEntries) {
 }
 
 function pairedRootDirectoryForFile(fileName, rootDirNames) {
-  if (!fileName.endsWith(".rs")) return null;
-  if (["mod.rs", "lib.rs", "main.rs"].includes(fileName)) return null;
-  const stem = fileName.slice(0, -".rs".length);
+  const entryPoints = new Set(["mod.rs", "lib.rs", "main.rs", "main.go", "index.ts", "index.js", "index.mjs", "index.cjs", "__init__.py"]);
+  if (entryPoints.has(fileName)) return null;
+  const ext = fileName.match(/\.[^.]+$/)?.[0];
+  if (!ext) return null;
+  const patterns = { ".rs": true, ".go": true, ".py": true, ".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true };
+  if (!patterns[ext]) return null;
+  const stem = fileName.slice(0, -ext.length);
   return rootDirNames.has(stem) ? stem : null;
 }
 
@@ -553,18 +557,20 @@ function statusForPath(git, absolutePath, kind) {
 }
 
 async function collectPackageInfo(cwd, targetAbsolute) {
-  const goModulePath = await findGoModulePath(cwd, targetAbsolute);
-  return { goModulePath };
+  const goModulePath = await findPackageManifest(cwd, targetAbsolute, "go.mod", /^\s*module\s+(\S+)/m);
+  const pythonPackageName = await findPackageManifest(cwd, targetAbsolute, "pyproject.toml", /^\s*name\s*=\s*["']([^"']+)["']/m);
+  const rustCrateName = await findPackageManifest(cwd, targetAbsolute, "Cargo.toml", /^\s*name\s*=\s*["']([^"']+)["']/m);
+  return { goModulePath, pythonPackageName, rustCrateName };
 }
 
-async function findGoModulePath(cwd, targetAbsolute) {
+async function findPackageManifest(cwd, targetAbsolute, manifestFile, pattern) {
   let current = targetAbsolute;
   const stop = resolve(cwd, "..");
   while (isPathInside(stop, current)) {
-    const modPath = join(current, "go.mod");
+    const manifestPath = join(current, manifestFile);
     try {
-      const content = await readFile(modPath, "utf8");
-      const match = content.match(/^\s*module\s+(\S+)/m);
+      const content = await readFile(manifestPath, "utf8");
+      const match = content.match(pattern);
       if (match) return match[1];
     } catch {
       // keep walking up
@@ -596,7 +602,7 @@ async function collectRefactorHints({ absolutePath, basename: fileName, kind, si
   }
 
   const imports = parseImports(fileName, content);
-  const localImports = imports.filter((importPath) => isLocalImport(importPath, packages.goModulePath));
+  const localImports = imports.filter((importPath) => isLocalImport(importPath, packages));
   const facade = detectFacadeLike(fileName, content, imports);
 
   return {
@@ -611,8 +617,24 @@ async function collectRefactorHints({ absolutePath, basename: fileName, kind, si
 }
 
 function parsePackageName(fileName, content) {
-  if (!fileName.endsWith(".go")) return null;
-  return content.match(/^\s*package\s+([A-Za-z_][A-Za-z0-9_]*)/m)?.[1] ?? null;
+  if (fileName.endsWith(".go")) return content.match(/^\s*package\s+([A-Za-z_][A-Za-z0-9_]*)/m)?.[1] ?? null;
+  if (fileName.endsWith(".py")) {
+    for (const line of content.split(/\r?\n/)) {
+      if (!line.startsWith("#")) {
+        const dotPath = detectPythonPackageDotPath(line);
+        if (dotPath) return dotPath;
+      }
+    }
+  }
+  if (fileName.endsWith(".rs")) return content.match(/^\s*(?:pub\s+)?mod\s+(\w+)\s*;/m)?.[1] ?? null;
+  return null;
+}
+
+function detectPythonPackageDotPath(line) {
+  const fromMatch = line.match(/^\s*from\s+([.\w]+)\s+import/);
+  if (fromMatch) return fromMatch[1];
+  const importMatch = line.match(/^\s*import\s+([.\w]+)/);
+  return importMatch?.[1] ?? null;
 }
 
 function parseImports(fileName, content) {
@@ -629,15 +651,28 @@ function parseImports(fileName, content) {
     for (const match of content.matchAll(/\brequire\(\s*["']([^"']+)["']\s*\)/g)) imports.add(match[1]);
     for (const match of content.matchAll(/\bimport\(\s*["']([^"']+)["']\s*\)/g)) imports.add(match[1]);
   }
+  if (fileName.endsWith(".py")) {
+    for (const match of content.matchAll(/^\s*from\s+([.\w]+)\s+import/gm)) imports.add(match[1]);
+    for (const match of content.matchAll(/^\s*import\s+([.\w]+)/gm)) imports.add(match[1]);
+  }
+  if (fileName.endsWith(".rs")) {
+    for (const match of content.matchAll(/^\s*use\s+((?:::?\w+)+)/gm)) imports.add(match[1]);
+    for (const match of content.matchAll(/^\s*extern\s+crate\s+(\w+)/gm)) imports.add(match[1]);
+  }
   return sortStrings([...imports]);
 }
 
-function isLocalImport(importPath, goModulePath) {
-  return importPath.startsWith(".") || Boolean(goModulePath && (importPath === goModulePath || importPath.startsWith(`${goModulePath}/`)));
+function isLocalImport(importPath, packages) {
+  if (importPath.startsWith(".")) return true;
+  if (importPath.startsWith("crate::") || importPath.startsWith("super::") || importPath.startsWith("self::")) return true;
+  if (packages.goModulePath && (importPath === packages.goModulePath || importPath.startsWith(`${packages.goModulePath}/`))) return true;
+  if (packages.pythonPackageName && importPath.startsWith(`${packages.pythonPackageName}.`)) return true;
+  if (packages.dartPackageName && importPath.startsWith(`package:${packages.dartPackageName}/`)) return true;
+  return false;
 }
 
 function detectGeneratedBasename(fileName) {
-  return /(?:^|\.)pb\.go$/.test(fileName) || /(?:^|[_.-])generated\./i.test(fileName) || /\.gen\./i.test(fileName);
+  return /(?:^|\.)pb\.go$/.test(fileName) || /(?:^|_)(?:pb2|pb2_grpc)\.py$/.test(fileName) || /(?:^|[_.-])generated\./i.test(fileName) || /\.gen\./i.test(fileName);
 }
 
 function detectGeneratedContent(content) {
@@ -646,7 +681,7 @@ function detectGeneratedContent(content) {
 }
 
 function isLikelyTestFile(fileName) {
-  return /_test\.go$/.test(fileName) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName);
+  return /_test\.go$/.test(fileName) || /^test_.*\.py$/.test(fileName) || /_test\.py$/.test(fileName) || /_test\.rs$/.test(fileName) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName);
 }
 
 function detectFacadeLike(fileName, content, imports) {
@@ -656,9 +691,19 @@ function detectFacadeLike(fileName, content, imports) {
     .map((line) => line.trim())
     .filter((line) => line && !line.startsWith("//") && !line.startsWith("/*") && !line.startsWith("*") && !line.startsWith("#"));
 
+  if (fileName === "__init__.py") {
+    if (codeLines.length <= 50) reasons.push("Python __init__.py possibly a re-export facade");
+  }
+
   if (/^(index|mod)\.[cm]?[jt]sx?$/.test(fileName)) {
     const onlyExports = codeLines.every((line) => /^(export\s+(?:\*|\{|type\s+\{|\w)|import\s)/.test(line));
     if (onlyExports && codeLines.length <= 50) reasons.push("small JS/TS import-export facade");
+  }
+
+  if (fileName === "mod.rs" && codeLines.length <= 50) {
+    const pubModCount = (content.match(/^\s*pub\s+mod\s+/gm) ?? []).length;
+    const pubUseCount = (content.match(/^\s*pub\s+use\s+/gm) ?? []).length;
+    if (pubModCount + pubUseCount >= 1 && codeLines.length <= 50) reasons.push("Rust mod.rs re-export facade");
   }
 
   if (fileName.endsWith(".go") && imports.length > 0 && codeLines.length <= 80) {
