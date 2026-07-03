@@ -10,19 +10,32 @@ Find the top five noisy folders that are good candidates for `skill-folder-refac
 ## Quick start
 
 1. Inspect `git status --short --branch`, repo instructions, and existing maps such as `codebase-map-understand.md` when present. Use existing codebase maps for relationship/hotspot leads before ranking broad codebase candidates, then verify with scanner metrics and live files.
-2. Run the scanner from the repo root, optionally with a target folder. It writes a local reuse log under the target folder:
+2. Run the scanner from the repo root, optionally with a target folder:
 
 ```bash
+# Fresh scan
 node skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs [folder]
+# Reuse prior results
 node skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs [folder] --from-log
-autofolderrefactor ignore [folder]
-autofolderrefactor <loops> [folder]
-sh skills/engineering/candidates-folder-refactor/scripts/install.sh
-sh install-autofolderrefactor.sh
-./install-autofolderrefactor.sh
 ```
 
-Use `autofolderrefactor N` only when the owner explicitly wants fully automatic candidate #1 → smart share-code + folder-refactor loops. The script expands the guarded `share-code` prompt directly for Pi print mode, because slash-command injection can exit too early in non-interactive runs. It is scoped to the current working directory: scan roots and selected candidates must resolve to `pwd` or subfolders, never parents or symlink escapes. Pre-existing dirty work outside `pwd` is allowed by default and left alone; set `PI_AUTO_FOLDER_REFACTOR_BLOCK_OUTSIDE_DIRTY=1` for strict legacy blocking. Automatic loops must refactor around behavior/responsibility with tests and clear module boundaries, not shallow file moves or vague `utils`/`common`/`models`/`data_models` buckets. The runtime topology guard rolls back newly created broad generic buckets unless the owner explicitly disables it with `PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD=0`. Shared-code reuse and contract extraction are valuable only when they make the next change easier, safer, and more obvious without changing current behavior, and only after identical behavior is proven across concrete call sites. When refactor candidates are exhausted or below `PI_AUTO_FOLDER_REFACTOR_BUGFIND_THRESHOLD`, it transitions to visibility-driven bug finding through small refactors, invariants, replay tests, and contract extraction.
+The scanner writes `[folder]/.pi/candidates-folder-refactor/latest.json` and appends `runs.jsonl`.
+
+### Autofolderrefactor (autonomous mode)
+
+Install once:
+
+```bash
+sh skills/engineering/candidates-folder-refactor/scripts/install.sh
+```
+
+Then use `autofolderrefactor N [folder]` to run fully automatic candidate #1 → smart share-code + folder-refactor loops. Only use this when the owner explicitly wants autonomous refactoring. Guardrails:
+- Scoped to `pwd` or subfolders (no parent/symlink escapes).
+- Automatic loops refactor around behavior/responsibility with tests, not shallow file moves or vague `utils`/`common` buckets.
+- `PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD=0` disables the runtime topology guard.
+- When candidates are exhausted, transitions to visibility-driven bug finding through small refactors.
+
+### `.refactorignore`
 
 The scanner honors `.refactorignore` in the current working directory and scan root. Use one pattern per line, with `#` comments, optional trailing `/` for directories, `*`/`**` globs, and `!` negation for later rules. It also reports `Suggested .refactorignore entries` for artifact/generated/vendor-looking folders and omits those from refactor candidates. Smart suggestions use confidence-scored evidence: generated-code headers, lock/generated marker files, artifact-heavy extensions, vendor/opensource path patterns, artifact folder names, low-churn unreferenced huge trees, and parent-folder compaction. Source roots such as `lib/`, `src/`, `internal/`, `domain/`, and weak architecture names like `external/` are protected unless stronger artifact/generated evidence exists. Scanner content reads are budgeted by `PI_CANDIDATES_FOLDER_REFACTOR_MAX_CONTENT_FILE_BYTES` and `PI_CANDIDATES_FOLDER_REFACTOR_MAX_TOTAL_CONTENT_BYTES`; files beyond those budgets still count structurally but skip import/symbol content analysis.
 
