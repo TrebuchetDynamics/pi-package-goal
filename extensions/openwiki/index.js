@@ -116,17 +116,17 @@ async function installOpenWiki(pi, params, ctx) {
   if (params.dryRun) return `DRY RUN:\n${plan}`;
   if (!params.yes) {
     if (!ctx.hasUI) return `${plan}\nRun /openwiki install --yes to install non-interactively.`;
-    const ok = await ctx.ui.confirm("Install OpenWiki?", `${plan}\n\nThis clones a GitHub repo and installs/builds Node dependencies with corepack pnpm.`);
+    const ok = await ctx.ui.confirm("Install OpenWiki?", `${plan}\n\nThis clones a GitHub repo and installs/builds Node dependencies with pnpm.`);
     if (!ok) return "OpenWiki install cancelled.";
   }
 
   report(ctx, `OpenWiki install: repo ${installDir}; launcher ${wrapper}.`);
   await mkdir(dirname(installDir), { recursive: true });
   await prepareRepo(pi, installDir, ctx);
-  report(ctx, "OpenWiki install: installing dependencies with corepack pnpm...");
-  await run(pi, "corepack", ["pnpm", "--dir", installDir, "install", "--frozen-lockfile"], ctx);
+  report(ctx, "OpenWiki install: installing dependencies with pnpm...");
+  await run(pi, "pnpm", ["--dir", installDir, "install", "--frozen-lockfile"], ctx);
   report(ctx, "OpenWiki install: building CLI...");
-  await run(pi, "corepack", ["pnpm", "--dir", installDir, "build"], ctx);
+  await run(pi, "pnpm", ["--dir", installDir, "build"], ctx);
 
   await mkdir(binDir, { recursive: true });
   report(ctx, `OpenWiki install: writing launcher ${wrapper}...`);

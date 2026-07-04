@@ -306,7 +306,7 @@ Commands:
 /openwiki run "Summarize the API docs"
 ```
 
-`/openwiki install` clones OpenWiki into user-local paths, builds it with `corepack pnpm`, and writes an `openwiki` launcher. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs. OpenWiki stores local provider config/secrets in `~/.openwiki/.env`.
+`/openwiki install` clones OpenWiki into user-local paths, builds it with `pnpm`, and writes an `openwiki` launcher. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs. OpenWiki stores local provider config/secrets in `~/.openwiki/.env`.
 
 ### `/loop-engineering` and `/loop`
 

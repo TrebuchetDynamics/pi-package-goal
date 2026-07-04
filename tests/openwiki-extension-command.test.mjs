@@ -92,8 +92,9 @@ await installCommands.get("openwiki").handler(`install --yes --dir ${installDir}
 assert.equal(notices.at(-1).level, "info");
 assert.match(notices.at(-1).message, /Installed OpenWiki/);
 assert.ok(installExecs.some((call) => call.cmd === "git" && call.args.includes("clone")));
-assert.ok(installExecs.some((call) => call.cmd === "corepack" && call.args.includes("install")));
-assert.ok(installExecs.some((call) => call.cmd === "corepack" && call.args.includes("build")));
+assert.ok(installExecs.some((call) => call.cmd === "pnpm" && call.args.includes("install")));
+assert.ok(installExecs.some((call) => call.cmd === "pnpm" && call.args.includes("build")));
+assert.equal(installExecs.some((call) => call.cmd === "corepack"), false);
 const wrapper = await readFile(join(binDir, "openwiki"), "utf8");
 assert.match(wrapper, /dist\/cli\.js/);
 await rm(installDir, { recursive: true, force: true });

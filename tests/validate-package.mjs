@@ -569,7 +569,8 @@ async function testUnderstandExtension() {
   const openwikiExtension = read("extensions/openwiki/index.js");
   assert.match(openwikiExtension, /registerCommand\("openwiki"/);
   assert.match(openwikiExtension, /OPENWIKI_REPO_URL/);
-  assert.match(openwikiExtension, /corepack/);
+  assert.match(openwikiExtension, /pnpm/);
+  assert.doesNotMatch(openwikiExtension, /corepack/);
   assert.ok(exists("extensions/openwiki/command.js"), "openwiki command helper must live with the extension");
   assert.ok(exists("tests/openwiki-extension-command.test.mjs"), "openwiki helper test must exist");
 
