@@ -29,7 +29,7 @@ Install once:
 sh skills/engineering/candidates-folder-refactor/scripts/install.sh
 ```
 
-Then use `autofolderrefactor N [folder]` to run fully automatic candidate #1 → smart share-code + folder-refactor loops. Only use this when the owner explicitly wants autonomous refactoring. Guardrails:
+Use `autofolderrefactor ignore [folder]` to preview and establish generated/vendor/artifact ignore rules, then `autofolderrefactor <loops> [folder]` (for example `autofolderrefactor 3 .`) to run fully automatic candidate #1 → smart share-code + folder-refactor loops. Only use this when the owner explicitly wants autonomous refactoring. Guardrails:
 - Scoped to `pwd` or subfolders (no parent/symlink escapes).
 - Automatic loops refactor around behavior/responsibility with tests, not shallow file moves or vague `utils`/`common` buckets.
 - `PI_AUTO_FOLDER_REFACTOR_TOPOLOGY_GUARD=0` disables the runtime topology guard.
