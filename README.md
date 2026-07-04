@@ -2,7 +2,7 @@
 
 `pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/headroom`, `/onklaud`, and `/loop-engineering`;
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/headroom`, `/onklaud`, `/openwiki`, and `/loop-engineering`;
 - agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
 - the `trebuchet-neon` TUI theme; and
 - `tx` tmux plus `autofolderrefactor` helper bins.
@@ -291,6 +291,23 @@ Commands:
 
 The extension treats Onklaud output as advice, not authority: Pi still owns file edits, tests, validation, commits, and pushes. It does not send secrets intentionally; review CLI auth outside Pi before relying on model-backed council calls.
 
+### `/openwiki`
+
+`/openwiki` is a user-controlled bridge to the external [langchain-ai/openwiki](https://github.com/langchain-ai/openwiki) documentation CLI. It does not bundle OpenWiki or install it silently.
+
+Commands:
+
+```text
+/openwiki explain
+/openwiki status
+/openwiki install --yes
+/openwiki init --yes
+/openwiki update --yes
+/openwiki run "Summarize the API docs"
+```
+
+`/openwiki install` clones OpenWiki into user-local paths, builds it with `corepack pnpm`, and writes an `openwiki` launcher. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs. OpenWiki stores local provider config/secrets in `~/.openwiki/.env`.
+
 ### `/loop-engineering` and `/loop`
 
 `/loop-engineering` turns [cobusgreyling/loop-engineering](https://github.com/cobusgreyling/loop-engineering) patterns into a goal-backed Pi workflow. It does not run third-party CLIs itself; it asks the agent to inspect the repo, then use `npx @cobusgreyling/loop-audit`, `loop-init`, `loop-cost`, or `goal-audit` only when safe.
@@ -513,7 +530,8 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/headroom",
       "./extensions/ponytail",
       "./extensions/loop-engineering",
-      "./extensions/onklaud"
+      "./extensions/onklaud",
+      "./extensions/openwiki"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
