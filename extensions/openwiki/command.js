@@ -3,15 +3,16 @@ import { splitCommandArgs } from "../_shared/pi-bridge/command-grammar.js";
 export const OPENWIKI_REPO_URL = "https://github.com/langchain-ai/openwiki.git";
 export const OPENWIKI_USAGE = `Usage: /openwiki [status|explain|progress|install|init|update|run|message...] [options]
 Examples: /openwiki, /openwiki document the API, /openwiki progress, /openwiki install --yes, /openwiki init --yes, /openwiki update --yes`;
-export const OPENWIKI_EXPLANATION = `OpenWiki is a thin Pi extension around the external OpenWiki CLI from langchain-ai/openwiki.
+export const OPENWIKI_EXPLANATION = `OpenWiki routes documentation work through Pi by default, using Pi's current model and tools.
 
 What it does:
-- /openwiki installs OpenWiki if requested, then chooses init or update from the repo state.
-- /openwiki <message> runs \`openwiki -p <message>\` as a one-shot prompt.
+- /openwiki chooses init or update from the repo state, then queues a Pi-native docs task.
+- /openwiki <message> queues that request as a Pi-native OpenWiki-style docs task.
 - /openwiki init/update still work when you want explicit control.
 - /openwiki progress shows the repo-local .openwiki progress file.
+- OPENWIKI_USE_CLI=1 keeps the old external langchain-ai/openwiki CLI path for users who want it.
 
-OpenWiki can edit repository docs such as openwiki/, AGENTS.md, or CLAUDE.md, stores local provider secrets in ~/.openwiki/.env, and this extension stores non-secret run progress in .openwiki. Review output and run repo validation before committing.`;
+OpenWiki tasks can edit repository docs such as openwiki/, AGENTS.md, or CLAUDE.md. This extension stores non-secret run progress in .openwiki. Review output and run repo validation before committing.`;
 
 const ACTIONS = new Set(["status", "explain", "progress", "install", "init", "update", "run", "auto"]);
 

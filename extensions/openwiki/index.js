@@ -34,24 +34,30 @@ const OPENWIKI_PROVIDER_ENV = {
 
 function openWikiProviderFor(model) {
   const provider = String(model?.provider || "").toLowerCase();
-  const key = Object.keys(OPENWIKI_PROVIDER_ENV).find((name) => provider === name || provider.startsWith(`${name}-`));
-  return key ? OPENWIKI_PROVIDER_ENV[key] : null;
+  return OPENWIKI_PROVIDER_ENV[provider] || null;
 }
 
-async function openWikiEnvFromPi(ctx, selected) {
-  const mapped = openWikiProviderFor(ctx?.model);
+async function openWikiEnvForModel(ctx, selected, model, useModelId = true) {
+  const mapped = openWikiProviderFor(model);
   if (!mapped) return {};
   let apiKey = process.env[mapped[1]];
   if (!apiKey && ctx?.modelRegistry?.getApiKeyAndHeaders) {
-    const auth = await ctx.modelRegistry.getApiKeyAndHeaders(ctx.model);
+    const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
     if (auth?.ok) apiKey = auth.apiKey;
   }
   if (!apiKey) return {};
   return {
     [mapped[1]]: apiKey,
     OPENWIKI_PROVIDER: mapped[0],
-    ...(selected.modelId ? {} : { OPENWIKI_MODEL_ID: ctx.model.id }),
+    ...(selected.modelId || !useModelId ? {} : { OPENWIKI_MODEL_ID: model.id }),
   };
+}
+
+async function openWikiEnvFromPi(ctx, selected) {
+  const current = await openWikiEnvForModel(ctx, selected, ctx?.model);
+  if (Object.keys(current).length) return current;
+  const openrouter = ctx?.modelRegistry?.find?.("openrouter", selected.modelId || "z-ai/glm-5.2");
+  return openWikiEnvForModel(ctx, selected, openrouter, false);
 }
 
 async function withEnv(overrides, fn) {
@@ -229,20 +235,44 @@ async function resolveAutoAction(parsed, ctx) {
   return { ...parsed, action: hasWiki ? "update" : "init", yes: true };
 }
 
+function piNativePrompt(selected) {
+  const request = selected.request ? `\nUser request: ${selected.request}` : "";
+  return `Use Pi itself to maintain this repo's OpenWiki-style documentation.
+
+Action: ${selected.action}
+- Inspect the repository before writing.
+- Create or update docs under openwiki/ with source-backed claims.
+- Prefer a small useful wiki: overview, architecture, key workflows, validation, and extension/package notes where relevant.
+- Do not commit secrets, local state, caches, or generated junk.
+- Keep AGENTS.md/CLAUDE.md changes minimal and only if docs navigation needs them.
+- Run the smallest relevant validation after edits.${request}`;
+}
+
+async function runOpenWikiViaPi(pi, selected, ctx) {
+  await recordProgress(ctx, { action: selected.action, ok: true, delegatedToPi: true, request: selected.request || undefined });
+  pi.sendUserMessage(piNativePrompt(selected));
+  return { text: "Queued OpenWiki docs task through Pi itself. Progress saved to .openwiki", level: "info" };
+}
+
 async function runOpenWiki(pi, parsed, ctx) {
   const selected = await resolveAutoAction(parsed, ctx);
-  const invocation = await openWikiInvocation();
-  const args = [...invocation.argsPrefix, ...openWikiCliArgs(selected)];
+  const useCli = process.env.OPENWIKI_USE_CLI === "1";
+  const invocation = useCli ? await openWikiInvocation() : null;
+  const args = useCli ? [...invocation.argsPrefix, ...openWikiCliArgs(selected)] : [];
   if (selected.dryRun) {
     await recordProgress(ctx, { action: selected.action, ok: true, dryRun: true, args });
-    return `DRY RUN: ${invocation.label} ${openWikiCliArgs(selected).map((arg) => JSON.stringify(arg)).join(" ")}`;
+    return useCli
+      ? `DRY RUN: ${invocation.label} ${openWikiCliArgs(selected).map((arg) => JSON.stringify(arg)).join(" ")}`
+      : `DRY RUN: Pi-native OpenWiki task\n${piNativePrompt(selected)}`;
   }
   if ((selected.action === "init" || selected.action === "update") && !selected.yes) {
     const label = selected.action === "init" ? "initialize" : "update";
     if (!ctx.hasUI) return `OpenWiki ${label} can edit docs. Rerun /openwiki ${selected.action} --yes non-interactively.`;
-    const ok = await ctx.ui.confirm(`OpenWiki ${label}?`, `This runs ${invocation.label} ${openWikiCliArgs(selected).join(" ")} and may edit openwiki/, AGENTS.md, or CLAUDE.md.`);
+    const target = useCli ? `${invocation.label} ${openWikiCliArgs(selected).join(" ")}` : "Pi itself with the current model and tools";
+    const ok = await ctx.ui.confirm(`OpenWiki ${label}?`, `This runs ${target} and may edit openwiki/, AGENTS.md, or CLAUDE.md.`);
     if (!ok) return `OpenWiki ${label} cancelled.`;
   }
+  if (!useCli) return runOpenWikiViaPi(pi, selected, ctx);
   const env = await openWikiEnvFromPi(ctx, selected);
   const result = await withEnv(env, () => pi.exec(invocation.command, args, { signal: ctx.signal, timeout: 900_000 }));
   const text = truncate(outputText(result) || `openwiki exited with code ${result.code}`);
@@ -254,7 +284,7 @@ async function runOpenWiki(pi, parsed, ctx) {
 
 export default function openwiki(pi) {
   pi.registerCommand("openwiki", {
-    description: "Install and run the external langchain-ai OpenWiki documentation CLI",
+    description: "Run OpenWiki-style documentation tasks through Pi; optionally install/use the external CLI",
     getArgumentCompletions: (prefix) => openWikiCompletions(prefix),
     handler: async (args, ctx) => {
       const parsed = parseOpenWikiArgs(args);

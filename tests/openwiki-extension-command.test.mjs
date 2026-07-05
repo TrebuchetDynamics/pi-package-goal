@@ -14,12 +14,16 @@ import {
 const defaults = { dryRun: false, help: false, yes: false, installDir: "", binDir: "", modelId: "", error: null };
 const oldOpenWikiBin = process.env.OPENWIKI_BIN;
 const oldOpenAiKey = process.env.OPENAI_API_KEY;
+const oldOpenRouterKey = process.env.OPENROUTER_API_KEY;
 const oldOpenWikiProvider = process.env.OPENWIKI_PROVIDER;
 const oldOpenWikiModelId = process.env.OPENWIKI_MODEL_ID;
+const oldOpenWikiUseCli = process.env.OPENWIKI_USE_CLI;
 process.env.OPENWIKI_BIN = "openwiki";
 delete process.env.OPENAI_API_KEY;
+delete process.env.OPENROUTER_API_KEY;
 delete process.env.OPENWIKI_PROVIDER;
 delete process.env.OPENWIKI_MODEL_ID;
+delete process.env.OPENWIKI_USE_CLI;
 const projectDir = await mkdtemp(join(tmpdir(), "openwiki-project-"));
 
 assert.equal(OPENWIKI_REPO_URL, "https://github.com/langchain-ai/openwiki.git");
@@ -40,14 +44,16 @@ assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("update changed routes")), ["
 assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("run summarize docs")), ["-p", "summarize docs"]);
 assert.deepEqual(openWikiCompletions("st"), [{ value: "status", label: "status" }]);
 assert.deepEqual(openWikiCompletions("pr"), [{ value: "progress", label: "progress" }]);
-assert.match(OPENWIKI_EXPLANATION, /external OpenWiki CLI/);
-assert.match(OPENWIKI_EXPLANATION, /~\/\.openwiki\/\.env/);
+assert.match(OPENWIKI_EXPLANATION, /through Pi by default/);
+assert.match(OPENWIKI_EXPLANATION, /OPENWIKI_USE_CLI=1/);
 
 const commands = new Map();
 const notices = [];
 const execCalls = [];
+const sentMessages = [];
 registerOpenWiki({
   registerCommand: (name, definition) => commands.set(name, definition),
+  sendUserMessage: (message) => sentMessages.push(message),
   exec: async (cmd, args, options) => {
     execCalls.push({ cmd, args, options });
     return { code: 0, stdout: cmd.includes("openwiki") || cmd === "openwiki" ? "OpenWiki help" : "ok", stderr: "" };
@@ -58,14 +64,14 @@ assert.deepEqual(commands.get("openwiki").getArgumentCompletions("up"), [{ value
 
 const ctx = { cwd: projectDir, hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }), confirm: async () => false }, signal: "signal" };
 await commands.get("openwiki").handler("explain", ctx);
-assert.match(notices.at(-1).message, /OpenWiki is a thin Pi extension/);
+assert.match(notices.at(-1).message, /through Pi by default/);
 await commands.get("openwiki").handler("--help", ctx);
 assert.match(notices.at(-1).message, /Usage:/);
 await commands.get("openwiki").handler("progress", ctx);
 assert.match(notices.at(-1).message, /No OpenWiki progress yet/);
 
 await commands.get("openwiki").handler("run", ctx);
-assert.deepEqual(execCalls.at(-1)?.args?.slice(0, 2), ["-p", "--init"]);
+assert.match(sentMessages.at(-1), /Action: init/);
 
 await commands.get("openwiki").handler("status", ctx);
 assert.deepEqual(execCalls.at(-1).args, ["--help"]);
@@ -75,23 +81,26 @@ assert.match(await readFile(join(projectDir, ".openwiki"), "utf8"), /"action": "
 
 await commands.get("openwiki").handler("init --dry-run docs", ctx);
 assert.match(notices.at(-1).message, /^DRY RUN:/);
-assert.match(notices.at(-1).message, /--init/);
+assert.match(notices.at(-1).message, /Pi-native OpenWiki task/);
 assert.match(notices.at(-1).message, /docs/);
 
 await commands.get("openwiki").handler("init", ctx);
 assert.match(notices.at(-1).message, /cancelled/);
 
 await commands.get("openwiki").handler("update --yes focus docs", ctx);
-assert.deepEqual(execCalls.at(-1).args, ["-p", "--update", "focus docs"]);
+assert.match(sentMessages.at(-1), /focus docs/);
 assert.equal(notices.at(-1).level, "info");
 
+process.env.OPENWIKI_USE_CLI = "1";
 let seenOpenWikiEnv;
 const piAuthCommands = new Map();
 registerOpenWiki({
   registerCommand: (name, definition) => piAuthCommands.set(name, definition),
+  sendUserMessage: (message) => sentMessages.push(message),
   exec: async () => {
     seenOpenWikiEnv = {
-      key: process.env.OPENAI_API_KEY,
+      openai: process.env.OPENAI_API_KEY,
+      openrouter: process.env.OPENROUTER_API_KEY,
       provider: process.env.OPENWIKI_PROVIDER,
       model: process.env.OPENWIKI_MODEL_ID,
     };
@@ -101,12 +110,17 @@ registerOpenWiki({
 await piAuthCommands.get("openwiki").handler("summarize docs", {
   ...ctx,
   model: { provider: "openai-codex", id: "gpt-5.5" },
-  modelRegistry: { getApiKeyAndHeaders: async () => ({ ok: true, apiKey: "pi-openai-key" }) },
+  modelRegistry: {
+    find: (provider, id) => ({ provider, id }),
+    getApiKeyAndHeaders: async (model) => ({ ok: true, apiKey: `${model.provider}-key` }),
+  },
 });
-assert.deepEqual(seenOpenWikiEnv, { key: "pi-openai-key", provider: "openai", model: "gpt-5.5" });
+assert.deepEqual(seenOpenWikiEnv, { openai: undefined, openrouter: "openrouter-key", provider: "openrouter", model: undefined });
 assert.equal(process.env.OPENAI_API_KEY, undefined);
+assert.equal(process.env.OPENROUTER_API_KEY, undefined);
 assert.equal(process.env.OPENWIKI_PROVIDER, undefined);
 assert.equal(process.env.OPENWIKI_MODEL_ID, undefined);
+delete process.env.OPENWIKI_USE_CLI;
 
 const installDir = await mkdtemp(join(tmpdir(), "openwiki-install-"));
 const binDir = join(installDir, "bin");
@@ -150,9 +164,13 @@ if (oldOpenWikiBin === undefined) delete process.env.OPENWIKI_BIN;
 else process.env.OPENWIKI_BIN = oldOpenWikiBin;
 if (oldOpenAiKey === undefined) delete process.env.OPENAI_API_KEY;
 else process.env.OPENAI_API_KEY = oldOpenAiKey;
+if (oldOpenRouterKey === undefined) delete process.env.OPENROUTER_API_KEY;
+else process.env.OPENROUTER_API_KEY = oldOpenRouterKey;
 if (oldOpenWikiProvider === undefined) delete process.env.OPENWIKI_PROVIDER;
 else process.env.OPENWIKI_PROVIDER = oldOpenWikiProvider;
 if (oldOpenWikiModelId === undefined) delete process.env.OPENWIKI_MODEL_ID;
 else process.env.OPENWIKI_MODEL_ID = oldOpenWikiModelId;
+if (oldOpenWikiUseCli === undefined) delete process.env.OPENWIKI_USE_CLI;
+else process.env.OPENWIKI_USE_CLI = oldOpenWikiUseCli;
 await rm(projectDir, { recursive: true, force: true });
 console.log("openwiki-extension-command ok");
