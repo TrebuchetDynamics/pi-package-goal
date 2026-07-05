@@ -24,6 +24,49 @@ function truncate(text, limit = 6000) {
   return value.length > limit ? `${value.slice(0, limit)}\n\n[openwiki output truncated]` : value;
 }
 
+const OPENWIKI_PROVIDER_ENV = {
+  anthropic: ["anthropic", "ANTHROPIC_API_KEY"],
+  baseten: ["baseten", "BASETEN_API_KEY"],
+  fireworks: ["fireworks", "FIREWORKS_API_KEY"],
+  openai: ["openai", "OPENAI_API_KEY"],
+  openrouter: ["openrouter", "OPENROUTER_API_KEY"],
+};
+
+function openWikiProviderFor(model) {
+  const provider = String(model?.provider || "").toLowerCase();
+  const key = Object.keys(OPENWIKI_PROVIDER_ENV).find((name) => provider === name || provider.startsWith(`${name}-`));
+  return key ? OPENWIKI_PROVIDER_ENV[key] : null;
+}
+
+async function openWikiEnvFromPi(ctx, selected) {
+  const mapped = openWikiProviderFor(ctx?.model);
+  if (!mapped) return {};
+  let apiKey = process.env[mapped[1]];
+  if (!apiKey && ctx?.modelRegistry?.getApiKeyAndHeaders) {
+    const auth = await ctx.modelRegistry.getApiKeyAndHeaders(ctx.model);
+    if (auth?.ok) apiKey = auth.apiKey;
+  }
+  if (!apiKey) return {};
+  return {
+    [mapped[1]]: apiKey,
+    OPENWIKI_PROVIDER: mapped[0],
+    ...(selected.modelId ? {} : { OPENWIKI_MODEL_ID: ctx.model.id }),
+  };
+}
+
+async function withEnv(overrides, fn) {
+  const old = new Map(Object.keys(overrides).map((key) => [key, process.env[key]]));
+  for (const [key, value] of Object.entries(overrides)) process.env[key] = value;
+  try {
+    return await fn();
+  } finally {
+    for (const [key, value] of old) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 function progressPath(ctx) {
   return ctx?.cwd ? join(ctx.cwd, ".openwiki") : null;
 }
@@ -89,10 +132,13 @@ async function exists(path) {
   }
 }
 
-async function openWikiCommand() {
-  if (process.env.OPENWIKI_BIN) return process.env.OPENWIKI_BIN;
+async function openWikiInvocation() {
+  if (process.env.OPENWIKI_BIN) return { command: process.env.OPENWIKI_BIN, argsPrefix: [], label: process.env.OPENWIKI_BIN };
   const local = join(defaultBinDir(), wrapperName());
-  return (await exists(local)) ? local : "openwiki";
+  if (await exists(local)) return { command: local, argsPrefix: [], label: local };
+  const cli = join(defaultInstallDir(), "dist", "cli.js");
+  if (await exists(cli)) return { command: process.execPath, argsPrefix: [cli], label: `node ${cli}` };
+  return { command: "openwiki", argsPrefix: [], label: "openwiki" };
 }
 
 async function run(pi, command, args, ctx, timeout = 900_000) {
@@ -185,19 +231,20 @@ async function resolveAutoAction(parsed, ctx) {
 
 async function runOpenWiki(pi, parsed, ctx) {
   const selected = await resolveAutoAction(parsed, ctx);
-  const command = await openWikiCommand();
-  const args = openWikiCliArgs(selected);
+  const invocation = await openWikiInvocation();
+  const args = [...invocation.argsPrefix, ...openWikiCliArgs(selected)];
   if (selected.dryRun) {
     await recordProgress(ctx, { action: selected.action, ok: true, dryRun: true, args });
-    return `DRY RUN: ${command} ${args.map((arg) => JSON.stringify(arg)).join(" ")}`;
+    return `DRY RUN: ${invocation.label} ${openWikiCliArgs(selected).map((arg) => JSON.stringify(arg)).join(" ")}`;
   }
   if ((selected.action === "init" || selected.action === "update") && !selected.yes) {
     const label = selected.action === "init" ? "initialize" : "update";
     if (!ctx.hasUI) return `OpenWiki ${label} can edit docs. Rerun /openwiki ${selected.action} --yes non-interactively.`;
-    const ok = await ctx.ui.confirm(`OpenWiki ${label}?`, `This runs ${command} ${args.join(" ")} and may edit openwiki/, AGENTS.md, or CLAUDE.md.`);
+    const ok = await ctx.ui.confirm(`OpenWiki ${label}?`, `This runs ${invocation.label} ${openWikiCliArgs(selected).join(" ")} and may edit openwiki/, AGENTS.md, or CLAUDE.md.`);
     if (!ok) return `OpenWiki ${label} cancelled.`;
   }
-  const result = await pi.exec(command, args, { signal: ctx.signal, timeout: 900_000 });
+  const env = await openWikiEnvFromPi(ctx, selected);
+  const result = await withEnv(env, () => pi.exec(invocation.command, args, { signal: ctx.signal, timeout: 900_000 }));
   const text = truncate(outputText(result) || `openwiki exited with code ${result.code}`);
   const ok = result.code === 0;
   await recordProgress(ctx, { action: selected.action, ok, exitCode: result.code, args, request: selected.request || undefined });
@@ -240,11 +287,11 @@ export default function openwiki(pi) {
       }
       if (parsed.action === "status") {
         try {
-          const command = await openWikiCommand();
-          const result = await pi.exec(command, ["--help"], { signal: ctx.signal, timeout: 120_000 });
+          const invocation = await openWikiInvocation();
+          const result = await pi.exec(invocation.command, [...invocation.argsPrefix, "--help"], { signal: ctx.signal, timeout: 120_000 });
           const text = outputText(result);
           await recordProgress(ctx, { action: "status", ok: result.code === 0, exitCode: result.code });
-          report(ctx, result.code === 0 ? `OpenWiki available via ${command}.\n${truncate(text, 2000)}\n\nProgress saved to .openwiki` : `OpenWiki status failed. Run /openwiki install --yes.\n${truncate(text, 2000)}`, result.code === 0 ? "info" : "warning");
+          report(ctx, result.code === 0 ? `OpenWiki available via ${invocation.label}.\n${truncate(text, 2000)}\n\nProgress saved to .openwiki` : `OpenWiki status failed. Run /openwiki install --yes.\n${truncate(text, 2000)}`, result.code === 0 ? "info" : "warning");
         } catch (error) {
           await recordProgress(ctx, { action: "status", ok: false, error: error.message });
           report(ctx, `OpenWiki not available: ${error.message}\nRun /openwiki install --yes.`, "warning");

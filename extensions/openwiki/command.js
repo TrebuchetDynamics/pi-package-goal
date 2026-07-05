@@ -113,9 +113,9 @@ function parsedArgs({ words = [], dryRun = false, help = false, yes = false, ins
 
 export function openWikiCliArgs(parsed) {
   const args = [];
+  if (["init", "update", "run"].includes(parsed.action)) args.push("-p");
   if (parsed.action === "init") args.push("--init");
   if (parsed.action === "update") args.push("--update");
-  if (parsed.action === "run") args.push("-p");
   if (parsed.modelId) args.push("--model-id", parsed.modelId);
   if (parsed.request) args.push(parsed.request);
   return args;

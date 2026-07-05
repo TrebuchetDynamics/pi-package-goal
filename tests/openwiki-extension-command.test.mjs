@@ -12,6 +12,14 @@ import {
 } from "../extensions/openwiki/command.js";
 
 const defaults = { dryRun: false, help: false, yes: false, installDir: "", binDir: "", modelId: "", error: null };
+const oldOpenWikiBin = process.env.OPENWIKI_BIN;
+const oldOpenAiKey = process.env.OPENAI_API_KEY;
+const oldOpenWikiProvider = process.env.OPENWIKI_PROVIDER;
+const oldOpenWikiModelId = process.env.OPENWIKI_MODEL_ID;
+process.env.OPENWIKI_BIN = "openwiki";
+delete process.env.OPENAI_API_KEY;
+delete process.env.OPENWIKI_PROVIDER;
+delete process.env.OPENWIKI_MODEL_ID;
 const projectDir = await mkdtemp(join(tmpdir(), "openwiki-project-"));
 
 assert.equal(OPENWIKI_REPO_URL, "https://github.com/langchain-ai/openwiki.git");
@@ -27,8 +35,8 @@ assert.equal(parseOpenWikiArgs("--help").help, true);
 assert.match(parseOpenWikiArgs("--mode nope").error, /Unknown option/);
 assert.match(parseOpenWikiArgs("run --yes hello").error, /--yes is only valid/);
 assert.match(parseOpenWikiArgs("init --dir ~/ow").error, /--dir and --bin-dir/);
-assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("init --model-id gpt-5 docs")), ["--init", "--model-id", "gpt-5", "docs"]);
-assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("update changed routes")), ["--update", "changed routes"]);
+assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("init --model-id gpt-5 docs")), ["-p", "--init", "--model-id", "gpt-5", "docs"]);
+assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("update changed routes")), ["-p", "--update", "changed routes"]);
 assert.deepEqual(openWikiCliArgs(parseOpenWikiArgs("run summarize docs")), ["-p", "summarize docs"]);
 assert.deepEqual(openWikiCompletions("st"), [{ value: "status", label: "status" }]);
 assert.deepEqual(openWikiCompletions("pr"), [{ value: "progress", label: "progress" }]);
@@ -57,7 +65,7 @@ await commands.get("openwiki").handler("progress", ctx);
 assert.match(notices.at(-1).message, /No OpenWiki progress yet/);
 
 await commands.get("openwiki").handler("run", ctx);
-assert.equal(execCalls.at(-1)?.args?.[0], "--init");
+assert.deepEqual(execCalls.at(-1)?.args?.slice(0, 2), ["-p", "--init"]);
 
 await commands.get("openwiki").handler("status", ctx);
 assert.deepEqual(execCalls.at(-1).args, ["--help"]);
@@ -74,8 +82,31 @@ await commands.get("openwiki").handler("init", ctx);
 assert.match(notices.at(-1).message, /cancelled/);
 
 await commands.get("openwiki").handler("update --yes focus docs", ctx);
-assert.deepEqual(execCalls.at(-1).args, ["--update", "focus docs"]);
+assert.deepEqual(execCalls.at(-1).args, ["-p", "--update", "focus docs"]);
 assert.equal(notices.at(-1).level, "info");
+
+let seenOpenWikiEnv;
+const piAuthCommands = new Map();
+registerOpenWiki({
+  registerCommand: (name, definition) => piAuthCommands.set(name, definition),
+  exec: async () => {
+    seenOpenWikiEnv = {
+      key: process.env.OPENAI_API_KEY,
+      provider: process.env.OPENWIKI_PROVIDER,
+      model: process.env.OPENWIKI_MODEL_ID,
+    };
+    return { code: 0, stdout: "ok", stderr: "" };
+  },
+});
+await piAuthCommands.get("openwiki").handler("summarize docs", {
+  ...ctx,
+  model: { provider: "openai-codex", id: "gpt-5.5" },
+  modelRegistry: { getApiKeyAndHeaders: async () => ({ ok: true, apiKey: "pi-openai-key" }) },
+});
+assert.deepEqual(seenOpenWikiEnv, { key: "pi-openai-key", provider: "openai", model: "gpt-5.5" });
+assert.equal(process.env.OPENAI_API_KEY, undefined);
+assert.equal(process.env.OPENWIKI_PROVIDER, undefined);
+assert.equal(process.env.OPENWIKI_MODEL_ID, undefined);
 
 const installDir = await mkdtemp(join(tmpdir(), "openwiki-install-"));
 const binDir = join(installDir, "bin");
@@ -115,5 +146,13 @@ await failingCommands.get("openwiki").handler("status", ctx);
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /Run \/openwiki install --yes/);
 
+if (oldOpenWikiBin === undefined) delete process.env.OPENWIKI_BIN;
+else process.env.OPENWIKI_BIN = oldOpenWikiBin;
+if (oldOpenAiKey === undefined) delete process.env.OPENAI_API_KEY;
+else process.env.OPENAI_API_KEY = oldOpenAiKey;
+if (oldOpenWikiProvider === undefined) delete process.env.OPENWIKI_PROVIDER;
+else process.env.OPENWIKI_PROVIDER = oldOpenWikiProvider;
+if (oldOpenWikiModelId === undefined) delete process.env.OPENWIKI_MODEL_ID;
+else process.env.OPENWIKI_MODEL_ID = oldOpenWikiModelId;
 await rm(projectDir, { recursive: true, force: true });
 console.log("openwiki-extension-command ok");
