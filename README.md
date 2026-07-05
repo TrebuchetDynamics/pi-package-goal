@@ -298,15 +298,16 @@ The extension treats Onklaud output as advice, not authority: Pi still owns file
 Commands:
 
 ```text
-/openwiki explain
+/openwiki
+/openwiki document the API docs
+/openwiki progress
 /openwiki status
 /openwiki install --yes
 /openwiki init --yes
 /openwiki update --yes
-/openwiki run "Summarize the API docs"
 ```
 
-`/openwiki install` clones OpenWiki into user-local paths, builds it with `pnpm`, and writes an `openwiki` launcher. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs. OpenWiki stores local provider config/secrets in `~/.openwiki/.env`.
+`/openwiki` now chooses `init` when no `openwiki/` docs exist and `update` when they do. `/openwiki <message>` runs a one-shot docs request. The extension keeps non-secret repo-local progress in `.openwiki`; OpenWiki's provider config/secrets stay in `~/.openwiki/.env`. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs.
 
 ### `/loop-engineering` and `/loop`
 

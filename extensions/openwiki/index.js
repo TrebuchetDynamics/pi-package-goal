@@ -1,4 +1,4 @@
-import { chmod, mkdir, readdir, stat, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
@@ -22,6 +22,44 @@ function report(ctx, message, level = "info") {
 function truncate(text, limit = 6000) {
   const value = String(text || "").trim();
   return value.length > limit ? `${value.slice(0, limit)}\n\n[openwiki output truncated]` : value;
+}
+
+function progressPath(ctx) {
+  return ctx?.cwd ? join(ctx.cwd, ".openwiki") : null;
+}
+
+async function readProgress(ctx) {
+  const file = progressPath(ctx);
+  if (!file) return null;
+  try {
+    return JSON.parse(await readFile(file, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") return { version: 1, runs: [] };
+    if (error instanceof SyntaxError) return { version: 1, runs: [] };
+    throw error;
+  }
+}
+
+async function recordProgress(ctx, entry) {
+  const file = progressPath(ctx);
+  if (!file) return;
+  try {
+    const at = new Date().toISOString();
+    const current = await readProgress(ctx);
+    const nextEntry = { at, ...entry };
+    const runs = [...(Array.isArray(current?.runs) ? current.runs : []), nextEntry].slice(-20);
+    await writeFile(file, JSON.stringify({ version: 1, updatedAt: at, last: nextEntry, runs }, null, 2) + "\n", "utf8");
+  } catch (error) {
+    report(ctx, `OpenWiki progress not written: ${error.message}`, "warning");
+  }
+}
+
+async function formatProgress(ctx) {
+  const file = progressPath(ctx);
+  if (!file) return "OpenWiki progress needs a project cwd.";
+  const progress = await readProgress(ctx);
+  if (!progress?.last) return `No OpenWiki progress yet. Run /openwiki or /openwiki <request>. Progress will be saved to ${file}.`;
+  return `OpenWiki progress: ${file}\nlast: ${progress.last.action} ${progress.last.ok ? "ok" : "failed"} at ${progress.last.at}\nruns tracked: ${progress.runs?.length ?? 0}`;
 }
 
 function expandHome(path, fallback) {
@@ -139,20 +177,32 @@ async function installOpenWiki(pi, params, ctx) {
   return `Installed OpenWiki. Run: /openwiki status\nSecrets/config remain in ~/.openwiki/.env when OpenWiki asks for provider setup.`;
 }
 
+async function resolveAutoAction(parsed, ctx) {
+  if (parsed.action !== "auto") return parsed;
+  const hasWiki = Boolean(ctx?.cwd) && await exists(join(ctx.cwd, "openwiki"));
+  return { ...parsed, action: hasWiki ? "update" : "init", yes: true };
+}
+
 async function runOpenWiki(pi, parsed, ctx) {
+  const selected = await resolveAutoAction(parsed, ctx);
   const command = await openWikiCommand();
-  const args = openWikiCliArgs(parsed);
-  if (parsed.dryRun) return `DRY RUN: ${command} ${args.map((arg) => JSON.stringify(arg)).join(" ")}`;
-  if ((parsed.action === "init" || parsed.action === "update") && !parsed.yes) {
-    const label = parsed.action === "init" ? "initialize" : "update";
-    if (!ctx.hasUI) return `OpenWiki ${label} can edit docs. Rerun /openwiki ${parsed.action} --yes non-interactively.`;
+  const args = openWikiCliArgs(selected);
+  if (selected.dryRun) {
+    await recordProgress(ctx, { action: selected.action, ok: true, dryRun: true, args });
+    return `DRY RUN: ${command} ${args.map((arg) => JSON.stringify(arg)).join(" ")}`;
+  }
+  if ((selected.action === "init" || selected.action === "update") && !selected.yes) {
+    const label = selected.action === "init" ? "initialize" : "update";
+    if (!ctx.hasUI) return `OpenWiki ${label} can edit docs. Rerun /openwiki ${selected.action} --yes non-interactively.`;
     const ok = await ctx.ui.confirm(`OpenWiki ${label}?`, `This runs ${command} ${args.join(" ")} and may edit openwiki/, AGENTS.md, or CLAUDE.md.`);
     if (!ok) return `OpenWiki ${label} cancelled.`;
   }
   const result = await pi.exec(command, args, { signal: ctx.signal, timeout: 900_000 });
   const text = truncate(outputText(result) || `openwiki exited with code ${result.code}`);
-  if (result.code !== 0) return { text, level: "warning" };
-  return { text: text || "OpenWiki completed.", level: "info" };
+  const ok = result.code === 0;
+  await recordProgress(ctx, { action: selected.action, ok, exitCode: result.code, args, request: selected.request || undefined });
+  if (!ok) return { text, level: "warning" };
+  return { text: `${text || "OpenWiki completed."}\n\nProgress saved to .openwiki`, level: "info" };
 }
 
 export default function openwiki(pi) {
@@ -173,10 +223,17 @@ export default function openwiki(pi) {
         report(ctx, OPENWIKI_EXPLANATION, "info");
         return;
       }
+      if (parsed.action === "progress") {
+        report(ctx, await formatProgress(ctx), "info");
+        return;
+      }
       if (parsed.action === "install") {
         try {
-          report(ctx, await installOpenWiki(pi, parsed, ctx), "info");
+          const message = await installOpenWiki(pi, parsed, ctx);
+          await recordProgress(ctx, { action: "install", ok: !/^OpenWiki install cancelled/.test(message), dryRun: parsed.dryRun || undefined });
+          report(ctx, message, "info");
         } catch (error) {
+          await recordProgress(ctx, { action: "install", ok: false, error: error.message });
           report(ctx, `OpenWiki install failed: ${error.message}`, "warning");
         }
         return;
@@ -186,8 +243,10 @@ export default function openwiki(pi) {
           const command = await openWikiCommand();
           const result = await pi.exec(command, ["--help"], { signal: ctx.signal, timeout: 120_000 });
           const text = outputText(result);
-          report(ctx, result.code === 0 ? `OpenWiki available via ${command}.\n${truncate(text, 2000)}` : `OpenWiki status failed. Run /openwiki install --yes.\n${truncate(text, 2000)}`, result.code === 0 ? "info" : "warning");
+          await recordProgress(ctx, { action: "status", ok: result.code === 0, exitCode: result.code });
+          report(ctx, result.code === 0 ? `OpenWiki available via ${command}.\n${truncate(text, 2000)}\n\nProgress saved to .openwiki` : `OpenWiki status failed. Run /openwiki install --yes.\n${truncate(text, 2000)}`, result.code === 0 ? "info" : "warning");
         } catch (error) {
+          await recordProgress(ctx, { action: "status", ok: false, error: error.message });
           report(ctx, `OpenWiki not available: ${error.message}\nRun /openwiki install --yes.`, "warning");
         }
         return;
@@ -198,6 +257,7 @@ export default function openwiki(pi) {
         if (typeof result === "string") report(ctx, result, "info");
         else report(ctx, result.text, result.level);
       } catch (error) {
+        await recordProgress(ctx, { action: parsed.action, ok: false, error: error.message, request: parsed.request || undefined });
         report(ctx, `OpenWiki failed: ${error.message}`, "warning");
       }
     },

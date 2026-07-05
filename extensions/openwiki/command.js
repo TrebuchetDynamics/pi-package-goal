@@ -1,19 +1,19 @@
 import { splitCommandArgs } from "../_shared/pi-bridge/command-grammar.js";
 
 export const OPENWIKI_REPO_URL = "https://github.com/langchain-ai/openwiki.git";
-export const OPENWIKI_USAGE = `Usage: /openwiki [status|explain|install|init|update|run|message...] [options]
-Examples: /openwiki explain, /openwiki status, /openwiki install --yes, /openwiki init --yes, /openwiki update --yes, /openwiki run "Summarize the auth docs"`;
+export const OPENWIKI_USAGE = `Usage: /openwiki [status|explain|progress|install|init|update|run|message...] [options]
+Examples: /openwiki, /openwiki document the API, /openwiki progress, /openwiki install --yes, /openwiki init --yes, /openwiki update --yes`;
 export const OPENWIKI_EXPLANATION = `OpenWiki is a thin Pi extension around the external OpenWiki CLI from langchain-ai/openwiki.
 
 What it does:
-- /openwiki install clones OpenWiki into user-local paths and builds a local launcher.
-- /openwiki init --yes runs \`openwiki --init\` for initial docs.
-- /openwiki update --yes runs \`openwiki --update\` for docs refreshes.
-- /openwiki run <message> runs \`openwiki -p <message>\` as a one-shot prompt.
+- /openwiki installs OpenWiki if requested, then chooses init or update from the repo state.
+- /openwiki <message> runs \`openwiki -p <message>\` as a one-shot prompt.
+- /openwiki init/update still work when you want explicit control.
+- /openwiki progress shows the repo-local .openwiki progress file.
 
-OpenWiki can edit repository docs such as openwiki/, AGENTS.md, or CLAUDE.md, and stores local provider secrets in ~/.openwiki/.env. Review its output and run repo validation before committing.`;
+OpenWiki can edit repository docs such as openwiki/, AGENTS.md, or CLAUDE.md, stores local provider secrets in ~/.openwiki/.env, and this extension stores non-secret run progress in .openwiki. Review output and run repo validation before committing.`;
 
-const ACTIONS = new Set(["status", "explain", "install", "init", "update", "run"]);
+const ACTIONS = new Set(["status", "explain", "progress", "install", "init", "update", "run", "auto"]);
 
 export function parseOpenWikiArgs(input = "") {
   let tokens;
@@ -90,13 +90,13 @@ export function parseOpenWikiArgs(input = "") {
   const misplacedYes = yes && parsed.action !== "install" && parsed.action !== "init" && parsed.action !== "update";
   const misplacedInstallPath = (installDir || binDir) && parsed.action !== "install";
   if (misplacedYes || misplacedInstallPath) parsed = { ...parsed, error: "--yes is only valid for install/init/update; --dir and --bin-dir are only valid for install." };
-  if ((parsed.action === "run") && !parsed.request) parsed = { ...parsed, error: "Run requires a message. Use /openwiki run <message>." };
+  if (parsed.action === "run" && !parsed.request) parsed = { ...parsed, action: "auto" };
   return parsed;
 }
 
 function parsedArgs({ words = [], dryRun = false, help = false, yes = false, installDir = "", binDir = "", modelId = "", error = null } = {}) {
   const first = words[0]?.toLowerCase() ?? "";
-  const action = ACTIONS.has(first) ? first : words.length ? "run" : "explain";
+  const action = ACTIONS.has(first) ? first : words.length ? "run" : "auto";
   const requestWords = ACTIONS.has(first) ? words.slice(1) : words;
   return {
     action,
@@ -122,7 +122,7 @@ export function openWikiCliArgs(parsed) {
 }
 
 export function openWikiCompletions(prefix = "") {
-  return ["status", "explain", "install --yes", "init --yes", "update --yes", "run ", "--model-id "]
+  return ["status", "explain", "progress", "install --yes", "init --yes", "update --yes", "run ", "--model-id "]
     .filter((value) => value.startsWith(prefix))
     .map((value) => ({ value, label: value }));
 }
