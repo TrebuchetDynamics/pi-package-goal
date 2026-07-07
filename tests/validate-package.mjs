@@ -474,7 +474,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/headroom", "./extensions/ponytail", "./extensions/loop-engineering", "./extensions/onklaud", "./extensions/openwiki"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/onklaud", "./extensions/openwiki"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -557,19 +557,6 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /rtk-ai\/rtk/);
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
-
-  const headroomExtension = read("extensions/headroom/index.js");
-  assert.match(headroomExtension, /registerCommand\("headroom"/);
-  assert.match(headroomExtension, /registerProvider\?\.\(/);
-  assert.match(headroomExtension, /HEADROOM_ENABLED/);
-  assert.match(headroomExtension, /proxyBaseUrl/);
-
-  const loopEngineeringExtension = read("extensions/loop-engineering/index.js");
-  assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop-engineering"\)/);
-  assert.match(loopEngineeringExtension, /registerLoopCommand\(pi, "loop"\)/);
-  assert.match(loopEngineeringExtension, /buildLoopEngineeringObjective/);
-  assert.ok(exists("extensions/loop-engineering/lib/command.js"), "loop-engineering command helper must exist");
-  assert.ok(exists("tests/loop-engineering-command.test.mjs"), "loop-engineering helper test must exist");
 
   const onklaudExtension = read("extensions/onklaud/index.js");
   assert.match(onklaudExtension, /registerCommand\("onklaud"/);

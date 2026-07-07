@@ -1,6 +1,6 @@
 # pi-package-goal Context
 
-This package ships Pi skills plus `/understand`, folder-refactor, RTK bridge, headroom proxy-routing, and Onklaud advisory extensions.
+This package ships Pi skills plus `/understand`, folder-refactor, RTK bridge, Onklaud advisory, and OpenWiki extensions.
 
 ## Language
 
@@ -59,10 +59,6 @@ _Avoid_: relying on memory for completion audits, ending with unexecuted safe ne
 **RTK Extension**:
 The package-local extension at `extensions/rtk/index.js` integrates with external `rtk-ai/rtk`: it registers `/rtk status|install`, rewrites eligible Pi `bash` tool calls through `rtk rewrite` when a supported `rtk` binary is on PATH, and fails open when RTK is missing, disabled, too old, or cannot produce a rewrite.
 _Avoid_: bundling the Rust binary, silently executing remote installers without a user command/confirmation, blocking commands for token optimization, rewriting non-bash Pi tools
-
-**Headroom Extension**:
-The package-local extension at `extensions/headroom/index.js` registers `/headroom status|stats|start|help` for a local external `headroom` compression proxy. Provider routing is opt-in: only `HEADROOM_ENABLED=1` plus a reachable proxy causes `pi.registerProvider(..., { baseUrl })`; otherwise Pi provider routing is unchanged.
-_Avoid_: auto-routing provider traffic without an explicit env flag, bundling the proxy tool, broad proxy hosts by default, treating proxy reachability as proof of savings
 
 **Onklaud Extension**:
 The package-local extension at `extensions/onklaud/index.js` is a thin `/goal` launcher plus CLI helper: `/onklaud explain` describes the boundary, `/onklaud status` checks CLI health, `/onklaud install` explicitly installs the CLI into user-local paths after confirmation or `--yes`, and `/onklaud <task>` queues a goal prompt that uses Onklaud 5 as an advisory council while Pi keeps ownership of edits, validation, commits, and pushes.

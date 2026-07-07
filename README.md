@@ -2,7 +2,7 @@
 
 `pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/headroom`, `/onklaud`, `/openwiki`, and `/loop-engineering`;
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/onklaud`, and `/openwiki`;
 - agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
 - the `trebuchet-neon` TUI theme; and
 - `tx` tmux plus `autofolderrefactor` helper bins.
@@ -254,21 +254,6 @@ brew install rtk
 
 For non-Homebrew platforms, review the official RTK installation instructions upstream before running any installer. The extension never executes the remote installer for you. Use environment flags to tune behavior: `RTK_DISABLED=1` bypasses all rewriting/compaction, `RTK_MODE=suggest` reports rewrites without changing commands, `RTK_COMPACT=0` disables output compaction, `RTK_COMPACT_READ=1` enables lossy read compaction for large un-ranged reads, and `RTK_MAX_OUTPUT_CHARS=12000` controls hard truncation.
 
-### `/headroom`
-
-`/headroom` checks or starts a local [headroom](https://github.com/chopratejas/headroom) compression proxy. Provider routing is opt-in: set `HEADROOM_ENABLED=1` and run a local proxy before restarting Pi. Without that flag, the command is available but Pi provider routing is unchanged.
-
-Commands:
-
-```text
-/headroom status
-/headroom stats
-/headroom start
-/headroom help
-```
-
-Environment flags: `HEADROOM_ENABLED=1`, `HEADROOM_DISABLED=1`, `HEADROOM_HOST=127.0.0.1`, `HEADROOM_PORT=8787`, and `HEADROOM_PROVIDERS=openai-codex`.
-
 ### `/onklaud`
 
 `/onklaud` is a thin Pi extension around `/goal`, not a separate coding agent. It exists because a slash command can reliably generate the long safe-council prompt, check/install the external [Onklaud 5](https://github.com/KorroAi/onklaud-5) CLI, and keep Pi in charge of repo mutation.
@@ -308,19 +293,6 @@ Commands:
 ```
 
 `/openwiki` now chooses `init` when no `openwiki/` docs exist and `update` when they do. `/openwiki <message>` runs a one-shot docs request. The extension keeps non-secret repo-local progress in `.openwiki`; OpenWiki's provider config/secrets stay in `~/.openwiki/.env`. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs.
-
-### `/loop-engineering` and `/loop`
-
-`/loop-engineering` turns [cobusgreyling/loop-engineering](https://github.com/cobusgreyling/loop-engineering) patterns into a goal-backed Pi workflow. It does not run third-party CLIs itself; it asks the agent to inspect the repo, then use `npx @cobusgreyling/loop-audit`, `loop-init`, `loop-cost`, or `goal-audit` only when safe.
-
-| Command | Use it for |
-| --- | --- |
-| `/loop-engineering audit .` | Audit loop readiness and suggest the smallest L1 report-only improvements. |
-| `/loop-engineering init daily-triage --tool grok` | Scaffold a starter after cost and dirty-worktree checks. |
-| `/loop-engineering cost ci-sweeper --level L1` | Estimate token spend before adding cadence. |
-| `/loop-engineering goal .` | Run the @cobusgreyling goal-audit path without shadowing Pi's bundled `/goal`. |
-| `/loop 1d Run loop-triage. Update STATE.md. No auto-fix in week one.` | Convert a Grok-style loop prompt into a Pi `/goal`. |
-| `/loop-engineering --dry-run audit .` | Preview the generated `/goal` command. |
 
 ## Included CLI and tmux helpers
 
@@ -533,9 +505,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/understand",
       "./extensions/folder-refactor",
       "./extensions/rtk",
-      "./extensions/headroom",
       "./extensions/ponytail",
-      "./extensions/loop-engineering",
       "./extensions/onklaud",
       "./extensions/openwiki"
     ],
