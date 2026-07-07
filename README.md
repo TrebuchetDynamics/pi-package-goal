@@ -438,6 +438,10 @@ Theme discipline:
 | `lgtm` / `nack` | Resolve short approval or pushback into the safest next action or re-check. |
 | `writing-shape` | Shape rough notes or drafts into a publishable article. |
 
+### Superpowers compatibility
+
+Bundled from `obra/superpowers` under `skills/superpowers/`: `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
+
 ### Pi, browser, and review ecosystem
 
 | Skill | When to use it |

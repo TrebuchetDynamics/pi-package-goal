@@ -237,11 +237,22 @@ Trebuchet Dynamics under the MIT License.
 ## obra/superpowers
 
 - Source: https://github.com/obra/superpowers
-- Snapshot inspected: `f268f7c953744036f0fa7e9d4b73535c04e57cb8`
+- Snapshot inspected: `d884ae04edebef577e82ff7c4e143debd0bbec99`
 - Bundled paths:
+  - `skills/superpowers/brainstorming/`
+  - `skills/superpowers/dispatching-parallel-agents/`
+  - `skills/superpowers/executing-plans/`
+  - `skills/superpowers/finishing-a-development-branch/`
   - `skills/superpowers/receiving-code-review/`
+  - `skills/superpowers/requesting-code-review/`
+  - `skills/superpowers/subagent-driven-development/`
+  - `skills/superpowers/systematic-debugging/`
+  - `skills/superpowers/test-driven-development/`
   - `skills/superpowers/using-git-worktrees/`
+  - `skills/superpowers/using-superpowers/`
   - `skills/superpowers/verification-before-completion/`
-- Local selection: bundled the complementary review, isolation, and verification skills; excluded broad/invasive or duplicate skills such as `using-superpowers`, upstream TDD/debugging, subagent orchestration, and brainstorming.
+  - `skills/superpowers/writing-plans/`
+  - `skills/superpowers/writing-skills/`
+- Local changes: concise Pi trigger descriptions, MIT provenance frontmatter, and shared-contract references were added to fit this package's skill quality gates.
 - License: MIT
 - Full license copy: `licenses/obra-superpowers-LICENSE`

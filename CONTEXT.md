@@ -140,6 +140,10 @@ _Avoid_: assistant prose in place of command evidence
 License and attribution records in `THIRD_PARTY_NOTICES.md` and `licenses/` for bundled upstream-derived skills.
 _Avoid_: updating bundled skills without preserving license copies and source attribution
 
+**Superpowers Skills**:
+The upstream `obra/superpowers` skill set is bundled under `skills/superpowers/` with package-local trigger descriptions, provenance frontmatter, and shared-contract references so it coexists with local `tdd`, `diagnose`, `write-a-skill`, `autoreview`, and delivery skills.
+_Avoid_: hidden upstream updates without notices, broad bootstrap behavior shadowing local skills, copying upstream harness assumptions without Pi boundaries
+
 **Tmux Profile**:
 Portable tmux helper assets under `tmux/`, including `tmux.conf`, `tx`, installer scripts, local style defaults, and status helper scripts. These are package helper assets rather than Pi package resources.
 _Avoid_: docs/install drift, hard-coded helper paths that contradict installer overrides, machine-local style choices committed as shared defaults

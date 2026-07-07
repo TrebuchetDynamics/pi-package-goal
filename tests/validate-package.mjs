@@ -64,14 +64,25 @@ const expectedSkills = [
   "stitch-design-taste",
   "hallmark",
   "stitch-react-components",
+  "brainstorming",
+  "dispatching-parallel-agents",
+  "executing-plans",
+  "finishing-a-development-branch",
   "receiving-code-review",
+  "requesting-code-review",
+  "subagent-driven-development",
+  "systematic-debugging",
+  "test-driven-development",
   "using-git-worktrees",
+  "using-superpowers",
   "verification-before-completion",
+  "writing-plans",
+  "writing-skills",
 ];
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 11000,
+  maxTotalChars: 12500,
 };
 
 function readJson(file) {
