@@ -32,6 +32,7 @@ const expectedSkills = [
   "writing-shape",
   "handoff",
   "lgtm",
+  "nack",
   "caveman",
   "ponytail",
   "ponytail-review",

@@ -100,6 +100,10 @@ _Avoid_: freeform vague handoffs, heavyweight forms, claims without a concrete a
 An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation, auto-discovers a bounded objective when invoked with no active goal, and requires a completion audit before done.
 _Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
+**NACK Skill**:
+A planning skill under `skills/planning/nack/` that treats short user pushback (`nack`, `not convinced`, `check again`) as a targeted re-check of the latest assistant claim or recommendation, reporting changed/stands/blocked from evidence before continuing.
+_Avoid_: argumentative loops, treating pushback as approval, broad plan grilling, external code-review handling
+
 **Goal Technical Auditor Extension**:
 The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus an autonomous safe improvement loop. The loop works through all safe audit recommendations, reruns the audit on the same scope, and stops only when recommendations are fixed, deferred with reason, or blocked with an owner decision.
 _Avoid_: hidden workflow modes, silently starting broad automation for invalid arguments, weakening the command's predictable Full-mode meaning

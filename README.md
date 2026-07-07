@@ -435,6 +435,7 @@ Theme discipline:
 | `to-issues` | Break a plan into independently grabbable implementation issues. |
 | `triage` | Create, classify, and prepare issues for workflow. |
 | `handoff` | Summarize current context for another agent or later session. |
+| `lgtm` / `nack` | Resolve short approval or pushback into the safest next action or re-check. |
 | `writing-shape` | Shape rough notes or drafts into a publishable article. |
 
 ### Pi, browser, and review ecosystem

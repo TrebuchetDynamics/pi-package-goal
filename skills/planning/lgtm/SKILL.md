@@ -1,6 +1,6 @@
 ---
 name: lgtm
-description: Resolve approval phrases to safest prior next action. Use when user says "lgtm", "looks good", "approved", "go ahead", or accepts a recommendation. Do not use for risky confirmation or new tasks.
+description: Resolve approvals to safest prior action. Use when user says "lgtm", "looks good", "approved", or "go ahead". Do not use for risky confirmation.
 ---
 
 # LGTM
