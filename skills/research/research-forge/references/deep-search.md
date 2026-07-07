@@ -15,7 +15,7 @@ Start with the canonical term, then add domain-specific variants:
 | Reliability/challenge | "retention", "endurance", "rate limit", "privacy", "bias", "traceability" |
 | Year range | add `--from-year YYYY` / `--to-year YYYY` for recent-only scans when supported |
 
-Aim for 8–12 queries for a Comprehensive sweep.
+Aim for 20–30 queries for a Comprehensive sweep.
 
 ## Preferred search pattern
 
@@ -27,7 +27,7 @@ printf '%s\n' \
   "query variant two" > queries.txt
 
 rforge search batch --out . --queries queries.txt \
-  --sources scholarly-fast --limit 20 --continue-on-error --stats
+  --sources all --limit 20 --continue-on-error --stats
 rforge search stats --dir .
 ```
 
@@ -36,12 +36,12 @@ Source presets:
 | Preset | Use |
 |---|---|
 | `openalex,arxiv` | Fast broad first pass |
-| `scholarly-fast` | Standard default across broad scholarly metadata |
+| `scholarly-fast` | Explicit Standard pass across broad scholarly metadata |
 | `openalex,arxiv,semantic-scholar` | CS/AI with citation graph depth |
 | `biomedical` | PubMed/Europe PMC topics |
 | `preprints` | arXiv/bioRxiv/medRxiv/ChemRxiv-heavy topics |
 | `open` | Open-access-focused scan |
-| `all` | Comprehensive but slow/noisy sweep |
+| `all` | Comprehensive default; slow/noisy sweep |
 
 If `search batch` is unavailable, use per-source `rforge search` files and still run `rforge search stats --dir .`.
 
@@ -49,7 +49,7 @@ If `search batch` is unavailable, use per-source `rforge search` files and still
 
 Before writing `report.md`:
 
-- [ ] ≥ 8 query variants prepared.
+- [ ] 20–30 query variants prepared, unless topic vocabulary is genuinely smaller and the gap is documented.
 - [ ] Multi-source sweep run with `search batch --stats` or per-source files.
 - [ ] `rforge search stats --dir .` run; counts recorded in provenance.
 - [ ] At least 3 sources returned non-zero usable results, or failures/rate limits are explained.

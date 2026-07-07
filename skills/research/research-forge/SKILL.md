@@ -16,7 +16,7 @@ command -v rforge && rforge version || true
 rforge automation policy 2>/dev/null || true
 ```
 
-1. Resolve save path and depth.
+1. Resolve save path; use Comprehensive depth unless the user explicitly asks quick/standard.
 2. Write `queries.txt` for multi-query work.
 3. Run `rforge search batch ... --stats`; prefer it over shell loops.
 4. Run `rforge search stats --dir <topic-dir>` and save the output if not already written.
@@ -53,11 +53,11 @@ Topic slug: lowercase, hyphen-separated, 3–6 words. Confirm the path when owne
 
 | Request phrasing | Depth |
 |---|---|
-| "quick look", "any papers on", "what's out there" | Quick: 3 query variants, fast sources |
-| "research", "find papers", "survey", "study" | Standard: 5–8 query variants, `scholarly-fast` or relevant preset, citation expansion |
-| "full", "systematic", "comprehensive", "mega", "thorough" | Comprehensive: 10+ variants, broad sources, citation expansion, evidence grid, gaps |
+| "quick look", "any papers on", "what's out there" | Quick only if explicitly requested: 3 query variants, fast sources |
+| "standard", "small pass", "fast pass" | Standard only if explicitly requested: 5–8 query variants, `scholarly-fast` or relevant preset, citation expansion |
+| Any research request by default; "full", "systematic", "comprehensive", "mega", "thorough" | Comprehensive: 20–30 variants, broad/all relevant sources, citation expansion, evidence grid, gaps |
 
-Default to Standard.
+Default to Comprehensive.
 
 ## Workflow
 
@@ -71,7 +71,7 @@ printf '%s\n' \
   "query variant two" > queries.txt
 
 rforge search batch --out <topic-dir> --queries queries.txt \
-  --sources scholarly-fast --limit 20 --continue-on-error --stats
+  --sources all --limit 20 --continue-on-error --stats
 rforge search stats --dir <topic-dir> | tee <topic-dir>/coverage-stats.log
 ```
 
@@ -186,8 +186,8 @@ rforge package replay <dir>
 
 ### Entry protocol
 
-- Trivial lookup: run Quick depth unless the user asks only for a plan.
-- Ambiguous scope: propose topic slug, save path, depth, and source preset; ask only for missing ownership or risk decisions.
+- Trivial lookup: run Comprehensive depth unless the user explicitly asks quick/standard or only asks for a plan.
+- Ambiguous scope: propose topic slug, save path, Comprehensive depth, and broad/all relevant source preset; ask only for missing ownership or risk decisions.
 - High-risk/systematic review: set up project workflow and stop at human gates.
 
 ### Topology check
