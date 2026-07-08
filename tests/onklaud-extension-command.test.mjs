@@ -19,6 +19,10 @@ assert.equal(ONKLAUD_REPO_URL, "https://github.com/KorroAi/onklaud-5.git");
 assert.deepEqual(parseOnklaudArgs(""), { action: "run", task: "", autonomous: true, ...defaults });
 assert.deepEqual(parseOnklaudArgs("status"), { action: "status", task: "", autonomous: false, ...defaults });
 assert.deepEqual(parseOnklaudArgs("explain"), { action: "explain", task: "", autonomous: false, ...defaults });
+assert.deepEqual(parseOnklaudArgs('gate --domain coding --text "hello world" --json'), { action: "gate", task: "--domain coding --text hello world --json", autonomous: false, ...defaults, passThroughArgs: ["--domain", "coding", "--text", "hello world", "--json"] });
+assert.deepEqual(parseOnklaudArgs('ponytail --task "read JSON" --json'), { action: "ponytail", task: "--task read JSON --json", autonomous: false, ...defaults, passThroughArgs: ["--task", "read JSON", "--json"] });
+assert.deepEqual(parseOnklaudArgs('pre-check --task "retry logic" --json'), { action: "pre-check", task: "--task retry logic --json", autonomous: false, ...defaults, passThroughArgs: ["--task", "retry logic", "--json"] });
+assert.deepEqual(parseOnklaudArgs("fast-gate --syntax-only file.js"), { action: "fast-gate", task: "--syntax-only file.js", autonomous: false, ...defaults, passThroughArgs: ["--syntax-only", "file.js"] });
 assert.deepEqual(parseOnklaudArgs("install --yes --dir ~/ok --bin-dir ~/.local/bin"), { action: "install", task: "", autonomous: false, ...defaults, yes: true, installDir: "~/ok", binDir: "~/.local/bin" });
 assert.deepEqual(parseOnklaudArgs("--tokens 300k fix tests"), { action: "run", task: "fix tests", autonomous: false, ...defaults, tokenBudget: "300k" });
 assert.deepEqual(parseOnklaudArgs("Autonomous pass SQLX_OFFLINE=true cargo test --quiet"), { action: "run", task: "Autonomous pass SQLX_OFFLINE=true cargo test --quiet", autonomous: false, ...defaults });
@@ -33,6 +37,10 @@ assert.match(parseOnklaudArgs("--dir ~/ok fix").error, /Install options/);
 assert.match(parseOnklaudArgs("--mode auto").error, /Unknown option: --mode/);
 assert.deepEqual(onklaudCompletions("st"), [{ value: "status", label: "status" }]);
 assert.deepEqual(onklaudCompletions("ex"), [{ value: "explain", label: "explain" }]);
+assert.deepEqual(onklaudCompletions("ga"), [{ value: "gate --domain coding --text \"summary\" --json", label: "gate --domain coding --text \"summary\" --json" }]);
+assert.deepEqual(onklaudCompletions("po"), [{ value: "ponytail --task \"read JSON\" --json", label: "ponytail --task \"read JSON\" --json" }]);
+assert.deepEqual(onklaudCompletions("pre"), [{ value: "pre-check --task \"retry logic\" --json", label: "pre-check --task \"retry logic\" --json" }]);
+assert.deepEqual(onklaudCompletions("fa"), [{ value: "fast-gate --syntax-only file.js", label: "fast-gate --syntax-only file.js" }]);
 
 const explicit = buildOnklaudObjective("--tokens 500k fix auth bug");
 assert.equal(explicit.action, "run");
@@ -43,7 +51,12 @@ assert.match(explicit.goalCommand, /onklaud status/);
 assert.match(explicit.goalCommand, /missing an API key/);
 assert.match(explicit.goalCommand, /do not run Onklaud loop\/gate/);
 assert.match(explicit.goalCommand, /source-backed checkpoint brief/);
+assert.match(explicit.goalCommand, /onklaud ponytail --task/);
+assert.match(explicit.goalCommand, /onklaud pre-check --task/);
+assert.match(explicit.goalCommand, /onklaud fast-gate --syntax-only/);
 assert.match(explicit.goalCommand, /onklaud loop --type code/);
+assert.match(explicit.goalCommand, /onklaud dual\|review\|full/);
+assert.match(explicit.goalCommand, /nonzero `loop`\/`dual`\/`review` result/);
 assert.match(explicit.goalCommand, /wrong language\/runtime/);
 assert.match(explicit.goalCommand, /times out, or fails/);
 assert.match(explicit.goalCommand, /Pi owns all file edits, tests, validation, commits, and pushes/);
@@ -97,6 +110,30 @@ assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /advisory gates unavailable \(API key missing\)/);
 assert.match(notices.at(-1).message, /Configure Onklaud\/OpenRouter credentials/);
 assert.match(notices.at(-1).message, /skip Onklaud loop\/gate/);
+
+await commands.get("onklaud").handler('gate --domain coding --text "hello world" --json', { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
+assert.deepEqual(execCalls.at(-1).args, ["gate", "--domain", "coding", "--text", "hello world", "--json"]);
+assert.match(notices.at(-1).message, /onklaud healthy/);
+
+await commands.get("onklaud").handler('--dry-run gate --domain coding --text "hello world" --json', { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.match(notices.at(-1).message, /^DRY RUN: onklaud gate/);
+
+await commands.get("onklaud").handler("gate --draft-file secret.txt", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /Unsupported gate option/);
+
+await commands.get("onklaud").handler('ponytail --task "read JSON" --lang js --json', { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
+assert.deepEqual(execCalls.at(-1).args, ["ponytail", "--task", "read JSON", "--lang", "js", "--json"]);
+
+await commands.get("onklaud").handler('pre-check --task "retry logic" --json', { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
+assert.deepEqual(execCalls.at(-1).args, ["pre-check", "--task", "retry logic", "--json"]);
+
+await commands.get("onklaud").handler("fast-gate --syntax-only file.js", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
+assert.deepEqual(execCalls.at(-1).args, ["fast-gate", "--syntax-only", "file.js"]);
+
+await commands.get("onklaud").handler("fast-gate file.js", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /requires --syntax-only or --skip-kimi/);
 
 await commands.get("onklaud").handler("install --dry-run --dir /tmp/onklaud-test --bin-dir /tmp/bin", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.match(notices.at(-1).message, /DRY RUN:/);
@@ -164,6 +201,9 @@ assert.match(installProgress, /writing launcher/);
 const installedWrapper = await readFile(join(sshOriginDir, "bin", "onklaud"), "utf8");
 assert.match(installedWrapper, /\.env/);
 assert.match(installedWrapper, /set -a/);
+assert.match(installedWrapper, /ponytail_ladder\.py/);
+assert.match(installedWrapper, /pre_check\.py/);
+assert.match(installedWrapper, /fast_gate\.py/);
 assert.ok(sshOriginExecs.some((call) => call.args.includes("pull")));
 await rm(sshOriginDir, { recursive: true, force: true });
 

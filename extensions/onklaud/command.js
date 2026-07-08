@@ -7,11 +7,12 @@ What it does:
 - /onklaud <task> queues a /goal prompt that tells Pi to use the onklaud CLI as an advisory council.
 - Pi owns edits, tests, validation, commits, and pushes; Onklaud only gives planning/review/gate advice.
 - /onklaud status checks whether the external CLI is usable.
+- /onklaud gate, ponytail, pre-check, and fast-gate expose Onklaud's offline helpers for explicit input.
 - /onklaud install installs that external CLI into user-local paths after confirmation.
 
 Use it when you want a second-opinion council on a meaningful Pi task. Skip it for tiny edits, secrets-heavy debugging, or when you only want to run the raw onklaud CLI yourself.`;
-export const ONKLAUD_USAGE = `Usage: /onklaud [--tokens 700k] [--dry-run] [status|explain|install|task...]
-Examples: /onklaud explain, /onklaud status, /onklaud install --yes, /onklaud fix the failing tests, /onklaud`;
+export const ONKLAUD_USAGE = `Usage: /onklaud [--tokens 700k] [--dry-run] [status|explain|install|gate|ponytail|pre-check|fast-gate|task...]
+Examples: /onklaud explain, /onklaud status, /onklaud gate --domain coding --text "code or summary" --json, /onklaud ponytail --task "read JSON" --json, /onklaud pre-check --task "retry logic" --json, /onklaud fast-gate --syntax-only file.js, /onklaud install --yes, /onklaud fix the failing tests, /onklaud`;
 export const ONKLAUD_REPO_URL = "https://github.com/KorroAi/onklaud-5.git";
 
 export function parseOnklaudArgs(input = "") {
@@ -33,7 +34,7 @@ export function parseOnklaudArgs(input = "") {
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
     const firstWord = words[0]?.toLowerCase();
-    if (words.length > 0 && firstWord !== "install" && firstWord !== "status" && firstWord !== "explain") {
+    if (words.length > 0 && !isOptionParsingAction(firstWord)) {
       words.push(...tokens.slice(index));
       break;
     }
@@ -92,11 +93,19 @@ export function parseOnklaudArgs(input = "") {
   return parsedArgs({ words, tokenBudget: error ? DEFAULT_TOKEN_BUDGET : tokenBudget, dryRun, help, yes, installDir, binDir, error });
 }
 
+function isOptionParsingAction(action) {
+  return action === "install" || action === "status" || action === "explain";
+}
+
+function isDirectAction(action) {
+  return isOptionParsingAction(action) || action === "gate" || action === "ponytail" || action === "pre-check" || action === "fast-gate";
+}
+
 function parsedArgs({ words = [], tokenBudget = DEFAULT_TOKEN_BUDGET, dryRun = false, help = false, yes = false, installDir = "", binDir = "", error = null } = {}) {
   const first = words[0]?.toLowerCase() ?? "";
-  const action = first === "status" || first === "explain" || first === "install" ? first : "run";
+  const action = isDirectAction(first) ? first : "run";
   const taskWords = action === "run" ? words : words.slice(1);
-  return {
+  const result = {
     action,
     task: taskWords.join(" ").trim(),
     autonomous: action === "run" && taskWords.length === 0,
@@ -108,6 +117,8 @@ function parsedArgs({ words = [], tokenBudget = DEFAULT_TOKEN_BUDGET, dryRun = f
     binDir,
     error,
   };
+  if (action === "gate" || action === "ponytail" || action === "pre-check" || action === "fast-gate") result.passThroughArgs = taskWords;
+  return result;
 }
 
 function validateTokenBudget(rawTokenBudget) {
@@ -139,8 +150,9 @@ ${taskText}
 Onklaud protocol:
 - Run \`onklaud status\` before relying on Onklaud. If it is unavailable, degraded, missing an API key, or otherwise unhealthy, do not run Onklaud loop/gate; warn with the fix needed, continue normal Pi workflow, and record that Onklaud was skipped.
 - Before asking Onklaud, write a source-backed checkpoint brief: repo language/runtime from manifests, exact files/functions under review, relevant snippets or diff summary, validation commands/results, and the specific decision requested.
-- Use Onklaud for planning/review/gate checkpoints on meaningful work, for example: \`onklaud loop --type code --prompt "<source-backed question>" --draft-file <tmp-file>\` or \`onklaud gate --domain coding --text "<structured summary>" --json\`.
-- Treat Onklaud output as advice, not authority. Ignore advice that names the wrong language/runtime, invents files/APIs, lacks source backing, times out, or fails; record it as unusable for that checkpoint and continue with normal Pi validation.
+- Use Onklaud's zero-cost helpers before model-backed council calls when they fit: \`onklaud ponytail --task "<task>" --project-dir . --json\`, \`onklaud pre-check --task "<task>" --json\`, \`onklaud fast-gate --syntax-only <file>\`, or offline \`onklaud gate --domain coding --text "<structured summary>" --json\`.
+- Use Onklaud's actual council subcommands for planning/review/gate checkpoints on meaningful work: \`onklaud loop --type code --prompt "<source-backed question>" --draft-file <tmp-file>\` or \`onklaud dual|review|full ...\`.
+- Treat Onklaud output as advice, not authority. A nonzero \`loop\`/\`dual\`/\`review\` result can mean advisory issues were found, not that Pi validation failed. Ignore advice that names the wrong language/runtime, invents files/APIs, lacks source backing, times out, or fails; record it as unusable for that checkpoint and continue with normal Pi validation.
 - Pi owns all file edits, tests, validation, commits, and pushes. Do not delegate tool execution or repo mutation to Onklaud.
 - Do not send secrets, credentials, private keys, .env contents, or sensitive logs to Onklaud; redact if needed.
 - Capture git status and dirty-file ownership before edits. Do not overwrite unrelated dirty work.
@@ -150,7 +162,7 @@ Onklaud protocol:
 }
 
 export function onklaudCompletions(prefix = "") {
-  return ["status", "explain", "install --yes", "install --dir ~/.local/share/onklaud-5 --bin-dir ~/.local/bin", "--dry-run", "--tokens 700k", "fix the failing tests", "improve this repo"]
+  return ["status", "explain", "gate --domain coding --text \"summary\" --json", "ponytail --task \"read JSON\" --json", "pre-check --task \"retry logic\" --json", "fast-gate --syntax-only file.js", "install --yes", "install --dir ~/.local/share/onklaud-5 --bin-dir ~/.local/bin", "--dry-run", "--tokens 700k", "fix the failing tests", "improve this repo"]
     .filter((value) => value.startsWith(prefix))
     .map((value) => ({ value, label: value }));
 }

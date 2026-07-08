@@ -265,14 +265,18 @@ Commands:
 ```text
 /onklaud explain
 /onklaud status
+/onklaud gate --domain coding --text "code or summary" --json
+/onklaud ponytail --task "read JSON" --json
+/onklaud pre-check --task "retry logic" --json
+/onklaud fast-gate --syntax-only file.js
 /onklaud --dry-run fix the failing tests
 /onklaud fix the failing tests
 /onklaud install --yes
 ```
 
-`/onklaud [task]` starts a `/goal` objective that asks Pi to do the work while using the installed CLI as an advisory council. With no task, it asks Pi to choose and execute major safe development progress from repo evidence. `/onklaud --dry-run <task>` previews the generated goal.
+`/onklaud gate`, `ponytail`, `pre-check`, and `fast-gate` expose Onklaud's zero-cost helper layer. The extension requires explicit text/task/file input and keeps `fast-gate` offline by requiring `--syntax-only` or `--skip-kimi`. `/onklaud [task]` starts a `/goal` objective that asks Pi to do the work while using the installed CLI as an advisory council. With no task, it asks Pi to choose and execute major safe development progress from repo evidence. `/onklaud --dry-run <task>` previews the generated goal.
 
-`/onklaud install` interactively installs Onklaud on the current machine by cloning `KorroAi/onklaud-5`, creating a local Python virtualenv, installing `fpdf2`/`pyyaml`, and writing an `onklaud` launcher under the user bin directory. Use `/onklaud install --yes` for non-interactive installs, or `--dir` / `--bin-dir` to override locations.
+`/onklaud install` interactively installs Onklaud on the current machine by cloning `KorroAi/onklaud-5`, creating a local Python virtualenv, installing `fpdf2`/`pyyaml`, and writing an `onklaud` launcher under the user bin directory. Re-run it after updating this package if helper subcommands are missing. Use `/onklaud install --yes` for non-interactive installs, or `--dir` / `--bin-dir` to override locations.
 
 The extension treats Onklaud output as advice, not authority: Pi still owns file edits, tests, validation, commits, and pushes. It does not send secrets intentionally; review CLI auth outside Pi before relying on model-backed council calls.
 

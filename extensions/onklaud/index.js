@@ -68,6 +68,122 @@ async function exists(path) {
   }
 }
 
+function validateGateArgs(args = []) {
+  let hasText = false;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--json") continue;
+    if (arg === "--domain") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) return "Missing value for gate --domain.";
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--domain=")) {
+      if (arg.length === "--domain=".length) return "Missing value for gate --domain.";
+      continue;
+    }
+    if (arg === "--text") {
+      const value = args[index + 1];
+      if (!value) return "Missing value for gate --text.";
+      hasText = true;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--text=")) {
+      if (arg.length === "--text=".length) return "Missing value for gate --text.";
+      hasText = true;
+      continue;
+    }
+    return `Unsupported gate option: ${arg}. Use --domain, --text, and optional --json.`;
+  }
+  return hasText ? null : "Gate requires --text to avoid waiting for stdin.";
+}
+
+function validatePonytailArgs(args = []) {
+  let hasTask = false;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--json") continue;
+    if (arg === "--task" || arg === "--project-dir") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) return `Missing value for ponytail ${arg}.`;
+      if (arg === "--task") hasTask = true;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--task=")) {
+      if (arg.length === "--task=".length) return "Missing value for ponytail --task.";
+      hasTask = true;
+      continue;
+    }
+    if (arg.startsWith("--project-dir=")) {
+      if (arg.length === "--project-dir=".length) return "Missing value for ponytail --project-dir.";
+      continue;
+    }
+    if (arg === "--lang") {
+      const value = args[index + 1];
+      if (value !== "python" && value !== "js") return "Ponytail --lang must be python or js.";
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--lang=")) {
+      const value = arg.slice("--lang=".length);
+      if (value !== "python" && value !== "js") return "Ponytail --lang must be python or js.";
+      continue;
+    }
+    return `Unsupported ponytail option: ${arg}. Use --task, --lang, --project-dir, and optional --json.`;
+  }
+  return hasTask ? null : "Ponytail requires --task.";
+}
+
+function validatePreCheckArgs(args = []) {
+  let inputs = 0;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--json") continue;
+    if (arg === "--task" || arg === "--file") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) return `Missing value for pre-check ${arg}.`;
+      inputs += 1;
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--task=") || arg.startsWith("--file=")) {
+      const [flag, value] = arg.split("=", 2);
+      if (!value) return `Missing value for pre-check ${flag}.`;
+      inputs += 1;
+      continue;
+    }
+    return `Unsupported pre-check option: ${arg}. Use --task or --file and optional --json.`;
+  }
+  if (inputs === 0) return "Pre-check requires --task or --file.";
+  return inputs === 1 ? null : "Pre-check accepts either --task or --file, not both.";
+}
+
+function validateFastGateArgs(args = []) {
+  let files = 0;
+  let offline = false;
+  for (const arg of args) {
+    if (arg === "--syntax-only" || arg === "--skip-kimi") {
+      offline = true;
+      continue;
+    }
+    if (arg === "--prompt" || arg.startsWith("--prompt=")) return "Fast-gate prompt review is model-backed; use /onklaud goal workflow instead.";
+    if (arg.startsWith("--")) return `Unsupported fast-gate option: ${arg}. Use --syntax-only or --skip-kimi plus file paths.`;
+    files += 1;
+  }
+  if (!offline) return "Fast-gate requires --syntax-only or --skip-kimi to stay offline.";
+  return files > 0 ? null : "Fast-gate requires at least one file.";
+}
+
+const DIRECT_VALIDATORS = {
+  gate: validateGateArgs,
+  ponytail: validatePonytailArgs,
+  "pre-check": validatePreCheckArgs,
+  "fast-gate": validateFastGateArgs,
+};
+
 function normalizeRepoUrl(url) {
   let value = String(url || "").trim().replace(/\/+$/, "").replace(/\.git$/i, "");
   value = value.replace(/^git\+/, "");
@@ -142,9 +258,10 @@ async function installOnklaud(pi, params, ctx) {
   await mkdir(binDir, { recursive: true });
   report(ctx, `Onklaud install: writing launcher ${wrapper}...`);
   if (process.platform === "win32") {
-    await writeFile(wrapper, `@echo off\r\n"${python}" "${join(installDir, "council.py")}" %*\r\n`, "utf8");
+    const dispatcher = `import os, runpy, sys; root=r'${installDir}'; helpers={'ponytail':'ponytail_ladder.py','pre-check':'pre_check.py','fast-gate':'fast_gate.py'}; cmd=sys.argv[1] if len(sys.argv)>1 else ''; script=helpers.get(cmd,'council.py'); sys.argv=[script]+(sys.argv[2:] if cmd in helpers else sys.argv[1:]); runpy.run_path(os.path.join(root, script), run_name='__main__')`;
+    await writeFile(wrapper, `@echo off\r\n"${python}" -c "${dispatcher}" %*\r\n`, "utf8");
   } else {
-    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nif [ -f "${join(installDir, ".env")}" ]; then\n  set -a\n  . "${join(installDir, ".env")}"\n  set +a\nfi\nexec "${python}" "${join(installDir, "council.py")}" "$@"\n`, { mode: 0o755 });
+    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nif [ -f "${join(installDir, ".env")}" ]; then\n  set -a\n  . "${join(installDir, ".env")}"\n  set +a\nfi\ncase "\${1:-}" in\n  ponytail) shift; exec "${python}" "${join(installDir, "ponytail_ladder.py")}" "$@" ;;\n  pre-check) shift; exec "${python}" "${join(installDir, "pre_check.py")}" "$@" ;;\n  fast-gate) shift; exec "${python}" "${join(installDir, "fast_gate.py")}" "$@" ;;\n  *) exec "${python}" "${join(installDir, "council.py")}" "$@" ;;\nesac\n`, { mode: 0o755 });
     await chmod(wrapper, 0o755);
   }
   return `Installed Onklaud 5. If needed, add ${binDir} to PATH, then run: onklaud status`;
@@ -178,6 +295,25 @@ export default function onklaud(pi) {
           report(ctx, status.message, status.level);
         } catch (error) {
           report(ctx, `Onklaud status failed: ${error.message}`, "warning");
+        }
+        return;
+      }
+      if (DIRECT_VALIDATORS[action]) {
+        if (dryRun) {
+          report(ctx, `DRY RUN: onklaud ${action} ${objective.passThroughArgs.join(" ")}`, "info");
+          return;
+        }
+        const directError = DIRECT_VALIDATORS[action](objective.passThroughArgs);
+        if (directError) {
+          report(ctx, directError, "warning");
+          return;
+        }
+        try {
+          const result = await pi.exec("onklaud", [action, ...objective.passThroughArgs], { signal: ctx.signal, timeout: 120_000 });
+          const text = outputText(result) || `onklaud ${action} exited with code ${result.code}`;
+          report(ctx, text, result.code === 0 ? "info" : "warning");
+        } catch (error) {
+          report(ctx, `Onklaud ${action} failed: ${error.message}`, "warning");
         }
         return;
       }
