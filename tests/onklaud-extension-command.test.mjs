@@ -97,7 +97,8 @@ assert.match(notices.at(-1).message, /Usage:/);
 assert.match(notices.at(-1).message, /thin Pi extension/);
 
 await commands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) }, signal: "signal" });
-assert.deepEqual(execCalls.at(-1).args, ["status"]);
+assert.deepEqual(execCalls.at(-2).args, ["status"]);
+assert.deepEqual(execCalls.at(-1).args, ["ponytail", "--task", "read JSON", "--json"]);
 assert.equal(notices.at(-1).message, "onklaud healthy");
 
 const degradedCommands = new Map();
@@ -134,6 +135,22 @@ assert.deepEqual(execCalls.at(-1).args, ["fast-gate", "--syntax-only", "file.js"
 await commands.get("onklaud").handler("fast-gate file.js", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /requires --syntax-only or --skip-kimi/);
+
+const oldLauncherCommands = new Map();
+registerOnklaud({
+  registerCommand: (name, definition) => oldLauncherCommands.set(name, definition),
+  exec: async (_cmd, args) => args[0] === "status"
+    ? { code: 0, stdout: '{"api_key": true, "status": "operational"}', stderr: "" }
+    : { code: 2, stdout: "", stderr: "usage: council.py [-h] {loop,dual,review,gate,full,status} ...\ncouncil.py: error: argument mode: invalid choice: 'ponytail'" },
+});
+await oldLauncherCommands.get("onklaud").handler("status", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /launcher does not expose zero-cost helpers/);
+assert.match(notices.at(-1).message, /\/onklaud install --yes/);
+await oldLauncherCommands.get("onklaud").handler('ponytail --task "read JSON" --json', { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
+assert.equal(notices.at(-1).level, "warning");
+assert.match(notices.at(-1).message, /invalid choice: 'ponytail'/);
+assert.match(notices.at(-1).message, /launcher does not expose zero-cost helpers/);
 
 await commands.get("onklaud").handler("install --dry-run --dir /tmp/onklaud-test --bin-dir /tmp/bin", { hasUI: true, ui: { notify: (message, level) => notices.push({ message, level }) } });
 assert.match(notices.at(-1).message, /DRY RUN:/);
@@ -201,6 +218,7 @@ assert.match(installProgress, /writing launcher/);
 const installedWrapper = await readFile(join(sshOriginDir, "bin", "onklaud"), "utf8");
 assert.match(installedWrapper, /\.env/);
 assert.match(installedWrapper, /set -a/);
+assert.match(installedWrapper, /export PATH=.*\.venv\/bin/);
 assert.match(installedWrapper, /ponytail_ladder\.py/);
 assert.match(installedWrapper, /pre_check\.py/);
 assert.match(installedWrapper, /fast_gate\.py/);

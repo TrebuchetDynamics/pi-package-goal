@@ -39,6 +39,26 @@ function classifyStatus(text, code) {
   return { level: "info", message: text };
 }
 
+function missingHelperLauncherMessage(action, text) {
+  if (action === "gate" || !/council\.py: error: argument mode: invalid choice/i.test(text)) return "";
+  return "\n\nThis installed onklaud launcher does not expose zero-cost helpers yet. Run /onklaud install --yes to rewrite it, or rerun /onklaud install with your custom --dir/--bin-dir.";
+}
+
+async function checkHelperLauncher(pi, ctx) {
+  try {
+    const result = await pi.exec("onklaud", ["ponytail", "--task", "read JSON", "--json"], { signal: ctx.signal, timeout: 30_000 });
+    const text = outputText(result);
+    const hint = result.code === 0 ? "" : missingHelperLauncherMessage("ponytail", text);
+    if (hint) report(ctx, hint.trim(), "warning");
+  } catch {
+    // ponytail: status already proved council.py works; helper smoke failures are advisory.
+  }
+}
+
+function shellQuote(value) {
+  return `'${String(value).replaceAll("'", "'\\''")}'`;
+}
+
 function expandHome(path, fallback) {
   const value = String(path || fallback);
   return value === "~" || value.startsWith("~/") ? join(homedir(), value.slice(2)) : value;
@@ -230,7 +250,8 @@ async function prepareRepo(pi, installDir, ctx) {
 async function installOnklaud(pi, params, ctx) {
   const installDir = resolve(expandHome(params.installDir, defaultInstallDir()));
   const binDir = resolve(expandHome(params.binDir, defaultBinDir()));
-  const python = process.platform === "win32" ? join(installDir, ".venv", "Scripts", "python.exe") : join(installDir, ".venv", "bin", "python");
+  const venvBin = process.platform === "win32" ? join(installDir, ".venv", "Scripts") : join(installDir, ".venv", "bin");
+  const python = process.platform === "win32" ? join(venvBin, "python.exe") : join(venvBin, "python");
   const wrapper = process.platform === "win32" ? join(binDir, "onklaud.cmd") : join(binDir, "onklaud");
 
   const plan = `Install Onklaud 5 from ${ONKLAUD_REPO_URL}\nrepo: ${installDir}\ncommand: ${wrapper}`;
@@ -258,10 +279,10 @@ async function installOnklaud(pi, params, ctx) {
   await mkdir(binDir, { recursive: true });
   report(ctx, `Onklaud install: writing launcher ${wrapper}...`);
   if (process.platform === "win32") {
-    const dispatcher = `import os, runpy, sys; root=r'${installDir}'; helpers={'ponytail':'ponytail_ladder.py','pre-check':'pre_check.py','fast-gate':'fast_gate.py'}; cmd=sys.argv[1] if len(sys.argv)>1 else ''; script=helpers.get(cmd,'council.py'); sys.argv=[script]+(sys.argv[2:] if cmd in helpers else sys.argv[1:]); runpy.run_path(os.path.join(root, script), run_name='__main__')`;
+    const dispatcher = `import os, runpy, sys; root=r'${installDir}'; os.environ['PATH']=r'${venvBin}'+os.pathsep+os.environ.get('PATH',''); helpers={'ponytail':'ponytail_ladder.py','pre-check':'pre_check.py','fast-gate':'fast_gate.py'}; cmd=sys.argv[1] if len(sys.argv)>1 else ''; script=helpers.get(cmd,'council.py'); sys.argv=[script]+(sys.argv[2:] if cmd in helpers else sys.argv[1:]); runpy.run_path(os.path.join(root, script), run_name='__main__')`;
     await writeFile(wrapper, `@echo off\r\n"${python}" -c "${dispatcher}" %*\r\n`, "utf8");
   } else {
-    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nif [ -f "${join(installDir, ".env")}" ]; then\n  set -a\n  . "${join(installDir, ".env")}"\n  set +a\nfi\ncase "\${1:-}" in\n  ponytail) shift; exec "${python}" "${join(installDir, "ponytail_ladder.py")}" "$@" ;;\n  pre-check) shift; exec "${python}" "${join(installDir, "pre_check.py")}" "$@" ;;\n  fast-gate) shift; exec "${python}" "${join(installDir, "fast_gate.py")}" "$@" ;;\n  *) exec "${python}" "${join(installDir, "council.py")}" "$@" ;;\nesac\n`, { mode: 0o755 });
+    await writeFile(wrapper, `#!/usr/bin/env bash\nset -euo pipefail\nexport PATH=${shellQuote(venvBin)}:$PATH\nif [ -f ${shellQuote(join(installDir, ".env"))} ]; then\n  set -a\n  . ${shellQuote(join(installDir, ".env"))}\n  set +a\nfi\ncase "\${1:-}" in\n  ponytail) shift; exec ${shellQuote(python)} ${shellQuote(join(installDir, "ponytail_ladder.py"))} "$@" ;;\n  pre-check) shift; exec ${shellQuote(python)} ${shellQuote(join(installDir, "pre_check.py"))} "$@" ;;\n  fast-gate) shift; exec ${shellQuote(python)} ${shellQuote(join(installDir, "fast_gate.py"))} "$@" ;;\n  *) exec ${shellQuote(python)} ${shellQuote(join(installDir, "council.py"))} "$@" ;;\nesac\n`, { mode: 0o755 });
     await chmod(wrapper, 0o755);
   }
   return `Installed Onklaud 5. If needed, add ${binDir} to PATH, then run: onklaud status`;
@@ -293,6 +314,7 @@ export default function onklaud(pi) {
           const text = outputText(result) || `onklaud status exited with code ${result.code}`;
           const status = classifyStatus(text, result.code);
           report(ctx, status.message, status.level);
+          if (status.level === "info") await checkHelperLauncher(pi, ctx);
         } catch (error) {
           report(ctx, `Onklaud status failed: ${error.message}`, "warning");
         }
@@ -310,7 +332,8 @@ export default function onklaud(pi) {
         }
         try {
           const result = await pi.exec("onklaud", [action, ...objective.passThroughArgs], { signal: ctx.signal, timeout: 120_000 });
-          const text = outputText(result) || `onklaud ${action} exited with code ${result.code}`;
+          let text = outputText(result) || `onklaud ${action} exited with code ${result.code}`;
+          if (result.code !== 0) text += missingHelperLauncherMessage(action, text);
           report(ctx, text, result.code === 0 ? "info" : "warning");
         } catch (error) {
           report(ctx, `Onklaud ${action} failed: ${error.message}`, "warning");
