@@ -49,6 +49,7 @@
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
     "install-autofolderrefactor.sh",
+    "install-agent-skills.sh",
     "install-claude-skills.sh"
   ],
   "pi": {

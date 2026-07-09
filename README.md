@@ -67,11 +67,26 @@ Smoke-test the installed commands inside Pi:
 
 If those commands are unknown, reload Pi again and check the install command output.
 
-To also install the bundled skills for Claude Code from a checkout:
+To install the bundled skills globally for both Codex and Claude Code from a checkout:
+
+```bash
+sh install-agent-skills.sh
+```
+
+This installs flattened skill directories to `~/.agents/skills` for Codex and
+`~/.claude/skills` for Claude Code. Existing same-name skills are backed up
+under `~/.local/state/pi-package-goal/skill-backups/`, outside the active skill
+directories. Use `--codex-only`, `--claude-only`, `--dry-run`, or `--no-backup`
+when needed. The previous Claude-only command remains available:
 
 ```bash
 sh install-claude-skills.sh
 ```
+
+If this Pi package is installed at the same time, Pi may report skill-name
+collisions between `~/.agents/skills` and its package checkout. A checked
+`~/.agents/skills` path means that copy loaded; the package copy is skipped as
+the duplicate. This does not remove the skill from Codex or Claude Code.
 
 Security note: Pi packages can include extensions and skills that run with your local permissions. Review third-party package source before installing it.
 
