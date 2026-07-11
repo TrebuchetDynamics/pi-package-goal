@@ -1,7 +1,7 @@
 # Clean-Context Advisor + Reviewer Pattern — Design
 
 Date: 2026-06-13
-Status: Approved scope; pending spec review
+Status: Implemented; retained as design history
 
 ## Background
 

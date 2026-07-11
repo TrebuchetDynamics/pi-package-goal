@@ -1,5 +1,7 @@
 # Clean-Context Advisor + Reviewer Pattern Implementation Plan
 
+**Status: completed.** The contract, cross-links, README documentation, and package test described below are present in the live repository. The unchecked boxes are preserved as historical implementation instructions, not active backlog.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a bundled, capability-aware "clean-context advisor + reviewer" delegation pattern and cross-link it from the package's existing review/planning skills and README.
