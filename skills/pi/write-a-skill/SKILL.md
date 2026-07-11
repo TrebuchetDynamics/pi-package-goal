@@ -38,6 +38,16 @@ Before changing a skill, inspect the current skill inventory, `README.md`, `CONT
    - Can an agent follow it without inventing missing inputs or commands?
    - Run package validation (`npm test` when shipping) and one realistic scenario/review.
 
+## Behavioral evaluation
+
+For a non-trivial new or changed skill, prepare one pinned realistic scenario. When an approved runner is available, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, a token/cost receipt, and brief trajectory notes. If the comparison cannot run, label the improvement unreplicated instead of claiming it works.
+
+Do not invoke a paid or live model API without explicit approval, and never put live model calls in tests or CI.
+
+## Example
+
+User: “Create a release-readiness skill that must never publish.” Agent: inspect neighboring skills and package commands, draft a no-publish boundary plus deterministic checks, then label behavior unreplicated until an approved paired run exists.
+
 ## Atomic fix skill pattern
 
 For narrow defect or optimization skills, prefer the upstream prompt-cache pattern: **Target → Symptom → Fix → Verify**. Make applicability deterministic, keep one bug per skill, cite the source/version being adapted, and require a concrete post-fix assertion instead of prose confidence.
@@ -83,31 +93,7 @@ Agent: [first action or final artifact shape]
 - [Detailed guidance](references/details.md)
 ```
 
-## Skill contract template
-
-Use this for non-trivial skills; trim sections that do not apply. Full guidance: [skill-contract.md](references/skill-contract.md).
-
-```md
-## Entry protocol
-- Trivial: proceed directly.
-- Medium ambiguity: propose a baseline and ask only the missing hard question.
-- High ambiguity/risk: stop and clarify.
-
-## Topology check
-- State/ownership clear?
-- Feedback/validation clear?
-- Blast radius/deletion impact known?
-- Timing/ordering safe?
-
-## Verification gate
-[Evidence required before done]
-
-## Red lines
-[Actions that require stopping, explicit confirmation, or a blocker report]
-
-## Output contract
-[Required final summary, markers, artifacts, or files changed]
-```
+For non-trivial skills, use and trim [the contract template](references/skill-contract.md) instead of duplicating its detailed guidance here.
 
 ## Description requirements
 
@@ -132,6 +118,7 @@ Before finalizing, compare the description against nearby skill descriptions. If
 - [ ] Third-party provenance, notices, and license copies are preserved.
 - [ ] Terminology, examples, and scripts are concrete and safe.
 - [ ] Validation commands and one realistic invocation/review are recorded.
+- [ ] Behavioral claims have a paired receipt, or are explicitly labeled unreplicated.
 
 ## Shared contract
 

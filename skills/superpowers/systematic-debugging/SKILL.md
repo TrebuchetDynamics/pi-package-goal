@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Trace bugs to root cause. Use when tests fail or behavior is unexpected before proposing fixes.
+description: Compatibility entry for `/skill:systematic-debugging`. Use only when that explicit systematic-debugging command is entered; otherwise use diagnose for reported failures.
 license: MIT; adapted from https://github.com/obra/superpowers
 ---
 

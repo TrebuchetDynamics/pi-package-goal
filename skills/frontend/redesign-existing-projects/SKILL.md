@@ -1,6 +1,6 @@
 ---
 name: redesign-existing-projects
-description: Use when upgrading an existing website or app UI through audit-first redesign without breaking functionality.
+description: Audit and upgrade an existing website or app UI while preserving functionality and implementation boundaries. Use for targeted visual modernization, not greenfield builds or audit-only reports.
 ---
 
 # Redesign Skill

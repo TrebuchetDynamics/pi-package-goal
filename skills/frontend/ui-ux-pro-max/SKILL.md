@@ -1,6 +1,6 @@
 ---
 name: ui-ux-pro-max
-description: "UI/UX design intelligence for web/mobile: design systems, color, typography, layout, accessibility, motion, dashboards, landing pages, and polish. Use when deep UI/UX guidance is needed."
+description: "Deep web/mobile design-system and accessibility guidance covering color, typography, layout, motion, dashboards, and interaction quality. Use for design decisions or review, not primary implementation when a build/redesign skill fits."
 ---
 
 # UI/UX Pro Max - Design Intelligence

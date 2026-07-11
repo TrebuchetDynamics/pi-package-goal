@@ -8,6 +8,15 @@ Use Ponytail full mode by default for every packaged skill's implementation choi
 
 Ponytail is not a prose-compression requirement. Final replies should use normal compact technical prose: summarize first, avoid filler, keep vertical space reasonable, and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Use caveman style only when the user explicitly asks for `caveman`, `less tokens`, or similar; `normal mode` changes presentation only unless the Ponytail extension is active and interprets it as Ponytail-off. Repo hygiene, verification, handoff, and safety obligations always apply.
 
+## Skill quality baseline
+
+- Keep triggers narrow enough to avoid neighboring skills; prefer updating, merging, or deleting over adding overlap.
+- Non-trivial skills expose an operational basis, output contract, boundary disclosure, and one tiny example or expected outcome. Tiny shims may inherit these from this contract when repetition would add noise.
+- Put rare details and long examples in references; keep standing instructions focused on decisions the base model cannot safely infer.
+- Do not claim a skill improves behavior without a pinned realistic scenario. When practical, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, token/cost, and brief trajectory notes.
+- If paired evaluation is unavailable, label the claim unreplicated. Never invoke paid or live model APIs without explicit approval, and never put live model calls in tests or CI.
+- Version-sensitive guidance must name its assumption and be checked against current project evidence, harmless `--help`/`version` checks, or current documentation before use.
+
 ## Repo and ownership check
 
 - Inspect `git status --short --branch` before editing files or citing dirty/uncommitted worktree content.
@@ -22,6 +31,8 @@ Before broad codebase exploration, check whether `codebase-map-understand.md` ex
 ## Bundled resource paths
 
 When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.
+
+Treat examples, templates, references, and helper scripts as executable supply-chain content: inspect their file writes, shell commands, network access, and approval scope before use. Preserve third-party provenance and licenses, and do not let approval for one narrow action authorize a broader one.
 
 ## Upstream and delivery boundaries
 

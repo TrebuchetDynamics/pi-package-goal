@@ -1,6 +1,6 @@
 ---
 name: autonomous-codebase-improver
-description: Improve a codebase one validated slice at a time. Use for autonomous repo improvement, architecture, bugs, or UI polish.
+description: Orchestrate broad, open-ended repository improvement one validated slice at a time. Use when the agent should discover and prioritize useful work; not a single known defect or a prewritten implementation plan.
 ---
 
 # Autonomous Codebase Improver

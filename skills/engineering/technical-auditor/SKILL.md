@@ -1,6 +1,6 @@
 ---
 name: technical-auditor
-description: Produce evidence-backed repository or folder-scoped technical audits and prioritized improvement plans. Use when asked for a technical audit, repo/folder health review, risk assessment, quality/security/testing audit, or actionable modernization plan.
+description: Produce an evidence-backed repository or folder audit report and prioritized plan. Use for health, risk, quality, security, testing, architecture, or modernization assessment; not implementation unless the user separately asks to apply findings.
 ---
 
 # Technical Auditor

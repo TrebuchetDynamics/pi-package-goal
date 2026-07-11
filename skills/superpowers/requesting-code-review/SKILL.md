@@ -1,6 +1,6 @@
 ---
 name: requesting-code-review
-description: Request a focused review. Use when completing substantial work before merge or release.
+description: Prepare a focused human or agent review request for substantial completed work. Use when work is ready for pre-merge/release review; do not invoke an external review service or process feedback.
 license: MIT; adapted from https://github.com/obra/superpowers
 ---
 

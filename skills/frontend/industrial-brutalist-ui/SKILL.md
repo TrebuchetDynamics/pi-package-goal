@@ -1,6 +1,6 @@
 ---
 name: industrial-brutalist-ui
-description: Use when building raw brutalist, Swiss-grid, terminal, industrial, or mechanical frontend interfaces.
+description: Apply only to a named brutalist direction. Use for Swiss-grid, terminal, industrial, raw, or mechanical visual language after choosing the main build/redesign workflow.
 ---
 
 # SKILL: Industrial Brutalism & Tactical Telemetry UI

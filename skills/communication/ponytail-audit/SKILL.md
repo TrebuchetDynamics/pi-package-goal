@@ -1,12 +1,9 @@
 ---
 name: ponytail-audit
 description: >
-  Whole-repo audit for over-engineering. Like ponytail-review, but scans the
-  entire codebase instead of a diff: a ranked list of what to delete, simplify,
-  or replace with stdlib/native equivalents. Use when the user says "audit this
-  codebase", "audit for over-engineering", "what can I delete from this repo",
-  "find bloat", "ponytail-audit", or "/ponytail-audit". One-shot report, does
-  not apply fixes.
+  Audit the whole repository for over-engineering, bloat, and deletion candidates.
+  Use for audit this codebase, find bloat, or /ponytail-audit; use ponytail-review
+  for a diff. One-shot report only; does not apply fixes.
 ---
 
 Shared package contract: follow `skills/shared/COMMON-CONTRACT.md` unless this skill's stricter output rules override it.

@@ -1,6 +1,6 @@
 ---
 name: autoreview
-description: Run an available structured autoreview helper as a closeout code review. Use when the user asks for autoreview, Codex/Claude/second-model review, PR/branch review, or review before commit/ship.
+description: Run an available second-model review helper for closeout. Use when the user requests autoreview, Codex/Claude review, or pre-ship external review; not ordinary self-review.
 ---
 
 # Auto Review

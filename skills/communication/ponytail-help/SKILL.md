@@ -1,9 +1,8 @@
 ---
 name: ponytail-help
 description: >
-  Quick-reference card for all ponytail modes, skills, and commands.
-  One-shot display, not a persistent mode. Use when the user says /ponytail-help,
-  "ponytail help", "what ponytail commands", "how do I use ponytail".
+  Show the ponytail command and mode reference card. Use for ponytail help,
+  available commands, or /ponytail-help. One-shot display, not a persistent mode.
 ---
 
 Shared package contract: follow `skills/shared/COMMON-CONTRACT.md` unless this skill's stricter output rules override it.

@@ -1,6 +1,6 @@
 ---
 name: gpt-taste
-description: Use when Codex/GPT needs stricter taste rules for landing pages, advanced GSAP motion, AIDA structure, or anti-slop UI.
+description: Codex/GPT-only supporting rules for landing pages, GSAP motion, AIDA, and anti-slop polish. Use when that model-specific constraint is requested; not a general frontend router.
 ---
 
 # CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING

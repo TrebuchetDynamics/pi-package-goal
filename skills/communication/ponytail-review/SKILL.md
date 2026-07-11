@@ -1,13 +1,9 @@
 ---
 name: ponytail-review
 description: >
-  Code review focused exclusively on over-engineering. Finds what to delete:
-  reinvented standard library, unneeded dependencies, speculative abstractions,
-  dead flexibility. One line per finding: location, what to cut, what replaces
-  it. Use when the user says "review for over-engineering", "what can we
-  delete", "is this over-engineered", "simplify review", or invokes
-  /ponytail-review. Complements correctness-focused review, this one only
-  hunts complexity.
+  Review a diff or scoped code change only for over-engineering and deletion
+  opportunities. Use for simplify review, what can we delete, or /ponytail-review;
+  use ponytail-audit for the whole repository. Does not review correctness.
 ---
 
 Shared package contract: follow `skills/shared/COMMON-CONTRACT.md` unless this skill's stricter output rules override it.

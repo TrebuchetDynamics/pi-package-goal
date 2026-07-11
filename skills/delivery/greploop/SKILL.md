@@ -1,6 +1,6 @@
 ---
 name: greploop
-description: Iteratively clean up a GitHub PR, GitLab MR, or Perforce shelved changelist using Greptile until confidence is 5/5 with zero unresolved comments. Use only when Greptile review tooling/auth are available.
+description: Iterate on an existing PR, MR, or shelved changelist until Greptile reaches 5/5 with no unresolved comments. Use only when that review context, tooling, auth, and external-action approval exist.
 license: MIT
 compatibility: Requires git, gh (GitHub CLI) or glab (GitLab CLI) authenticated, and Greptile installed on the repo. For Perforce, requires p4 CLI authenticated.
 metadata:

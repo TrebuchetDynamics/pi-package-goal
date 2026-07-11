@@ -1,6 +1,6 @@
 ---
 name: share-code
-description: Refactor a folder to share proven duplicate code and expose bugs. Use when asked to reuse code, dedupe, or find bugs via refactor.
+description: Extract proven duplicate code inside a bounded folder and expose divergence bugs. Use for evidence-backed reuse or deduplication; not a topology-only folder split or speculative abstraction.
 ---
 
 # Share Code

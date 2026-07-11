@@ -456,7 +456,7 @@ function collectSkillShadowingIssues(skillRecords) {
 function skillTriggerTokens(description) {
   return new Set(description
     .toLowerCase()
-    .replace(/[^a-z0-9/.-]+/g, " ")
+    .replace(/[^a-z0-9/-]+/g, " ")
     .split(/\s+/)
     .filter((token) => token.length > 3 && !skillShadowingStopwords.has(token)));
 }
@@ -607,6 +607,7 @@ async function testSkills() {
   assert.deepEqual(collectSkillInventoryIssues(root, expectedSkills), []);
   assert.deepEqual(collectSkillDescriptionBudgetIssues(root), []);
   assert.deepEqual(collectSkillFrontmatterYamlIssues(root), []);
+  assert.deepEqual([...skillTriggerTokens("Audit polish. polish, routes")].sort(), ["audit", "polish", "routes"], "skill trigger tokenization must ignore punctuation");
   assert.deepEqual(collectSkillQualityGateIssues(root), []);
   assert.deepEqual(listPackageSkillRootMarkdownFiles(root), [], "root markdown files under pi.skills are loaded as file skills and must move under a non-skill subdirectory");
   assert.deepEqual(collectForbiddenPackageResourceArtifacts(root), [], "package resource trees must not contain local generated/runtime artifacts");
@@ -720,7 +721,59 @@ async function testSkills() {
   assert.match(folderRefactor, /Do not end with "Next candidate: <x>"/);
   assert.match(folderRefactor, /candidates-folder-refactor/);
   assert.match(folderRefactor, /prefer boring duplication over premature sharing/);
-  assert.match(read("skills/pi/write-a-skill/SKILL.md"), /Repo study before drafting/);
+  const frontendRoutingRoles = {
+    "skills/frontend/ui-design/SKILL.md": /front door for broad or ambiguous UI\/UX work/i,
+    "skills/frontend/frontend-design/SKILL.md": /working web components, pages, or product interfaces/i,
+    "skills/frontend/design-taste-frontend/SKILL.md": /marketing sites.*not product dashboards/i,
+    "skills/frontend/hallmark/SKILL.md": /audit, redesign, or study.*explicitly invokes Hallmark/i,
+    "skills/frontend/ui-ux-pro-max/SKILL.md": /design-system and accessibility guidance.*not primary implementation/i,
+    "skills/frontend/redesign-existing-projects/SKILL.md": /existing website or app.*preserving functionality.*not greenfield/i,
+  };
+  for (const [file, role] of Object.entries(frontendRoutingRoles)) {
+    assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
+  }
+
+  const frontendStyleRoles = {
+    "skills/frontend/minimalist-ui/SKILL.md": /style overlay.*explicitly requests.*minimalist/i,
+    "skills/frontend/industrial-brutalist-ui/SKILL.md": /Apply only.*brutalist/i,
+    "skills/frontend/high-end-visual-design/SKILL.md": /Premium styling companion.*soft.*premium/i,
+    "skills/frontend/gpt-taste/SKILL.md": /Codex\/GPT-only supporting rules.*not a general frontend router/i,
+  };
+  for (const [file, role] of Object.entries(frontendStyleRoles)) {
+    assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its supporting style role`);
+  }
+
+  const engineeringRoutingRoles = {
+    "skills/engineering/autonomous-codebase-improver/SKILL.md": /broad, open-ended repository improvement.*not a single known defect/i,
+    "skills/engineering/bug-harvest/SKILL.md": /search for one unknown.*bug.*not an already-reported defect/i,
+    "skills/engineering/diagnose/SKILL.md": /specific reported failure.*root cause/i,
+    "skills/superpowers/systematic-debugging/SKILL.md": /only when that explicit systematic-debugging command/i,
+    "skills/engineering/share-code/SKILL.md": /proven duplicate code.*not a topology-only folder split/i,
+    "skills/engineering/skill-folder-refactor/SKILL.md": /one folder's topology.*not repository-wide architecture/i,
+    "skills/engineering/technical-auditor/SKILL.md": /report and prioritized plan.*not implementation/i,
+  };
+  for (const [file, role] of Object.entries(engineeringRoutingRoles)) {
+    assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
+  }
+
+  const reviewRoutingRoles = {
+    "skills/delivery/autoreview/SKILL.md": /available second-model review helper.*not ordinary self-review/i,
+    "skills/delivery/greploop/SKILL.md": /existing PR, MR, or shelved changelist.*Greptile/i,
+    "skills/superpowers/requesting-code-review/SKILL.md": /prepare a focused human or agent review request.*not invoke an external review service/i,
+    "skills/superpowers/receiving-code-review/SKILL.md": /incoming review feedback.*before applying it/i,
+  };
+  for (const [file, role] of Object.entries(reviewRoutingRoles)) {
+    assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct review role`);
+  }
+
+  const writeASkill = read("skills/pi/write-a-skill/SKILL.md");
+  assert.match(writeASkill, /Repo study before drafting/);
+  assert.match(writeASkill, /skill-on\/skill-off comparison/);
+  assert.match(writeASkill, /deterministic acceptance checks/);
+  assert.match(writeASkill, /token\/cost receipt/);
+  assert.match(writeASkill, /Do not invoke a paid or live model API without explicit approval/);
+  assert.match(writeASkill, /## Example\n\nUser:/);
+  assert.ok(writeASkill.trimEnd().split(/\r?\n/).length <= 125, "write-a-skill SKILL.md should keep detailed contract guidance in references");
   const grillWithDocs = read("skills/planning/grill-with-docs/SKILL.md");
   assert.match(grillWithDocs, /codebase-map-understand\.md when present/);
   assert.match(grillWithDocs, /resolving dependencies between decisions one-by-one/);
@@ -744,6 +797,17 @@ async function testSkills() {
   assert.match(commonContract, /normal compact technical prose/);
   assert.match(commonContract, /compact receipts/);
   assert.match(commonContract, /Use caveman style only when the user explicitly asks/);
+  assert.match(commonContract, /Skill quality baseline/);
+  assert.match(commonContract, /operational basis, output contract, boundary disclosure, and one tiny example/);
+  assert.match(commonContract, /skill-on\/skill-off comparison/);
+  assert.match(commonContract, /same model and harness/);
+  assert.match(commonContract, /deterministic acceptance checks/);
+  assert.match(commonContract, /label the claim unreplicated/);
+  assert.match(commonContract, /Never invoke paid or live model APIs without explicit approval/);
+  assert.match(commonContract, /examples, templates, references, and helper scripts as executable supply-chain content/);
+  assert.match(commonContract, /file writes, shell commands, network access, and approval scope/);
+  assert.match(commonContract, /Version-sensitive guidance/);
+  assert.match(commonContract, /harmless `--help`\/`version` checks/);
   assert.match(read("skills/communication/ponytail/SKILL.md"), /The ladder/);
   assert.match(read("skills/communication/caveman/SKILL.md"), /Optimize vertical space too/);
   assert.match(commonContract, /Repo and ownership check/);

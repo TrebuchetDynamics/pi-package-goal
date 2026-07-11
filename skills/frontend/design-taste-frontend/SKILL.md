@@ -1,6 +1,6 @@
 ---
 name: design-taste-frontend
-description: Anti-slop frontend skill for landing pages, portfolios, and redesigns. Use when the user needs non-templated frontend build, redesign, or UI polish.
+description: Anti-slop taste rules for marketing sites, landing pages, portfolios, and editorial redesigns. Use when visual distinctiveness is the main goal; not product dashboards, data tables, or multi-step application UI.
 ---
 
 # tasteskill: Anti-Slop Frontend Skill

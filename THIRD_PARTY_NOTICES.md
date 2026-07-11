@@ -40,6 +40,7 @@ Trebuchet Dynamics under the MIT License.
   - `skills/planning/handoff/`
   - `skills/communication/caveman/`
   - `skills/pi/write-a-skill/`
+- Local changes: package-specific repo study, skill-contract, safety, provenance, and approval-gated paired-evaluation guidance were added.
 - License: MIT
 - Full license copy: `licenses/mattpocock-skills-LICENSE`
 
@@ -56,6 +57,7 @@ Trebuchet Dynamics under the MIT License.
   - `skills/communication/ponytail-debt/`
   - `skills/communication/ponytail-help/`
 - Usage: also source inspiration for the Ponytail compression rules added to `skills/communication/caveman/`.
+- Local changes: concise package-local routing descriptions and shared-contract references were added.
 - License: MIT
 - Full license copy: `licenses/DietrichGebert-ponytail-LICENSE`
 
@@ -81,6 +83,7 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `b7e3af8`
 - Bundled paths:
   - `skills/frontend/ui-ux-pro-max/`
+- Local changes: a package-local routing description and shared-contract reference were added.
 - License: MIT
 - Full license copy: `licenses/nextlevelbuilder-ui-ux-pro-max-skill-LICENSE`
 
@@ -90,6 +93,7 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `7228175`
 - Bundled paths:
   - `skills/frontend/frontend-design/`
+- Local changes: a package-local routing description, codebase-map guidance, and shared-contract reference were added.
 - License: Anthropic commercial terms
 - Full license copy: `licenses/anthropics-claude-code-LICENSE.md`
 
@@ -121,6 +125,7 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `aeb42fb`
 - Bundled paths:
   - `skills/frontend/hallmark/`
+- Local changes: a narrower package-local routing description and shared-contract reference were added.
 - License: MIT
 - Full license copy: `licenses/Nutlope-hallmark-LICENSE`
 
@@ -139,6 +144,7 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `4ae5198`
 - Bundled paths:
   - `skills/delivery/greploop/`
+- Local changes: a package-local routing description and shared-contract reference were added.
 - License: MIT
 - Full license copy: `licenses/greptileai-skills-LICENSE`
 
@@ -148,6 +154,7 @@ Trebuchet Dynamics under the MIT License.
 - Snapshot inspected: `c06e64114b3e71f3aefa1f29f5fff6a43f040888`
 - Bundled paths:
   - `skills/delivery/autoreview/`
+- Local changes: a package-local routing description and shared-contract reference were added.
 - License: MIT
 - Full license copy: `licenses/openclaw-agent-skills-LICENSE`
 

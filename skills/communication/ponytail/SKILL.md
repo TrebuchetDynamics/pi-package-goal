@@ -1,11 +1,9 @@
 ---
 name: ponytail
 description: >
-  Forces the laziest solution that actually works: YAGNI, stdlib/native first,
-  one line before fifty, shortest safe diff. Supports lite, full (default), and
-  ultra. Use when the user says "ponytail", "be lazy", "lazy mode", "simplest
-  solution", "minimal solution", "yagni", "do less", or complains about
-  over-engineering, bloat, boilerplate, or unnecessary dependencies.
+  Persistent YAGNI and shortest-safe-diff implementation mode. Use when the user
+  says ponytail, be lazy, simplest/minimal solution, do less, or complains about
+  over-engineering. Not a one-shot audit or review.
 argument-hint: "[lite|full|ultra]"
 license: MIT
 ---

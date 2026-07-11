@@ -1,11 +1,8 @@
 ---
 name: ponytail-gain
 description: >
-  Show ponytail's measured impact as a compact scoreboard: less code, less
-  cost, more speed, from the benchmark medians. One-shot display, not a
-  persistent mode, and not a per-repo number. Use when the user says
-  /ponytail-gain, "ponytail gain", "what does ponytail save", "show ponytail impact",
-  "ponytail scoreboard".
+  Show ponytail benchmark-median impact as a compact scoreboard. Use for ponytail
+  gain, savings, impact, or /ponytail-gain. One-shot display, not a per-repo result.
 ---
 
 Shared package contract: follow `skills/shared/COMMON-CONTRACT.md` unless this skill's stricter output rules override it.

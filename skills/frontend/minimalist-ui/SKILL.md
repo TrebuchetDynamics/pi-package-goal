@@ -1,6 +1,6 @@
 ---
 name: minimalist-ui
-description: Use when building clean minimalist, editorial, warm monochrome, Notion/Linear-style frontend interfaces.
+description: Minimalist style overlay for a selected UI workflow. Use when the user explicitly requests minimalist, editorial, warm-monochrome, or Notion/Linear visual language.
 ---
 
 # Protocol: Premium Utilitarian Minimalism UI Architect

@@ -1,6 +1,6 @@
 ---
 name: ui-design
-description: Orchestrate UI/UX skills for frontend design, redesign, audits, design systems, shadcn UI, accessibility, and anti-slop polish. Use when routing UI/UX work.
+description: UI/UX routing front door. Use as the front door for broad or ambiguous UI/UX work that needs the right build, redesign, audit, design-system, accessibility, or browser specialist. Do not use when the user already names a narrower UI skill.
 ---
 
 # UI Design Orchestrator

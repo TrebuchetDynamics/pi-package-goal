@@ -1,6 +1,6 @@
 ---
 name: skill-folder-refactor
-description: Refactor one folder into subfolders and shared code. Use for folder refactors, directory splits, module organization, or dedupe.
+description: Refactor one folder's topology into coherent subfolders, with shared code only when duplication is proven. Use for a named directory split or organization task; not repository-wide architecture.
 ---
 
 # Skill Folder Refactor

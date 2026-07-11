@@ -1,6 +1,6 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback before implementing suggestions; verify unclear or questionable feedback with technical rigor.
+description: Evaluate incoming review feedback before applying it. Use when suggestions are unclear, risky, or questionable; not for requesting or running a new review.
 license: MIT; adapted from https://github.com/obra/superpowers
 ---
 

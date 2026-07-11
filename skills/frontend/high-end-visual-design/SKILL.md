@@ -1,6 +1,6 @@
 ---
 name: high-end-visual-design
-description: Use when a frontend should feel high-end, soft, expensive, spacious, polished, and agency-designed.
+description: Premium styling companion for an existing UI workflow. Use when the requested direction is soft, spacious, premium, luxury, or agency-polished.
 ---
 
 # Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)

@@ -1,11 +1,8 @@
 ---
 name: ponytail-debt
 description: >
-  Harvest every `ponytail:` comment in the codebase into a debt ledger, so the
-  deliberate shortcuts and deferrals ponytail leaves behind get tracked instead
-  of rotting into "later means never". Use when the user says "ponytail debt",
-  "/ponytail-debt", "what did ponytail defer", "list the shortcuts", "ponytail
-  ledger", or "what did we mark to do later". One-shot report, changes nothing.
+  List every `ponytail:` shortcut or deferral as a debt ledger. Use for ponytail
+  debt, deferred shortcuts, or /ponytail-debt. One-shot report; changes nothing.
 ---
 
 Shared package contract: follow `skills/shared/COMMON-CONTRACT.md` unless this skill's stricter output rules override it.
