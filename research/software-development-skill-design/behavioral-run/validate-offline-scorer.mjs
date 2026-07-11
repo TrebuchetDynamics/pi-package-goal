@@ -149,8 +149,10 @@ const unscored = validatePairCompleteness(completeRecords.map((record, index) =>
 assert.equal(unscored.complete, false);
 assert.ok(unscored.errors.some((error) => error.startsWith("unscored cell:")));
 
+const receiptPath = path.join(root, "offline-validation-receipt.json");
+const receiptTimestamp = fs.existsSync(receiptPath) ? JSON.parse(fs.readFileSync(receiptPath, "utf8")).timestamp : new Date().toISOString();
 const receipt = {
-  timestamp: new Date().toISOString(),
+  timestamp: receiptTimestamp,
   mode: "offline-only",
   providerCalls: 0,
   spendUsd: 0,
@@ -159,6 +161,6 @@ const receipt = {
   malformed: { invalidJsonRejected: true, traversalRejected: true, extraKeysRejected: true, symlinkRejected: true, fixtureUnchanged: true },
   pairCompleteness: { completeAccepted: true, missingRejected: true, duplicateRejected: true, unknownRejected: true, unscoredRejected: true },
 };
-fs.writeFileSync(path.join(root, "offline-validation-receipt.json"), JSON.stringify(receipt, null, 2) + "\n");
+fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + "\n");
 fs.rmSync(validationRoot, { recursive: true, force: true });
 console.log(JSON.stringify(receipt, null, 2));
