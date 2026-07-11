@@ -105,4 +105,6 @@ All numeric claims above are attributed to named papers, source/venue, year, and
 
 ## Recommended next step
 
-Create one minimal evaluation slice for the highest-risk/highest-value skill family—likely coding diagnosis/TDD or skill authoring itself—using pinned tasks, expected routing, deterministic acceptance checks, and a skill-on/skill-off comparison. Use that result to decide whether to prune, split, merge, or revise; do not bulk-edit all 72 skills first.
+**Disposition (2026-07-10): intentionally deferred by owner.** Behavioral proof is not required for the current package roadmap. Preserve the evaluation artifacts for possible future use, but do not spend provider funds or claim behavioral gains.
+
+If this work is explicitly reopened, create one minimal evaluation slice for the highest-risk/highest-value skill family—likely coding diagnosis/TDD or skill authoring itself—using pinned tasks, expected routing, deterministic acceptance checks, and a skill-on/skill-off comparison. Use that result to decide whether to prune, split, merge, or revise; do not bulk-edit all 72 skills first.

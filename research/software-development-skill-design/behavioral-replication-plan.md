@@ -1,6 +1,8 @@
-# Behavioral replication run plan — approval required
+# Behavioral replication run plan — intentionally deferred
 
-Status: **funding-blocked and incomplete**. One OpenRouter request was attempted after approval, rejected with HTTP 403 before token generation, and not retried. Spend was **US$0.00**; no model patch or behavioral score was produced. The offline scorer was subsequently validated with synthetic patches only.
+Status: **intentionally deferred by owner on 2026-07-10**. Behavioral proof is not required for the current package roadmap. Do not resume provider execution unless the owner explicitly reopens this work with a fresh plan and approval.
+
+Historical execution status: one OpenRouter request was attempted after approval, rejected with HTTP 403 before token generation, and not retried. Spend was **US$0.00**; no model patch or behavioral score was produced. The offline scorer was subsequently validated with synthetic patches only.
 
 This document preserves the original tool-using pilot design for audit history. That design was not executed because tool loops could exceed twelve provider requests. The later approved no-tool patch-quality design is captured by `behavioral-run/prompts/`, `single-request-constraints.md`, and `run-cell.mjs`; it does **not** test automatic skill routing. Routing criteria below belong only to the superseded design.
 
