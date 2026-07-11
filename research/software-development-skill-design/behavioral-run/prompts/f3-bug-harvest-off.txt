@@ -1,0 +1,35 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md. Find and fix exactly one evidence-backed bug in this small project. Do not perform unrelated cleanup and do not claim tests were run.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Find and fix exactly one evidence-backed bug in src/merge.js. The returned merge must contain defaults plus overrides without changing either input object. Do not perform unrelated cleanup, add dependencies, or change the public API. Change only src/merge.js.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-merge-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: smoke.mjs ---
+import assert from "node:assert/strict";
+import { mergeDefaults } from "./src/merge.js";
+assert.deepEqual(mergeDefaults({ retries: 2 }, { timeout: 10 }), { retries: 2, timeout: 10 });
+--- END FILE: smoke.mjs ---
+
+--- FILE: src/merge.js ---
+export function mergeDefaults(defaults, overrides) {
+  const result = defaults;
+  Object.assign(result, overrides);
+  return result;
+}
+--- END FILE: src/merge.js ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

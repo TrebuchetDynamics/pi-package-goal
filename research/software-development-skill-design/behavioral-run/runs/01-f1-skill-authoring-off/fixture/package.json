@@ -1,0 +1,5 @@
+{
+  "name": "synthetic-release-fixture",
+  "private": true,
+  "scripts": { "test": "node --test", "pack:check": "npm pack --dry-run" }
+}

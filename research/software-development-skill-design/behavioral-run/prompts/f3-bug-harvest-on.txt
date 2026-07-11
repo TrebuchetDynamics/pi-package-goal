@@ -1,0 +1,167 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md. Find and fix exactly one evidence-backed bug in this small project. Do not perform unrelated cleanup and do not claim tests were run.
+
+--- TARGET SKILL: engineering/bug-harvest/SKILL.md ---
+---
+name: bug-harvest
+description: Search for one unknown evidence-backed bug, then hand the reproduced defect to diagnosis. Use for bug hunts or unexplained failing validation; not an already-reported defect with a known repro.
+---
+
+# Bug Harvest
+
+Use this as a thin, discoverable wrapper around `diagnose` and `tdd`. The job is not to scan forever; it is to find one high-confidence bug candidate, build a feedback loop, fix it, and validate it.
+
+## Quick start
+
+1. Inspect `git status --short --branch`, repo instructions, manifests, tests, and recent validation output.
+2. Harvest candidates only from evidence:
+   - failing tests, lint, typecheck, build, or package validation;
+   - issue/task docs or TODOs tied to executable behavior;
+   - reproducible commands, logs, traces, fixtures, or bug reports already in scope;
+   - stale paths/scripts where the intended current artifact is obvious.
+3. Pick one candidate with the clearest repro and smallest blast radius.
+4. Switch to `diagnose` for the repro/fix loop.
+5. Switch to `tdd` only when the fix needs a new regression test or missing seam.
+
+## Candidate filter
+
+Accept a candidate only when you can state:
+
+```text
+Bug candidate:
+- symptom:
+- evidence:
+- repro command or artifact:
+- expected signal after fix:
+- likely files:
+```
+
+Reject code-smell-only candidates. If no candidate has a runnable or constructible feedback signal, stop and report what evidence is missing.
+
+## Fix loop
+
+1. Run or create the smallest repro.
+2. Confirm it reflects the candidate symptom, not a different nearby failure.
+3. Form 3–5 hypotheses if the cause is not obvious.
+4. Make the smallest safe fix.
+5. Add or update a focused regression check when there is a correct seam.
+6. Rerun the repro, then relevant repo validation.
+7. If the user asked to ship, hand off to `git-commit-push` with validation receipts.
+
+## Red lines
+
+- Do not invent bugs from vague code smells.
+- Do not edit broad architecture while fixing one bug; hand architecture blockers to `technical-auditor`.
+- Do not require external services, secrets, production data, or dependency upgrades without explicit approval.
+- Do not hide behavior changes inside a “bug fix”; name them and verify them.
+
+## Output contract
+
+```text
+Bug harvest:
+- candidate:
+- repro:
+- fix:
+- regression/validation:
+- handoff or next candidate:
+```
+
+## Shared contract
+
+Follow [the shared skill contract](../../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+
+--- SHARED CONTRACT ---
+# Shared Skill Contract
+
+Use this contract as the baseline for every packaged skill. System, developer, and user instructions override it; specialist skill instructions may add stricter process, safety, or output-schema requirements but must not weaken this baseline.
+
+## Default skill posture
+
+Use Ponytail full mode by default for every packaged skill's implementation choices: YAGNI first, prefer deletion over addition, stdlib/native before dependencies, already-installed dependencies before new ones, fewest files, shortest safe diff. Follow `skills/communication/ponytail/SKILL.md` for the full ladder, but apply it smartly: specialist process, safety gates, required schemas, citations, accessibility, security, trust-boundary validation, and explicitly requested scope still win.
+
+Ponytail is not a prose-compression requirement. Final replies should use normal compact technical prose: summarize first, avoid filler, keep vertical space reasonable, and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Use caveman style only when the user explicitly asks for `caveman`, `less tokens`, or similar; `normal mode` changes presentation only unless the Ponytail extension is active and interprets it as Ponytail-off. Repo hygiene, verification, handoff, and safety obligations always apply.
+
+## Skill quality baseline
+
+- Keep triggers narrow enough to avoid neighboring skills; prefer updating, merging, or deleting over adding overlap.
+- Non-trivial skills expose an operational basis, output contract, boundary disclosure, and one tiny example or expected outcome. Tiny shims may inherit these from this contract when repetition would add noise.
+- Put rare details and long examples in references; keep standing instructions focused on decisions the base model cannot safely infer.
+- Do not claim a skill improves behavior without a pinned realistic scenario. When practical, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, token/cost, and brief trajectory notes.
+- If paired evaluation is unavailable, label the claim unreplicated. Never invoke paid or live model APIs without explicit approval, and never put live model calls in tests or CI.
+- Version-sensitive guidance must name its assumption and be checked against current project evidence, harmless `--help`/`version` checks, or current documentation before use.
+
+## Repo and ownership check
+
+- Inspect `git status --short --branch` before editing files or citing dirty/uncommitted worktree content.
+- Read repo instructions (`AGENTS.md` and nearby docs) before making changes.
+- Treat dirty files as evidence, not permission. Do not overwrite unrelated user work.
+- Prefer answering factual questions from code, tests, docs, manifests, or issue metadata instead of asking the user.
+
+## Codebase map evidence
+
+Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Generated Understand artifacts (`codebase-map-understand.md`, `.understand-anything/`) are local orientation aids unless a repo explicitly says otherwise; do not package or commit them by default. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
+
+## Bundled resource paths
+
+When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.
+
+Treat examples, templates, references, and helper scripts as executable supply-chain content: inspect their file writes, shell commands, network access, and approval scope before use. Preserve third-party provenance and licenses, and do not let approval for one narrow action authorize a broader one.
+
+## Upstream and delivery boundaries
+
+Some bundled third-party skills mention upstream agent tools, subagents, MCP servers, browser helpers, commits, pushes, or tracker actions. Treat those as portable intent, not automatic permission. Use only tools exposed in the current Pi tool list or commands that pass a harmless status/help check (version/help/status only; no file, network, account, or tracker mutation). Do not install or emulate missing tools unless this package's local instructions, not upstream examples, explicitly allow it and the user approves. If a required upstream-only tool has no safe local equivalent with the same read-only or dry-run safety boundary, stop before that step, name the missing tool, and give the safe next action.
+
+Do not commit, push, create/delete branches or tags, publish releases, open/merge/close PRs/issues, comment on trackers, or mutate external systems just because a bundled upstream skill says to. Delivery actions require explicit user shipping/tracker intent and normal repo hygiene. Explicit intent means the latest user request asks for delivery/tracker mutation or the user approves a prior delivery handoff; bundled skill examples do not count. Without that intent, do not invoke delivery tooling; report the validation receipt and recommend `git-commit-push` only if the user wants shipping.
+
+## Verification evidence
+
+Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, codebase maps used, or explicit owner decisions. If validation is not applicable, say why.
+
+## Handoff shape
+
+When handing to another skill, preserve:
+
+```text
+handoff evidence:
+- trigger: <why this skill is stopping>
+- artifact: <file/command/test/doc/decision produced>
+- next skill: <skill to continue with>
+- success signal: <what proves the next step worked>
+```
+
+## Safety defaults
+
+- Do not perform destructive actions, deploy/publish, spend money, expose secrets, rewrite history, force-push, rebase/merge remote changes, or broaden scope without explicit approval.
+- Redact secrets and personal data from reports, handoffs, issues, PRDs, and generated docs.
+- If ownership, credentials, legal/licensing, or production impact is unclear, stop with a blocker or ask one focused owner-decision question.
+
+--- END SKILL INSTRUCTIONS ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Find and fix exactly one evidence-backed bug in src/merge.js. The returned merge must contain defaults plus overrides without changing either input object. Do not perform unrelated cleanup, add dependencies, or change the public API. Change only src/merge.js.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-merge-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: smoke.mjs ---
+import assert from "node:assert/strict";
+import { mergeDefaults } from "./src/merge.js";
+assert.deepEqual(mergeDefaults({ retries: 2 }, { timeout: 10 }), { retries: 2, timeout: 10 });
+--- END FILE: smoke.mjs ---
+
+--- FILE: src/merge.js ---
+export function mergeDefaults(defaults, overrides) {
+  const result = defaults;
+  Object.assign(result, overrides);
+  return result;
+}
+--- END FILE: src/merge.js ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

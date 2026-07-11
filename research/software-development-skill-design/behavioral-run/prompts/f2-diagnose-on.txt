@@ -1,0 +1,243 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and fix the reported retry-count defect without changing the public API. You cannot run tests in this harness, so inspect the supplied test and report that limitation honestly.
+
+--- TARGET SKILL: engineering/diagnose/SKILL.md ---
+---
+name: diagnose
+description: >
+  Diagnose a specific reported failure or performance regression to root cause: reproduce, minimize, hypothesize, instrument, fix, and regression-test.
+  Use for concrete broken, throwing, slow, or failing behavior; use bug-harvest when no defect is known yet.
+---
+
+# Diagnose
+
+A discipline for hard bugs. Skip phases only when explicitly justified.
+
+When exploring the codebase, use the project's domain glossary to get a clear mental model of the relevant modules, and check ADRs in the area you're touching. If `codebase-map-understand.md` exists and the bug crosses module boundaries, consult the codebase map for likely paths/callers before broad grepping, then verify every lead in live files.
+
+## Quick references
+
+- [Codex local storage failures](references/codex-storage.md) — safe local cleanup path for `No space left on device`, `database or disk is full`, and damaged `~/.codex/state_*.sqlite` startup errors.
+- [Pi goal log audits](references/pi-log-audit.md) — read-only scan for `.pi` folders, `development-goal`, `e2e-goal`, and custom goal logs across repo trees.
+
+## Bug-harvest entry
+
+Use this when an autonomous improvement pass asks to find one fixable bug without a specific user report. Harvest only from repo evidence: failing tests, issue/task docs, TODOs tied to executable behavior, reproducible commands, logs already in scope, or stale validation scripts. Pick one high-confidence candidate, build the feedback loop first, and stop if no deterministic or high-rate repro can be made. Do not speculate from code smells alone.
+
+## Skill handoffs
+
+- If a reproducible bug needs a new guardrail, hand the minimized failing case to `tdd` with trigger, repro artifact, next skill, and expected RED→GREEN regression signal.
+- If no correct test seam exists, hand off to `improve-codebase-architecture` with trigger, failed seam evidence, next skill, and expected deeper interface success signal.
+- If a suspected fix needs a disposable harness before touching production code, use `prototype` with trigger, prototype question, next skill, and expected learning signal.
+- If the bug is in a Pi extension, combine this loop with `pi-extensions-helper` API/docs checks and include the repro command plus expected smoke signal.
+- If Goal mode is active, report the repro command, failing symptom, fixed hypothesis, and passing signal as Goal evidence.
+
+## Phase 1 — Build a feedback loop
+
+**This is the skill.** Everything else is mechanical. If you have a fast, deterministic, agent-runnable pass/fail signal for the bug, you will find the cause — bisection, hypothesis-testing, and instrumentation all just consume that signal. If you don't have one, no amount of staring at code will save you.
+
+Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give up.**
+
+### Ways to construct one — try them in roughly this order
+
+1. **Failing test** at whatever seam reaches the bug — unit, integration, e2e.
+2. **Curl / HTTP script** against a running dev server.
+3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.
+4. **Headless browser script** (Playwright / Puppeteer) — drives the UI, asserts on DOM/console/network.
+5. **Replay a captured trace.** Save a real network request / payload / event log to disk; replay it through the code path in isolation.
+6. **Throwaway harness.** Spin up a minimal subset of the system (one service, mocked deps) that exercises the bug code path with a single function call.
+7. **Property / fuzz loop.** If the bug is "sometimes wrong output", run 1000 random inputs and look for the failure mode.
+8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate "boot at state X, check, repeat" so you can `git bisect run` it.
+9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.
+10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-goal.template.sh` so the goal is still structured. Captured output feeds back to you.
+
+Build the right feedback loop, and the bug is 90% fixed.
+
+### Iterate on the loop itself
+
+Treat the loop as a product. Once you have _a_ loop, ask:
+
+- Can I make it faster? (Cache setup, skip unrelated init, narrow the test scope.)
+- Can I make the signal sharper? (Assert on the specific symptom, not "didn't crash".)
+- Can I make it more deterministic? (Pin time, seed RNG, isolate filesystem, freeze network.)
+
+A 30-second flaky loop is barely better than no loop. A 2-second deterministic loop is a debugging superpower.
+
+### Non-deterministic bugs
+
+The goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelise, add stress, narrow timing windows, inject sleeps. A 50%-flake bug is debuggable; 1% is not — keep raising the rate until it's debuggable.
+
+### When you genuinely cannot build a loop
+
+Stop and say so explicitly. List what you tried. Ask the user for: (a) access to whatever environment reproduces it, (b) a captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
+
+Do not proceed to Phase 2 until you have a loop you believe in.
+
+## Phase 2 — Reproduce
+
+Run the loop. Watch the bug appear.
+
+Confirm:
+
+- [ ] The loop produces the failure mode the **user** described — not a different failure that happens to be nearby. Wrong bug = wrong fix.
+- [ ] The failure is reproducible across multiple runs (or, for non-deterministic bugs, reproducible at a high enough rate to debug against).
+- [ ] You have captured the exact symptom (error message, wrong output, slow timing) so later phases can verify the fix actually addresses it.
+
+Do not proceed until you reproduce the bug.
+
+## Phase 3 — Hypothesise
+
+Generate **3–5 ranked hypotheses** before testing any of them. Single-hypothesis generation anchors on the first plausible idea.
+
+Each hypothesis must be **falsifiable**: state the prediction it makes.
+
+> Format: "If <X> is the cause, then <changing Y> will make the bug disappear / <changing Z> will make it worse."
+
+If you cannot state the prediction, the hypothesis is a vibe — discard or sharpen it.
+
+**Show the ranked list to the user before testing.** They often have domain knowledge that re-ranks instantly ("we just deployed a change to #3"), or know hypotheses they've already ruled out. Cheap checkpoint, big time saver. Don't block on it — proceed with your ranking if the user is AFK.
+
+## Phase 4 — Instrument
+
+Each probe must map to a specific prediction from Phase 3. **Change one variable at a time.**
+
+Tool preference:
+
+1. **Debugger / REPL inspection** if the env supports it. One breakpoint beats ten logs.
+2. **Targeted logs** at the boundaries that distinguish hypotheses.
+3. Never "log everything and grep".
+
+**Tag every debug log** with a unique prefix, e.g. `[DEBUG-a4f2]`. Cleanup at the end becomes a single grep. Untagged logs survive; tagged logs die.
+
+**Perf branch.** For performance regressions, logs are usually wrong. Instead: establish a baseline measurement (timing harness, `performance.now()`, profiler, query plan), then bisect. Measure first, fix second.
+
+## Phase 5 — Fix + regression test
+
+Write the regression test **before the fix** — but only if there is a **correct seam** for it.
+
+A correct seam is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available seam is too shallow (single-caller test when the bug needs multiple callers, unit test that can't replicate the chain that triggered the bug), a regression test there gives false confidence.
+
+**If no correct seam exists, that itself is the finding.** Note it. The codebase architecture is preventing the bug from being locked down. Flag this for the next phase.
+
+If a correct seam exists:
+
+1. Turn the minimised repro into a failing test at that seam.
+2. Watch it fail.
+3. Apply the fix.
+4. Watch it pass.
+5. Re-run the Phase 1 feedback loop against the original (un-minimised) scenario.
+
+## Phase 6 — Cleanup + post-mortem
+
+Required before declaring done:
+
+- [ ] Original repro no longer reproduces (re-run the Phase 1 loop)
+- [ ] Regression test passes (or absence of seam is documented)
+- [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
+- [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
+- [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
+
+**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.
+
+## Shared contract
+
+Follow [the shared skill contract](../../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+
+--- SHARED CONTRACT ---
+# Shared Skill Contract
+
+Use this contract as the baseline for every packaged skill. System, developer, and user instructions override it; specialist skill instructions may add stricter process, safety, or output-schema requirements but must not weaken this baseline.
+
+## Default skill posture
+
+Use Ponytail full mode by default for every packaged skill's implementation choices: YAGNI first, prefer deletion over addition, stdlib/native before dependencies, already-installed dependencies before new ones, fewest files, shortest safe diff. Follow `skills/communication/ponytail/SKILL.md` for the full ladder, but apply it smartly: specialist process, safety gates, required schemas, citations, accessibility, security, trust-boundary validation, and explicitly requested scope still win.
+
+Ponytail is not a prose-compression requirement. Final replies should use normal compact technical prose: summarize first, avoid filler, keep vertical space reasonable, and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Use caveman style only when the user explicitly asks for `caveman`, `less tokens`, or similar; `normal mode` changes presentation only unless the Ponytail extension is active and interprets it as Ponytail-off. Repo hygiene, verification, handoff, and safety obligations always apply.
+
+## Skill quality baseline
+
+- Keep triggers narrow enough to avoid neighboring skills; prefer updating, merging, or deleting over adding overlap.
+- Non-trivial skills expose an operational basis, output contract, boundary disclosure, and one tiny example or expected outcome. Tiny shims may inherit these from this contract when repetition would add noise.
+- Put rare details and long examples in references; keep standing instructions focused on decisions the base model cannot safely infer.
+- Do not claim a skill improves behavior without a pinned realistic scenario. When practical, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, token/cost, and brief trajectory notes.
+- If paired evaluation is unavailable, label the claim unreplicated. Never invoke paid or live model APIs without explicit approval, and never put live model calls in tests or CI.
+- Version-sensitive guidance must name its assumption and be checked against current project evidence, harmless `--help`/`version` checks, or current documentation before use.
+
+## Repo and ownership check
+
+- Inspect `git status --short --branch` before editing files or citing dirty/uncommitted worktree content.
+- Read repo instructions (`AGENTS.md` and nearby docs) before making changes.
+- Treat dirty files as evidence, not permission. Do not overwrite unrelated user work.
+- Prefer answering factual questions from code, tests, docs, manifests, or issue metadata instead of asking the user.
+
+## Codebase map evidence
+
+Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Generated Understand artifacts (`codebase-map-understand.md`, `.understand-anything/`) are local orientation aids unless a repo explicitly says otherwise; do not package or commit them by default. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
+
+## Bundled resource paths
+
+When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.
+
+Treat examples, templates, references, and helper scripts as executable supply-chain content: inspect their file writes, shell commands, network access, and approval scope before use. Preserve third-party provenance and licenses, and do not let approval for one narrow action authorize a broader one.
+
+## Upstream and delivery boundaries
+
+Some bundled third-party skills mention upstream agent tools, subagents, MCP servers, browser helpers, commits, pushes, or tracker actions. Treat those as portable intent, not automatic permission. Use only tools exposed in the current Pi tool list or commands that pass a harmless status/help check (version/help/status only; no file, network, account, or tracker mutation). Do not install or emulate missing tools unless this package's local instructions, not upstream examples, explicitly allow it and the user approves. If a required upstream-only tool has no safe local equivalent with the same read-only or dry-run safety boundary, stop before that step, name the missing tool, and give the safe next action.
+
+Do not commit, push, create/delete branches or tags, publish releases, open/merge/close PRs/issues, comment on trackers, or mutate external systems just because a bundled upstream skill says to. Delivery actions require explicit user shipping/tracker intent and normal repo hygiene. Explicit intent means the latest user request asks for delivery/tracker mutation or the user approves a prior delivery handoff; bundled skill examples do not count. Without that intent, do not invoke delivery tooling; report the validation receipt and recommend `git-commit-push` only if the user wants shipping.
+
+## Verification evidence
+
+Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, codebase maps used, or explicit owner decisions. If validation is not applicable, say why.
+
+## Handoff shape
+
+When handing to another skill, preserve:
+
+```text
+handoff evidence:
+- trigger: <why this skill is stopping>
+- artifact: <file/command/test/doc/decision produced>
+- next skill: <skill to continue with>
+- success signal: <what proves the next step worked>
+```
+
+## Safety defaults
+
+- Do not perform destructive actions, deploy/publish, spend money, expose secrets, rewrite history, force-push, rebase/merge remote changes, or broaden scope without explicit approval.
+- Redact secrets and personal data from reports, handoffs, issues, PRDs, and generated docs.
+- If ownership, credentials, legal/licensing, or production impact is unclear, stop with a blocker or ask one focused owner-decision question.
+
+--- END SKILL INSTRUCTIONS ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Fix the reported defect: parseRetryCount("0") returns the fallback instead of zero.
+Preserve the exported function name, parameters, positive-number behavior, and invalid-input fallback. Add no dependency and change only src/retry.js.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-retry-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: src/retry.js ---
+export function parseRetryCount(value, fallback = 3) {
+  const parsed = Number(value);
+  return parsed || fallback;
+}
+--- END FILE: src/retry.js ---
+
+--- FILE: test.mjs ---
+import assert from "node:assert/strict";
+import { parseRetryCount } from "./src/retry.js";
+assert.equal(parseRetryCount("0"), 0);
+assert.equal(parseRetryCount("2"), 2);
+assert.equal(parseRetryCount("bad", 4), 4);
+console.log("retry assertions ok");
+--- END FILE: test.mjs ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

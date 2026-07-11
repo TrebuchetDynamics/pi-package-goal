@@ -1,0 +1,38 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and fix the reported retry-count defect without changing the public API. You cannot run tests in this harness, so inspect the supplied test and report that limitation honestly.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Fix the reported defect: parseRetryCount("0") returns the fallback instead of zero.
+Preserve the exported function name, parameters, positive-number behavior, and invalid-input fallback. Add no dependency and change only src/retry.js.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-retry-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: src/retry.js ---
+export function parseRetryCount(value, fallback = 3) {
+  const parsed = Number(value);
+  return parsed || fallback;
+}
+--- END FILE: src/retry.js ---
+
+--- FILE: test.mjs ---
+import assert from "node:assert/strict";
+import { parseRetryCount } from "./src/retry.js";
+assert.equal(parseRetryCount("0"), 0);
+assert.equal(parseRetryCount("2"), 2);
+assert.equal(parseRetryCount("bad", 4), 4);
+console.log("retry assertions ok");
+--- END FILE: test.mjs ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

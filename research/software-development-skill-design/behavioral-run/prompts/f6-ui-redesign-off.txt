@@ -1,0 +1,35 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and improve the existing settings page's visual hierarchy and accessibility. Preserve its DOM structure, text, behavior, and dependencies. This is a targeted redesign, not a rebuild.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Improve the existing settings page's visual hierarchy and accessibility by editing only settings.css.
+Preserve settings.html byte-for-byte, all text, DOM structure, behavior, and dependencies. Add a responsive rule preventing fixed-width overflow, a visible :focus-visible treatment, and prefers-reduced-motion handling. This is a targeted redesign, not a rebuild.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-ui-fixture","private":true}
+--- END FILE: package.json ---
+
+--- FILE: settings.css ---
+body { font-family: sans-serif; margin: 0; color: #555; }
+.settings { width: 900px; margin: 20px auto; }
+section { border: 1px solid #ddd; padding: 12px; }
+button { margin-top: 8px; transition: all 1s; }
+--- END FILE: settings.css ---
+
+--- FILE: settings.html ---
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="settings.css"><title>Settings</title></head>
+<body><main class="settings"><h1>Settings</h1><section><h2>Notifications</h2><label><input type="checkbox"> Weekly summary</label><button type="button">Save settings</button></section></main></body></html>
+--- END FILE: settings.html ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

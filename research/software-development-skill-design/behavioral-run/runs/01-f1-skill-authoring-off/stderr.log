@@ -1,0 +1,3 @@
+Warning: (startup session lookup, global settings) EROFS: read-only file system, mkdir '/config/.pi/agent/settings.json.lock'
+Warning: (runtime creation, global settings) EROFS: read-only file system, mkdir '/config/.pi/agent/settings.json.lock'
+Warning: (runtime creation, global settings) EROFS: read-only file system, mkdir '/config/.pi/agent/settings.json.lock'

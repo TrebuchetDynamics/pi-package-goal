@@ -1,0 +1,30 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and add the simplest safe cache for normalizeConfig. Use native language features, add no dependency, and avoid speculative abstractions.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Task
+Add the simplest safe cache for normalizeConfig. Repeated calls with the same input object must reuse the normalized result; different input objects must remain independent. Use native language features, add no dependency, preserve the public API, avoid factories/classes/config frameworks, and change only src/config.js.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-cache-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: src/config.js ---
+export function normalizeConfig(config) {
+  return {
+    retries: config.retries ?? 3,
+    timeout: config.timeout ?? 1000,
+  };
+}
+--- END FILE: src/config.js ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

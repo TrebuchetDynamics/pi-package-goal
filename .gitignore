@@ -16,6 +16,10 @@ dist/
 *.tsbuildinfo
 *.tgz
 
+# Reproducible behavioral-scorer work directories
+research/**/behavioral-run/package-snapshot/
+research/**/behavioral-run/offline-validation/
+
 # Local Understand agent artifacts
 .understand-anything/
 

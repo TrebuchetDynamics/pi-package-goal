@@ -1,0 +1,1922 @@
+{
+  "preparedAt": "2026-07-11T16:23:02.596Z",
+  "gitCommit": "e593b391902fa96e7cb10a8bce11f98239ec35c4",
+  "skillFiles": [
+    {
+      "path": "skills/communication/caveman/SKILL.md",
+      "sha256": "8a046cf14b9db2dab0d3fe0b22ac5041af49e727e133ba7b30a3bc8c296cc9ea"
+    },
+    {
+      "path": "skills/communication/ponytail-audit/SKILL.md",
+      "sha256": "71b7c04a04c84187e5a6c678bf7c9ecbbd068964cb80f6ccaf74f95e0becec37"
+    },
+    {
+      "path": "skills/communication/ponytail-debt/SKILL.md",
+      "sha256": "7db567db356596168741c2bf138eca1ccda38bd79a95f51d0813bdea211f1517"
+    },
+    {
+      "path": "skills/communication/ponytail-gain/SKILL.md",
+      "sha256": "f4b6d427e47e02c6a963a8b04a3b9791dd566ffe1653689e79a11552d910a55b"
+    },
+    {
+      "path": "skills/communication/ponytail-help/SKILL.md",
+      "sha256": "bddc6356423999dad1ba00777cb9e371c36e4c6bd5ee3396d83a5a518fc9be7f"
+    },
+    {
+      "path": "skills/communication/ponytail-review/SKILL.md",
+      "sha256": "9ae2d98749e2f37abcd4c0aaef269ef996ec0a02bcdd6feb01e029234e7980f6"
+    },
+    {
+      "path": "skills/communication/ponytail/SKILL.md",
+      "sha256": "9197733108e1108c7ce0fe146563a9b347a449181b9b1e01afba2c3669204d29"
+    },
+    {
+      "path": "skills/communication/writing-shape/SKILL.md",
+      "sha256": "526f03d96bd80c7fc7bbc0f6f8e3466f67eec83816efa946ccf8883fc79baab3"
+    },
+    {
+      "path": "skills/delivery/autoreview/SKILL.md",
+      "sha256": "09d2af38d100d085be80bdf1e87da10704f66a3fc38096bc118d3214f7160b98"
+    },
+    {
+      "path": "skills/delivery/git-commit-push/SKILL.md",
+      "sha256": "235626e5cfb5b547901d705e9aac8595a6503ef67525ad16fc0442d0358a6ad3"
+    },
+    {
+      "path": "skills/delivery/greploop/SKILL.md",
+      "sha256": "7f0e66ac551c4bf790b5f3352d21452c63df213d212ed54c676f51b46e8f58c7"
+    },
+    {
+      "path": "skills/delivery/greploop/references/gitlab-api.md",
+      "sha256": "56ed1f30b4a5fe8c3286503505de1d4f9704f361ed158c162a0027c6bbbd2c80"
+    },
+    {
+      "path": "skills/delivery/greploop/references/graphql-queries.md",
+      "sha256": "b89bd70a8fc480cdf7cf49943f7ab56e334090c1f36479b7383e30aee7a74060"
+    },
+    {
+      "path": "skills/engineering/autonomous-codebase-improver/SKILL.md",
+      "sha256": "37073c9c4d5ec6d7a602ae07bfd237772135eebc3a1c8107bbb9f6d1911ce4de"
+    },
+    {
+      "path": "skills/engineering/bug-harvest/SKILL.md",
+      "sha256": "12139d35af2ce00a98df4ca857b6c0985dd8bcce787e90a0ddd16bdec6248393"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/SKILL.md",
+      "sha256": "78eb2ce04bbc32c30c9cca090dae44fc6b77ca1d0e8d99997256b0f60c3532b5"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor",
+      "sha256": "7293d12cc815264ae3fba8e65913b39517f169db843337fceb8583417d2f6285"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs",
+      "sha256": "6cf0fc4f4d33eca65bdab7cefaf29eb18e8199dcf6a77cd07e545ffef0b9895e"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/install.sh",
+      "sha256": "ea37a58b7daa38397dc1736951b5a1f09804f137ee8260c02134fc7a876e6b28"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/lib/colors.sh",
+      "sha256": "5bcd09d76b2d782d23e62778387e92d9ee407021da0ab7244ba79cf7ac85b8f0"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/lib/git-utils.sh",
+      "sha256": "0cc22d57aaeb8aee34ad38ea4dc5448d5e05722aa1c8b688e3aead4cc819f69d"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/lib/loop-extras.sh",
+      "sha256": "cb1c57b8e9353c92b39dde7c915fd061e9d3baf88d58c0c719c16def3db57ce6"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/lib/pi-runner.sh",
+      "sha256": "e027951ed2ef03571aafb4d253af6c6357afc1461529ef8b09d6ebd9fcc58b0e"
+    },
+    {
+      "path": "skills/engineering/candidates-folder-refactor/scripts/lib/scanner-utils.sh",
+      "sha256": "2c589c5c9b41c975ad8aea0cb921c4b2f946552af6f4842dc2a90203c5ef4014"
+    },
+    {
+      "path": "skills/engineering/diagnose/SKILL.md",
+      "sha256": "c2199b579d4fbc197ce5995896f59e19753b7326ac18b91110d7775121f111d3"
+    },
+    {
+      "path": "skills/engineering/diagnose/references/codex-storage.md",
+      "sha256": "7c3723be577d63d40006558204e6ce6a04ad02b324d95b8213fbf2d6e21a9cdb"
+    },
+    {
+      "path": "skills/engineering/diagnose/references/pi-log-audit.md",
+      "sha256": "7834231c439dee8262dfef142308379256eb70f70be0d9c843b96cd62c692a3b"
+    },
+    {
+      "path": "skills/engineering/diagnose/scripts/codex-storage-cleanup.sh",
+      "sha256": "752ac768ffff27e2902fed8b0e89eff79c2efec4db107a7c4ecba6dba4607204"
+    },
+    {
+      "path": "skills/engineering/diagnose/scripts/hitl-goal.template.sh",
+      "sha256": "b80a0511f57dbe5a32a6487cbf10fd852c180f60baa65c27415cfe9436f8c3e9"
+    },
+    {
+      "path": "skills/engineering/diagnose/scripts/pi-log-audit.mjs",
+      "sha256": "0c3824d13180ec4313b4a04b336630e5d71200376eb47878feafb5a48b9aaa4f"
+    },
+    {
+      "path": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "sha256": "a49994e0f7e975e5efa2a3941e4f7c882bc93edda7a8fd4e641488ebc5e340de"
+    },
+    {
+      "path": "skills/engineering/prompt-cache-auditor/SKILL.md",
+      "sha256": "cbf0e27d537f48c34b344857780a42060d60a38a08ec73e1f5740530a8d36374"
+    },
+    {
+      "path": "skills/engineering/prompt-cache-auditor/references/provider-patterns.md",
+      "sha256": "ddf5ab27298c6f539ce0daec59f01f9c3e2b78db640ecade69d87d1fd68df082"
+    },
+    {
+      "path": "skills/engineering/prompt-cache-auditor/scripts/summarize-cache-usage.mjs",
+      "sha256": "9f9c61d0594fbd31756e579db5e8a957dee56d2e27568569871e16a57a6a672f"
+    },
+    {
+      "path": "skills/engineering/prototype/LOGIC.md",
+      "sha256": "da91dc92195c00d5dc33863b8c1a030998025a0f8583ebf2babd770825b7f70c"
+    },
+    {
+      "path": "skills/engineering/prototype/SKILL.md",
+      "sha256": "b0287d99cc4c0e35f672ef0286714a7a1dc03a96c4ba487c29169af8fc5949df"
+    },
+    {
+      "path": "skills/engineering/prototype/UI.md",
+      "sha256": "d76d565149ee50456c5ddc5e29c27fec8737637874fe5c37d970db085a200b27"
+    },
+    {
+      "path": "skills/engineering/share-code/SKILL.md",
+      "sha256": "39f5c022f6647f8afb31ee057fe3492ce88244a62c23355e2da972c9a0c31f92"
+    },
+    {
+      "path": "skills/engineering/skill-folder-refactor/SKILL.md",
+      "sha256": "a3bef6f69629749b5cd3c17254fb9b5b788352ac8438a6ee58e78869b14a512b"
+    },
+    {
+      "path": "skills/engineering/tdd/SKILL.md",
+      "sha256": "88cdea93300b20a73df3298450ce1372add415c1b0bde97e0c6072b1a51cc1c2"
+    },
+    {
+      "path": "skills/engineering/tdd/deep-modules.md",
+      "sha256": "f2123700bf953db1740625686c75bdd145efd486357c47c6818c869fee657a32"
+    },
+    {
+      "path": "skills/engineering/tdd/interface-design.md",
+      "sha256": "764c5ff0e3fa6b4ab7095eb65ccc7201e090baf19fa16051dfdb72c06d27417d"
+    },
+    {
+      "path": "skills/engineering/tdd/mocking.md",
+      "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef"
+    },
+    {
+      "path": "skills/engineering/tdd/refactoring.md",
+      "sha256": "54fced22dd1911b7094c3fe7979b7c1a40d40be307482c4adf7dc0588f27d6cc"
+    },
+    {
+      "path": "skills/engineering/tdd/tests.md",
+      "sha256": "e12182f5c4c6a844b7c6ab4b8d2623b642aaaae5460fe58ed087efd4f3d5fb8a"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/SKILL.md",
+      "sha256": "60bfa7de83fe742d3f834064b36a767a6b522e91a6962041be6efa9e385d6645"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/architecture-deepening-dependencies.md",
+      "sha256": "ccf22fa9988757491b1f142a205affb151c8e997174ab0dc8ce3e03e14aea50a"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/architecture-deepening-mode.md",
+      "sha256": "98feb78f23fe2107635a97c140e9257d775d24ba2cc89c24bfa91fef919ee9ab"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/architecture-interface-design.md",
+      "sha256": "d59e008dafdd4f5a97cae35655bbf3e8138b5322513e349e9c720c37f6873674"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/architecture-language.md",
+      "sha256": "6feca2140439c54a774749e8367f18350899ff69c777144ed2248cd4407949fa"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/architecture-repo-study.md",
+      "sha256": "2279f57e1b211bbe3bab2623cf89eb4b37191a0fc2268cea9d7c182e4285d6fd"
+    },
+    {
+      "path": "skills/engineering/technical-auditor/references/audit-dimensions.md",
+      "sha256": "2ea46bcda281bfe69d59969ea012238dac2e874650e31ba31fed62267d413574"
+    },
+    {
+      "path": "skills/engineering/wiki-docs/SKILL.md",
+      "sha256": "f46c6b3338987116edc29f04913f2297257aadbad64241d6604c132d674939da"
+    },
+    {
+      "path": "skills/engineering/wiki-docs/references/llm-wiki-pattern.md",
+      "sha256": "be49cfcddd612620eec825494b291bab96cbca8657629e2a8b5313da57d625b5"
+    },
+    {
+      "path": "skills/frontend/brandkit/SKILL.md",
+      "sha256": "61d65973edda9177522f86dcda5918a4cbb4dfa8d7c16d3fa1f70b3e81e2435f"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/SKILL.md",
+      "sha256": "c377f6f77b9f0a33d74aec1ffc69ec48d88605b8599b95546659697935b11ff3"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/api-calling.md",
+      "sha256": "0c34c9b231f3d767b6961de6d1e87c4ca9535a4f6c2ed4dfe60bb48b73626254"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/auth-identity.md",
+      "sha256": "0a79f08a39a1835b7b7b7bf95e05cd33c4e4691efe6b75b1c59057260101fbd0"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/content-scripts.md",
+      "sha256": "9439394dc38f49ba1147cde2508741f16825f8659c2c97925b71abe6af104d6c"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/context-menus.md",
+      "sha256": "8ece341374ce456e86dd7b9b30ce60ec961674c5a4a08e825b6854ec9ce3109f"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/csp-sandbox.md",
+      "sha256": "3169a8f2f636a912212cbd12636a58337b1df07b333ea5818aec6eea50398228"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/declarative-net-request.md",
+      "sha256": "4b986713921da1a1e12dd68da5ee8684e43b8a084f323cced503bcb8dc8b8b03"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/devtools.md",
+      "sha256": "816bd0e240a6814713b59f045461c6c24e54502b302425abe463c34f932babf7"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/icons.md",
+      "sha256": "a4ac076fca49b2ea6b76c60a46afbbf02e8782447d6f03ee276073264e5b46d7"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/media-capture.md",
+      "sha256": "c6bddb3c51c0b0f36d302e7dfde9558dea5eb5febccda315e911119a6e08cea3"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/message-passing.md",
+      "sha256": "d4c4d84caa6761a5afb31f013ac780c2db157f3a14a23b6c0070730141dbf254"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/omnibox.md",
+      "sha256": "e310ccccc673bb4cb4c4ed42a8eb821af30e271145ee06db79f62649def4bd5c"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/popup-ui.md",
+      "sha256": "2a9567e5b431910702542707a09357f2031969238bda7807155dbecb1a317fb4"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/prompt-api.md",
+      "sha256": "f376c73354ec804dc00dc1e14d0fec8f19da79f5d7c141bd5a6b40d6e49e0330"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/service-worker.md",
+      "sha256": "6149ec9e5a1185486ba7157d631a24525b41377d4d2c4af13058ea2f6e2715d1"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/side-panel.md",
+      "sha256": "7e6b68b9aff6532495b8d89af097bb3c0f72b3a329c92a598be3ca50a43ed15c"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/storage.md",
+      "sha256": "208736186cdc606d4d98efe64ea17f1087f13755415360d59035879e7580dde2"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/extensions/tab-management.md",
+      "sha256": "f16f568aaa5015985a6fc03c748f2f85ab66284e510ed0e782f637f3ae492622"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/webstore/chromewebstore-template.md",
+      "sha256": "18bd4a162d565eff3dc3d8ebcf292fb190ead52c28d88e876ffd322574adb385"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/webstore/privacy-policy.md",
+      "sha256": "70dda79e2d5e2d574b10c0121c2f9ea7ab6d644229af570d93c69042f2ef3f98"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/webstore/review-checklist.md",
+      "sha256": "5d13e2a60b823f82411ec97c75736aa1395dc387e1354c0c05b52a109c22c45f"
+    },
+    {
+      "path": "skills/frontend/chrome-extensions/references/webstore/store-listing.md",
+      "sha256": "775aa1cb64d93eebafd9f38c8ddae63afe4ea9e83fc3a00cfe89eba20fccbc3b"
+    },
+    {
+      "path": "skills/frontend/design-taste-frontend-v1/SKILL.md",
+      "sha256": "f102ed7e9324360b07fa619d243bfceb7afe4a9ff3bfcbda4a3fd495a8692626"
+    },
+    {
+      "path": "skills/frontend/design-taste-frontend/SKILL.md",
+      "sha256": "cdcf216374f7c63dfc6c3c039dd19c5677f1cf78f70b0e6e14e6da89e21bc968"
+    },
+    {
+      "path": "skills/frontend/frontend-design/LICENSE.txt",
+      "sha256": "728158fd1037143fad6907e8fa34804177e598b7326519503fe83cafdef849e6"
+    },
+    {
+      "path": "skills/frontend/frontend-design/SKILL.md",
+      "sha256": "64c8a8d903c3bc19b5fe91cf1f7dd8e8d306a80f7da1986d668dfd9741ec814a"
+    },
+    {
+      "path": "skills/frontend/full-output-enforcement/SKILL.md",
+      "sha256": "3dfe31829d6805245048b03668c17c114388b9d659a93d45834d7c30afd6e977"
+    },
+    {
+      "path": "skills/frontend/gpt-taste/SKILL.md",
+      "sha256": "a6ea81fca32aa3a5315f27a631c216bb2bac94e99d1a70b3786acfe0ce670f1a"
+    },
+    {
+      "path": "skills/frontend/hallmark/SKILL.md",
+      "sha256": "2cb76c9d2446c3e75c880c96840a19a24fea1b251d3b4990e96c268bae18f064"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/anti-patterns.md",
+      "sha256": "a36eb346ad59cafaa26119ed1e7c0bbb8aca6637209ee110eb630dd1a9307070"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/assets.md",
+      "sha256": "60929b3dc2258b69caf3012d99d174e1ad73da9645263db81a9b271cd6fd7d61"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/color.md",
+      "sha256": "31c470d16ceb17ccce290cbdd00b9e9a88f2094df8eaaefb67c86ec1e1cdb876"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/component-cookbook.md",
+      "sha256": "9341d2fe823a89dffe931ad9a16bdaa55a9b7421fe8a265d2c6810127b3726a6"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/c1-outlined-chip.md",
+      "sha256": "bfc3bcef6e23062710845dd8986dbf98574c6c46ffade1db255dbe13a3203262"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/c2-inline-form-as-cta.md",
+      "sha256": "1a6e3d564f49a1d3345117bf2f8af5aea46938c6974bf7eb86cf890e5068bc95"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/c3-typographic-link.md",
+      "sha256": "59362c6d9f683ec15c3e09862f2ea6cd8e2a84574738ece98e479c58607d0d69"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/c4-sticky-bottom-bar.md",
+      "sha256": "67234a8d8722bf0685d00a64ac737748c82af7e0c25271d0c50f418739bd03c6"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f1-bento-grid.md",
+      "sha256": "d696a5ab7d6258cff0d2d9527fe07651bfbda6a725a4dfd8de00f678e1fb2bbc"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f2-sticky-scroll-stack.md",
+      "sha256": "0079ce8c01e8d008882411ed807aa367276cc67af9b956c4f06da1714007ae83"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f3-tabular-spec-sheet.md",
+      "sha256": "16331628cf441c7b570055c8edd60693d0aa793d1bc5eb2bfd145da700d9f072"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f4-step-sequence.md",
+      "sha256": "d3ca2aa99f7e639b8ccda20f5e263f3a33b03830f8c93d666f469b8e629975e2"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f5-annotated-screenshot.md",
+      "sha256": "58f9f4811ea60f923b2f44e0f3e9bac95c40929f8b1af4fdeedd1eae424051ec"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/f6-product-card-grid.md",
+      "sha256": "22ebc07b00d71c950be8d1a0fdad2cc0e7340cfbbf2cd62c43804bfcfaaf106a"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft1-mast-headed.md",
+      "sha256": "7f5671b583e9991f9a4671c223d6c15efdee5c1161dc616cbe2b398eb8d1b6db"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft2-inline-rule-single-line.md",
+      "sha256": "de13bf7d9bfaddb42a84fc8584646e914f2273abdb34aa98ea9bd2f5d7ff0493"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft3-index-style-category-list.md",
+      "sha256": "9f70608d62872be05af910a6168017c872ee1c17b2dbb8329128569231aa3cce"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft4-dense-typographic.md",
+      "sha256": "b8d087773614698036e63474a8546024d874bb6da2b575e64fcaacc2fba0ad60"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft5-statement.md",
+      "sha256": "71be63a51def6a3b59badcd481e49d4d5c5d9f3d63a3b4a5b9c05482110f4000"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft6-letter-close.md",
+      "sha256": "8119d22fbbfb3efa83d0bdc41acbfc5037f2c80cb7c39659623d5216eb16c03e"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft7-newsletter-first.md",
+      "sha256": "2cd766761a8e18bff7bc473b3303392b806a15e461187ac325138f77a308dd48"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/ft8-marquee-scroll.md",
+      "sha256": "32b8d38df984b0db385e9ce2251bbf6bb8df279e3933c441b97a0b703961e9f0"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h1-marquee.md",
+      "sha256": "8258b25e27232994126701a4f72bf05267fc9c5dfdc14bcf186efaf96a7dbb10"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h2-split-diptych.md",
+      "sha256": "f6077864f5c58414d7a10648aa8a3162767f2e356d0701d01953181a83cf3364"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h3-quote-led.md",
+      "sha256": "4b1427750c5041ab9201cd18fcdd3dd7a93622644eff518d9ad300339f9a46b7"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h4-stat-led.md",
+      "sha256": "9ada00461ea12be83dec2fba58e19fffd2c559925e68eb72ec18e0ec434f6cec"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h5-letter-hero.md",
+      "sha256": "afcd7bb6b4c888d7e8460e7af5e86dc50149ca253419757bed2834bf66083321"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h6-photographic-fold.md",
+      "sha256": "59e046afd5648bfe2737966f1203c0212e7311fbf0e1edee448e3f68f45aa0d0"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h7-demo-video-clipped-by-viewport-edge.md",
+      "sha256": "12b6f32a47a0b2e73547a0ac8b641cc19b1caa05dda4ffde424defb53afaa0de"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h8-mockup-split-browser-framed.md",
+      "sha256": "954b0a3aebfe6de8a3be70fedda669099125dd2ebc9c07948fbdb457fd8dc166"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/h9-custom-illustration-centerpiece.md",
+      "sha256": "1d3d32859e6e451a67bfc38a403bd80115a42b6898a4d8788e4cfadb8c83e8d6"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n1-wordmark-2-links.md",
+      "sha256": "8504774127e33f24a09844eb4c678e91b09ed513690fce51f7863d7cf3fdeab1"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n10-floating-on-scroll-morph.md",
+      "sha256": "056c2107492ab0eb9dafc7ab4c7ff5454222c1ee127fa45615ccc7b8955da36a"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n11-mega-menu.md",
+      "sha256": "b715421012d0997d25d5739c209be6129132fc91add677d75a8ad82d8672e1d4"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n12-banner-retract.md",
+      "sha256": "2d52ecb8725b1991d4f6b78301cd6f112464f7b17315bdf0febbff67bca50a56"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n13-inline-cmdk-pill.md",
+      "sha256": "6375fa0a1bbc92cba9a435159aa46cb084fc030c63e1abf8f073688959d7be75"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n1b-saas-three-section.md",
+      "sha256": "c2631c7807e33eea9b02faa9121a0f9e64861467b57b8635ee97f5fa52bb60ae"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n2-floating-chip.md",
+      "sha256": "70ea848537c5fe29be30f5e4b7478ecc39f86d0089f207549dc98a873b6c8fc1"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n3-side-rail.md",
+      "sha256": "20ed8a06a599d73190502a4801a3be2933b8e06874371167196b7d32dae66111"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n4-hidden-behind-k.md",
+      "sha256": "bccddb3a25a6afd457163b71e09de07ac23bf5d922fdeb9561e25d825bb97dcf"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n5-floating-pill.md",
+      "sha256": "6dc8ffb9628fd7ee3669208091e11497864cecea69becc6b513ebdc1f3a737a3"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n6-newspaper-masthead.md",
+      "sha256": "243a28d1165328c3479a1b75a3ae05dbfe2a6b8c9f867df8e35873b391f8edd5"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n7-brutal-slab.md",
+      "sha256": "6c58d29129f7fd89b9fc755143648397749cdd06043ae0c0b51e6f07e7e6dcb5"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n8-terminal-command.md",
+      "sha256": "c88d787bd2e5cf8bf6fb2c4121602dc0289760b41235d437468322821ee4334b"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/n9-edge-aligned-minimal.md",
+      "sha256": "cc20c76a5abe7099ed2bde3480c81f75f02a760a4c0d2ac79de1503dca9f9ee3"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/s1-left-margin-numbered.md",
+      "sha256": "074ed68eafb03ca775b0593d0599fe20c7891356f473f04996f42425e6586585"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/s2-hanging.md",
+      "sha256": "7b6d04cb896051006fe41b041a67ed77d25010edb579c60b03d88f68ae471462"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/s3-sticky-pinned.md",
+      "sha256": "4101cd7a28fe21a9b8094848ac6cc13c89f9e6f9bf801f04ac69b986c76727b4"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/s4-inline-no-break.md",
+      "sha256": "4b6d36da05383df1b29afe17b96645b816de07373016deb667efca340bb61ac6"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/s5-bottom-anchored.md",
+      "sha256": "55c159e2d8299501f14ac97468404dc8cad35695c2b7eaad2e972d314620eca0"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/t1-pull-quote-with-marginalia.md",
+      "sha256": "c7139796972c5f47d723742cbff02916a1ee0f2496456b86ac05d8839542be38"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/t2-logo-wall-hairline.md",
+      "sha256": "942121342a61bb4650722f7ba1b605347c6178d69ebeb740139b0bfb5c810e7f"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/t3-single-huge-quote.md",
+      "sha256": "7bca56e2cd630da3669f7cf8befd1bd654a5b249cf38b6d9af5a7c62e33b9239"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/components/t4-numbered-stat-strip.md",
+      "sha256": "a5fb5615902f9c4026f4ae7b0c96b536bb3cbb2fb4259031342d1cd190dab729"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/contract.md",
+      "sha256": "2923a056b95da63d04100ac56bc8cdff6bc0a717ac3e5da5cef69eb5feb4619c"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/copy.md",
+      "sha256": "703cdbf81fbef6f71d90596a32041d2a33a46fb71ba07ccf5ede6b4b1471d347"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/custom-craft.md",
+      "sha256": "417ff74cd83e1fea50c41948c53e18365269b880806ef4f31d9e0ebda0f99246"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/custom-theme.md",
+      "sha256": "aad421ebc794217c1ef5f01ecbe765bb78ce4fba5058c1d82574797991f69106"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/design-md.md",
+      "sha256": "a9368b64dd9b6e53e8c707830ce28fd8601d3195a81647ea46b6995aa3556b3c"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/export-formats.md",
+      "sha256": "de0a73d9bec7a31abbd0cbbf1ecd51c2e440f1f3fdc08f476a343959ca6c22f3"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/floating-nav.md",
+      "sha256": "c8c80f6560700bf6ee6baf28b81ec1539e9ff920d885624707de5fe8803c25d1"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/genres/atmospheric.md",
+      "sha256": "58d36e9a59c7d9e0ca99edeaaadab885f2635386fa69d52ea9eda3c29977e190"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/genres/editorial.md",
+      "sha256": "1e88cd0c94435c6a9edd1c0b93b67db4321fb3481ff0d66ee24869e655847319"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/genres/modern-minimal.md",
+      "sha256": "6125db00e38f2baca9369ed4d4aa917d977b85dd5eac6f19dac89707c3c3534b"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/genres/playful.md",
+      "sha256": "e52c6ff3fe21b5024c83ac1f03285e1d627e3469ff140d6bea728642026c4f95"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/hero-enrichment.md",
+      "sha256": "c3177cef3ffe356a6d51b476585674e54555eadcf3211ba2b8412481e24926c8"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/imagery-kit.md",
+      "sha256": "39d71df8dd6186b27f174fd8ab8ffd379553be3917cff50810c72365f6d6cb53"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/interaction-and-states.md",
+      "sha256": "e816eb2d067ba9f6f288a3831549da95624a05f432ed2a50f54136f27dd2d67f"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/layout-and-space.md",
+      "sha256": "987f3a45f5dbe81547117a77987bcedf5376608a6412067e04337047e0c7c839"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures.md",
+      "sha256": "a9024133c43e9ef388c331b5bc2f60de3d4a8c22b07b2d277bbafde941b24ea2"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/01-bento-grid.md",
+      "sha256": "aa268415862188414f8db94715e20ae7d29df3dc7c494083683378705f3f8493"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/02-long-document.md",
+      "sha256": "8ca81106396f2bd00eb9ef5d5d1f00c3aab0500394e706d6a2b3221a6c0d910f"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/03-marquee-hero.md",
+      "sha256": "2b7c35860086da6232cb3725c059bead9a31a91872d464266ce6e07a5a75f755"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/04-stat-led.md",
+      "sha256": "a6930b4ba6377c8ef5fcb7af6bf4393cd924292cf03871a37636dd4b77de22b7"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/05-workbench.md",
+      "sha256": "0cbe92772c7b2ffd9b24b9e446b1e1cd9ed22930b39030ef5a6e9cba5512d31f"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/06-conversational-faq.md",
+      "sha256": "373473bed23d055164edc04b16344fcd3861c1ab39ff73f3c75dc1719663d488"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/07-manifesto.md",
+      "sha256": "dc1327bad300179c1b233d02d20137776dc98c9affcfd3942b9f3f796ca67b93"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/08-photographic.md",
+      "sha256": "e5c77bb6ca6d82616c9c63bb6e68ee17c6af7bbca935f9ff29481294d7d1f74c"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/09-quote-led.md",
+      "sha256": "39069a564d9ebd76daf26f46ec7776828dc45fc6a72ae712b3bf7a4fd012f650"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/10-specimen.md",
+      "sha256": "7f23cead7f91c2ee2335eb2c87fb0aa1e7826f4573748d549756523085ed6ad4"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/11-catalogue.md",
+      "sha256": "99ff614600f18cfc80dfa3b9a2158dbea3b3674f76f40b70e721b9255796c265"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/12-letter.md",
+      "sha256": "6f3ad86e87223bd9b6b1267e27532811efbb60f50606e7f72c8525d2cc01d709"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/13-index-first.md",
+      "sha256": "25c832844a1b5e6ce17a335ac98e81d98d9e3372f514d83dc26ac299cc077865"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/14-narrative-workflow.md",
+      "sha256": "e604a1106131fe3a65721066a304922e757a78c997c197227840931079c780fd"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/15-split-studio.md",
+      "sha256": "400effa4de50d5f2fabd88be37447aa845deb3b67810ed4f2b995df458c852e4"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/16-feature-stack.md",
+      "sha256": "a389fae7fe39550352bdf1ce68cdaa3965a434fa1154f67d3c276e550d1d165a"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/17-type-specimen.md",
+      "sha256": "a1487fde891f73bf34a2ca38a631a2cb5c71d3a7b2ccd940114354e291ea8034"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/18-portfolio-grid.md",
+      "sha256": "af5d0f34a7ef7b81d6f4c8c845497ae553d44f418526d7e503346c9243b034e3"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/19-map-diagram.md",
+      "sha256": "5a576f25f4c8d58c14f574e3413560118343df9a9669db80c6c452daf509c3c3"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/20-ecosystem-index.md",
+      "sha256": "fe206580a39ffc4b3534f3a7414155aa626fe16b82b608a0b8b415c1510f17ad"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/macrostructures/21-component-playground.md",
+      "sha256": "ad3cbdbe9181e9472cb7b7fffbbe35021dc9b5b99ea86adc026f34d6b2c2f01f"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/microinteractions.md",
+      "sha256": "613ca56c2c16e40aeb594af21fabd651732d9de63c848aee51113602525f6e64"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/motion.md",
+      "sha256": "330d056810315f65819579f8207afe402703a9192bc76a2009558a59b7c84ccf"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/preview-examples.md",
+      "sha256": "df61c24c9a67457ef7369ec5f20575095326df72ffe6534c8fa9730581ebf7d9"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/responsive.md",
+      "sha256": "2bf18d72af704ca5dd3c220359a4c77c718efa19c40f62d9bff61ac4a90209b0"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/slop-test.md",
+      "sha256": "6eb49fc64ca54929d2c1600e2a6014268f1a7593787c0ed3f6ecb4ac8390ad86"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/structure.md",
+      "sha256": "ca5c0296ae428f8c4c5214407d431bbda5c453f98f2e7abdec03d644271af32b"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/study.md",
+      "sha256": "021fe4d001b38ee87414c1bb69321d2e44b67df8ede76ecec225c41a634aab20"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/themes/carnival.md",
+      "sha256": "dcc80a99055757c1fdf6fd2eda4f6425fa35ecb64c68c389ae3c62bd91cf4794"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/themes/cobalt.md",
+      "sha256": "0e2cf168f6ab740d8ae0ab9a45db15d0f97e25387f976454bf7c1ba6b57242a2"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/themes/hum.md",
+      "sha256": "f9cb48769faeb6b6ea6c8b290a95ce45c5ac1c96274a4682de5beeb16e4889f5"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/themes/lumen.md",
+      "sha256": "76fc940168e5fc45ce75665a28daa5eb952b74872b6d95b09864b4b6aa0144d9"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/typography.md",
+      "sha256": "94d7b2d2b138bd8687e09dc3dd618eaafff500b0497a6d69cb4c29b764e94b9c"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/verbs/audit.md",
+      "sha256": "0a5b484453f1697a8675a7020df9159d0b4ce22f059b873501bfd82c26d6a31a"
+    },
+    {
+      "path": "skills/frontend/hallmark/references/verbs/redesign.md",
+      "sha256": "c2830f3b7d68e9622f55d376048a5a454c5ef59d309a211e716d1142e86acbdf"
+    },
+    {
+      "path": "skills/frontend/high-end-visual-design/SKILL.md",
+      "sha256": "09e692cb3ee475eab34a98490d299e354a21deccbcd267537231dc6010ef6693"
+    },
+    {
+      "path": "skills/frontend/image-to-code/SKILL.md",
+      "sha256": "84aeb69d8e12291ac9092d07ff17b1b1436981888efdc654d57f0aa1db65f3bf"
+    },
+    {
+      "path": "skills/frontend/imagegen-frontend-mobile/SKILL.md",
+      "sha256": "bfb0455fee6edc028a4b91f48545a454a7a6310e9812bf1fc6d80eb96eb1784d"
+    },
+    {
+      "path": "skills/frontend/imagegen-frontend-web/SKILL.md",
+      "sha256": "5f58883016fd8221a663a4c1c57d807e920236a428deafe2c64e558edbf126b7"
+    },
+    {
+      "path": "skills/frontend/industrial-brutalist-ui/SKILL.md",
+      "sha256": "9d9327274156ec40248fd324c144bf2df7d8f0d806fbafa99368720e26eaa934"
+    },
+    {
+      "path": "skills/frontend/minimalist-ui/SKILL.md",
+      "sha256": "4e5575e64b4420aedf784d5ecf266a655fcd0042c49fae810ca72b558cd4d2d9"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/SKILL.md",
+      "sha256": "015709e87fb5b7afd400468325c74aac324431c32d62c232869032143bb65a43"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/accessibility/accessibility.md",
+      "sha256": "b063645764d759fda53d9fb86eb6ce0db9f77ae8ad68bfebb9682066c3565420"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/accessibility/accessible-error-announcement.md",
+      "sha256": "f85fac214957a605886610d948e81a09726be55bed32676d2a2737501a7e5d5d"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/built-in-ai/language-detection.md",
+      "sha256": "502e78345e7aa5f79f4e7ef153dff5ad8b926c35231c3bbe6b55d4cf655465bf"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/built-in-ai/language-model.md",
+      "sha256": "e86e77a195aaaa246395e91899a638cbba04c5cd7d38313092786efbb816948a"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/built-in-ai/summarizer.md",
+      "sha256": "27f514e4d97289069f5ab8425ccf79b1b3cb800b7af909dd45ae31cd59859a92"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/built-in-ai/translator.md",
+      "sha256": "2430ed96418a383abcb126caaef6cab84b7da357fba55ee872229b456071af6d"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/css-layout/css-layout.md",
+      "sha256": "ff1d632ba2af9dfafb14f49e8e65539769bd3d837b5dc307071367b602ab95b2"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/css/css.md",
+      "sha256": "8a23dbec80bb90c3c025fba8bfde1bcbfa04b5ecd6f0d43f71db3e6a0ec598c1"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/css/highlight-text-ranges.md",
+      "sha256": "fac1a8aba8c9581a4b7d37ec6fbd61d925fb28bb0d77314c6c3612713f449d4e"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/animated-select-picker.md",
+      "sha256": "a6d0b70c535d04136f1cecf942520198ce6f438c45b5214a04f0ba7873e3f4a0"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/autofill-address-form.md",
+      "sha256": "43bb0051a7e8c794d0a184b0ee9a9cfc646e1ad59997982c4f692001bc277709"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/autofill-highlight-inputs.md",
+      "sha256": "661b8ff3f54e04b866e703b36f0cfed1f92356d7a4e7e436ba1f7e1cecfce7b4"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/autofill-payment-form.md",
+      "sha256": "b68c3b9b271ff7a0ab3935ce90d215c8dabb95d529abbeb39130dd13dcafe712"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/autofill-sign-in-form.md",
+      "sha256": "f72757d1767082b9659fb4e5eda383f5f3367bf983be0bc55fc9e45d5cef8254"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/autofill-sign-up-form.md",
+      "sha256": "22ccb33b0ede1667c1a1e4da0d4557e55dcd71faa90a3629c1b9442d3e99be29"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/brand-consistent-forms.md",
+      "sha256": "a66d259828c9e6bc359cd9d09c3a35e1d8c94ad1051ea257751691489730cf33"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/branded-select-styling.md",
+      "sha256": "683cdd9a4da1ddd578e3b15b51649dc772fe540787838a7298150e7faea0111e"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/custom-select-picker-layouts.md",
+      "sha256": "15814cde385f28773829bc52b19f4d411307b3fd62b7fa6bc1f107f7aa3ba955"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/form-fields-automatically-fit-contents.md",
+      "sha256": "2cc234eb8dc7898f946a905e6c4e7b97698ee4576408e34c90d66931e89fddbc"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/forms.md",
+      "sha256": "9961313fc3b6cd608382d7b8fb534770f4fc40a5bef73084ab6801b55da1d62c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/required-field-feedback.md",
+      "sha256": "6e5cab4e43105ba39ad13800d6df434b95c0f8ae163e799f4ef8f38cd59bb69e"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/rich-media-picker.md",
+      "sha256": "3d1be9161c9561ee29c36c8f81af3330e1448d8f60a7815a4eb1b1cc5f8d44fa"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/select-menu-interaction.md",
+      "sha256": "4756813c60ac587fe30103efe3d618c6cf7d6a9b888a84a968a792bab03ff0f3"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/forms/validate-input-after-interaction.md",
+      "sha256": "6e9acf18b5326bec44cf92ed03a8d74d9e62af8ca6e6d8ad7cdc266232125ae9"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/html/html.md",
+      "sha256": "fb464f5a8a420d9c6be1077021675c5c840257b94369486739b21c3179100a88"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkey-authentication.md",
+      "sha256": "e280f755675327d30f0455d8a677e62f10c17559932938503ddc9569eed6be57"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkey-conditional-create.md",
+      "sha256": "2ed55c112521e2f003254de36860ae43e985a41bc09900370269a7379406d82c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkey-management.md",
+      "sha256": "5b512be2ddb6fea6687a11d8ebfa7cce3c24727734c38a2aa5045a314a06ba84"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkey-reauthentication.md",
+      "sha256": "fe45454a0ec13c8d5b2d8cdb5b2ba9404f1734be86ff03f03cedecdcd8ef07e7"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkey-registration.md",
+      "sha256": "99299ee7cca414725794a6c9dd5263c49b9affd2e671f5ad029aa7f769e31d34"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/passkeys/passkeys.md",
+      "sha256": "b6339a64da0c404b34fcaa032587a6aebca5cb0a2465cf118b68a3a7c5d30ab9"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/batch-analytics-events.md",
+      "sha256": "42e0ec8135e8e6c8547161148ed99f57a7c50d531e8197ac7c74bc54a4640175"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/break-up-long-tasks.md",
+      "sha256": "729e0235ec881690558985a22a242ea5bc35932f07a5e70cb8a021aa92896c54"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/calculate-total-foreground-time.md",
+      "sha256": "d0c29d8924bb1da00b8febf6694fb14bece0bfd1abcf732aec1be5cefea6ea94"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/conditional-async-dependencies.md",
+      "sha256": "d54a98a66d707da44abc4140d968f54b58d0626ae6962161af862f3fdf5c246d"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/defer-rendering-heavy-content.md",
+      "sha256": "ce35f7bcd1774a3bd4bf5b17a4c63c565ea1ff7d598936d0e30a0863d979d037"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/defer-work-until-scroll-ends.md",
+      "sha256": "db1e91cb1396b97ce8863116be286ad1f8b18f934bbf1df643819fccbe59eec1"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/deprioritize-background-fetches.md",
+      "sha256": "14836fc6fc94567c2451ef427c11c381a71b1d348ae57f23b4082eceb9773b12"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/detect-initial-visibility-state.md",
+      "sha256": "30fba630425929c03b9226601ff0f1a22cdf707f201809a3b483a638cfd5b15a"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/efficient-background-processing.md",
+      "sha256": "5652a8dce119c7f2e6ea6314d4c9a6ee700269157c4ecd0413a5cc886e5840c0"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/faster-spa-view-transitions.md",
+      "sha256": "6b781bf43ab28261aa55d928aacd6d93c0b87af3bc3eab483d33d8ff1fe0feea"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/full-session-analytics.md",
+      "sha256": "24872a06076e961b0db74916441d538db87801f1fc0bded10135fc919b1a29b8"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/identify-heavy-scripts.md",
+      "sha256": "8206670b5caaee2e9fedbe495ca7b832acb2327eab30a79ecadbb888ba8fc2b2"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/identify-inp-causes.md",
+      "sha256": "bbf6b3708a59c56f02f9063fb41e09dd52197c8dfd67ee37c6575635c7391f88"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/improve-next-page-load-performance.md",
+      "sha256": "658a82e15246136dd9b7ce5a55b38100d01e87f471730a27fd4db1d77fd9eaf2"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/interactions-in-complex-layouts.md",
+      "sha256": "4282ebdcc5968987c1a8b202161eb84a619b2e71f3586024ce542340b75e05f0"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/optimize-image-priority.md",
+      "sha256": "f525cc12fc172db4e134c538fa459fa1ac75a9d4cc67e72f3545709bbaf75361"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/optimize-preload-priority.md",
+      "sha256": "5239d1bb2718a2698a5288b069018af1cf40385c2a2d997e7ab9d7b49c892bf1"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/optimize-script-priority.md",
+      "sha256": "a3b6af33195d56febe9ca9490af06e420b0d3c62f37d9cf3594f89233d5ab41a"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/performance.md",
+      "sha256": "e7dbab29360ef77cf81d807394a21ccf989a383dc65f42b5cc039c7987f8a2f1"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/resolution-optimized-pseudo-elements.md",
+      "sha256": "34865287ef74a5c6b5cac51073144c209f7b9e75191b264070d3147c7f130100"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/schedule-tasks-by-priority.md",
+      "sha256": "21f602d099585c6d12d7d156bb30c46d3e1426f6a1de90455b330d6c0bc8e369"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/performance/sequence-distributed-events.md",
+      "sha256": "36a6282d5ebf49b3bb761d9bfbba319caab7fa94400e7455b11f1e3f537e2f63"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/privacy/privacy.md",
+      "sha256": "0bdfb3a0ddecf40af63ed30c2651551afbc80a933e9c49709ec595b1992ae9a6"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/security/security.md",
+      "sha256": "39dee469938960946b45af3d19ed7a4a361d281f41046a028b63ca0b9fe09b9c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/anchor-positioning-tab-underline.md",
+      "sha256": "6b93e79869f64ddc5ea8b4b60161b6b45423a14de7851b0e627ab868427550d7"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/animate-element-entry-exit.md",
+      "sha256": "75e717d68c94ad4d61e51a9b1cb624904b63a4b43bc81f2e7434c39378b70a08"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/animate-to-from-top-layer.md",
+      "sha256": "66c2c9998ef87e0682481872f624cb7e8ad7fcde7cd3d7bbdd9e563be455e393"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/animate-to-intrinsic-sizes.md",
+      "sha256": "1290403809bed18df3d82f28b965698559f7cff4d418da89be94407d432459e4"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/apply-webgl-shaders.md",
+      "sha256": "8518671d4301186c03c9ec3c52405a652fc63cfab84a684f0ae81877b401dc8c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/calculate-event-differentials.md",
+      "sha256": "9c11a3ab16741d1af046c947e867d69eb268978dd91f56da76d93968cf36720b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/calculate-with-intrinsic-sizes.md",
+      "sha256": "e391dedac8d01689bcd6cb3d13f5326250d04003dcfc3dc826bfb74210eafa72"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/capture-location-agnostic-data.md",
+      "sha256": "1dc97b83f4fcf94724ddfa8b80c98a130bc97048e1d563567752d1b8ff15ddde"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/carousel-snap-highlights.md",
+      "sha256": "606c5e07e2b66aafcf8606d0eb27d482a1e9a443ea93bdc0bda54ddab8cee311"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/child-state-based-styling.md",
+      "sha256": "8dcb6d2a5089fe7983ad3fa40b87d80a33a0e1cf78e7079d810a28c821fe2948"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/complex-shapes.md",
+      "sha256": "cf290a56fb11fd128836305a5d7967d3bdf17ccd8b28b2589c5c1020b573720f"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/consistent-cross-document-transitions.md",
+      "sha256": "4d1742785801c6e49756234abad7728f3a30bf4319c5e5f3f7f5057b3b90f8eb"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/content-based-styling.md",
+      "sha256": "b484f35c797e22de98315885ed53c90bd61db72a9bf57f91b479ef8eb0a2343a"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/coordinate-global-events.md",
+      "sha256": "fa1c35423124540ea8294593ca001656c5aa17e4e2bdd880de89088535da4ab0"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/cross-document-transitions.md",
+      "sha256": "92dfae8c7a2475f3367cbd1f39237fbaf6491ba485fbaf2fa2582e808b866bc2"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/declarative-button-actions.md",
+      "sha256": "7f5bfb4d6fea432a69fcee7d3154dd657f73b41fd00932e62383497d1d19477b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/declarative-dialog-popover-control.md",
+      "sha256": "0e21be87e17e36688f9c672d0f85e88e2f3bcb48ab7f0ac8c90216b312c99649"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/deliver-optimized-decorative-images.md",
+      "sha256": "c5d3c477b2cfc3884a78b18d40a2710b281c8ff197c9e64528ee906ae8b4008c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/directional-navigation-transitions.md",
+      "sha256": "a41f46caa9a2cf48401a84d1a145f46fb5833fe80a5d7b7a2e7441c9d5908eba"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/dynamic-sibling-animations.md",
+      "sha256": "223ff96952fd4e455d945eb3ea4ca1fd3ab74cdbdc64214d6996cac159e5d6ce"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/dynamic-sibling-styling.md",
+      "sha256": "cb70beee2f130bc9dbd98685a54d0cfd05c62f109b596ccfe86f8828907eed08"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/export-html-media-from-canvas.md",
+      "sha256": "3e2c79a384dae28437cb2d8d143fa915a2ae18adfe7b9dc48b4511bcbe4b9d00"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/expose-canvas-content-to-browser-features.md",
+      "sha256": "009cfd0817e6921536b491aca50e3f5a154e757e38de283608fca01487162b41"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/flicker-free-client-side-ab-testing.md",
+      "sha256": "22b9e88076030dba35e63b4007a7fef59abb85b65ca6b01800fa1d36580ba7fa"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/fluid-scaling.md",
+      "sha256": "abfeafcbacb815801db6bb39b63d9fa79b4531134a54103ab298749cff5537cb"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/format-human-readable-durations.md",
+      "sha256": "45a31a86fd6e09f35da89f599e7472f13cd18d68bc9917a3fec4eed0914e7323"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/group-element-transitions.md",
+      "sha256": "4c8c54fe54f03051461940de5a0954ba2688e723c576b7195f8816d2698b2119"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/improve-text-layout-and-legibility.md",
+      "sha256": "eadb2a4df1dfae9ee8913781134c2b45869e2247b1aee558ccdb571c33801503"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/individual-transform-properties.md",
+      "sha256": "48125cb689f72fd4911de977c81f1c904e69df4034fc1760aeaf8ba8a2d13824"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/interactive-content-in-3d-scenes.md",
+      "sha256": "73bfa27fcf41825dd9d30e1d921ab230cac8069a0c1557e715d1d981b570821c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/interactive-content-reveal.md",
+      "sha256": "525e77323ee1eac861f1d262f62ac065d6e34f4662b39a94d01e8eec44031890"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/interest-triggered-action-previews.md",
+      "sha256": "097395b7608e500980c5522ae061b556223e52f6433e454c57f2fc366b7be5e4"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/interest-triggered-tooltips.md",
+      "sha256": "421e0656626e9a6bf8c436dc3ced7e48c58706edc83594aacdfcd287db1720a2"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/light-dismiss-a-dialog.md",
+      "sha256": "fd4551c66be7cd3e738e634d1007022f499296a85fd8d6aeb3f54af2ef5758e5"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/manage-recurring-intervals.md",
+      "sha256": "e4a8284b1c27ee4d466b435cb1a08e1950fa7efe40d31cf605545f00d4623c13"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/model-partial-time-concepts.md",
+      "sha256": "522b8cfa990688540d4b6153bff107cf1fdb1261a818fb8b5cb3c2ad183c7640"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/move-dom-element-without-losing-state.md",
+      "sha256": "03e0c9b5663796201d0d5da23fe924041a71cafb9afce4192a307cd528a6c45e"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/navigation-drawer.md",
+      "sha256": "0f10e858b328a7b5a4a4e6e741e61a599a2604e08511c2319ed85d295dd178b6"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/overflow-clipping-control.md",
+      "sha256": "dad3b82cb64948d6904038c5b3edb66fead9568e38603f25242cc136dc926fd5"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/persistent-app-tours.md",
+      "sha256": "c1a6fdf04472e48260ae711fb6c11d915afcd106046f274b21e0d767a4314de9"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/persistent-toast-notifications.md",
+      "sha256": "682a90fa418008e8990a548099c6e505470181980c0fb05de8b3b42c144aaa05"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/persistent-top-layer-ui.md",
+      "sha256": "b4e4ab990fdd0ad78cae945cb2d65cdcb08966f6262bc8dcdcd00c07fd0ace50"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/physics-based-easing.md",
+      "sha256": "817f9af71e3319a160888432fcaa9a429019c2ad042616a73a663549781b0804"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/platform-controls-dismiss-dialog.md",
+      "sha256": "77e24be7a177e547e9a272664e5da3e6c20659b81bcc27a7ca0934e4f5218715"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/position-aware-tooltips.md",
+      "sha256": "5c191c38c63c1c8388dbe56d004281fc7c7558478433ab617a9c8771b5ba0c95"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/precise-text-alignment.md",
+      "sha256": "4411fa2a6a5ec74666d4cf2739e7ad31573c90d8f3a2e5f1620b6b697cb878a5"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/prevent-text-wrapping.md",
+      "sha256": "8ad8c7e088705bdafd823bef4f0e087e5a1d0a6185fa7e2eedff2b0f2ce9dbb4"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/pull-to-reveal.md",
+      "sha256": "5ff57863a7f9201671f0cf86da9f063d334ccaeaacd85ef4f875f66e85fc0510"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/reduce-style-repetition.md",
+      "sha256": "27956b9c42ee353894b0e510f33f9f0c6399e736183503cf0949d8aecede61f4"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/resilient-context-menus-and-nested-dropdowns.md",
+      "sha256": "b585e545cef13752eab355cc0eecbdf399b363f22f6bffbcd22aca7f2c3bb882"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/same-document-transitions.md",
+      "sha256": "b3121b171453e132ebf1708c7f0bbb6782c611787f9f9e2f94a35bb8e58be322"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/README.md",
+      "sha256": "c8fe1ef5cb78033f19c00bc6d8c501cc89f9a77f39c953c270eebe925e23329d"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/carousel-slide-effects.md",
+      "sha256": "47873936462ff103e143064ebb14046818a18a0456cc50ea488fcaf88e5c73a3"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/parallax-scroll-effects.md",
+      "sha256": "f8dacd95cd96d09a2831a2a914b627b696afa0ec2a4fb1ded9a8013133d0f229"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/scroll-entry-exit-effects.md",
+      "sha256": "d58bbdefe7999cc3a83493178f2b300c28eb434704ad0796d0a269527d4027ce"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/scroll-progress-indicator.md",
+      "sha256": "614c2ae64acc06ee64ba12366a7b3c1b9706b02d38991614ba9737d254b8ac5f"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/scrollytelling.md",
+      "sha256": "77a6707ff51547c3c0a94813ac5d55290387199289a95234a85c3b0cc7c8db76"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-driven-effects/shrinking-header-on-scroll.md",
+      "sha256": "7b3c479f5514318c5358aef0f5ff9a16904be71af2f9061e342232fd3319caa0"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-position-aware-elements.md",
+      "sha256": "d4f1f276c6772946355f5567ef0d9163eeeb10e05ac7c2983adde0cccaa8e067"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-snap-realtime-feedback.md",
+      "sha256": "e097711599d5555127a93e7b232c2c812fd7655404f7ba884dd1a695a1f41a5b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-snap-state-sync.md",
+      "sha256": "ad9f58ce64146ae9c59da50b66cabf92ddbf24dd2485d81e7b4fe855a6503d6b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scroll-target-on-load.md",
+      "sha256": "ec37dcb3327235724405bb80ba72442d17e93bc82545fcab989c3ad708f317fd"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/scrollability-affordance-hints.md",
+      "sha256": "22842290248cc8f6ebd0fd838f3d94d8bd96f0b899b708f7bff2a4e12ed826e9"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/search-hidden-content.md",
+      "sha256": "8eea952ff3e8d7411e0cebf833359977de309c73db3870206bcdc2de2a0a8d18"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/shaped-cutouts.md",
+      "sha256": "87d19319491ac719688aab3c4011323d18200ebe4453f8b50381bedecc7e4e74"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/size-aware-styling.md",
+      "sha256": "2cad1c4bc985e2ce55cf27e3f88bf31f9db1850ff289d4157d2d6997ad67a1c1"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/soft-edge-content-fade.md",
+      "sha256": "e8998bc60072aca16269f32c70ec90d9262df3f609f4481dd311ba2a9503b547"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/stabilize-reactive-state.md",
+      "sha256": "6575c032cc29d243f6d41f9ddba56071f7df63f2ceb852521ff085c1fb95955e"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/stack-drill-down.md",
+      "sha256": "5a161583757ea9a64349fc9efd4d627990545ce99955a2740e5c15c8e128147b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/style-parent-with-has.md",
+      "sha256": "42443aaca14192daeed4390471431b4118216437877325f55f9bb818a951f32b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/support-global-calendar-systems.md",
+      "sha256": "0488574b59c9da96230c1bf72749ab6b41270afd792fdee00adb7cb9038910d7"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/swipe-to-remove.md",
+      "sha256": "4eabd7286aac3148752bc6cbda289e5d58e6bc4b964044e502dc7ce9aa8cbca3"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/README.md",
+      "sha256": "1f3cc90969c3399698aadfac5c5a6345568fdc38f82ff2f1bbb9b63a401fb49c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/adapt-scrollbar-to-contrast-preferences.md",
+      "sha256": "63eff05bb29d465b6d9778de5b902c3ad898e071885f778697dd778cdb45059b"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/component-specific-light-dark-theme.md",
+      "sha256": "7e094fef57c4c84316c0326597508d134b3aadd9f8e4f80473728e08edbaffae"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/customize-scrollbar-color-and-thickness.md",
+      "sha256": "7ab7d385a20cd6e978c750972cb6a9c80cb0790bf781d9ebd176ef5a6c387d48"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/dark-mode.md",
+      "sha256": "8a8553d06d55fcf7eed9cde563fda7b7b802964e0dd2af7c8e6d6ec48669873c"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visual-theme/design-token-reactivity.md",
+      "sha256": "d527196decace740bf9e634cf8eaa24449fe91e2724d46421dc112cb2d8808d3"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visually-stable-font-fallbacks.md",
+      "sha256": "3d2483805c69816f2ce83c32049fbc29645164a45fd3a08dd0c15ca695c50387"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visually-stable-mixed-fonts.md",
+      "sha256": "c5770035287d0999fec3cf10d247c530d0d34c64739ccf4fc037475814d118a6"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/user-experience/visually-texture-content.md",
+      "sha256": "96171b812212ae98b7de2982c9d1d6da478ad9eeef8056f6215bb21a87bc4a4d"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/webmcp/agentic-forms.md",
+      "sha256": "ad9f5ce2bb6fba98f59ccd26992ce2063c65703a284e1a64f2a7a63085363794"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/webmcp/agentic-javascript-tools.md",
+      "sha256": "828beedc9ced24f721a19e01f7611e273f2b751f9319be2d881723e95dadcfe7"
+    },
+    {
+      "path": "skills/frontend/modern-web-guidance/guides/webmcp/webmcp.md",
+      "sha256": "e5b55d1d7a2453cced6523d98dd855a9a7cac49782e267441b4d29d5b97e5291"
+    },
+    {
+      "path": "skills/frontend/redesign-existing-projects/SKILL.md",
+      "sha256": "0222c76a501ee09d52e93e606683a57df3890c44a6842717d8dbbb9687abfc1c"
+    },
+    {
+      "path": "skills/frontend/stitch-design-taste/DESIGN.md",
+      "sha256": "0ab6740c4ebb1966dbceddb823a66d4bf027e960efbd73faca56cbf8370ae2ad"
+    },
+    {
+      "path": "skills/frontend/stitch-design-taste/SKILL.md",
+      "sha256": "187c734bf26347cfecfa4074c37f8e883050ad4d5aaf0795fd333d3b96e560d5"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/README.md",
+      "sha256": "f000ddbcecffe54f5615b61ccc796a7b01305e95283f8c03f0d025c576b8bab9"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/SKILL.md",
+      "sha256": "82259139ac85659ddb513527a73f343f93205197944e869b731561535a1f875b"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/examples/gold-standard-card.tsx",
+      "sha256": "c7b168b1ad6e81dbdb06a5a1cc9e4598f14c97abfbb0d15cfe36b3f4152ac4b2"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/package-lock.json",
+      "sha256": "d61d519d30a08c3fcc9bcdd6ab23b942e7ddc05be1c52de681041f630273e0f1"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/package.json",
+      "sha256": "937a3476dceff2386e7828962f926bccdf4f936b4fa727703082ee7d0e8083bd"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/resources/architecture-checklist.md",
+      "sha256": "55c3407f307d557d3bd35eb3d653a18c6b2977f38efc71f6c33192ce37159c32"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/resources/component-template.tsx",
+      "sha256": "9d6edbca16724ebe83084ea8bb4ef0c03cace3c1773ee1b693412ac4efc30579"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/resources/stitch-api-reference.md",
+      "sha256": "f7cd8515705dcff420e40ee69609990b12c5e2c2c1489cea10244f177af31624"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/resources/style-guide.json",
+      "sha256": "9ac47e30d145bba43af7959e70cf1d8b96ba8b0e07a860ef98b1e05d50ced712"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/scripts/fetch-stitch.sh",
+      "sha256": "2b5939b68289d1eca1a616e7c4a4cbe6de09010941bb7756348d75509e5ef0ff"
+    },
+    {
+      "path": "skills/frontend/stitch-react-components/scripts/validate.js",
+      "sha256": "2d2a9335b12be5da3d86e936b9bbb013808cb294e39af834bc1e1b41177e61d2"
+    },
+    {
+      "path": "skills/frontend/ui-design/SKILL.md",
+      "sha256": "476aa4b04a3ae4ea1318bc3e8fcb915d9a95868ef0df80098c74b414eb4ec7cf"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/SKILL.md",
+      "sha256": "55f0991eece8af1205db20f8b47608383e9a80ec21dd14ddadd6f119d1515ccc"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/_sync_all.py",
+      "sha256": "b540b3a4f87598ae29048b3cceae1fc17b39b629aee2cbe5c802ffc7b48abf6d"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/app-interface.csv",
+      "sha256": "2a17ef810dab715ce1f339861817a8fbe3ccc38142b70517301e874803e838ac"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/charts.csv",
+      "sha256": "ebb565308115f955791b0431797a89d9b3587c25d5babb9428d10712c4924817"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/colors.csv",
+      "sha256": "69ee8c1147b269599d20ca418bdd6f32563a9aa2d962fb9a9b8dec66bf7b1ba4"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/design.csv",
+      "sha256": "6f0ae42f16b3cbfa3f07050268387557859ff666e2651b1b82763f099d724b3f"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/draft.csv",
+      "sha256": "e190c796b707858a5436dc4c27f9ee9bb6618014ca73f533e423abe5ce9e4d06"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/google-fonts.csv",
+      "sha256": "2c03a3cd134d126bd9d6a7dc2a6360dc5272219ad6df3eb9315b031f806e1487"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/icons.csv",
+      "sha256": "f376c29fb4df37b4bdb366a5aa70cb211ba3dd8b435390aaa03152a64b07d2e8"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/landing.csv",
+      "sha256": "080cedbcd61ff8ec9520f33929baa76bee9589e783f83b2f8d824a466b6a46d7"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/products.csv",
+      "sha256": "9fd9e776ba847cf44c1ea78f95fe5e33b2c56bb7e186e3cfff9c49bc7fcb691b"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/react-performance.csv",
+      "sha256": "904c8afcda229629545912dde0e8ac37503757131f0169f80b016f1f58c4fd3f"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/angular.csv",
+      "sha256": "dd7cc2a2b34cd8f0508bd05b067545e7a44f7724440c432d491d92a61a8fb6c1"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/astro.csv",
+      "sha256": "ad18dae3ab6d148d37d144592df80dc1825b6c9e86d9d2d68fdda77434206a37"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/flutter.csv",
+      "sha256": "fe36d404c799781e8ba6e9a8179b45799ed5126a545528550cd2eb0f2346e8c5"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/html-tailwind.csv",
+      "sha256": "7aef38e75c53559470afcfa91580a9917ca8b7dbf8b92110389e23e93703ac52"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/jetpack-compose.csv",
+      "sha256": "6c8fd4b0391c342c12b0af15610cd5becbeccaef0bbe8dcfc01d928c3195d93e"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/laravel.csv",
+      "sha256": "50e11e60a64b30f329af25ae71f4b8bbdb43bafc1865451b74f9f540a88964d5"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/nextjs.csv",
+      "sha256": "e828ccc04843742f52f545a068e8a9ab0d2b97c0e771f7e93bf0cef74da05554"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/nuxt-ui.csv",
+      "sha256": "05d6e74501b2b6a636faed32450622759f49a5bcafad971f5f4e7eba0eb7be71"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/nuxtjs.csv",
+      "sha256": "f7a3f2d9542856d00199f85c6c023b7c284cc698e2e6e12d61afce2edacb24d6"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/react-native.csv",
+      "sha256": "a08ca77fcf6b6d9531982dce465366296013bfcf12d2938ac72ad57cf0c4f085"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/react.csv",
+      "sha256": "e5624ab41d33427d88e41d07581ce4eca59b37b36ab72a6ad43a9c8e2d0a1c72"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/shadcn.csv",
+      "sha256": "395c2e415ef6f48a474acccdc8eb2c7258a6ed751a5037ba171a2d8823e02ded"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/svelte.csv",
+      "sha256": "71af52d64f266c88070b91dbbaa900c2f8074b6baae9f35eaea6ba9cec6fd803"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/swiftui.csv",
+      "sha256": "c9c2d2510f8e66281a2514e8dd0125a6b653b9ef53a71281b5e7dfe003d5b569"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/threejs.csv",
+      "sha256": "f1c05f8f269fc4784170c837f4ff43b50042f00bbd6ba7dbef2896081a052544"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/stacks/vue.csv",
+      "sha256": "c2724915d3c11cd67263f25896cff721f787a0fdd8326002d31e9f5806dfd8f8"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/styles.csv",
+      "sha256": "9b5089dcde8999333b36878252a255cc3bacbb2fe7b836c76cc7f7aa2abb643d"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/typography.csv",
+      "sha256": "dbea262a54e3bfa2e6c3b15989a365d5ef4c43349316aff46635e82ca825adce"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/ui-reasoning.csv",
+      "sha256": "41976082ecae1100da937c949215dc6694393e03f3c2a7444dd92a9edb43cb11"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/data/ux-guidelines.csv",
+      "sha256": "1870ee048f2a2bdd60709f8f7adf7f3b6dcad560bc005c8b2915a8ac8639820d"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/scripts/core.py",
+      "sha256": "772b4d567c7a948c5d4a10343473b4123fec04238d250c9ffce31d0733f752c0"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/scripts/design_system.py",
+      "sha256": "f7a21e83739c5ac6ca3738846220f6a9eb7f3c1ae7a44989c5aaa2061ca60310"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/scripts/search.py",
+      "sha256": "6a565f960a672e16dd064ccadd3406db999bfd1a4bff4d609b36a8d4c6450b86"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/base/quick-reference.md",
+      "sha256": "4a61c80f2922124d65ef74bfe724bed93b73052fd645cd33c6b7ef02a242924b"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/base/skill-content.md",
+      "sha256": "606bd5c4ead7b3caea73273d3444c2caf99a10ba6922ff41348315a864b41a36"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/agent.json",
+      "sha256": "8e0d330b69a22183ac43578ccb0bae0db9344b01d5825d1fc7754bd860a0dfb7"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/augment.json",
+      "sha256": "7d058e6cdf5e4efd9da6474fac6ebc882be3e998dd5197569eacb226426a8ba2"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/claude.json",
+      "sha256": "37c102b7406137b7cc71ac4f8d96217fdda772715c8375ba7f6b761179d65249"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/codebuddy.json",
+      "sha256": "bad41975614e0b2d66ba9b1645c5d867249c6db362b2d875943ff91b5b614840"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/codex.json",
+      "sha256": "81af3a4f285081709963aae0522b0605c090ba7da929ff19287043b06f8a1e34"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/continue.json",
+      "sha256": "5f1f555271e512790256d37c137d5e16ed7148449350a56732caa7fa943aac2f"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/copilot.json",
+      "sha256": "4977c8b7d98a6a44ebfb8c5ca38a5b8384a773cf2a6781480afe53fa135d0add"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/cursor.json",
+      "sha256": "58f6afbe38d01be55680cea4bc9d9d454467b2c0a7af839c85fa7e1e59bea08e"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/droid.json",
+      "sha256": "a21e5c63c8d8a0f3602ef599b115f8ce6e28590418c2d787587c8d0ab9c81382"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/gemini.json",
+      "sha256": "10673872ce37b5ab27a01fecc4f60730ca7695db0406f3e486591a8fdd3bdbe2"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/kilocode.json",
+      "sha256": "9ad38088368f41bea46188c2b5202a42ebc234c0084a28b6345745d0bbe090f7"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/kiro.json",
+      "sha256": "591249f4e513caf9a4c12ddb59a82f60439c20c562c28f19ce2126b59a051647"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/opencode.json",
+      "sha256": "f84c25f085f8f9f0f0f5b3c1d1bb70e6034ac591c6bbab161999b76830e62505"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/qoder.json",
+      "sha256": "6cc0acfdb1bed58b9a20938c854b2f034f74a6481925d97c1343e9f1ee0c70cf"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/roocode.json",
+      "sha256": "ebb25a61a3db9a0645f1417ce833c68527eb003a8f17b34a80701f2df9baa558"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/trae.json",
+      "sha256": "59511026131cd4650b00e340af48552a9a58cc099d368e59cf6df9c58da53cee"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/warp.json",
+      "sha256": "b96c3b4b3b4a7cf018cad4845ea9a93e3ddc9c87d4c5dadfa7e61d5a800a7cd5"
+    },
+    {
+      "path": "skills/frontend/ui-ux-pro-max/src/ui-ux-pro-max/templates/platforms/windsurf.json",
+      "sha256": "5088968167a789a6dac1dc96bb0db6586f452d3e1fad686fe2588b5eb00161d9"
+    },
+    {
+      "path": "skills/pi/pi-ecosystem-scout/SKILL.md",
+      "sha256": "d442700e619acaf18618146bfb7148a446573f4bf4171721cc9827bbec568bfe"
+    },
+    {
+      "path": "skills/pi/pi-extensions-helper/SKILL.md",
+      "sha256": "f4eb99042a6fd75957721569c55d42d04ae9245f635714af3d2c30552fe08719"
+    },
+    {
+      "path": "skills/pi/write-a-skill/SKILL.md",
+      "sha256": "e5806d973f7f2c4f131dad6ac08667f06e07a2523c285013b13aa107fefb6540"
+    },
+    {
+      "path": "skills/pi/write-a-skill/references/skill-contract.md",
+      "sha256": "8ec78b3d16bf43d7f952a228490a56804edbf8169a2bef83458ff2a4ccdfb4bc"
+    },
+    {
+      "path": "skills/planning/goal/SKILL.md",
+      "sha256": "ccc7230130aa269d2cc3fa8d69ae0f9087098c38d1ba662144867857b126d146"
+    },
+    {
+      "path": "skills/planning/goal/references/claude-goal.md",
+      "sha256": "b81e0004383b5a31c5533385e3ede0f844e4652dca8c4d2b3090df87ca5c45a9"
+    },
+    {
+      "path": "skills/planning/goal/references/operating-contract.md",
+      "sha256": "1fd5e80d75531706206693b9bfbf6371164945aae4c810d23da0ba712a5d9fd8"
+    },
+    {
+      "path": "skills/planning/grill-me/SKILL.md",
+      "sha256": "01944125c6a6adc0314d22348b41b01650c89d37129182cd1510c90ed8c85ffe"
+    },
+    {
+      "path": "skills/planning/grill-with-docs/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    {
+      "path": "skills/planning/grill-with-docs/CONTEXT-FORMAT.md",
+      "sha256": "8edbd934deae3a3edc0286bced3652e30e2c5b0d5329b1bf65ba9da0940b6d2c"
+    },
+    {
+      "path": "skills/planning/grill-with-docs/SKILL.md",
+      "sha256": "d7e87bcbcdc613a4f94bc8dd824f680a8b897bd7e8a65516382521b7d438b99b"
+    },
+    {
+      "path": "skills/planning/grill-with-docs/references/council-review.md",
+      "sha256": "579f4f44d8c974bc4d9befd23c4f9014a78e886551f810f19502f669a951ff00"
+    },
+    {
+      "path": "skills/planning/handoff/SKILL.md",
+      "sha256": "c7f8d5cbf3c9825572a85aea5ac775903c662680be000647d70718a69d8f1d52"
+    },
+    {
+      "path": "skills/planning/lgtm/SKILL.md",
+      "sha256": "4c4c35a86458bb79923e7896c981839ae186e73353cc541bde66ab5c56e37a79"
+    },
+    {
+      "path": "skills/planning/nack/SKILL.md",
+      "sha256": "8322641622726005c12e596688c08f462915a06f6759746d7b6cdb738bf5e9a6"
+    },
+    {
+      "path": "skills/planning/skill-router/SKILL.md",
+      "sha256": "562e77520ae1a69a6339032d3986f8d803cb7aaf2015d78805b54fa3520d7c99"
+    },
+    {
+      "path": "skills/planning/to-issues/SKILL.md",
+      "sha256": "ed5604ad2a8b32f4ac8ac080927f2e28142a1e512ede6006799b7744c2148b17"
+    },
+    {
+      "path": "skills/planning/to-prd/SKILL.md",
+      "sha256": "3aa827fc85d4ead836d06e7500bda52123c2120b2bbffa790ec80752ca09ebb7"
+    },
+    {
+      "path": "skills/planning/triage/AGENT-BRIEF.md",
+      "sha256": "1c71c747aa97d938f75ec7a4b8fe87451763b38a3ce6348acf2b222e5819b2e5"
+    },
+    {
+      "path": "skills/planning/triage/OUT-OF-SCOPE.md",
+      "sha256": "8ed8cf27833444060c81b3961a83c0e3d8e6cf2fcb2ddf6f8b07c6655cbb0d85"
+    },
+    {
+      "path": "skills/planning/triage/SKILL.md",
+      "sha256": "bbc64e657a025d9902a447136bc612b555fc5611ae9da0564f75c7d51e0fd5ae"
+    },
+    {
+      "path": "skills/planning/zoom-out/SKILL.md",
+      "sha256": "7af6ab5b1f4ba5c4bf3bd23c1d3de63ed507215cee436a12f8188bfe02e745f6"
+    },
+    {
+      "path": "skills/research/research-forge/SKILL.md",
+      "sha256": "187a4e261a4f365ec4b5b5aa868a0127908aa9ea4c9404f889d23be7f4abecfc"
+    },
+    {
+      "path": "skills/research/research-forge/references/deep-search.md",
+      "sha256": "edd2fba16eb74a5be6bd49e814313cda5ec3e64826f4c537aeec2ba738fe6887"
+    },
+    {
+      "path": "skills/shared/CLEAN-CONTEXT-DELEGATION.md",
+      "sha256": "fec01fc463f73017ae535bfe96f1aac3bf2733d9e825c6ef6fdd4b18db94888e"
+    },
+    {
+      "path": "skills/shared/COMMON-CONTRACT.md",
+      "sha256": "2e47c7fc80c8cb80728063c9a5717df60479e6ef1f135b36e4c301c62d99b9c9"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/SKILL.md",
+      "sha256": "6946b5f5b357fc64acc99d1c488dd268f852ba5cb2b148a4f5afa1a33951f2ce"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/scripts/frame-template.html",
+      "sha256": "6a8a4e58bd6a44b904e2e3c57de774481d909204597e1498de53f1b2fecc4c4e"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/scripts/helper.js",
+      "sha256": "43c6d69954a46ec34a2a262bcc62a9a7e83e839c739f199cb72646d397c686e3"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/scripts/server.cjs",
+      "sha256": "2d2961ea8d11f56c5f4c3a1a68d22709efa5d7601a2246d8c880774e7e9e8412"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/scripts/start-server.sh",
+      "sha256": "a4e5ae84275bcaacd2f84345afeabe59cf7b00ba080e123da7cc1fb226f12847"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/scripts/stop-server.sh",
+      "sha256": "0b5ccbbd57f62d3ed88993f7940b5ee0e5c0fc9b21c550c623da4f6292e47daf"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/spec-document-reviewer-prompt.md",
+      "sha256": "95a0a195de9d984be2fffa95bab16fc8c563bc296a9cfc5e9c29cb3ece0d7457"
+    },
+    {
+      "path": "skills/superpowers/brainstorming/visual-companion.md",
+      "sha256": "3321a044c777d03d7177df41c77bb83155ff2a6d0c16b8a3d752426d29f14ea8"
+    },
+    {
+      "path": "skills/superpowers/dispatching-parallel-agents/SKILL.md",
+      "sha256": "a6134d138f17e2611c27ff84439a16a67940d165d288a80c08fa5b0eeb5a6875"
+    },
+    {
+      "path": "skills/superpowers/executing-plans/SKILL.md",
+      "sha256": "a61d4dcee3446a1440cd1cfc39a721ec4f2861635103e9e81f8ad94572daa572"
+    },
+    {
+      "path": "skills/superpowers/finishing-a-development-branch/SKILL.md",
+      "sha256": "4dd60189159c1f61f9bc65024a9c82c60fac32f1fc30d6920511be2b596df87f"
+    },
+    {
+      "path": "skills/superpowers/receiving-code-review/SKILL.md",
+      "sha256": "8e420aa828942b655c013576e28f569b85c44f1b7579a75ae7962b54974c8068"
+    },
+    {
+      "path": "skills/superpowers/requesting-code-review/SKILL.md",
+      "sha256": "a3bd0328f4ce77dd454f5b08784506b501e705e7d65789f9913075fa224498ea"
+    },
+    {
+      "path": "skills/superpowers/requesting-code-review/code-reviewer.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/SKILL.md",
+      "sha256": "18fd94baf699230f874c57f0285b407940473da3ac6736c3f8c591bedbb9958e"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/implementer-prompt.md",
+      "sha256": "49018b28dc11bc9f3d13a28959bb10ae1a96eabc5d8f19f4079d901f9ff2bf64"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/scripts/review-package",
+      "sha256": "0c0629f6e2c46fc8bf68dcfb8a247ab24eb548b7004fe494035e6fcba9b5cdfb"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/scripts/sdd-workspace",
+      "sha256": "9430befaff459ed862415b700c1a9efe45fd34838a684802a1d8320de0c3a007"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/scripts/task-brief",
+      "sha256": "5380283f00bffa99ab82ae78482b7d248abe10655129c72ca7050bdc0b6a85e1"
+    },
+    {
+      "path": "skills/superpowers/subagent-driven-development/task-reviewer-prompt.md",
+      "sha256": "2eb9d54373420de25bc0bd00635d3a3123a6c0eb30c881168e6f3348e2387331"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/CREATION-LOG.md",
+      "sha256": "c24733a5b1821bd6bed1fc950261f0b9f4e90097e0bbb96459d8179713730789"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/SKILL.md",
+      "sha256": "ab8560837f8369c31b8cc7b6da8c664c10017514fe039160d8a46bfe4244aaaf"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/condition-based-waiting-example.ts",
+      "sha256": "40ae5ebe497fdf310200e43fe986552546d0a22837c0d39e855db1cfd33eb88e"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/condition-based-waiting.md",
+      "sha256": "e89fec8400d6cd50f43407cec9fab50976ba4d55d0ec2eb51c0bd68036b54c26"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/defense-in-depth.md",
+      "sha256": "1e175fb86fc357e58c6aebf5441e481e1b7868b4380c0456b63a17eefbd18ba7"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/find-polluter.sh",
+      "sha256": "6462747eae9b175ac145b78bcfaeab755654a75e32637f08eb633f065a9e1d7c"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/root-cause-tracing.md",
+      "sha256": "6b0622269e098ca1399e123e553fd385f0b6412d88ef0e9c4f5a8ea9cf1cec7b"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/test-academic.md",
+      "sha256": "fe2ba480d78ac0d686dc025f41c2a32a43d642bf533f91b0c6053a04d35d6486"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/test-pressure-1.md",
+      "sha256": "0b6a915db0054577819834c79be9eb614e97bddba10d73768e1fbe91cfed048a"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/test-pressure-2.md",
+      "sha256": "b2030aeffba07050e8ad573ddf87486457c4a016a786bb326235bebd856f2016"
+    },
+    {
+      "path": "skills/superpowers/systematic-debugging/test-pressure-3.md",
+      "sha256": "96b50a52e2c7989c9cf20fb752c47c1e9a3a70dc362f8f7989f8f5b64dac7708"
+    },
+    {
+      "path": "skills/superpowers/test-driven-development/SKILL.md",
+      "sha256": "fe75c86ac456834ac462bfcc3cb590aeeaea2350d368f04119b519f8e5e243b5"
+    },
+    {
+      "path": "skills/superpowers/test-driven-development/testing-anti-patterns.md",
+      "sha256": "bde453bc258f06543987477c837939afaa774ea2acbd9f308d702fc452bc4283"
+    },
+    {
+      "path": "skills/superpowers/using-git-worktrees/SKILL.md",
+      "sha256": "2737c3b9564b89be02e73b6dfb7e5493efbf3c96def2b8bc6b32787ec95b6324"
+    },
+    {
+      "path": "skills/superpowers/using-superpowers/SKILL.md",
+      "sha256": "fea64761857d18d390c3c523b2cd87d52a8541f7d585ad545b4a26aac0442f62"
+    },
+    {
+      "path": "skills/superpowers/using-superpowers/references/antigravity-tools.md",
+      "sha256": "d0bcfa94dd0fa399fb9606a0f7c9562b43040cad02be167a2b999c3913a1d5e9"
+    },
+    {
+      "path": "skills/superpowers/using-superpowers/references/codex-tools.md",
+      "sha256": "9310bb2315eed2c1cebea02cd1c9e8fe121cb788fc6b41e8b8f8b5ff46f85f37"
+    },
+    {
+      "path": "skills/superpowers/using-superpowers/references/pi-tools.md",
+      "sha256": "703dbc83d23ecab9c6f388460c38abc482e9dee2fe6772a8c7a255152ad3a4d5"
+    },
+    {
+      "path": "skills/superpowers/verification-before-completion/SKILL.md",
+      "sha256": "e8529fa3484d36e2f9da99683ea64118ea5611ad74814b023527a3b7ed08abd2"
+    },
+    {
+      "path": "skills/superpowers/writing-plans/SKILL.md",
+      "sha256": "c9def14a02a0e18a9e8373720c90f0c3ff6b8664176b25c2f14735a6b7674811"
+    },
+    {
+      "path": "skills/superpowers/writing-plans/plan-document-reviewer-prompt.md",
+      "sha256": "aa728b96aad603c8be28875a4305637f6c984aa81ffcadcb13e743202fa2a0c7"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/SKILL.md",
+      "sha256": "d7ca9b0c89638c3c1f007c82722acd2027c9384b95b6dc32848d5b44fad11e5d"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/anthropic-best-practices.md",
+      "sha256": "217629b356c09c9bd11017c9788e8fc654ca1b32c92d4a51cd490e16dd65e59a"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/examples/CLAUDE_MD_TESTING.md",
+      "sha256": "0b379a3415e185d3c434b3ad283d8aa132f3022c2a4f210f168865b5986bcef0"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/graphviz-conventions.dot",
+      "sha256": "e2890a593c91370e384b42f2f67b1a6232c9e69dddea7891a0c1c46d7b20b694"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/persuasion-principles.md",
+      "sha256": "a51bc9bf75189ea73a27b3fb504a2fdfdb966fb1f7f1cdf03203230a216ccc03"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/render-graphs.js",
+      "sha256": "ccda971a87bb185f8febf81c56b556a20d026fa980c17b35fa3e8824fbb37852"
+    },
+    {
+      "path": "skills/superpowers/writing-skills/testing-skills-with-subagents.md",
+      "sha256": "c711346852c911b24a84aa161e0cff06a4cd7f4e2fa9e9c0a266cead5afcbade"
+    }
+  ]
+}

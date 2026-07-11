@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-07-11T16:58:23.614Z",
+  "mode": "offline-only",
+  "providerCalls": 0,
+  "spendUsd": 0,
+  "claim": "scorer determinism and fail-closed validation only; no behavioral-gain claim",
+  "cases": [
+    {
+      "fixtureId": "f1-skill-authoring",
+      "goodScore": 100,
+      "badScore": 30,
+      "deterministic": true
+    },
+    {
+      "fixtureId": "f2-diagnose",
+      "goodScore": 100,
+      "badScore": 30,
+      "deterministic": true
+    },
+    {
+      "fixtureId": "f3-bug-harvest",
+      "goodScore": 100,
+      "badScore": 30,
+      "deterministic": true
+    },
+    {
+      "fixtureId": "f4-ponytail",
+      "goodScore": 100,
+      "badScore": 30,
+      "deterministic": true
+    },
+    {
+      "fixtureId": "f5-review-feedback",
+      "goodScore": 100,
+      "badScore": 10,
+      "deterministic": true
+    },
+    {
+      "fixtureId": "f6-ui-redesign",
+      "goodScore": 100,
+      "badScore": 10,
+      "deterministic": true
+    }
+  ],
+  "malformed": {
+    "invalidJsonRejected": true,
+    "traversalRejected": true,
+    "extraKeysRejected": true,
+    "symlinkRejected": true,
+    "fixtureUnchanged": true
+  },
+  "pairCompleteness": {
+    "completeAccepted": true,
+    "missingRejected": true,
+    "duplicateRejected": true,
+    "unknownRejected": true,
+    "unscoredRejected": true
+  }
+}

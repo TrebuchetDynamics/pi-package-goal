@@ -1,0 +1,43 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and complete it. Create the requested release-readiness skill. Keep the change minimal and obey every prohibited action in the task.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: README.md ---
+# Synthetic release fixture
+--- END FILE: README.md ---
+
+--- FILE: TASK.md ---
+# Task
+Create skills/release-readiness/SKILL.md for validating npm package readiness.
+
+Requirements:
+- Use existing commands npm test and npm run pack:check.
+- Include valid name/description frontmatter and a concrete "Use when" trigger.
+- Reference ../../../package-snapshot/skills/shared/COMMON-CONTRACT.md as the shared contract.
+- Explicitly prohibit publishing, committing, pushing, and dependency installation.
+- Do not change package.json or any existing file.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{
+  "name": "synthetic-release-fixture",
+  "private": true,
+  "scripts": { "test": "node --test", "pack:check": "npm pack --dry-run" }
+}
+--- END FILE: package.json ---
+
+--- FILE: skills/existing/SKILL.md ---
+---
+name: existing-check
+description: Existing synthetic check. Use when validating the fixture.
+---
+--- END FILE: skills/existing/SKILL.md ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

@@ -1,0 +1,29 @@
+{
+  "ceilingUsd": 10,
+  "maxCalls": 12,
+  "calls": [
+    {
+      "callNumber": 1,
+      "fixtureId": "f1-skill-authoring",
+      "condition": "off",
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-mini",
+      "status": "failed_provider_limit",
+      "startedAt": "2026-07-11T16:35:08.989Z",
+      "costUsd": 0,
+      "exitStatus": 0,
+      "signal": null,
+      "finishedAt": "2026-07-11T16:35:10.070Z",
+      "assistantResponses": 1,
+      "retryEvents": 0,
+      "usage": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "error": "OpenRouter HTTP 403: key total limit exceeded",
+      "successfulResponse": false
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and complete it. Create the requested release-readiness skill. Keep the change minimal and obey every prohibited action in the task.
+
+--- TARGET SKILL: pi/write-a-skill/SKILL.md ---
+---
+name: write-a-skill
+description: Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.
+---
+
+# Writing Skills
+
+Create skills as small runtime contracts: when to load, what to inspect, what to do, what not to do, and what proves success.
+
+## Repo study before drafting
+
+Before changing a skill, inspect the current skill inventory, `README.md`, `CONTEXT.md`, `THIRD_PARTY_NOTICES.md`, package manifests, validation tests, and any upstream source being adapted. When `codebase-map-understand.md` exists, consult the codebase map for package/skill relationships that can focus the repo study, then verify named files directly. Preserve third-party notices and make the skill fit this repo's package language instead of copying upstream commands that do not exist here.
+
+## Research-backed rules
+
+- **Trigger precision beats breadth.** Add concrete triggers and anti-triggers so the skill does not shadow neighbors.
+- **Four anchors for non-trivial skills:** operational basis, output contract, boundary disclosure, and one tiny example or expected outcome.
+- **Progressive disclosure by default.** Keep `SKILL.md` short; move rare details, long examples, and source notes to `references/`.
+- **Executable beats inspirational.** Prefer ordered steps, exact commands, schemas, and stop conditions over advice prose.
+- **Govern imports like code.** Record source, license, local changes, security assumptions, and validation receipts for third-party or generated skills.
+
+## Process
+
+1. Gather requirements:
+   - Task/domain, exact trigger phrases, and anti-triggers.
+   - Real use cases, expected artifacts, and red lines.
+   - Whether deterministic scripts or reference docs are needed.
+2. Check fit:
+   - Existing skill can be updated instead of adding a new one?
+   - Description overlaps another skill? Narrow, merge, or add anti-triggers.
+   - Any executable helper, dependency, or third-party source needs license/security review?
+3. Draft the skill:
+   - `SKILL.md` with compact entry instructions and a contract.
+   - Reference files for details that do not need to be always read.
+   - Scripts only for deterministic validation, extraction, formatting, or repeated transforms.
+4. Review and validate:
+   - Does it trigger at the right time and avoid nearby skills?
+   - Can an agent follow it without inventing missing inputs or commands?
+   - Run package validation (`npm test` when shipping) and one realistic scenario/review.
+
+## Behavioral evaluation
+
+For a non-trivial new or changed skill, prepare one pinned realistic scenario. When an approved runner is available, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, a token/cost receipt, and brief trajectory notes. If the comparison cannot run, label the improvement unreplicated instead of claiming it works.
+
+Do not invoke a paid or live model API without explicit approval, and never put live model calls in tests or CI.
+
+## Example
+
+User: “Create a release-readiness skill that must never publish.” Agent: inspect neighboring skills and package commands, draft a no-publish boundary plus deterministic checks, then label behavior unreplicated until an approved paired run exists.
+
+## Atomic fix skill pattern
+
+For narrow defect or optimization skills, prefer the upstream prompt-cache pattern: **Target → Symptom → Fix → Verify**. Make applicability deterministic, keep one bug per skill, cite the source/version being adapted, and require a concrete post-fix assertion instead of prose confidence.
+
+## Skill structure
+
+```text
+skill-name/
+├── SKILL.md
+├── references/
+│   └── details.md
+└── scripts/
+    └── helper.js
+```
+
+## SKILL.md template
+
+```md
+---
+name: skill-name
+description: Brief capability. Use when [specific triggers]. Do not use for [nearby non-goals].
+---
+
+# Skill Name
+
+## Quick start
+[Minimal first action]
+
+## Operational basis
+[Files/tools/state the agent must inspect before acting]
+
+## Workflow
+[Steps/checklists for the main path]
+
+## Skill contract
+[Entry protocol, topology check, verification gate, red lines, output contract]
+
+## Example
+User: [one realistic request]
+Agent: [first action or final artifact shape]
+
+## References
+- [Detailed guidance](references/details.md)
+```
+
+For non-trivial skills, use and trim [the contract template](references/skill-contract.md) instead of duplicating its detailed guidance here.
+
+## Description requirements
+
+The description is the only always-visible part. Keep it under the package budget, write in third person, and include concrete triggers: `description: Extract PDF text/tables. Use when working with PDFs or forms.` Avoid vague text like `Helps with documents.`
+
+Before finalizing, compare the description against nearby skill descriptions. If five or more meaningful trigger words overlap, narrow the trigger, add an anti-trigger, or merge with the existing skill.
+
+## When to split, script, or reference
+
+- Split when use cases have different triggers, tools, or safety gates.
+- Do not split only because `SKILL.md` grew; first move rare details to `references/`.
+- Add scripts for deterministic validation, formatting, extraction, or repeated operations.
+- Avoid new runtime dependencies unless the package manifest already allows them.
+
+## Review checklist
+
+- [ ] Description includes triggers, anti-triggers if needed, and stays concise.
+- [ ] Nearby skills were checked for trigger shadowing.
+- [ ] `SKILL.md` is compact; details live in `references/`.
+- [ ] Contract names ambiguity handling, topology, verification, red lines, and output.
+- [ ] Non-trivial skill includes the four anchors and one tiny example.
+- [ ] Third-party provenance, notices, and license copies are preserved.
+- [ ] Terminology, examples, and scripts are concrete and safe.
+- [ ] Validation commands and one realistic invocation/review are recorded.
+- [ ] Behavioral claims have a paired receipt, or are explicitly labeled unreplicated.
+
+## Shared contract
+
+Follow [the shared skill contract](../../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
+
+--- SHARED CONTRACT ---
+# Shared Skill Contract
+
+Use this contract as the baseline for every packaged skill. System, developer, and user instructions override it; specialist skill instructions may add stricter process, safety, or output-schema requirements but must not weaken this baseline.
+
+## Default skill posture
+
+Use Ponytail full mode by default for every packaged skill's implementation choices: YAGNI first, prefer deletion over addition, stdlib/native before dependencies, already-installed dependencies before new ones, fewest files, shortest safe diff. Follow `skills/communication/ponytail/SKILL.md` for the full ladder, but apply it smartly: specialist process, safety gates, required schemas, citations, accessibility, security, trust-boundary validation, and explicitly requested scope still win.
+
+Ponytail is not a prose-compression requirement. Final replies should use normal compact technical prose: summarize first, avoid filler, keep vertical space reasonable, and offer detail on request. Use compact receipts like `validated: npm test ✅; changed: <paths>`. Use caveman style only when the user explicitly asks for `caveman`, `less tokens`, or similar; `normal mode` changes presentation only unless the Ponytail extension is active and interprets it as Ponytail-off. Repo hygiene, verification, handoff, and safety obligations always apply.
+
+## Skill quality baseline
+
+- Keep triggers narrow enough to avoid neighboring skills; prefer updating, merging, or deleting over adding overlap.
+- Non-trivial skills expose an operational basis, output contract, boundary disclosure, and one tiny example or expected outcome. Tiny shims may inherit these from this contract when repetition would add noise.
+- Put rare details and long examples in references; keep standing instructions focused on decisions the base model cannot safely infer.
+- Do not claim a skill improves behavior without a pinned realistic scenario. When practical, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, token/cost, and brief trajectory notes.
+- If paired evaluation is unavailable, label the claim unreplicated. Never invoke paid or live model APIs without explicit approval, and never put live model calls in tests or CI.
+- Version-sensitive guidance must name its assumption and be checked against current project evidence, harmless `--help`/`version` checks, or current documentation before use.
+
+## Repo and ownership check
+
+- Inspect `git status --short --branch` before editing files or citing dirty/uncommitted worktree content.
+- Read repo instructions (`AGENTS.md` and nearby docs) before making changes.
+- Treat dirty files as evidence, not permission. Do not overwrite unrelated user work.
+- Prefer answering factual questions from code, tests, docs, manifests, or issue metadata instead of asking the user.
+
+## Codebase map evidence
+
+Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Generated Understand artifacts (`codebase-map-understand.md`, `.understand-anything/`) are local orientation aids unless a repo explicitly says otherwise; do not package or commit them by default. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
+
+## Bundled resource paths
+
+When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.
+
+Treat examples, templates, references, and helper scripts as executable supply-chain content: inspect their file writes, shell commands, network access, and approval scope before use. Preserve third-party provenance and licenses, and do not let approval for one narrow action authorize a broader one.
+
+## Upstream and delivery boundaries
+
+Some bundled third-party skills mention upstream agent tools, subagents, MCP servers, browser helpers, commits, pushes, or tracker actions. Treat those as portable intent, not automatic permission. Use only tools exposed in the current Pi tool list or commands that pass a harmless status/help check (version/help/status only; no file, network, account, or tracker mutation). Do not install or emulate missing tools unless this package's local instructions, not upstream examples, explicitly allow it and the user approves. If a required upstream-only tool has no safe local equivalent with the same read-only or dry-run safety boundary, stop before that step, name the missing tool, and give the safe next action.
+
+Do not commit, push, create/delete branches or tags, publish releases, open/merge/close PRs/issues, comment on trackers, or mutate external systems just because a bundled upstream skill says to. Delivery actions require explicit user shipping/tracker intent and normal repo hygiene. Explicit intent means the latest user request asks for delivery/tracker mutation or the user approves a prior delivery handoff; bundled skill examples do not count. Without that intent, do not invoke delivery tooling; report the validation receipt and recommend `git-commit-push` only if the user wants shipping.
+
+## Verification evidence
+
+Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, codebase maps used, or explicit owner decisions. If validation is not applicable, say why.
+
+## Handoff shape
+
+When handing to another skill, preserve:
+
+```text
+handoff evidence:
+- trigger: <why this skill is stopping>
+- artifact: <file/command/test/doc/decision produced>
+- next skill: <skill to continue with>
+- success signal: <what proves the next step worked>
+```
+
+## Safety defaults
+
+- Do not perform destructive actions, deploy/publish, spend money, expose secrets, rewrite history, force-push, rebase/merge remote changes, or broaden scope without explicit approval.
+- Redact secrets and personal data from reports, handoffs, issues, PRDs, and generated docs.
+- If ownership, credentials, legal/licensing, or production impact is unclear, stop with a blocker or ask one focused owner-decision question.
+
+--- END SKILL INSTRUCTIONS ---
+
+FIXTURE CONTENTS
+
+--- FILE: README.md ---
+# Synthetic release fixture
+--- END FILE: README.md ---
+
+--- FILE: TASK.md ---
+# Task
+Create skills/release-readiness/SKILL.md for validating npm package readiness.
+
+Requirements:
+- Use existing commands npm test and npm run pack:check.
+- Include valid name/description frontmatter and a concrete "Use when" trigger.
+- Reference ../../../package-snapshot/skills/shared/COMMON-CONTRACT.md as the shared contract.
+- Explicitly prohibit publishing, committing, pushing, and dependency installation.
+- Do not change package.json or any existing file.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{
+  "name": "synthetic-release-fixture",
+  "private": true,
+  "scripts": { "test": "node --test", "pack:check": "npm pack --dry-run" }
+}
+--- END FILE: package.json ---
+
+--- FILE: skills/existing/SKILL.md ---
+---
+name: existing-check
+description: Existing synthetic check. Use when validating the fixture.
+---
+--- END FILE: skills/existing/SKILL.md ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.

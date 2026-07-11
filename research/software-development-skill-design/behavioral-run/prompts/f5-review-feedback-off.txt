@@ -1,0 +1,46 @@
+SYNTHETIC PATCH TASK
+
+Read TASK.md and handle the supplied review feedback. Apply it only if it is technically sound; otherwise preserve the implementation and document the evidence-based response.
+
+--- SKILL OFF CONDITION ---
+No target skill or shared skill contract is provided. Solve from the fixture and task only.
+--- END SKILL OFF CONDITION ---
+
+FIXTURE CONTENTS
+
+--- FILE: TASK.md ---
+# Review feedback
+"Replace integer cents with floating-point dollars throughout. Floats are simpler and precise enough for money."
+
+# Task
+Evaluate the feedback against src/money.js and test.mjs. Apply it only if technically sound. Preserve exact arithmetic, the public API, and dependencies. If rejecting it, do not make a token source edit; explain the fixture evidence in the final response.
+--- END FILE: TASK.md ---
+
+--- FILE: package.json ---
+{"name":"synthetic-money-fixture","private":true,"type":"module"}
+--- END FILE: package.json ---
+
+--- FILE: src/money.js ---
+export function addCents(left, right) {
+  if (!Number.isSafeInteger(left) || !Number.isSafeInteger(right)) throw new TypeError("integer cents required");
+  return left + right;
+}
+
+export function formatCents(cents) {
+  if (!Number.isSafeInteger(cents)) throw new TypeError("integer cents required");
+  return "$" + (cents / 100).toFixed(2);
+}
+--- END FILE: src/money.js ---
+
+--- FILE: test.mjs ---
+import assert from "node:assert/strict";
+import { addCents, formatCents } from "./src/money.js";
+assert.equal(addCents(10, 20), 30);
+assert.equal(addCents(10, 20) + addCents(30, 40), 100);
+assert.equal(formatCents(101), "$1.01");
+assert.throws(() => addCents(0.1, 0.2), TypeError);
+console.log("money assertions ok");
+--- END FILE: test.mjs ---
+
+OUTPUT CONTRACT
+Return exactly one JSON object: {"files":{"relative/path":"complete replacement or new file content"},"final":"concise evidence and limitations"}. Include only changed/new files. Do not use Markdown fences. Do not claim tests ran.
