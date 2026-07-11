@@ -1,0 +1,20 @@
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+10.1145/3613905.3650948	Designing for Human-Agent Alignment: Understanding what humans want from their agents
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	The Observability Gap: Why Output-Level Human Feedback Fails for LLM Coding Agents
+	Agentic Skill Discovery
+	Needs-aware Artificial Intelligence: AI that 'serves [human] needs'
+	From Control to Foresight: Simulation as a New Paradigm for Human-Agent Collaboration
+	Advanced Data Protection Control (ADPC): An Interdisciplinary Overview
+	Can You Explain That? Lucid Explanations Help Human-AI Collaborative Image Retrieval
+	Skill Preferences: Learning to Extract and Execute Robotic Skills from Human Feedback
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Human-Robot collaboration in surgery: Advances and challenges towards autonomous surgical assistants
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Human-Centered Evaluation of an LLM-Based Process Modeling Copilot: A Mixed-Methods Study with Domain Experts
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+10.1145/3527188.3563921	Experimental Investigation of Trust in Anthropomorphic Agents as Task Partners
+	Designing AI Systems that Augment Human Performed vs. Demonstrated Critical Thinking
+10.24963/ijcai.2025/460	Inference of Human-derived Specifications of Object Placement via Demonstration

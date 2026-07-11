@@ -1,0 +1,20 @@
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	SkillsVote: Lifecycle Governance of Agent Skills from Collection, Recommendation to Evolution
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Agentic Skill Discovery
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Agentic AI Governance and Lifecycle Management in Healthcare
+	Dynamic Skill Lifecycle Management for Agentic Reinforcement Learning
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+10.3390/math10183338	Advanced Drone Swarm Security by Using Blockchain Governance Game
+	Quantum Software Development Lifecycle
+	AIP: A Graph Representation for Learning and Governing Agent Skills
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+10.1109/access.2023.3296136	VeML: An End-to-End Machine Learning Lifecycle for Large-scale and High-dimensional Data
+	RoboLineage: Agent-Native Data Lifecycle Governance Across Robot Policy Iterations
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Video-Skill-CoT: Skill-based Chain-of-Thoughts for Domain-Adaptive Video Reasoning

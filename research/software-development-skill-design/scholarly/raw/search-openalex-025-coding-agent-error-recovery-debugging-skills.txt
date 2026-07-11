@@ -1,0 +1,20 @@
+	Agent Technology: Computing as Interaction (A Roadmap for Agent Based Computing)
+10.1016/j.ijinfomgt.2023.102642	Opinion Paper: “So what if ChatGPT wrote it?” Multidisciplinary perspectives on opportunities, challenges and implications of generative conversational AI for research, practice and policy
+10.70777/si.v2i3.15161	AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.3390/buildings9060149	Blockchain and Building Information Modeling (BIM): Review and Applications in Post-Disaster Recovery
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1016/s0921-8890(02)00372-x	A survey of socially interactive robots
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.1145/3564240	Explainable Goal-driven Agents and Robots - A Comprehensive Review
+	SodaBot: a software agent environment and construction system
+10.1145/3544548.3580817	“What It Wants Me To Say”: Bridging the Abstraction Gap Between End-User Programmers and Code-Generating Large Language Models
+10.1109/access.2021.3140175	A Metaverse: Taxonomy, Components, Applications, and Open Challenges
+10.18564/jasss.5258	Methods That Support the Validation of Agent-Based Models: An Overview and Discussion
+10.48550/arxiv.2405.15793	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+10.1109/ismar.2006.297806	Ubiquitous animated agents for augmented reality
+10.1145/2534860	Computer Science Curricula 2013: Curriculum Guidelines for Undergraduate Degree Programs in Computer Science
+10.1007/s11831-023-10030-1	A Contemporary Systematic Review on Meta-heuristic Optimization Algorithms with Their MATLAB and Python Code Reference
+10.48550/arxiv.2505.19443	Vibe Coding vs. Agentic Coding: Fundamentals and Practical Implications of Agentic AI
+10.22004/ag.econ.136256	Science, Technology and Skills
+10.1007/978-0-387-89299-3_6	Towards Pervasive Intelligence: Reflections on the Evolution of the Agent Factory Framework

@@ -1,0 +1,20 @@
+	Code as Agent Harness
+	AutoHarness: improving LLM agents by automatically synthesizing a code harness
+	From Prompts to Contracts: Harness Engineering for Auditable Enterprise LLM Agents
+	Evolving Agents in the Dark: Retrospective Harness Optimization via Self-Preference
+	AutoMegaKernel: A Statically-Checked Agent Harness for Self-Retargeting Megakernel Synthesis
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	RuBench: A Repository-Level Agentic Coding Benchmark with Natively Authored Russian Task Specifications
+	SOPBench: Evaluating Language Agents at Following Standard Operating Procedures and Constraints
+	Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+	From Failed Trajectories to Reliable LLM Agents: Diagnosing and Repairing Harness Flaws
+	Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes
+	Claw-SWE-Bench: A Benchmark for Evaluating OpenClaw-style Agent Harnesses on Coding Tasks
+	ProofAgent Harness: Open Infrastructure for Adversarial Evaluation of AI Agents
+	What makes a harness a harness: necessary and sufficient conditions for an agent harness
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+	VeRO: A Harness for Agents to Optimize Agents
+	AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation
+	End-to-end optimization of nonlinear transform codes for perceptual quality
+	List Decoding of Lifted Gabidulin Codes via the Plücker Embedding
+	Recursive Agent Harnesses

@@ -1,0 +1,20 @@
+10.1016/j.oneear.2020.01.003	Cultural Evolution of Sustainable Behaviors: Pro-environmental Tipping Points in an Agent-Based Model
+10.3390/app14010253	The Potential of Blockchain Technology and Smart Contracts in the Energy Sector: A Review
+10.1109/access.2020.3014522	Blockchain Technology in Current Agricultural Systems: From Techniques to Applications
+10.48550/arxiv.2305.17390	SwiftSage: A Generative Agent with Fast and Slow Thinking for Complex Interactive Tasks
+10.31234/osf.io/w6dpa	Cultural Evolution of Sustainable Behaviors: Pro-Environmental Tipping Points in an Agent-Based Model
+10.48550/arxiv.2307.03109	A Survey on Evaluation of Large Language Models
+	Leveraging commitments and goals in agent interaction.
+	A Rule of Persons, Not Machines: The Limits of Legal Automation
+10.48550/arxiv.2505.19443	Vibe Coding vs. Agentic Coding: Fundamentals and Practical Implications of Agentic AI
+10.3390/e22020129	Macroprudential Policy in a Heterogeneous Environment—An Application of Agent-Based Approach in Systemic Risk Modelling
+10.21541/apjess.1293702	Is ChatGPT Leading Generative AI? What is Beyond Expectations?
+10.9770/jesi.2020.7.4(35)	Innovation in African-American high-tech enterprises: a multi-agent approach
+	Self-adapting agent organisations
+10.1186/s40854-025-00759-y	Artificial intelligence in the service of entrepreneurial finance: knowledge structure and the foundational algorithmic paradigm
+10.1007/s11257-016-9170-1	Behavlets: a method for practical player modelling using psychology-based player traits and domain specific features
+	Co-operative conflict resolution in autonomous aircraft operations using a multi-agent approach
+10.2139/ssrn.4341500	Is ChatGPT Leading Generative AI? What is Beyond Expectations?
+10.1007/s10506-021-09298-0	Lawmaps: enabling legal AI development through visualisation of the implicit structure of legislation and lawyerly process
+10.36227/techrxiv.174681482.27435614/v1	A Review on Vibe Coding: Fundamentals, State-of-the-art, Challenges and Future Directions
+10.12688/f1000research.20873.2	The why, when, and how of computing in biology classrooms

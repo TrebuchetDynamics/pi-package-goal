@@ -1,0 +1,20 @@
+10.31124/advance.172355715.59582096/v1	ScholarOne - Exploring clusters of novice programmers’ anxiety-induced behaviors during block- and text-based coding: A predictive and moderation analysis of programming quality and error debugging skills
+10.2139/ssrn.5967224	Semantic error debugging of building energy models: A multi-agent approach based on retrieval-augmented generation
+10.1007/978-3-658-42912-6_26	Debugging &amp; Error-Handling: How to Find and Fix Errors in a Structured Way
+10.26686/wgtn.12909974	Debugging agent programs with "why?" Questions
+10.1007/978-3-658-42912-6_36	Debugging &amp; Error-Handling: How Do I Search for and Fix Errors in a Structured Way?
+10.1177/07356331241270707	Exploring Clusters of Novice Programmers’ Anxiety-Induced Behaviors During Block- and Text-Based Coding: A Predictive and Moderation Analysis of Programming Quality and Error Debugging Skills
+10.26686/wgtn.12909974.v1	Debugging agent programs with "why?" Questions
+10.1007/978-1-4302-0546-3_9	Error Handling and Debugging
+10.1007/978-1-4302-0364-3_8	Documentation, Error Handling, Debugging, and Testing
+10.1007/979-8-8688-0285-0_17	Debugging
+10.2139/ssrn.4626326	Improving the Debugging Skills of a Novice Programmer Through Enhanced Knowledge of Interactive Debugging
+10.1109/icip.2004.1419427	Efficient error recovery for multiple description video coding
+10.1007/978-1-4302-0580-7_7	Debugging and Error Handling
+10.1007/978-1-4302-0387-2_9	Error Handling and Debugging
+10.1109/itcc.2003.1197529	Interactive error recovery in facsimile without retransmission
+10.1007/978-1-4302-0113-7_9	Error Handling and Debugging Strategies
+10.1007/978-1-4302-0025-3_6	Debugging and Error Handling
+10.1007/978-1-4842-3153-1_15	Debugging
+10.1145/1006147.1006158	The application of error--sensitive testing strategies to debugging
+10.5353/th_b2978910	Empirical studies of program bugs and debugging strategies of novice BASIC programmers and the transferability of debugging skills to non-programming domains

@@ -1,0 +1,20 @@
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+	MRMMIA: Membership Inference Attacks on Memory in Chat Agents
+	Are We Ready For An Agent-Native Memory System?
+	Your Code Agent Can Grow Alongside You with Structured Memory
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Agent Memory Below the Prompt: Persistent Q4 KV Cache for Multi-Agent LLM Inference on Edge Devices
+	Meta-Policy Reflexion: Reusable Reflective Memory and Rule Admissibility for Resource-Efficient LLM Agent
+	Code as Agent Harness
+	A Plan Reuse Mechanism for LLM-Driven Agent
+	Securing LLM-Agent Long-Term Memory Against Poisoning: Non-Malleable, Origin-Bound Authority with Machine-Checked Guarantees
+	Perceptual Self-Reflection in Agentic Physics Simulation Code Generation
+	Distilling Feedback into Memory-as-a-Tool
+	AutoHarness: improving LLM agents by automatically synthesizing a code harness
+	Learning Hierarchical Procedural Memory for LLM Agents through Bayesian Selection and Contrastive Refinement
+	YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+	KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+	Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+	MedAide: Information Fusion and Anatomy of Medical Intents via LLM-based Agent Collaboration
+	Task Memory Engine (TME): Enhancing State Awareness for Multi-Step LLM Agent Tasks

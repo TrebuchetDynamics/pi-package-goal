@@ -1,0 +1,20 @@
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+	Skills, plans, and self-regulation
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1080/10573560600837578	Influencing Children's Self-Efficacy and Self-Regulation of Reading and Writing Through Modeling
+10.1207/s15326985ep3204_1	Social origins of self-regulatory competence
+10.1109/cvprw.2017.70	Curiosity-Driven Exploration by Self-Supervised Prediction
+10.1016/s1474-4422(17)30371-x	Traumatic brain injury: integrated approaches to improve prevention, clinical care, and research
+10.1007/s10462-021-09996-w	Multi-agent deep reinforcement learning: a survey
+10.2307/1128738	On Relational Meaning: The Acquisition of Verb Meaning
+10.1186/s40168-016-0225-7	Microbiota Transfer Therapy alters gut ecosystem and improves gastrointestinal and autism symptoms: an open-label study
+10.2139/ssrn.1181022	Product Market Synergies and Competition in Mergers and Acquisitions: A Text-Based Analysis
+10.1016/j.chb.2023.107903	Artificial intelligence and human behavioral development: A perspective on new skills and competences acquisition for the educational context
+10.1207/s15516709cog2502_2	From implicit skills to explicit knowledge: a bottom‐up model of skill learning
+10.1016/j.tate.2006.04.035	Teacher self-assessment: A mechanism for facilitating professional growth
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1080/10447318.2018.1543084	Supporting Self-Regulated Learning in Online Learning Environments and MOOCs: A Systematic Review
+10.3389/fnhum.2014.00599	Self-organization, free energy minimization, and optimal grip on a field of affordances
+	A Model for Organizational Interaction: based on Agents, founded in Logic
+10.1038/s41586-019-1657-6	Sex and gender analysis improves science and engineering

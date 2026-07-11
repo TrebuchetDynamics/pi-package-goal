@@ -1,0 +1,20 @@
+10.1371/journal.pmed.1000100	The PRISMA Statement for Reporting Systematic Reviews and Meta-Analyses of Studies That Evaluate Health Care Interventions: Explanation and Elaboration
+	Skills, plans, and self-regulation
+10.23970/ahrqepcregistries4	Registries for Evaluating Patient Outcomes: A User’s Guide
+10.1109/tsmcc.2007.913919	A Comprehensive Survey of Multiagent Reinforcement Learning
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+	Software agents: A review
+10.1017/s0269888905000494	Self-organization in multi-agent systems
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.70777/si.v2i3.15161	AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.48550/arxiv.2308.07107	Large Language Models for Information Retrieval: A Survey
+10.1037/0033-295x.112.2.446	Imaginary Relish and Exquisite Torture: The Elaborated Intrusion Theory of Desire.
+10.3390/s21248448	Conversational Agents: Goals, Technologies, Vision and Challenges
+10.1039/d4sc03921a	A review of large language models and autonomous agents in chemistry
+10.1007/3-540-45886-7_7	The Use of Implicit Evidence for Relevance Feedback in Web Retrieval
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.1007/s12559-023-10179-8	Interpreting Black-Box Models: A Review on Explainable Artificial Intelligence
+	Semantic annotation for retrieval of visual resources
+10.1609/aimag.v32i2.2347	NPCEditor: Creating Virtual Human Dialogue Using Information Retrieval Techniques
+10.48550/arxiv.2402.19473	Retrieval-Augmented Generation for AI-Generated Content: A Survey

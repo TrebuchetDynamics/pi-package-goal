@@ -1,0 +1,20 @@
+	Towards Product Lining Model-Driven Development Code Generators
+	Verification of colorable hypergraph states with stabilizer test
+	Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development
+10.1007/978-3-030-03421-4_15	Deductive Verification of Unmodified Linux Kernel Library Functions
+	Quantitative Comparison of Credible Compilation and Verification In Coding Agent Compiler Development
+	A Plan Reuse Mechanism for LLM-Driven Agent
+	Using Software Categories for the Development of Generative Software
+	Sustainable, Local Socio-Economic Development Through Astronomy
+	Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+	The Meta-Agent Challenge: Are Current Agents Capable of Autonomous Agent Development?
+	Deep Generative Attacks and Countermeasures for Data-Driven Offline Signature Verification
+	Code as Agent Harness
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+	TDAD: Test-Driven Agentic Development - Reducing Code Regressions in AI Coding Agents via Graph-Based Impact Analysis
+	Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes
+10.1007/978-3-319-26287-1_5	Coverage-Driven Verification - An approach to verify code for robots that directly interact with humans
+	Your Code Agent Can Grow Alongside You with Structured Memory
+	Combining STPA and BDD for Safety Analysis and Verification in Agile Development: A Controlled Experiment
+	Curiosity Driven Multi-agent Reinforcement Learning for 3D Game Testing
+10.1145/3805622.3812606	Contestable Multi-Agent Debate with Arena-based Argumentative Computation for Multimedia Verification

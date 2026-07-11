@@ -1,0 +1,20 @@
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.3390/info16060469	AI-Powered Educational Agents: Opportunities, Innovations, and Ethical Challenges
+10.1038/s41591-025-04074-y	Reliability of LLMs as medical assistants for the general public: a randomized preregistered study
+10.18653/v1/2026.findings-acl.1330	A Survey on Evaluation of LLM-based Agents
+10.55524/ijircst.2025.13.4.1	A Review of Generative AI and DevOps Pipelines: CI/CD, Agentic Automation, MLOps Integration, and LLMs
+10.1007/s11948-025-00560-1	Responsibility Gaps, LLMs &amp; Organisations: Many Agents, Many Levels, and Many Interactions
+10.18653/v1/2026.findings-acl.1811	LLM-Based Human-Agent Collaboration and Interaction Systems: A Survey
+10.48550/arxiv.2509.06216	Agentic Software Engineering: Foundational Pillars and a Research Roadmap
+10.1016/j.autcon.2026.106791	LLM-enabled multi-agent framework for natural language interaction with graph-based digital twins
+10.1136/bmjhci-2025-101570	Development and evaluation of an agentic LLM based RAG framework for evidence-based patient education
+10.1007/s11704-025-50058-z	A comprehensive taxonomy of prompt engineering techniques for large language models
+10.1145/3733599	When Fine-Tuning LLMs Meets Data Privacy: An Empirical Study of Federated Learning in LLM-Based Program Repair
+10.48550/arxiv.2506.04133	TRiSM for Agentic AI: A Review of Trust, Risk, and Security Management in LLM-based Agentic Multi-Agent Systems
+10.2196/86550	From Agents to Governance: Essential AI Skills for Clinicians in the Large Language Model Era
+10.1007/s12525-025-00861-0	Agentic information systems
+10.1145/3701188	Conversate: Supporting Reflective Learning in Interview Practice Through Interactive Simulation and Dialogic Feedback
+10.48550/arxiv.2505.00753	LLM-Based Human-Agent Collaboration and Interaction Systems: A Survey
+10.1073/pnas.2401227121	How should the advancement of large language models affect the practice of science?
+10.1145/3809494	The Impact of LLM-Assistants on Software Developer Productivity: A Systematic Review and Mapping Study
+10.1007/s12525-025-00862-z	Multi-agent AI

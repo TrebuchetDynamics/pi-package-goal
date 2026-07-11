@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+10.1145/3719027.3744836	SecAlign: Defending Against Prompt Injection with Preference Optimization
+	StruQ: Defending Against Prompt Injection with Structured Queries
+	Caging the Agents: A Zero Trust Security Architecture for Autonomous AI in Healthcare
+	WebInject: Prompt Injection Attack to Web Agents
+	Automatic and Universal Prompt Injection Attacks against Large Language Models
+	Detecting Prompt Injection Attacks Against Application Using Classifiers
+	Memento-Skills: Let Agents Design Agents
+	PROV-AGENT: Unified Provenance for Tracking AI Agent Interactions in Agentic Workflows
+	UniGuardian: A Unified Defense for Detecting Prompt Injection, Backdoor Attacks and Adversarial Attacks in Large Language Models
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	Securing AI Agents Against Prompt Injection Attacks
+	WASP: Benchmarking Web Agent Security Against Prompt Injection Attacks
+	Skill-Inject: Measuring Agent Vulnerability to Skill File Attacks
+	SkillJect: Effectively Automating Skill-Based Prompt Injection for Skill-Enabled Agents
+	Design Patterns for Securing LLM Agents against Prompt Injections
+10.14722/ndss.2026.230352	ACE: A Security Architecture for LLM-Integrated App Systems
+	Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale
+10.36227/techrxiv.175994550.08962082/v1	Countermind: A Multi-Layered Security Architecture for Large Language Models

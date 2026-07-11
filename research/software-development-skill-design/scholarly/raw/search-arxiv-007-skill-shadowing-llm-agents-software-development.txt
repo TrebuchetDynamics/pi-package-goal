@@ -1,0 +1,20 @@
+	Using Software Categories for the Development of Generative Software
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1145/3661167.3661171	Agent-Driven Automatic Software Improvement
+10.1145/3183519.3183549	We Don't Need Another Hero? The Impact of "Heroes" on Software Development
+10.1007/978-3-031-72781-8_2	Autonomous Agents in Software Development: A Vision Paper
+10.1109/icse.2012.6227139	Semi-Automatically Extracting FAQs to Improve Accessibility of Software Development Knowledge
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+10.1109/ms.2024.3374821	Overwhelmed Software Developers
+10.1109/semotion.2017.5	Consequences of Unhappiness While Developing Software
+	Human-In-The-Loop Software Development Agents: Challenges and Future Directions
+10.1145/3084226.3084242	On the Unhappiness of Software Developers
+	Transforming Software Development with Generative AI: Empirical Insights on Collaboration and Workflow
+	Quantum Software Development Lifecycle
+10.1109/ms.2021.3098116	Challenges for Inclusion in Software Engineering: The Case of the Emerging Papua New Guinean Society
+	Agentic Skill Discovery
+	Navigating Cultural Diversity: Barriers and Potentials in Multicultural Agile Software Development Teams
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)
+	LLMoxie: Exploring Agentic AI for Scientific Software Development

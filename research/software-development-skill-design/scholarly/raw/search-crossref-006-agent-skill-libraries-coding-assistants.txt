@@ -1,0 +1,20 @@
+10.12968/bjha.2023.17.11.424	Making the most of libraries, part 1: libraries for healthcare assistants and nursing support workers
+10.4018/979-8-3373-2660-3.ch009	Navigating Skill Development and Ethical Challenges in Coding Education with Generative AI
+10.5040/9798400695896.0214	The Peer Research Assistants at the Michigan State University Libraries
+10.36227/techrxiv.173014488.82191966/v1	Disrupting Test Development with AI Assistants: Building the Base of the Test Pyramid with Three AI Coding Assistants
+10.2139/ssrn.6563218	VeilGuard: Preventing Credential Exposure Through AI Coding Assistants
+10.1016/j.specom.2017.05.002	A predictive coding framework for a developmental agent: Speech motor skill acquisition and speech production
+10.3776/ncl.v26i3.4412	Library Technical Assistants Information Survey
+10.1504/ijaose.2022.122647	Empirical software engineering for evaluating adaptive task-oriented personal assistants: a case study in human/machine event extraction and coding
+10.64898/2026.02.13.705771	Ataraxis: Bridging AI Coding Assistants and Scientific Hardware
+10.51415/10321/3378	Employment practices of student library assistants in academic libraries in KwaZulu-Natal
+10.4018/979-8-3373-2660-3.ch002	Coding Education
+10.1037/e536982012-079	Phonological coding in high-skill versus low-skill readers
+10.5040/9798400695896.0237	Undergraduate Research Assistants at Hope College
+10.12968/bjha.2014.8.10.474	Speaking with each other — a dying skill?
+10.12968/bjha.2019.13.4.201	It's time to banish the ‘low-skill’ myth
+10.1145/1735813	Proceedings of the 1st Workshop on Modules and Libraries for Proof Assistants
+10.3776/ncl.v32i3.4053	Library Technical Assistants: Are They for Real?
+10.12968/bjha.2012.6.11.540	Skin assessment: a vital skill for HCAs and APs
+10.3776/ncl.v15i2.5224	High School Library Assistants Have Active Organization
+10.3776/ncl.v48i4.2405	Course Outline and Training for School Library Assistants

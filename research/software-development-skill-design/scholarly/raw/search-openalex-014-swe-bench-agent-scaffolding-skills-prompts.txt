@@ -1,0 +1,20 @@
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.48550/arxiv.2502.00964	ML-Dev-Bench: Comparative Analysis of AI Agents on ML development workflows
+10.51593/20240034	Through the Chat Window and Into the Real World: Preparing for AI Agents
+10.48550/arxiv.2509.06216	Agentic Software Engineering: Foundational Pillars and a Research Roadmap
+10.48550/arxiv.2410.09114	Catastrophic Cyber Capabilities Benchmark (3CB): Robustly Evaluating LLM Agent Cyber Offense Capabilities
+10.20944/preprints202512.2119.v1	Large Language Model Agents: A Comprehensive Survey on Architectures, Capabilities, and Applications
+10.18653/v1/2025.findings-acl.642	Training Turn-by-Turn Verifiers for Dialogue Tutoring Agents: The Curious Case of LLMs as Your Coding Tutors
+10.34726/12000	Agentic Services Computing
+10.48550/arxiv.2302.09051	Complex QA and language models hybrid architectures, Survey
+10.48550/arxiv.2505.12786	Forewarned is Forearmed: A Survey on Large Language Model-based Agents in Autonomous Cyberattacks
+10.36227/techrxiv.175695645.52670060/v1	LangChain vs. LangGraph vs. LangSmith: Taxonomies of Agentic AI Toolchains for End-to-End Orchestration
+10.70777/si.v2i2.14755	The First International AI Safety Report
+10.18653/v1/2025.emnlp-main.401	WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning
+10.48550/arxiv.2411.03562	Kolb-Based Experiential Learning for Generalist Agents with Human-Level Kaggle Data Science Performance
+10.1145/3801972	"Should I Give Up Now?" Investigating LLM Pitfalls in Software Engineering
+	Claw-SWE-Bench: A Benchmark for Evaluating OpenClaw-style Agent Harnesses on Coding Tasks
+	SWE-Edit: Rethinking Code Editing for Efficient SWE-Agent
+10.20944/preprints202508.0684.v1	ChatGPT-5 in Education: New Capabilities and Opportunities for Teaching and Learning
+10.1007/s11097-025-10094-3	Transforming agency: On the mode of existence of large language models
+10.32388/vv1661	Challenges and Paths Towards AI for Software Engineering

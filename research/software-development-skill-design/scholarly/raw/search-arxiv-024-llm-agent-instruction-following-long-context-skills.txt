@@ -1,0 +1,20 @@
+	Is In-Context Learning Sufficient for Instruction Following in LLMs?
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Multilingual Long-Form Speech Instruction Following: KIT's Submission to IWSLT 2026
+	Memento-Skills: Let Agents Design Agents
+	When Models Can't Follow: Testing Instruction Adherence Across 256 LLMs
+	Releasing the CRaQAn (Coreference Resolution in Question-Answering): An open-source dataset and dataset creation methodology using instruction-following models
+	SlimInfer: Accelerating Long-Context LLM Inference via Dynamic Token Pruning
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	A$^2$RD: Agentic Autoregressive Diffusion for Long Video Consistency
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+	Agents at Risk: How Users Unwittingly Undermine LLM Safety
+	AlayaDB: The Data Foundation for Efficient and Effective Long-context LLM Inference
+	Evaluating the Instruction-Following Robustness of Large Language Models to Prompt Injection
+	Focus-dLLM: Accelerating Long-Context Diffusion LLM Inference via Confidence-Guided Context Focusing
+	YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+	FinLFQA: Evaluating Attributed Text Generation of LLMs in Financial Long-Form Question Answering
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+	WizardLM: Empowering large pre-trained language models to follow complex instructions

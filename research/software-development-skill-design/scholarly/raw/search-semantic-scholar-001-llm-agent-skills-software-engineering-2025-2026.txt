@@ -1,0 +1,20 @@
+	Counterfactual Trace Auditing of LLM Agent Skills
+10.48550/arxiv.2603.15401	SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+10.48550/arxiv.2604.09297	SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering
+10.48550/arxiv.2602.08004	Agent Skills: A Data-Driven Analysis of Claude Skills for Extending Large Language Model Functionality
+	Socratic-SWE: Self-Evolving Coding Agents via Trace-Derived Agent Skills
+	From Registry to Repository: How AI Agent Skills Are Written, Adapted, and Maintained
+10.48550/arxiv.2507.09063	SetupBench: Assessing Software Engineering Agents' Ability to Bootstrap Development Environments
+10.1109/access.2026.3652325	Methods and Techniques of Agentic Software Engineering: A Systematic Literature Review
+10.22399/ijcesen.4694	Becoming a Cloud-Native Architect in the LLM Era: Skills, Tools, and Mindset for the Next Generation
+10.48550/arxiv.2604.06550	SkillSieve: A Hierarchical Triage Framework for Detecting Malicious AI Agent Skills
+	FuzzingBrain V2: A Multi-Agent LLM System for Automated Vulnerability Discovery and Reproduction
+	The Rise of AI-Native Software Engineering: Implications for Practice, Education, and the Future Workforce
+10.48550/arxiv.2604.11477	OOM-RL: Out-of-Money Reinforcement Learning Market-Driven Alignment for LLM-Based Multi-Agent Systems
+	Towards LLM Accelerated Rapid Reviews for Software Tool Discovery -- Case for Log Anomaly Detection
+10.1109/access.2026.3698694	From LLM Reasoning to Autonomous AI Agents: A Comprehensive Review
+10.48550/arxiv.2512.23982	Coding With AI: From a Reflection on Industrial Practices to Future Computer Science and Software Engineering Education
+10.48550/arxiv.2507.11059	SWE-MERA: A Dynamic Benchmark for Agenticly Evaluating Large Language Models on Software Engineering Tasks
+10.47191/ijcsrr/v9-i5-01	Instructional Leadership, Competency Skills, and Supervisory Practices toward the Development of Science, Technology, Engineering, and Mathematics (STEM) Learning Continuity Model
+10.1109/rita.2026.3694480	Responsible Integration of Generative AI in Software Engineering Education
+10.48550/arxiv.2604.01437	Reproducible, Explainable, and Effective Evaluations of Agentic AI for Software Engineering

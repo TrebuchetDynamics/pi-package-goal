@@ -1,0 +1,20 @@
+10.1109/acpee69242.2026.11524367	SBEMA: Knowledge-Driven LLM Agent with Progressive Tool Disclosure and Multi-Stage Validation for Smart Battery Energy Management
+10.5958/2229-4422.2021.00003.7	Nurturing socio-emotional skills in the context of schools
+10.3390/aieng1010005	Agentic SWMM: Auditable and Reproducible Stormwater Modelling Workflow with Agent Skills and Model Context Protocol
+10.2139/ssrn.6506600	Context Engineering: A Principal-Agent Theory of AI-Augmented Knowledge Work
+10.1063/5.0262042	Improving students' mathematical creative thinking skills in linear programming problems: Alor's entrepreneurship context
+10.58257/ijprems36057	SIGNIFICANCE OF SOFT SKILLS AT WORK PLACE
+10.58257/ijprems35041	A Study On Enrichment Skills Of Employees
+10.5040/9781501336669.ch-002	Progressive pop in context
+10.4018/9781605666181.ch002	Context-Aware Service Provisioning in Next-Generation Networks
+10.2139/ssrn.5062641	Operationalizing Selective Transparency Using Progressive Disclosure in Artificial Intelligence Clinical Diagnosis Systems
+10.37547/tajet/volume08issue03-12	Architectural Principles for Multi-Agent Systems Based on The Model Context Protocol
+10.58257/ijprems35050	A Study On Employability Skills And Its Implications On Employees
+10.4135/9781529725414	Self-Disclosure
+10.1109/sose67019.2025.00013	Demonstrating Multi-Agent Collaboration via Agent-to-Agent and Model Context Protocols: An IT Incident Response Case Study
+10.4324/9781003627500-2	Disclosure and exposure in context
+10.18260/1-2--16872	Engineering Design, Cad And Fabrication Skills Within A Biomedical Engineering Context
+10.4324/9781003367796-10	Self-Disclosure
+10.58257/ijprems43960	HR Planning for a Multigenerational Workforce: Aligning Skills with Organisational Needs
+10.1049/ic:20040358	Context-sensitive access control for open mobile agent systems
+10.6007/ijarped/v13-i1/20454	Exploring the Relationship Between Learning Motivation and Speaking Skills by Young Learners in An ESL Context

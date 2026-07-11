@@ -1,0 +1,20 @@
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.1007/s10462-024-10896-y	Towards trustworthy LLMs: a review on debiasing and dehallucinating in large language models
+10.1007/s12599-023-00834-7	Generative AI
+10.1145/3613905.3650786	A Taxonomy for Human-LLM Interaction Modes: An Initial Exploration
+10.48550/arxiv.2405.02957	Agent Hospital: A Simulacrum of Hospital with Evolvable Medical Agents
+10.1145/3706598.3713453	Customizing Emotional Support: How Do Individuals Construct and Interact With LLM-Powered Chatbots
+10.1613/jair.1.15960	The RL/LLM Taxonomy Tree: Reviewing Synergies Between Reinforcement Learning and Large Language Models
+10.48550/arxiv.2411.09523	Navigating the Risks: A Survey of Security, Privacy, and Ethics Threats in LLM-Based Agents
+10.1145/3658644.3690283	Using AI Assistants in Software Development: A Qualitative Study on Security Practices and Concerns
+10.3390/mti7080081	Creative Use of OpenAI in Education: Case Studies from Game Development
+10.48550/arxiv.2309.10371	Generative AI vs. AGI: The Cognitive Strengths and Weaknesses of Modern LLMs
+10.48550/arxiv.2312.03815	LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem
+10.48550/arxiv.2506.04133	TRiSM for Agentic AI: A Review of Trust, Risk, and Security Management in LLM-based Agentic Multi-Agent Systems
+10.18653/v1/2024.acl-long.308	Benchmarking Data Science Agents
+10.48550/arxiv.2405.14125	ALI-Agent: Assessing LLMs' Alignment with Human Values via Agent-based Evaluation
+10.48550/arxiv.2312.13771	AppAgent: Multimodal Agents as Smartphone Users
+10.3390/info16110957	LLMs for Cybersecurity in the Big Data Era: A Comprehensive Review of Applications, Challenges, and Future Directions
+10.1007/s40336-023-00574-4	ChatGPT in nuclear medicine and radiology: lights and shadows in the AI bionetwork
+10.2196/86550	From Agents to Governance: Essential AI Skills for Clinicians in the Large Language Model Era
+10.1145/3715336.3735812	Cracking Aegis: An Adversarial LLM-based Game for Raising Awareness of Vulnerabilities in Privacy Protection

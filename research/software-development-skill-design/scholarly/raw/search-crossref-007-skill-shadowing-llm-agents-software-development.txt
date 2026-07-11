@@ -1,0 +1,20 @@
+10.2139/ssrn.6755658	A Comparative Evaluation of LLM-based Coding Agents for Automated Software development Tasks
+10.2139/ssrn.6438922	Beyond Prescribed Intelligence: Toward Self-Directed Skill Acquisition in LLM-Based Cybersecurity Agents
+10.52058/2786-6025-2026-4(58)-2474-2485	AUTOMATION OF SOFTWARE PROJECT DEVELOPMENT USING LLM AGENTS
+10.1145/3696630.3731432	Autonomous agents in software development for information retrieval using LLM models
+10.2139/ssrn.6871959	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+10.1145/3774905.3793914	Collaborative LLM Agents for End-to-End Software Development
+10.1145/3696630.3731460	Mediating between Human Programmers and Integrated Development Environments using LLM-based Agents
+10.1109/icse-companion66252.2025.00069	Identifying Performance-Sensitive Configurations in Software Systems with LLM-Driven Agents
+10.1007/s10664-026-10883-7	Identifying performance-sensitive configurations in software systems with LLM-based agents
+10.32388/aub766	Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents
+10.5070/l29132493	The Impact of a Computer-Mediated Shadowing Activity on ESL Speaking Skill Development: A Pilot Study
+10.5220/0014726900004015	Evaluating the Effectiveness of LLM Agents Generating API Implementations from Gherkin Scenarios: A Pilot Study
+10.32388/kpfaaa	Review of: "Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents"
+10.32388/rog4gs	Review of: "Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents"
+10.64917/feaiml/volume03issue06-01	RAG-SecCode: Retrieval-Augmented Secure Coding Guidance for Enterprise LLM Software Development
+10.1109/aiware69974.2025.00008	CHASE: LLM Agents for Dissecting Malicious PyPI Packages
+10.5220/0014980700004015	On the Soundness and Consistency of LLM Agents for Executing Test Cases Written in Natural Language
+10.1007/s40747-025-02051-z	Collaborative LLM agents for flexible software development of intelligent industrial robot control systems
+10.55640/ijdsml-06-01-04	Trustworthy and Secure LLM-Assisted Code Generation for Enterprise Software Development
+10.1145/3805712.3808515	LLM Agents Factory: Retrieval of Domain-Specific LLM Agents

@@ -1,0 +1,20 @@
+10.3386/w15325	The Financing of R&amp;D and Innovation
+10.36227/techrxiv.174612014.42157096/v1	A Review on Agent-to-Agent Protocol: Concept, State-of-the-art, Challenges and Future Directions
+10.48550/arxiv.2505.19443	Vibe Coding vs. Agentic Coding: Fundamentals and Practical Implications of Agentic AI
+10.36227/techrxiv.174681482.27435614/v1	A Review on Vibe Coding: Fundamentals, State-of-the-art, Challenges and Future Directions
+10.32628/gisrrj236535	A Model for Advancing Digital Inclusion through Business Analytics and Partnerships
+10.63282/3050-9246.ijetcsit-v6i3p111	Securing Digital Transformation: A Framework for Mainframe and Cloud Ape Governance
+10.55248/gengpi.6.0625.21107	AI-Powered Market Segmentation and Personalization Strategies for Enhancing Digital Product Lifecycle Management
+10.51594/gjabr.v3i11.171	A framework for leveraging artificial intelligence in strategic business decision-making
+10.48550/arxiv.2507.16044	From REST to MCP: An Empirical Study of API Wrapping and Automated Server Generation for LLM Agents
+10.2824/114584	Privacy and data protection in mobile applications : A study on the app development ecosystem and the technical implementation of GDPR
+10.36227/techrxiv.174913612.20443736/v1	A Review of TRiSM Frameworks in Artificial Intelligence Systems: Fundamentals, Taxonomy, Use Cases, Key Challenges and Future Directions
+10.63282/3050-9416.ijaibdcms-v5i4p109	Intelligent Automation: Leveraging LLMs in DevOps Toolchains
+10.54660/ijfei.2024.1.2.25-47	A Conceptual Framework for CI/CD Pipeline Security Controls in Hybrid Application Deployments
+10.36227/techrxiv.175339321.17050891/v1	A Comprehensive Introspection on AI Risks: Taxonomy, Challenges and Future Directions
+10.1080/01639374.2025.2539787	The Librarian Skillset and the Needs of Artificial Intelligence
+	SkillWiki: A Living Knowledge Infrastructure for Agent Skills
+10.1007/978-981-32-9915-3_11	Internet of Things
+10.63282/3050-9246.ijetcsit-v5i1p103	Oracle HCM Extensibility: Architectural Patterns for Custom API Development
+	ContextNest: Verifiable Context Governance for Autonomous AI Agent
+	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents

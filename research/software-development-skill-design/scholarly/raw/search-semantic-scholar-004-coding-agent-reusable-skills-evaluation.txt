@@ -1,0 +1,20 @@
+	SciVisAgentSkills: Design and Evaluation of Agent Skills for Scientific Data Analysis and Visualization
+	An Empirical Study of Automating Agent Evaluation
+10.48550/arxiv.2604.19516	From Experience to Skill: Multi-Agent Generative Engine Optimization via Reusable Strategy Learning
+	CODESKILL: Learning Self-Evolving Skills for Coding Agents
+	SimWorld Studio: Automatic Environment Generation with Evolving Coding Agent for Embodied Agent Learning
+10.48550/arxiv.2509.18597	Growing with Your Embodied Agent: A Human-in-the-Loop Lifelong Code Generation Framework for Long-Horizon Manipulation Skills
+10.48550/arxiv.2604.25109	Structured Security Auditing and Robustness Enhancement for Untrusted Agent Skills
+	Socratic-SWE: Self-Evolving Coding Agents via Trace-Derived Agent Skills
+10.48550/arxiv.2604.20441	MedSkillAudit: A Domain-Specific Audit Framework for Medical Research Agent Skills
+10.48550/arxiv.2604.03081	Supply-Chain Poisoning Attacks Against LLM Coding Agent Skill Ecosystems
+	Exploiting LLM Agent Supply Chains via Payload-less Skills
+	SkillVetBench: LLM-as-Judge for Multi-Dimensional Security Risk Evaluation in Open-Source LLM Agent Skills
+	CodeClinic: Evaluating Automation of Coding Skills for Clinical Reasoning Agents
+10.48550/arxiv.2604.24026	From Skill Text to Skill Structure: The Scheduling-Structural-Logical Representation for Agent Skills
+	SkillsVote: Lifecycle Governance of Agent Skills from Collection, Recommendation to Evolution
+	SIRI: Self-Internalizing Reinforcement Learning with Intrinsic Skills for LLM Agent Training
+	A Comprehensive Survey on Agent Skills: Taxonomy, Techniques, and Applications
+	AgentTrap: Measuring Runtime Trust Failures in Third-Party Agent Skills
+	SkillScope: Toward Fine-Grained Least-Privilege Enforcement for Agent Skills
+	SkillGrad: Optimizing Agent Skills Like Gradient Descent

@@ -1,0 +1,20 @@
+10.1038/nrd3028	Membrane transporters in drug development
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.1038/s41586-020-2649-2	Array programming with NumPy
+10.1002/advs.201900808	Data‐Driven Materials Science: Status, Challenges, and Perspectives
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+	Array programming with NumPy
+10.1016/j.erss.2018.07.007	Promoting novelty, rigor, and style in energy social science: Towards codes of practice for appropriate methods and research design
+10.1145/358108.358110	Model-driven development of Web applications
+10.1016/j.neuroscience.2017.07.061	Great Expectations: Is there Evidence for Predictive Coding in Auditory Cortex?
+10.1038/sj.cdd.4400962	Human ΔNp73 regulates a dominant negative feedback loop for TAp73 and p53
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1145/3342355	Formal Specification and Verification of Autonomous Robotic Systems
+10.1371/journal.pgen.1005674	The Fanconi Anemia Pathway Protects Genome Integrity from R-loops
+10.1101/2020.03.11.986836	A data-driven drug repositioning framework discovered a potential therapeutic agent targeting COVID-19
+10.1093/eurheartj/ehq278	Guidelines for the management of atrial fibrillation: The Task Force for the Management of Atrial Fibrillation of the European Society of Cardiology (ESC)
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+10.3390/cells9071717	Microglia: Agents of the CNS Pro-Inflammatory Response
+10.1038/s41392-022-00950-y	Advances in COVID-19 mRNA vaccine development
+10.1016/j.ijinfomgt.2019.08.002	Artificial Intelligence (AI): Multidisciplinary perspectives on emerging challenges, opportunities, and agenda for research, practice and policy

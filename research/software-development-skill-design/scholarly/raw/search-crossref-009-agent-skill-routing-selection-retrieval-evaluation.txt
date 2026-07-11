@@ -1,0 +1,20 @@
+10.1109/milcom.2006.302257	Performance Evaluation of a Unicast Routing Control Agent for Proactive Diverse Link Selection
+10.5220/0007833300002179	A Multi-Agent based Decision Framework for Sustainable Supplier Selection, Order Allocation and Routing Problem
+10.5220/0007833306210628	A Multi-Agent based Decision Framework for Sustainable Supplier Selection, Order Allocation and Routing Problem
+10.36227/techrxiv.175459457.79320013/v1	An Empirical Evaluation of a Multi-Agent Framework for Retrieval-Augmented Academic Research
+10.1016/j.peva.2013.08.007	Design and evaluation of overloaded service systems with skill based routing, under FCFS policies
+10.20944/preprints202604.0413.v1	Quantum-Enhanced LLM Cascade Routing: A QAOA Approach to Cost-Optimal Model Selection in Multi-Agent Systems
+10.20944/preprints202604.0413.v2	Quantum-Enhanced LLM Cascade Routing: A QAOA Approach to Cost-Optimal Model Selection in Multi-Agent Systems
+10.1007/3-540-44645-1_6	Evaluating Interactive Cross-Language Information Retrieval: Document Selection
+10.1007/3-540-36618-0_40	Parallel Computing for Term Selection in Routing/Filtering
+10.1007/978-3-032-11477-8_9	Bias Mitigation Agent: Optimizing Source Selection for Fair Retrieval
+10.1109/wi-iat.2012.198	Empirical Evaluation of Multi-Agent Routing Approaches
+10.1109/ica.2016.019	An Adaptive Agent-Based Partner Selection for Routing Packet in Distributed Wireless Sensor Network
+10.1109/iama.2009.5228070	Performance evaluation of predictive replica selection using neural network approaches
+10.1111/reec.12006	The Gender Gap in Real Estate Sales: Negotiation Skill or Agent Selection?
+10.2139/ssrn.6136242	Design and Evaluation of a Retrieval-Augmented Generative AI Agent for Real-Time WhatsApp Auto-Reply Systems
+10.7551/mitpress/15776.003.0009	Understanding Skill
+10.36227/techrxiv.177204917.78786098/v1	Agent, Sub-Agent, Skill, or Tool? A Practitioner's Guide to Extending Agentic AI Systems
+10.6028/nist.sp.500-225.routing-umass	Document Retrieval and Routing Using the INQUERY System
+10.20944/preprints202511.1168.v1	Multi-Agent Coordination Strategies vs Retrieval-Augmented Generation in LLMs: A Comparative Evaluation
+10.7551/mitpress/15776.003.0016	Skill Analytics

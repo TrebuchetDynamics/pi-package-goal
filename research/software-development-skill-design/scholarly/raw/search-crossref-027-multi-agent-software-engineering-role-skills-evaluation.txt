@@ -1,0 +1,20 @@
+10.1049/ic:20040370	Formal specification of role components in open multi-agent systems
+10.5220/0015040600004015	A Multi-Agent Software Architecture for Enterprise Time Series Forecasting
+10.1049/ic:20040359	Intelligent communication through software agent and ontology for multi-site software engineering
+10.1007/978-3-540-24625-1_14	Role-Based Approaches for Engineering Interactions in Large-Scale Multi-agent Systems
+10.1007/978-3-540-31846-0_11	Specification of Role-Based Interactions Components in Multi-agent Systems
+10.1007/11738817_11	Characterization and Evaluation of Multi-agent System Architectural Styles
+10.1049/ic:20040356	On efficient communication and service agent discovery in multi-agent systems
+10.1049/ic:20040363	Combining adaptive behavior and role modeling with statecharts
+10.1007/978-3-540-24620-6_13	Dynamic Multi-agent Architecture Using Conversational Role Delegation
+10.1007/978-3-540-24625-1_13	Farm: A Scalable Environment for Multi-agent Development and Evaluation
+10.5220/0005097404820487	Next Generation Enterprise Modelling - The Role of Organizational Theory and Multi-Agent Systems
+10.1049/ic:20040355	A generative approach for open multi-agent systems
+10.1049/ic:20040372	A multi-agent system for distributed cluster analysis
+10.31274/rtd-180813-16746	Incorporating product-line engineering techniques into agent-oriented software engineering for efficiently building safety-critical, multi-agent systems
+10.5220/0006344602470254	Agent-based Semantic Negotiation Protocol for Semantic Heterogeneity Solving in Multi-agent System
+10.1201/9781420070248-16	On the Role of Software Architecture for Simulating Multi-Agent Systems Alexander Helleboogh, Danny Weyns, and Tom Holvoet
+10.1109/apsec.2003.1254363	Generating test oracle for role binding in multi-agent systems
+10.1049/ic:20040360	GAMA: towards architecture-centric software engineering of mobile agent systems
+10.1109/asew67777.2025.00064	Traceability and Accountability in Role-Specialized Multi-Agent LLM Pipelines
+10.1007/3-540-44564-1_10	Agent Software Engineering with Role Modelling

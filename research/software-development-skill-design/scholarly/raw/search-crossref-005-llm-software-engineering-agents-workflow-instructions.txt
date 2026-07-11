@@ -1,0 +1,20 @@
+10.1109/icse-companion66252.2025.00069	Identifying Performance-Sensitive Configurations in Software Systems with LLM-Driven Agents
+10.1109/icaiset66439.2026.11541825	LLM-Assisted Software Development in Aerospace Engineering Education: A Structured Workflow
+10.1007/s10664-026-10883-7	Identifying performance-sensitive configurations in software systems with LLM-based agents
+10.1145/3715754	Demystifying LLM-Based Software Engineering Agents
+10.2139/ssrn.6755658	A Comparative Evaluation of LLM-based Coding Agents for Automated Software development Tasks
+10.1145/3696630.3731432	Autonomous agents in software development for information retrieval using LLM models
+10.1021/acs.jcim.4c01653.s002	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.5220/0014726900004015	Evaluating the Effectiveness of LLM Agents Generating API Implementations from Gherkin Scenarios: A Pilot Study
+10.1021/acs.jcim.4c01653.s003	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1021/acs.jcim.4c01653.s001	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1021/acs.jcim.4c01653.s004	Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design
+10.1109/iisec69317.2026.11418487	About Cooperative Behavior of LLM Agents in Different Repeated Social Dilemma Game Contexts
+10.1145/3696630.3728703	Research: A Tool and Workflow for Benchmarking LLM-Based Code Improvements
+10.1109/asew67777.2025.00016	LLM Agents for Automated Dependency Upgrades
+10.5220/0014980700004015	On the Soundness and Consistency of LLM Agents for Executing Test Cases Written in Natural Language
+10.1145/3803846.3807468	NGQA: Next-Gen Software Quality Accelerator using AI Agents and LLM Reasoning
+10.1007/978-3-642-22191-0_8	Software Agents for E-Commerce Data Workflow Management
+10.52058/2786-6025-2026-4(58)-2474-2485	AUTOMATION OF SOFTWARE PROJECT DEVELOPMENT USING LLM AGENTS
+10.1145/3696630.3731460	Mediating between Human Programmers and Integrated Development Environments using LLM-based Agents
+10.1142/s0218194026410032	Puzzle Pot: Challenge Based Honeypot Framework for Detecting and Defending Against Autonomous LLM Agents

@@ -1,0 +1,20 @@
+10.1145/3544548.3581388	Why Johnny Can’t Prompt: How Non-AI Experts Try (and Fail) to Design LLM Prompts
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.48550/arxiv.2303.10130	GPTs are GPTs: An Early Look at the Labor Market Impact Potential of Large Language Models
+10.1186/s42400-025-00361-w	When LLMs meet cybersecurity: a systematic literature review
+10.48550/arxiv.2407.01489	Agentless: Demystifying LLM-based Software Engineering Agents
+10.1609/icwsm.v18i1.31360	Stance Detection with Collaborative Role-Infused LLM-Based Agents
+10.1007/s10462-025-11241-7	A review of LLMs and their applications in the architecture, engineering and construction industry
+10.1109/access.2025.3533217	Exploring LLMs Applications in Law: A Literature Review on Current Legal NLP Approaches
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.1007/s11432-023-4127-5	Deep learning-based software engineering: progress, challenges, and opportunities
+10.3390/s25061666	Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities
+10.1145/3582515.3609536	Data Decentralisation of LLM-Based Chatbot Systems in Chronic Disease Self-Management
+10.1016/j.scs.2020.102408	Urban building energy modeling (UBEM) tools: A state-of-the-art review of bottom-up physics-based approaches
+10.48550/arxiv.2409.02977	Large Language Model-Based Agents for Software Engineering: A Survey
+10.48550/arxiv.2412.05579	LLMs-as-Judges: A Comprehensive Survey on LLM-based Evaluation Methods
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.1016/j.dibe.2023.100300	GPT models in construction industry: Opportunities, limitations, and a use case validation
+10.48550/arxiv.2404.04834	LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision and the Road Ahead
+10.48550/arxiv.2312.15223	A Survey on Large Language Models for Software Engineering
+10.1080/12460125.2024.2410040	Business insights using RAG–LLMs: a review and case study

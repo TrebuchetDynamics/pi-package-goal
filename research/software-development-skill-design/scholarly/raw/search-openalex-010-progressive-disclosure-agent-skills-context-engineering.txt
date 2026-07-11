@@ -1,0 +1,20 @@
+10.1177/20539517211020332	Algorithmic management in a work context
+10.48550/arxiv.2310.14735	Unleashing the potential of prompt engineering for large language models
+10.1016/j.respol.2015.02.006	The double-edged sword of industry collaboration: Evidence from engineering academics in the UK
+10.1007/s12525-020-00414-7	AI-based chatbots in customer service and their effects on user compliance
+10.1016/j.cities.2020.102608	Company disclosures concerning the resilience of cities from the Sustainable Development Goals (SDGs) perspective
+10.1080/21548455.2016.1254358	Making the invisible observable by Augmented Reality in informal science education context
+10.3389/frobt.2019.00118	Socio-Cognitive Engineering of a Robotic Partner for Child's Diabetes Self-Management
+10.15585/mmwr.rr7103a1	CDC Clinical Practice Guideline for Prescribing Opioids for Pain<b>—</b>United States, 2022
+	Applied Space Systems Engineering
+10.1080/02640414.2023.2240630	Effective practice and instruction: A skill acquisition framework for excellence
+10.3390/bs13121008	Digitally Assisted Mindfulness in Training Self-Regulation Skills for Sustainable Mental Health: A Systematic Review
+10.1146/annurev-orgpsych-041015-062322	Identity Under Construction: How Individuals Come to Define Themselves in Organizations
+10.1016/j.ijinfomgt.2020.102168	Setting the future of digital and social media marketing research: Perspectives and research propositions
+10.1080/17501229.2025.2503890	The role of generative AI and hybrid feedback in improving L2 writing skills: a comparative study
+10.1016/j.neubiorev.2016.06.022	Active inference and learning
+10.3389/fpsyg.2018.02086	The Past, Present, and Future of Virtual and Augmented Reality Research: A Network and Cluster Analysis of the Literature
+10.1007/s12599-016-0439-z	Theories in Business and Information Systems Engineering
+10.1016/j.jbusres.2020.09.018	A conversation-based perspective for shaping ethical human–machine interactions: The particular challenge of chatbots
+10.22004/ag.econ.136256	Science, Technology and Skills
+10.1186/s41239-023-00408-3	A comprehensive AI policy education framework for university teaching and learning

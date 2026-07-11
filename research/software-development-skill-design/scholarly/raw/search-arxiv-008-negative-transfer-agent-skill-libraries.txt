@@ -1,0 +1,20 @@
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Agentic Skill Discovery
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	A Skill-Based AI Agentic Pipeline for Library of Congress Subject Indexing
+	More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Group of Skills: Group-Structured Skill Retrieval for Agent Skill Libraries
+	SkillOps: Managing LLM Agent Skill Libraries as Self-Maintaining Software Ecosystems
+	Exploring the Role of Gamification in Enhancing Academic Library Services: A Survey of Library Leaders in India
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Reinforcement Learning for Self-Improving Agent with Skill Library
+	SKILLFOUNDRY: Building Self-Evolving Agent Skill Libraries from Heterogeneous Scientific Resources
+10.1007/s10961-018-9672-6	'Getting out of the closet': Scientific authorship of literary fiction and knowledge transfer
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	AI Literacy in UAE Libraries: Assessing Competencies, Training Needs, and Ethical Considerations for the Digital Age
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+	Skill Drift Is Contract Violation: Proactive Maintenance for LLM Agent Skill Libraries

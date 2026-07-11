@@ -1,0 +1,1391 @@
+# Search batch results
+
+Deduped records: 1364
+
+- A Survey of Large Language Models — DOI: `10.1007/s11704-026-60308-3`
+- AI-Powered Educational Agents: Opportunities, Innovations, and Ethical Challenges — DOI: `10.3390/info16060469`
+- Reliability of LLMs as medical assistants for the general public: a randomized preregistered study — DOI: `10.1038/s41591-025-04074-y`
+- A Survey on Evaluation of LLM-based Agents — DOI: `10.18653/v1/2026.findings-acl.1330`
+- A Review of Generative AI and DevOps Pipelines: CI/CD, Agentic Automation, MLOps Integration, and LLMs — DOI: `10.55524/ijircst.2025.13.4.1`
+- Responsibility Gaps, LLMs &amp; Organisations: Many Agents, Many Levels, and Many Interactions — DOI: `10.1007/s11948-025-00560-1`
+- LLM-Based Human-Agent Collaboration and Interaction Systems: A Survey — DOI: `10.18653/v1/2026.findings-acl.1811`
+- Agentic Software Engineering: Foundational Pillars and a Research Roadmap — DOI: `10.48550/arxiv.2509.06216`
+- LLM-enabled multi-agent framework for natural language interaction with graph-based digital twins — DOI: `10.1016/j.autcon.2026.106791`
+- Development and evaluation of an agentic LLM based RAG framework for evidence-based patient education — DOI: `10.1136/bmjhci-2025-101570`
+- A comprehensive taxonomy of prompt engineering techniques for large language models — DOI: `10.1007/s11704-025-50058-z`
+- When Fine-Tuning LLMs Meets Data Privacy: An Empirical Study of Federated Learning in LLM-Based Program Repair — DOI: `10.1145/3733599`
+- TRiSM for Agentic AI: A Review of Trust, Risk, and Security Management in LLM-based Agentic Multi-Agent Systems — DOI: `10.48550/arxiv.2506.04133`
+- From Agents to Governance: Essential AI Skills for Clinicians in the Large Language Model Era — DOI: `10.2196/86550`
+- Agentic information systems — DOI: `10.1007/s12525-025-00861-0`
+- Conversate: Supporting Reflective Learning in Interview Practice Through Interactive Simulation and Dialogic Feedback — DOI: `10.1145/3701188`
+- LLM-Based Human-Agent Collaboration and Interaction Systems: A Survey — DOI: `10.48550/arxiv.2505.00753`
+- How should the advancement of large language models affect the practice of science? — DOI: `10.1073/pnas.2401227121`
+- The Impact of LLM-Assistants on Software Developer Productivity: A Systematic Review and Mapping Study — DOI: `10.1145/3809494`
+- Multi-agent AI — DOI: `10.1007/s12525-025-00862-z`
+- Developing and Evaluating an LLM-based Agent for ExplorViz Using CopilotKit — DOI: `10.38071/2026-00397-5`
+- Facilitating Trustworthy Human-Agent Collaboration in LLM-based Multi-Agent System oriented Software Engineering — DOI: `10.1145/3696630.3728717`
+- Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance — DOI: `10.3390/software5020026`
+- ALMAS: an Autonomous LLM-based Multi-Agent Software Engineering Framework — DOI: `10.1109/asew67777.2025.00059`
+- LLM Dual-Agent for Taste Preference Prediction — DOI: `10.1109/cbase67452.2025.11335473`
+- Traceability and Accountability in Role-Specialized Multi-Agent LLM Pipelines — DOI: `10.1109/asew67777.2025.00064`
+- A Modular Multi-Agent {LLM} Architecture for Text-to-Diagram Generation and User-Guided Refinement — DOI: `10.37190/e-inf260109`
+- Assessing and Enhancing the Robustness of LLM-Based Multi-Agent Systems Through Chaos Engineering — DOI: `10.1109/cain66642.2025.00039`
+- RepairAgent: An Autonomous, LLM-Based Agent for Program Repair — DOI: `10.1109/icse55347.2025.00157`
+- NIODebugger: A Novel Approach to Repair Non-Idempotent-Outcome Tests with LLM-Based Agent — DOI: `10.1109/icse55347.2025.00226`
+- Artifact validity under varying agent configurations in LLM-assisted software development: A comparative analysis — DOI: `10.1016/j.infsof.2026.108022`
+- BuilDroid: A Self-Correcting LLM Agent for Automated Android Builds — DOI: `10.1109/ase63991.2025.00370`
+- Towards the Versioning of LLM-Agent-Based Software — DOI: `10.1145/3696630.3728714`
+- Interactive LLM Agent Review for Software Engineering Artifacts — DOI: `10.1080/08874417.2026.2650523`
+- Setup AGent (SAG): A Dual-Model LLM Agent for Autonomous End-to-End Java Project Configuration — DOI: `10.1145/3786582.3786818`
+- NOMAD: A Multi-Agent LLM System for UML Class Diagram Generation from Natural Language Requirements — DOI: `10.5220/0014301900004058`
+- An LLM-based multi-agent framework for agile effort estimation — DOI: `10.1109/ase63991.2025.00090`
+- LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision, and the Road Ahead — DOI: `10.1145/3712003`
+- Benchmarking Multi-Agent LLM and Single Agent LLM Efficiency for Contextual Text Generation — DOI: `10.1109/icisessc68634.2026.11542788`
+- A Comparative Study Towards Designing a Hybrid Architecture of Microservices and LLM-based Multi-Agent Systems — DOI: `10.1109/apsec66846.2025.00077`
+- Counterfactual Trace Auditing of LLM Agent Skills
+- SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering? — DOI: `10.48550/arxiv.2603.15401`
+- SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering — DOI: `10.48550/arxiv.2604.09297`
+- Agent Skills: A Data-Driven Analysis of Claude Skills for Extending Large Language Model Functionality — DOI: `10.48550/arxiv.2602.08004`
+- Socratic-SWE: Self-Evolving Coding Agents via Trace-Derived Agent Skills
+- From Registry to Repository: How AI Agent Skills Are Written, Adapted, and Maintained
+- SetupBench: Assessing Software Engineering Agents' Ability to Bootstrap Development Environments — DOI: `10.48550/arxiv.2507.09063`
+- Methods and Techniques of Agentic Software Engineering: A Systematic Literature Review — DOI: `10.1109/access.2026.3652325`
+- Becoming a Cloud-Native Architect in the LLM Era: Skills, Tools, and Mindset for the Next Generation — DOI: `10.22399/ijcesen.4694`
+- SkillSieve: A Hierarchical Triage Framework for Detecting Malicious AI Agent Skills — DOI: `10.48550/arxiv.2604.06550`
+- FuzzingBrain V2: A Multi-Agent LLM System for Automated Vulnerability Discovery and Reproduction
+- The Rise of AI-Native Software Engineering: Implications for Practice, Education, and the Future Workforce
+- OOM-RL: Out-of-Money Reinforcement Learning Market-Driven Alignment for LLM-Based Multi-Agent Systems — DOI: `10.48550/arxiv.2604.11477`
+- Towards LLM Accelerated Rapid Reviews for Software Tool Discovery -- Case for Log Anomaly Detection
+- From LLM Reasoning to Autonomous AI Agents: A Comprehensive Review — DOI: `10.1109/access.2026.3698694`
+- Coding With AI: From a Reflection on Industrial Practices to Future Computer Science and Software Engineering Education — DOI: `10.48550/arxiv.2512.23982`
+- SWE-MERA: A Dynamic Benchmark for Agenticly Evaluating Large Language Models on Software Engineering Tasks — DOI: `10.48550/arxiv.2507.11059`
+- Instructional Leadership, Competency Skills, and Supervisory Practices toward the Development of Science, Technology, Engineering, and Mathematics (STEM) Learning Continuity Model — DOI: `10.47191/ijcsrr/v9-i5-01`
+- Responsible Integration of Generative AI in Software Engineering Education — DOI: `10.1109/rita.2026.3694480`
+- Reproducible, Explainable, and Effective Evaluations of Agentic AI for Software Engineering — DOI: `10.48550/arxiv.2604.01437`
+- What Does a Software Engineer Look Like? Exploring Societal Stereotypes in LLMs
+- Morescient GAI for Software Engineering (Extended Version) — DOI: `10.1145/3709354`
+- Bridging the Gap: Adapting Evidence to Decision Frameworks to support the link between Software Engineering academia and industry
+- Cognitive Biases in Software Engineering: A Systematic Mapping Study — DOI: `10.1109/tse.2018.2877759`
+- Software Engineering in Civic Tech: A Case Study about Code for Ireland — DOI: `10.1109/icse-seis.2019.00013`
+- The Future of AI-Driven Software Engineering — DOI: `10.1145/3715003`
+- Reproducible, Explainable, and Effective Evaluations of Agentic AI for Software Engineering
+- Text and Team: What Article Metadata Characteristics Drive Citations in Software Engineering? — DOI: `10.1145/3530019.3530022`
+- Nmag micromagnetic simulation tool - software engineering lessons learned — DOI: `10.1145/2897676.2897677`
+- Software Engineering for Collective Cyber-Physical Ecosystems — DOI: `10.1145/3712004`
+- An Exploratory Study of V-Model in Building ML-Enabled Software: A Systems Engineering Perspective — DOI: `10.1145/3644815.3644951`
+- A Mosaic of Perspectives: Understanding Ownership in Software Engineering — DOI: `10.1007/978-3-031-94544-1_5`
+- "ENERGY STAR" LLM-Enabled Software Engineering Tools
+- Embracing Experiential Learning: Hackathons as an Educational Strategy for Shaping Soft Skills in Software Engineering
+- Insights from the Frontline: GenAI Utilization Among Software Engineering Students
+- Aleena: Alignment Agent for Research Software Engineering Collaborations
+- Towards Comprehensive Benchmarking Infrastructure for LLMs In Software Engineering — DOI: `10.1145/3793655.3793716`
+- Developers Perception of Peer Code Review in Research Software Development — DOI: `10.1007/s10664-021-10053-x`
+- PHANTOM: Curating GitHub for engineered software projects using time-series clustering — DOI: `10.1007/s10664-020-09825-8`
+- How Software Engineering Research Overlooks Local Industry: A Smaller Economy Perspective — DOI: `10.1145/3793657.3793873`
+- The Skill Content of Recent Technological Change: An Empirical Exploration — DOI: `10.3386/w8337`
+- Generative Agents: Interactive Simulacra of Human Behavior — DOI: `10.1145/3586183.3606763`
+- ChatDev: Communicative Agents for Software Development — DOI: `10.18653/v1/2024.acl-long.810`
+- Conversational agents in healthcare: a systematic review — DOI: `10.1093/jamia/ocy072`
+- Array programming with NumPy — DOI: `10.1038/s41586-020-2649-2`
+- Evaluating Large Language Models Trained on Code — DOI: `10.48550/arxiv.2107.03374`
+- The Skill Content of Recent Technological Change: An Empirical Exploration — DOI: `10.2139/ssrn.272691`
+- ChatDev: Communicative Agents for Software Development — DOI: `10.48550/arxiv.2307.07924`
+- Array programming with NumPy
+- A survey on large language model based autonomous agents — DOI: `10.1007/s11704-024-40231-1`
+- Software agents: A review
+- A Survey on Digital Twin: Definitions, Characteristics, Applications, and Design Implications — DOI: `10.1109/access.2019.2953499`
+- Process models in design and development — DOI: `10.1007/s00163-017-0262-7`
+- Two bits: the cultural significance of free software — DOI: `10.5860/choice.46-2158`
+- The Effectiveness of Artificial Intelligence Conversational Agents in Health Care: Systematic Review — DOI: `10.2196/20346`
+- Recent Developments in Mendelian Randomization Studies — DOI: `10.1007/s40471-017-0128-6`
+- The Development of Indigenous Knowledge — DOI: `10.1086/204722`
+- Supporting Learners' Agentic Engagement With Feedback: A Systematic Review and a Taxonomy of Recipience Processes — DOI: `10.1080/00461520.2016.1207538`
+- The Programmer’s Assistant: Conversational Interaction with a Large Language Model for Software Development — DOI: `10.1145/3581641.3584037`
+- Four paradigms of information systems development — DOI: `10.1145/67933.67937`
+- Introduction to Software Development — DOI: `10.1007/978-1-4842-3153-1_1`
+- Software Architecture — DOI: `10.1007/978-1-4842-3153-1_5`
+- Software Development, Design and Coding — DOI: `10.1007/978-1-4842-3153-1`
+- Software Process Models — DOI: `10.1007/978-1-4842-3153-1_2`
+- Design Patterns — DOI: `10.1007/978-1-4842-3153-1_11`
+- Design Principles — DOI: `10.1007/978-1-4842-3153-1_6`
+- Structured Design — DOI: `10.1007/978-1-4842-3153-1_7`
+- Navigating Skill Development and Ethical Challenges in Coding Education with Generative AI — DOI: `10.4018/979-8-3373-2660-3.ch009`
+- Parallel Design Patterns — DOI: `10.1007/978-1-4842-3153-1_13`
+- Object-Oriented Design Principles — DOI: `10.1007/978-1-4842-3153-1_10`
+- Requirements — DOI: `10.1007/978-1-4842-3153-1_4`
+- Debugging — DOI: `10.1007/978-1-4842-3153-1_15`
+- Object-Oriented Analysis and Design — DOI: `10.1007/978-1-4842-3153-1_9`
+- Parallel Programming — DOI: `10.1007/978-1-4842-3153-1_12`
+- Code Construction — DOI: `10.1007/978-1-4842-3153-1_14`
+- Unit Testing — DOI: `10.1007/978-1-4842-3153-1_16`
+- Project Management Essentials — DOI: `10.1007/978-1-4842-3153-1_3`
+- Object-Oriented Overview — DOI: `10.1007/978-1-4842-3153-1_8`
+- Introduction to Software Development — DOI: `10.1007/979-8-8688-0285-0_1`
+- Wrapping It all Up — DOI: `10.1007/978-1-4842-3153-1_19`
+- Using Software Categories for the Development of Generative Software
+- Toward User Comprehension Supports for LLM Agent Skill Specifications
+- We Don't Need Another Hero? The Impact of "Heroes" on Software Development — DOI: `10.1145/3183519.3183549`
+- Agent-Driven Automatic Software Improvement — DOI: `10.1145/3661167.3661171`
+- Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+- Agents That Teach: Towards Designing Incidental Learning Back into AI-Assisted Software Development
+- Autonomous Agents in Software Development: A Vision Paper — DOI: `10.1007/978-3-031-72781-8_2`
+- Semi-Automatically Extracting FAQs to Improve Accessibility of Software Development Knowledge — DOI: `10.1109/icse.2012.6227139`
+- SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+- Overwhelmed Software Developers — DOI: `10.1109/ms.2024.3374821`
+- Consequences of Unhappiness While Developing Software — DOI: `10.1109/semotion.2017.5`
+- Transforming Software Development with Generative AI: Empirical Insights on Collaboration and Workflow
+- Navigating Cultural Diversity: Barriers and Potentials in Multicultural Agile Software Development Teams
+- Quantum Software Development Lifecycle
+- On the Unhappiness of Software Developers — DOI: `10.1145/3084226.3084242`
+- Challenges for Inclusion in Software Engineering: The Case of the Emerging Papua New Guinean Society — DOI: `10.1109/ms.2021.3098116`
+- How does Object-Oriented Code Refactoring Influence Software Quality? Research Landscape and Challenges — DOI: `10.1016/j.jss.2019.110394`
+- Requirements engineering — DOI: `10.1145/336512.336523`
+- Prospects for an engineering discipline of software — DOI: `10.1109/52.60586`
+- The promise of artificial intelligence in chemical engineering: Is it here, finally? — DOI: `10.1002/aic.16489`
+- Identity, Critical Agency, and Engineering: An Affective Model for Predicting Engineering as a Career Choice — DOI: `10.1002/jee.20118`
+- Towards Accountability for Machine Learning Datasets: Practices from Software Engineering and Infrastructure — DOI: `10.1145/3442188.3445918`
+- Challenges and best practices in industry-academia collaborations in software engineering: A systematic literature review — DOI: `10.1016/j.infsof.2016.07.006`
+- A software model and specification language for non-WIMP user interfaces — DOI: `10.1145/310641.310642`
+- End-user development, end-user programming and end-user software engineering: A systematic mapping study — DOI: `10.1016/j.jss.2018.11.041`
+- Exploiting reusable specifications through analogy — DOI: `10.1145/129852.129857`
+- A Model for Organizational Interaction: based on Agents, founded in Logic
+- Game development software engineering process life cycle: a systematic review — DOI: `10.1186/s40411-016-0032-7`
+- Investigating Country Differences in Mobile App User Behavior and Challenges for Software Engineering — DOI: `10.1109/tse.2014.2360674`
+- Formal Specification and Verification of Autonomous Robotic Systems — DOI: `10.1145/3342355`
+- Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+- Mobile agent security — DOI: `10.6028/nist.sp.800-19`
+- Software agents: Languages, tools, platforms — DOI: `10.2298/csis110214013b`
+- APPLYING AGENT TECHNOLOGY — DOI: `10.1080/08839519508945480`
+- Software construction using components
+- Formal specification of role components in open multi-agent systems — DOI: `10.1049/ic:20040370`
+- Intelligent Agent Based Mapping of Software Requirement Specification to Design Model — DOI: `10.4236/jsea.2013.612075`
+- Specification, Validation, and Synthesis of Email Agent Controllers: A Case Study in Function Rich Reactive System Design — DOI: `10.1023/a:1016372507161`
+- The ANote Modeling Language for Agent-Oriented Specification — DOI: `10.1007/978-3-540-31846-0_12`
+- A Requirement Specification Language for Configuration Dynamics of Multi-agent Systems — DOI: `10.1007/3-540-70657-7_12`
+- Organization of the AML Specification — DOI: `10.1007/978-3-7643-8396-1_9`
+- A formal specification language for agent-oriented software engineering — DOI: `10.1145/860722.860852`
+- Agent-Oriented Modeling by Interleaving Formal and Informal Specification — DOI: `10.1007/978-3-540-24620-6_3`
+- Specification of Role-Based Interactions Components in Multi-agent Systems — DOI: `10.1007/978-3-540-31846-0_11`
+- Software Specification and Design — DOI: `10.1201/9780203011188-13`
+- ReqInOne: A Large Language Model-Based Agent for Software Requirements Specification Generation — DOI: `10.1109/re63999.2025.00054`
+- A formal specification language for agent-oriented software engineering — DOI: `10.1145/860575.860852`
+- xTAO — DOI: `10.1145/1082960.1082968`
+- Formal Specification of Multi-agent Systems by Using EUSMs — DOI: `10.1007/978-3-540-75698-9_21`
+- Event-B Specification of a Situated Multi-Agent System: Study of a Platoon of Vehicles — DOI: `10.1109/tase.2008.39`
+- Coordination specification in multi-agent systems — DOI: `10.1145/568766.568770`
+- SLABS: A FORMAL SPECIFICATION LANGUAGE FOR AGENT-BASED SYSTEMS — DOI: `10.1142/s0218194001000657`
+- Specification of Constraints — DOI: `10.1007/978-3-319-61518-9_2`
+- Operational Specification — DOI: `10.1201/9780203496299.ch3`
+- Coordination specification in multi-agent systems — DOI: `10.1145/568760.568770`
+- Socio-Technical Grounded Theory for Software Engineering — DOI: `10.1109/tse.2021.3106280`
+- The Scalability-Efficiency/Maintainability-Portability Trade-off in Simulation Software Engineering: Examples and a Preliminary Systematic Literature Review — DOI: `10.1109/se-hpccse.2016.008`
+- Foundation Model Engineering: Engineering Foundation Models Just as Engineering Software
+- A new framework for developing and evaluating complex interventions: update of Medical Research Council guidance — DOI: `10.1136/bmj.n2061`
+- Multi-agent deep reinforcement learning: a survey — DOI: `10.1007/s10462-021-09996-w`
+- Reusing Online Resources: A Sustainable Approach to eLearning — DOI: `10.5334/2003-1-reuse-01`
+- OntoFox: web-based support for ontology reuse — DOI: `10.1186/1756-0500-3-175`
+- Autonomous agents for business process management — DOI: `10.1080/088395100117106`
+- A systematic review of industrial wastewater management: Evaluating challenges and enablers — DOI: `10.1016/j.jenvman.2023.119230`
+- Self-organization in multi-agent systems — DOI: `10.1017/s0269888905000494`
+- Affective Personalization of a Social Robot Tutor for Children’s Second Language Skills — DOI: `10.1609/aaai.v30i1.9914`
+- GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills — DOI: `10.1007/s40593-023-00340-7`
+- Key challenges in agent-based modelling for geo-spatial simulation — DOI: `10.1016/j.compenvurbsys.2008.09.004`
+- The thorny road to technology legitimation — Institutional work for potable water reuse in California — DOI: `10.1016/j.techfore.2015.10.005`
+- Using design patterns to develop reusable object-oriented communication software — DOI: `10.1145/226239.226255`
+- Sharing and reuse of individual participant data from clinical trials: principles and recommendations — DOI: `10.1136/bmjopen-2017-018647`
+- Constructing Skill Trees for Reinforcement Learning Agents from Demonstration Trajectories
+- Agent-Based Modelling of Social-Ecological Systems: Achievements, Challenges, and a Way Forward — DOI: `10.18564/jasss.3423`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r13`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r97e01`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r25`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r08`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r19`
+- Specification for Color Coding of Reusable Laboratory Pipets — DOI: `10.1520/e1273-88r03`
+- Preliminary Evaluation of the ‘Secret Agent Society’ Social-Emotional Skills Programme with Typically Developing Children — DOI: `10.14264/338614`
+- Performance Evaluation of Tile Coding in Reinforcement Learning — DOI: `10.1145/2814940.2814975`
+- Coding procedures — DOI: `10.1017/cbo9780511571350.012`
+- Information technology. Advanced image coding and evaluation — DOI: `10.3403/30297779`
+- Information technology. Advanced image coding and evaluation — DOI: `10.3403/30297779u`
+- myownrobs: AI Coding Agent for 'RStudio' — DOI: `10.32614/cran.package.myownrobs`
+- A Scalable and Reusable Agent-Based Model for Last-Mile Delivery Systems Using the Agent/Group/Role Approach — DOI: `10.2139/ssrn.5256510`
+- An agent model platform for realizing efficient and reusable agent software — DOI: `10.1145/336595.337045`
+- Repetition Blindness for Faces Reflects Identity Coding but Not Emotion Coding — DOI: `10.2466/pms.110.1.245-256`
+- Performance evaluation of systems built with reusable frameworks. — DOI: `10.22215/etd/2003-05450`
+- Reusable Patterns for Agent Coordination — DOI: `10.1007/978-3-662-04401-8_14`
+- Reusable Components for Implementing Agent Interactions — DOI: `10.1007/11678823_7`
+- Analysis of WISC Coding: 5. Prediction of Coding Performance — DOI: `10.2466/pms.1974.39.1.111`
+- SciVisAgentSkills: Design and Evaluation of Agent Skills for Scientific Data Analysis and Visualization
+- An Empirical Study of Automating Agent Evaluation
+- From Experience to Skill: Multi-Agent Generative Engine Optimization via Reusable Strategy Learning — DOI: `10.48550/arxiv.2604.19516`
+- CODESKILL: Learning Self-Evolving Skills for Coding Agents
+- SimWorld Studio: Automatic Environment Generation with Evolving Coding Agent for Embodied Agent Learning
+- Growing with Your Embodied Agent: A Human-in-the-Loop Lifelong Code Generation Framework for Long-Horizon Manipulation Skills — DOI: `10.48550/arxiv.2509.18597`
+- Structured Security Auditing and Robustness Enhancement for Untrusted Agent Skills — DOI: `10.48550/arxiv.2604.25109`
+- MedSkillAudit: A Domain-Specific Audit Framework for Medical Research Agent Skills — DOI: `10.48550/arxiv.2604.20441`
+- Supply-Chain Poisoning Attacks Against LLM Coding Agent Skill Ecosystems — DOI: `10.48550/arxiv.2604.03081`
+- Exploiting LLM Agent Supply Chains via Payload-less Skills
+- SkillVetBench: LLM-as-Judge for Multi-Dimensional Security Risk Evaluation in Open-Source LLM Agent Skills
+- CodeClinic: Evaluating Automation of Coding Skills for Clinical Reasoning Agents
+- From Skill Text to Skill Structure: The Scheduling-Structural-Logical Representation for Agent Skills — DOI: `10.48550/arxiv.2604.24026`
+- SkillsVote: Lifecycle Governance of Agent Skills from Collection, Recommendation to Evolution
+- SIRI: Self-Internalizing Reinforcement Learning with Intrinsic Skills for LLM Agent Training
+- A Comprehensive Survey on Agent Skills: Taxonomy, Techniques, and Applications
+- AgentTrap: Measuring Runtime Trust Failures in Third-Party Agent Skills
+- SkillScope: Toward Fine-Grained Least-Privilege Enforcement for Agent Skills
+- SkillGrad: Optimizing Agent Skills Like Gradient Descent
+- Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+- ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+- Memento-Skills: Let Agents Design Agents
+- SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills
+- Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+- Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+- Anything2Skill: Compiling External Knowledge into Reusable Skills for Agents
+- A Framework for Evaluating Agentic Skills at Scale
+- MUSE-Autoskill: Self-Evolving Agents via Skill Creation, Memory, Management, and Evaluation
+- Skill-Pro: Learning Reusable Skills from Experience via Non-Parametric PPO for LLM Agents
+- Piano Skills Assessment
+- Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes
+- Scaling Coding Agents via Atomic Skills
+- A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+- ExpeL: LLM Agents Are Experiential Learners — DOI: `10.1609/aaai.v38i17.29936`
+- Large language models (LLMs): survey, technical frameworks, and future challenges — DOI: `10.1007/s10462-024-10888-y`
+- Large Language Models for Software Engineering: A Systematic Literature Review — DOI: `10.48550/arxiv.2308.10620`
+- The Rise and Potential of Large Language Model Based Agents: A Survey — DOI: `10.48550/arxiv.2309.07864`
+- When LLMs meet cybersecurity: a systematic literature review — DOI: `10.1186/s42400-025-00361-w`
+- GPTs are GPTs: An Early Look at the Labor Market Impact Potential of Large Language Models — DOI: `10.48550/arxiv.2303.10130`
+- LAVE: LLM-Powered Agent Assistance and Language Augmentation for Video Editing — DOI: `10.1145/3640543.3645143`
+- Research directions for using LLM in software requirement engineering: a systematic review — DOI: `10.3389/fcomp.2025.1519437`
+- 14 examples of how LLMs can transform materials science and chemistry: a reflection on a large language model hackathon — DOI: `10.1039/d3dd00113j`
+- AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges — DOI: `10.70777/si.v2i3.15161`
+- Sparks of Artificial General Intelligence: Early experiments with GPT-4 — DOI: `10.48550/arxiv.2303.12712`
+- AIKernel Semantic DSL Compiler and Deterministic Agent Execution Architecture — DOI: `10.48550/arxiv.2308.08155`
+- Agent Laboratory: Using LLM Agents as Research Assistants — DOI: `10.18653/v1/2025.findings-emnlp.320`
+- Evaluation and Benchmarking of LLM Agents: A Survey — DOI: `10.1145/3711896.3736570`
+- AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges — DOI: `10.1016/j.inffus.2025.103599`
+- A review of LLMs and their applications in the architecture, engineering and construction industry — DOI: `10.1007/s10462-025-11241-7`
+- Can Open Large Language Models Catch Vulnerabilities? — DOI: `10.4230/oasics.icpec.2025.4`
+- Identifying Performance-Sensitive Configurations in Software Systems with LLM-Driven Agents — DOI: `10.1109/icse-companion66252.2025.00069`
+- LLM-Assisted Software Development in Aerospace Engineering Education: A Structured Workflow — DOI: `10.1109/icaiset66439.2026.11541825`
+- Identifying performance-sensitive configurations in software systems with LLM-based agents — DOI: `10.1007/s10664-026-10883-7`
+- Demystifying LLM-Based Software Engineering Agents — DOI: `10.1145/3715754`
+- A Comparative Evaluation of LLM-based Coding Agents for Automated Software development Tasks — DOI: `10.2139/ssrn.6755658`
+- Autonomous agents in software development for information retrieval using LLM models — DOI: `10.1145/3696630.3731432`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s002`
+- Evaluating the Effectiveness of LLM Agents Generating API Implementations from Gherkin Scenarios: A Pilot Study — DOI: `10.5220/0014726900004015`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s003`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s001`
+- Toward Automated Simulation Research Workflow through LLM Prompt Engineering Design — DOI: `10.1021/acs.jcim.4c01653.s004`
+- About Cooperative Behavior of LLM Agents in Different Repeated Social Dilemma Game Contexts — DOI: `10.1109/iisec69317.2026.11418487`
+- Research: A Tool and Workflow for Benchmarking LLM-Based Code Improvements — DOI: `10.1145/3696630.3728703`
+- LLM Agents for Automated Dependency Upgrades — DOI: `10.1109/asew67777.2025.00016`
+- On the Soundness and Consistency of LLM Agents for Executing Test Cases Written in Natural Language — DOI: `10.5220/0014980700004015`
+- NGQA: Next-Gen Software Quality Accelerator using AI Agents and LLM Reasoning — DOI: `10.1145/3803846.3807468`
+- Software Agents for E-Commerce Data Workflow Management — DOI: `10.1007/978-3-642-22191-0_8`
+- AUTOMATION OF SOFTWARE PROJECT DEVELOPMENT USING LLM AGENTS — DOI: `10.52058/2786-6025-2026-4(58)-2474-2485`
+- Mediating between Human Programmers and Integrated Development Environments using LLM-based Agents — DOI: `10.1145/3696630.3731460`
+- Puzzle Pot: Challenge Based Honeypot Framework for Detecting and Defending Against Autonomous LLM Agents — DOI: `10.1142/s0218194026410032`
+- Text2BIM: Generating Building Models Using a Large Language Model-based Multi-Agent Framework — DOI: `10.48550/arxiv.2408.08054`
+- Agentless: Demystifying LLM-based Software Engineering Agents — DOI: `10.48550/arxiv.2407.01489`
+- SWE-rebench: An Automated Pipeline for Task Collection and Decontaminated Evaluation of Software Engineering Agents — DOI: `10.48550/arxiv.2505.20411`
+- Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly? — DOI: `10.48550/arxiv.2511.13646`
+- Understanding Software Engineering Agents: A Study of Thought-Action-Result Trajectories — DOI: `10.1109/ase63991.2025.00234`
+- SWE-Dev: Building Software Engineering Agents with Training and Inference Scaling — DOI: `10.48550/arxiv.2506.07636`
+- Agint: Agentic Graph Compilation for Software Engineering Agents — DOI: `10.48550/arxiv.2511.19635`
+- Training Long-Context, Multi-Turn Software Engineering Agents with Reinforcement Learning — DOI: `10.48550/arxiv.2508.03501`
+- Ambig-SWE: Interactive Agents to Overcome Underspecificity in Software Engineering
+- LoCoBench-Agent: An Interactive Benchmark for LLM Agents in Long-Context Software Engineering — DOI: `10.48550/arxiv.2511.13998`
+- Trae Agent: An LLM-based Agent for Software Engineering with Test-time Scaling — DOI: `10.48550/arxiv.2507.23370`
+- A Survey on Code Generation with LLM-based Agents — DOI: `10.48550/arxiv.2508.00083`
+- Rethinking the Value of Agent-Generated Tests for LLM-Based Software Engineering Agents — DOI: `10.48550/arxiv.2602.07900`
+- Diversity Empowers Intelligence: Integrating Expertise of Software Engineering Agents — DOI: `10.48550/arxiv.2408.07060`
+- PAGENT: Learning to Patch Software Engineering Agents — DOI: `10.48550/arxiv.2506.17772`
+- Taming System Complexity: Demystifying Software Engineering Agents in Diagnosing Linux Kernel Faults — DOI: `10.18653/v1/2026.acl-long.862`
+- TOM-SWE: User Mental Modeling For Software Engineering Agents — DOI: `10.48550/arxiv.2510.21903`
+- Generating Context-Aware Learning Materials for Software Security via LLM Agents and Traceability — DOI: `10.1109/rew66121.2025.00038`
+- The impact of a virtual teaching assistant (chatbot) on students' learning in Ghanaian higher education — DOI: `10.1186/s41239-022-00362-6`
+- The intelligent library — DOI: `10.1108/lht-08-2018-0105`
+- Agent Technology: Computing as Interaction (A Roadmap for Agent Based Computing)
+- Voice in Human–Agent Interaction — DOI: `10.1145/3386867`
+- Use of Intelligent Voice Assistants by Older Adults with Low Technology Use — DOI: `10.1145/3373759`
+- The future of skills: employment in 2030
+- Artificial intelligence in higher education: the state of the field — DOI: `10.1186/s41239-023-00392-8`
+- Systematic review of research on artificial intelligence applications in higher education – where are the educators? — DOI: `10.1186/s41239-019-0171-0`
+- Opinion Paper: “So what if ChatGPT wrote it?” Multidisciplinary perspectives on opportunities, challenges and implications of generative conversational AI for research, practice and policy — DOI: `10.1016/j.ijinfomgt.2023.102642`
+- A Design Space for Intelligent and Interactive Writing Assistants — DOI: `10.1145/3613904.3642697`
+- “It’s Kind of Like Code-Switching”: Black Older Adults’ Experiences with a Voice Assistant for Health Information Seeking — DOI: `10.1145/3491102.3501995`
+- Making the most of libraries, part 1: libraries for healthcare assistants and nursing support workers — DOI: `10.12968/bjha.2023.17.11.424`
+- The Peer Research Assistants at the Michigan State University Libraries — DOI: `10.5040/9798400695896.0214`
+- Disrupting Test Development with AI Assistants: Building the Base of the Test Pyramid with Three AI Coding Assistants — DOI: `10.36227/techrxiv.173014488.82191966/v1`
+- VeilGuard: Preventing Credential Exposure Through AI Coding Assistants — DOI: `10.2139/ssrn.6563218`
+- A predictive coding framework for a developmental agent: Speech motor skill acquisition and speech production — DOI: `10.1016/j.specom.2017.05.002`
+- Library Technical Assistants Information Survey — DOI: `10.3776/ncl.v26i3.4412`
+- Empirical software engineering for evaluating adaptive task-oriented personal assistants: a case study in human/machine event extraction and coding — DOI: `10.1504/ijaose.2022.122647`
+- Ataraxis: Bridging AI Coding Assistants and Scientific Hardware — DOI: `10.64898/2026.02.13.705771`
+- Employment practices of student library assistants in academic libraries in KwaZulu-Natal — DOI: `10.51415/10321/3378`
+- Coding Education — DOI: `10.4018/979-8-3373-2660-3.ch002`
+- Phonological coding in high-skill versus low-skill readers — DOI: `10.1037/e536982012-079`
+- Undergraduate Research Assistants at Hope College — DOI: `10.5040/9798400695896.0237`
+- Speaking with each other — a dying skill? — DOI: `10.12968/bjha.2014.8.10.474`
+- It's time to banish the ‘low-skill’ myth — DOI: `10.12968/bjha.2019.13.4.201`
+- Proceedings of the 1st Workshop on Modules and Libraries for Proof Assistants — DOI: `10.1145/1735813`
+- Library Technical Assistants: Are They for Real? — DOI: `10.3776/ncl.v32i3.4053`
+- Skin assessment: a vital skill for HCAs and APs — DOI: `10.12968/bjha.2012.6.11.540`
+- High School Library Assistants Have Active Organization — DOI: `10.3776/ncl.v15i2.5224`
+- Course Outline and Training for School Library Assistants — DOI: `10.3776/ncl.v48i4.2405`
+- Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+- Agentic Skill Discovery
+- A Skill-Based AI Agentic Pipeline for Library of Congress Subject Indexing
+- SkillOps: Managing LLM Agent Skill Libraries as Self-Maintaining Software Ecosystems
+- More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries
+- Group of Skills: Group-Structured Skill Retrieval for Agent Skill Libraries
+- Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+- Exploring the Role of Gamification in Enhancing Academic Library Services: A Survey of Library Leaders in India
+- Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+- SKILLFOUNDRY: Building Self-Evolving Agent Skill Libraries from Heterogeneous Scientific Resources
+- Reinforcement Learning for Self-Improving Agent with Skill Library
+- LLMs as Writing Assistants: Exploring Perspectives on Sense of Ownership and Reasoning — DOI: `10.1145/3690712.3690723`
+- Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+- ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+- AI Literacy in UAE Libraries: Assessing Competencies, Training Needs, and Ethical Considerations for the Digital Age
+- Towards trustworthy LLMs: a review on debiasing and dehallucinating in large language models — DOI: `10.1007/s10462-024-10896-y`
+- Generative AI — DOI: `10.1007/s12599-023-00834-7`
+- A Taxonomy for Human-LLM Interaction Modes: An Initial Exploration — DOI: `10.1145/3613905.3650786`
+- Agent Hospital: A Simulacrum of Hospital with Evolvable Medical Agents — DOI: `10.48550/arxiv.2405.02957`
+- Customizing Emotional Support: How Do Individuals Construct and Interact With LLM-Powered Chatbots — DOI: `10.1145/3706598.3713453`
+- The RL/LLM Taxonomy Tree: Reviewing Synergies Between Reinforcement Learning and Large Language Models — DOI: `10.1613/jair.1.15960`
+- Navigating the Risks: A Survey of Security, Privacy, and Ethics Threats in LLM-Based Agents — DOI: `10.48550/arxiv.2411.09523`
+- Using AI Assistants in Software Development: A Qualitative Study on Security Practices and Concerns — DOI: `10.1145/3658644.3690283`
+- Creative Use of OpenAI in Education: Case Studies from Game Development — DOI: `10.3390/mti7080081`
+- Generative AI vs. AGI: The Cognitive Strengths and Weaknesses of Modern LLMs — DOI: `10.48550/arxiv.2309.10371`
+- LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem — DOI: `10.48550/arxiv.2312.03815`
+- Benchmarking Data Science Agents — DOI: `10.18653/v1/2024.acl-long.308`
+- ALI-Agent: Assessing LLMs' Alignment with Human Values via Agent-based Evaluation — DOI: `10.48550/arxiv.2405.14125`
+- AppAgent: Multimodal Agents as Smartphone Users — DOI: `10.48550/arxiv.2312.13771`
+- LLMs for Cybersecurity in the Big Data Era: A Comprehensive Review of Applications, Challenges, and Future Directions — DOI: `10.3390/info16110957`
+- ChatGPT in nuclear medicine and radiology: lights and shadows in the AI bionetwork — DOI: `10.1007/s40336-023-00574-4`
+- Cracking Aegis: An Adversarial LLM-based Game for Raising Awareness of Vulnerabilities in Privacy Protection — DOI: `10.1145/3715336.3735812`
+- Beyond Prescribed Intelligence: Toward Self-Directed Skill Acquisition in LLM-Based Cybersecurity Agents — DOI: `10.2139/ssrn.6438922`
+- Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents — DOI: `10.2139/ssrn.6871959`
+- Collaborative LLM Agents for End-to-End Software Development — DOI: `10.1145/3774905.3793914`
+- Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents — DOI: `10.32388/aub766`
+- The Impact of a Computer-Mediated Shadowing Activity on ESL Speaking Skill Development: A Pilot Study — DOI: `10.5070/l29132493`
+- Review of: "Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents" — DOI: `10.32388/kpfaaa`
+- Review of: "Chain of Ideas: Revolutionizing Research via Novel Idea Development with LLM Agents" — DOI: `10.32388/rog4gs`
+- RAG-SecCode: Retrieval-Augmented Secure Coding Guidance for Enterprise LLM Software Development — DOI: `10.64917/feaiml/volume03issue06-01`
+- CHASE: LLM Agents for Dissecting Malicious PyPI Packages — DOI: `10.1109/aiware69974.2025.00008`
+- Collaborative LLM agents for flexible software development of intelligent industrial robot control systems — DOI: `10.1007/s40747-025-02051-z`
+- Trustworthy and Secure LLM-Assisted Code Generation for Enterprise Software Development — DOI: `10.55640/ijdsml-06-01-04`
+- LLM Agents Factory: Retrieval of Domain-Specific LLM Agents — DOI: `10.1145/3805712.3808515`
+- Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+- Human-In-The-Loop Software Development Agents: Challenges and Future Directions
+- LLMoxie: Exploring Agentic AI for Scientific Software Development
+- A Review on Virtual Reality Skill Training Applications — DOI: `10.3389/frvir.2021.645153`
+- From implicit skills to explicit knowledge: a bottom‐up model of skill learning — DOI: `10.1207/s15516709cog2502_2`
+- Teachers’ AI digital competencies and twenty-first century skills in the post-pandemic world — DOI: `10.1007/s11423-023-10203-6`
+- A review of recent advances in learner and skill modeling in intelligent learning environments — DOI: `10.1007/s11257-011-9106-8`
+- The StarCraft Multi-Agent Challenge
+- A Survey on Transfer Learning for Multiagent Reinforcement Learning Systems — DOI: `10.1613/jair.1.11396`
+- Mad City Mystery: Developing Scientific Argumentation Skills with a Place-based Augmented Reality Game on Handheld Computers — DOI: `10.1007/s10956-006-9037-z`
+- Improving social skills in children with ASD using a long-term, in-home social robot — DOI: `10.1126/scirobotics.aat7544`
+- Quantitative description of proton exchange processes between water and endogenous and exogenous agents for WEX, CEST, and APT experiments — DOI: `10.1002/mrm.20048`
+- Applying Intelligence to the Reflexes: Embodied Skills and Habits between Dreyfus and Descartes — DOI: `10.1080/00071773.2011.11006732`
+- Diagnosis and Treatment of Diabetic Foot Infections — DOI: `10.1086/424846`
+- Transfer of Learning Transformed — DOI: `10.1111/j.1467-9922.2012.00740.x`
+- Intelligent libraries: a review on expert systems, artificial intelligence, and robot — DOI: `10.1108/lht-02-2020-0038`
+- A multi-agent reinforcement learning algorithm for collaborative skill transfer in physical education — DOI: `10.1007/s44163-026-01642-0`
+- Personalized skill transfer optimization in swimming training through multi-agent reinforcement learning driven digital twin environments — DOI: `10.1038/s41598-026-35877-9`
+- Design of Interactive Skill-Transfer Agent From a Viewpoint of Ecological Psychology — DOI: `10.1201/9780429187735-6`
+- Skill emergence and transfer in multi-agent environments — DOI: `10.1145/3319619.3326794`
+- Agent, Sub-Agent, Skill, or Tool? A Practitioner's Guide to Extending Agentic AI Systems — DOI: `10.36227/techrxiv.177204917.78786098/v1`
+- S2F-agent: Skill-grounded agent for Sequence-to-Function computational genomics workflows — DOI: `10.64898/2026.05.13.724757`
+- Skill, Education and Social Value: Some Thoughts on the Metonymy of Skill and Skill Transfer — DOI: `10.1007/978-1-4471-1632-5_9`
+- Skill Matters: Dynamic Skill Learning for Multi-Agent Cooperative Reinforcement Learning — DOI: `10.2139/ssrn.4790564`
+- Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v1/review1`
+- Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v1/decision1`
+- Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v3/decision1`
+- Transfer Students: Trends, Pathways, and Implications for Libraries — DOI: `10.5040/9798216021544.0006`
+- Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v1/review2`
+- Skill mix in primary care—creating a bibliography — DOI: `10.1046/j.1365-2532.1999.00211.x`
+- Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v2/decision1`
+- Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning" — DOI: `10.1111/ejn.16194/v2/review1`
+- A multi-objective multi-agent optimization algorithm for the multi-skill resource-constrained project scheduling problem with transfer times — DOI: `10.1051/ro/2021087`
+- Learning Algorithm Design for Human-Robot Skill Transfer — DOI: `10.23889/suthesis.52478`
+- Learning Algorithm Design for Human-Robot Skill Transfer — DOI: `10.23889/suthesis.54879`
+- Mixed Reality-Based Casting Skill Transfer and Human Resource Development — DOI: `10.1299/jsmeicbtt.2008.4.0_66`
+- Skill Drift Is Contract Violation: Proactive Maintenance for LLM Agent Skill Libraries
+- From Raw Experience to Skill Consumption: A Systematic Study of Model-Generated Agent Skills
+- SkillResolve-Bench: Measuring and Resolving Same-Capability Ambiguity in Agent Skill Retrieval
+- Offline Multi-agent Continual Cooperation via Skill Partition and Reuse
+- Trustworthy agentic genomics through versioned skill libraries — DOI: `10.64898/2026.06.11.731523`
+- Constraint-Consistent Skill Composition for Reliable Zero-Shot Task Generalization in LLM Agents — DOI: `10.1109/isbdas69350.2026.11484408`
+- Learning How to Remember: A Meta-Cognitive Management Method for Structured and Transferable Agent Memory — DOI: `10.48550/arxiv.2601.07470`
+- Not All Skills Help: Measuring and Repairing Agent Knowledge
+- SkillComposer: Learning to Evolve Agent Skills for Specification and Generalization
+- Automating SKILL.md Generation for Computer-Using Agents via Interaction Trajectory Mining
+- The Scaling Laws of Skills in LLM Agent Systems
+- N-to-1 Knowledge Transfer in Reinforcement Learning via Adaptive Q-Function Selection — DOI: `10.1109/access.2026.3676711`
+- AI Knowledge Fabric (Universal Cognitive Agent) — DOI: `10.1109/iccnct68477.2026.11590009`
+- SkillFlow:Benchmarking Lifelong Skill Discovery and Evolution for Autonomous Agents — DOI: `10.48550/arxiv.2604.17308`
+- GRASP: Gated Regression-Aware Skill Proposer for Self-Improving LLM Agents
+- Continual Quadruped Robots Coordination via Semantic Skill Discovery
+- SkillX: Automatically Constructing Skill Knowledge Bases for Agents — DOI: `10.48550/arxiv.2604.04804`
+- Compositional Skill Routing for LLM Agents: Decompose, Retrieve, and Compose
+- When Search Becomes Memory: Turning Robot Design Trials into Transferable Skills
+- 'Getting out of the closet': Scientific authorship of literary fiction and knowledge transfer — DOI: `10.1007/s10961-018-9672-6`
+- The PRISMA Statement for Reporting Systematic Reviews and Meta-Analyses of Studies That Evaluate Health Care Interventions: Explanation and Elaboration — DOI: `10.1371/journal.pmed.1000100`
+- Skills, plans, and self-regulation
+- Registries for Evaluating Patient Outcomes: A User’s Guide — DOI: `10.23970/ahrqepcregistries4`
+- A Comprehensive Survey of Multiagent Reinforcement Learning — DOI: `10.1109/tsmcc.2007.913919`
+- Large Language Models for Information Retrieval: A Survey — DOI: `10.48550/arxiv.2308.07107`
+- Imaginary Relish and Exquisite Torture: The Elaborated Intrusion Theory of Desire. — DOI: `10.1037/0033-295x.112.2.446`
+- Conversational Agents: Goals, Technologies, Vision and Challenges — DOI: `10.3390/s21248448`
+- A review of large language models and autonomous agents in chemistry — DOI: `10.1039/d4sc03921a`
+- The Use of Implicit Evidence for Relevance Feedback in Web Retrieval — DOI: `10.1007/3-540-45886-7_7`
+- The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges — DOI: `10.3390/fi17090404`
+- Interpreting Black-Box Models: A Review on Explainable Artificial Intelligence — DOI: `10.1007/s12559-023-10179-8`
+- Semantic annotation for retrieval of visual resources
+- NPCEditor: Creating Virtual Human Dialogue Using Information Retrieval Techniques — DOI: `10.1609/aimag.v32i2.2347`
+- Retrieval-Augmented Generation for AI-Generated Content: A Survey — DOI: `10.48550/arxiv.2402.19473`
+- Performance Evaluation of a Unicast Routing Control Agent for Proactive Diverse Link Selection — DOI: `10.1109/milcom.2006.302257`
+- A Multi-Agent based Decision Framework for Sustainable Supplier Selection, Order Allocation and Routing Problem — DOI: `10.5220/0007833300002179`
+- A Multi-Agent based Decision Framework for Sustainable Supplier Selection, Order Allocation and Routing Problem — DOI: `10.5220/0007833306210628`
+- An Empirical Evaluation of a Multi-Agent Framework for Retrieval-Augmented Academic Research — DOI: `10.36227/techrxiv.175459457.79320013/v1`
+- Design and evaluation of overloaded service systems with skill based routing, under FCFS policies — DOI: `10.1016/j.peva.2013.08.007`
+- Quantum-Enhanced LLM Cascade Routing: A QAOA Approach to Cost-Optimal Model Selection in Multi-Agent Systems — DOI: `10.20944/preprints202604.0413.v1`
+- Quantum-Enhanced LLM Cascade Routing: A QAOA Approach to Cost-Optimal Model Selection in Multi-Agent Systems — DOI: `10.20944/preprints202604.0413.v2`
+- Evaluating Interactive Cross-Language Information Retrieval: Document Selection — DOI: `10.1007/3-540-44645-1_6`
+- Parallel Computing for Term Selection in Routing/Filtering — DOI: `10.1007/3-540-36618-0_40`
+- Bias Mitigation Agent: Optimizing Source Selection for Fair Retrieval — DOI: `10.1007/978-3-032-11477-8_9`
+- Empirical Evaluation of Multi-Agent Routing Approaches — DOI: `10.1109/wi-iat.2012.198`
+- An Adaptive Agent-Based Partner Selection for Routing Packet in Distributed Wireless Sensor Network — DOI: `10.1109/ica.2016.019`
+- Performance evaluation of predictive replica selection using neural network approaches — DOI: `10.1109/iama.2009.5228070`
+- The Gender Gap in Real Estate Sales: Negotiation Skill or Agent Selection? — DOI: `10.1111/reec.12006`
+- Design and Evaluation of a Retrieval-Augmented Generative AI Agent for Real-Time WhatsApp Auto-Reply Systems — DOI: `10.2139/ssrn.6136242`
+- Understanding Skill — DOI: `10.7551/mitpress/15776.003.0009`
+- Document Retrieval and Routing Using the INQUERY System — DOI: `10.6028/nist.sp.500-225.routing-umass`
+- Multi-Agent Coordination Strategies vs Retrieval-Augmented Generation in LLMs: A Comparative Evaluation — DOI: `10.20944/preprints202511.1168.v1`
+- Skill Analytics — DOI: `10.7551/mitpress/15776.003.0016`
+- Skill Is Not Document: A Query-Conditional Benchmark and Two-Stage Retriever for LLM Agent Skill Routing
+- SkillFlow: Scalable and Efficient Agent Skill Retrieval System
+- An Agent-Oriented Pluggable Experience-RAG Skill for Experience-Driven Retrieval Strategy Orchestration
+- Tool-to-Agent Retrieval: Bridging Tools and Agents for Scalable LLM Multi-Agent Systems — DOI: `10.48550/arxiv.2511.01854`
+- Skill-Based Mixture-of-Experts: Adaptive Routing for Heterogeneous Reasoning via Inferred Skills
+- Skill-RM: Unifying Heterogeneous Evaluation Criteria via Agent Skill
+- Under the Hood of SKILL.md: Semantic Supply-chain Attacks on AI Agent Skill Registry
+- MOCHA: Multi-Objective Chebyshev Annealing for Agent Skill Optimization
+- Agent Skill Framework: Perspectives on the Potential of Small Language Models in Industrial Environments — DOI: `10.48550/arxiv.2602.16653`
+- Retrieval-Conditioned Topology Selection with Provable Budget Conservation for Multi-Agent Code Generation
+- GRETEL: A Goal-driven Retrieval and Execution-based Trial Framework for LLM Tool Selection Enhancing — DOI: `10.48550/arxiv.2510.17843`
+- Skill Retrieval Augmentation for Agentic AI — DOI: `10.48550/arxiv.2604.24594`
+- SkillRet: A Large-Scale Benchmark for Skill Retrieval in LLM Agents
+- RCR-Router: Efficient Role-Aware Context Routing for Multi-Agent LLM Systems with Structured Memory — DOI: `10.48550/arxiv.2508.04903`
+- SkillDAG: Self-Evolving Typed Skill Graphs for LLM Skill Selection at Scale
+- Trust by Design: Skill Profiles for Transparent, Cost-Aware LLM Routing — DOI: `10.48550/arxiv.2602.02386`
+- Traceable Fault Diagnosis for Battery Energy Storage Systems via Retrieval-Augmented Multi-Agent O&M Assistant
+- When Rules Learn: A Self-Evolving Agent for Legal Case Retrieval — DOI: `10.18653/v1/2026.findings-acl.2152`
+- Investigating Retrieval Method Selection with Axiomatic Features
+- Smart Routing for Multimodal Video Retrieval: When to Search What
+- LLandMark: A Multi-Agent Framework for Landmark-Aware Multimodal Interactive Video Retrieval
+- Overcoming low-utility facets for complex answer retrieval — DOI: `10.1007/s10791-018-9343-0`
+- When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents
+- SkillRouter: Skill Routing for LLM Agents at Scale
+- Skill Retrieval Augmentation for Agentic AI
+- Ragas: Automated Evaluation of Retrieval Augmented Generation
+- Node Disjoint Multipath Routing Considering Link and Node Stability protocol: A characteristic Evaluation
+- Algorithmic management in a work context — DOI: `10.1177/20539517211020332`
+- Unleashing the potential of prompt engineering for large language models — DOI: `10.48550/arxiv.2310.14735`
+- The double-edged sword of industry collaboration: Evidence from engineering academics in the UK — DOI: `10.1016/j.respol.2015.02.006`
+- AI-based chatbots in customer service and their effects on user compliance — DOI: `10.1007/s12525-020-00414-7`
+- Company disclosures concerning the resilience of cities from the Sustainable Development Goals (SDGs) perspective — DOI: `10.1016/j.cities.2020.102608`
+- Making the invisible observable by Augmented Reality in informal science education context — DOI: `10.1080/21548455.2016.1254358`
+- Socio-Cognitive Engineering of a Robotic Partner for Child's Diabetes Self-Management — DOI: `10.3389/frobt.2019.00118`
+- CDC Clinical Practice Guideline for Prescribing Opioids for Pain<b>—</b>United States, 2022 — DOI: `10.15585/mmwr.rr7103a1`
+- Applied Space Systems Engineering
+- Effective practice and instruction: A skill acquisition framework for excellence — DOI: `10.1080/02640414.2023.2240630`
+- Digitally Assisted Mindfulness in Training Self-Regulation Skills for Sustainable Mental Health: A Systematic Review — DOI: `10.3390/bs13121008`
+- Identity Under Construction: How Individuals Come to Define Themselves in Organizations — DOI: `10.1146/annurev-orgpsych-041015-062322`
+- Setting the future of digital and social media marketing research: Perspectives and research propositions — DOI: `10.1016/j.ijinfomgt.2020.102168`
+- The role of generative AI and hybrid feedback in improving L2 writing skills: a comparative study — DOI: `10.1080/17501229.2025.2503890`
+- Active inference and learning — DOI: `10.1016/j.neubiorev.2016.06.022`
+- The Past, Present, and Future of Virtual and Augmented Reality Research: A Network and Cluster Analysis of the Literature — DOI: `10.3389/fpsyg.2018.02086`
+- Theories in Business and Information Systems Engineering — DOI: `10.1007/s12599-016-0439-z`
+- A conversation-based perspective for shaping ethical human–machine interactions: The particular challenge of chatbots — DOI: `10.1016/j.jbusres.2020.09.018`
+- Science, Technology and Skills — DOI: `10.22004/ag.econ.136256`
+- A comprehensive AI policy education framework for university teaching and learning — DOI: `10.1186/s41239-023-00408-3`
+- SBEMA: Knowledge-Driven LLM Agent with Progressive Tool Disclosure and Multi-Stage Validation for Smart Battery Energy Management — DOI: `10.1109/acpee69242.2026.11524367`
+- Nurturing socio-emotional skills in the context of schools — DOI: `10.5958/2229-4422.2021.00003.7`
+- Agentic SWMM: Auditable and Reproducible Stormwater Modelling Workflow with Agent Skills and Model Context Protocol — DOI: `10.3390/aieng1010005`
+- Context Engineering: A Principal-Agent Theory of AI-Augmented Knowledge Work — DOI: `10.2139/ssrn.6506600`
+- Improving students' mathematical creative thinking skills in linear programming problems: Alor's entrepreneurship context — DOI: `10.1063/5.0262042`
+- SIGNIFICANCE OF SOFT SKILLS AT WORK PLACE — DOI: `10.58257/ijprems36057`
+- A Study On Enrichment Skills Of Employees — DOI: `10.58257/ijprems35041`
+- Progressive pop in context — DOI: `10.5040/9781501336669.ch-002`
+- Context-Aware Service Provisioning in Next-Generation Networks — DOI: `10.4018/9781605666181.ch002`
+- Operationalizing Selective Transparency Using Progressive Disclosure in Artificial Intelligence Clinical Diagnosis Systems — DOI: `10.2139/ssrn.5062641`
+- Architectural Principles for Multi-Agent Systems Based on The Model Context Protocol — DOI: `10.37547/tajet/volume08issue03-12`
+- A Study On Employability Skills And Its Implications On Employees — DOI: `10.58257/ijprems35050`
+- Self-Disclosure — DOI: `10.4135/9781529725414`
+- Demonstrating Multi-Agent Collaboration via Agent-to-Agent and Model Context Protocols: An IT Incident Response Case Study — DOI: `10.1109/sose67019.2025.00013`
+- Disclosure and exposure in context — DOI: `10.4324/9781003627500-2`
+- Engineering Design, Cad And Fabrication Skills Within A Biomedical Engineering Context — DOI: `10.18260/1-2--16872`
+- Self-Disclosure — DOI: `10.4324/9781003367796-10`
+- HR Planning for a Multigenerational Workforce: Aligning Skills with Organisational Needs — DOI: `10.58257/ijprems43960`
+- Context-sensitive access control for open mobile agent systems — DOI: `10.1049/ic:20040358`
+- Exploring the Relationship Between Learning Motivation and Speaking Skills by Young Learners in An ESL Context — DOI: `10.6007/ijarped/v13-i1/20454`
+- Meta Context Engineering via Agentic Skill Evolution
+- SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+- Buildrix: An Open Platform for Sharing and Benchmarking Agentic AI Skills in Building Engineering
+- SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs — DOI: `10.1145/3786167.3788406`
+- Exploiting Context to Identify Lexical Atoms -- A Statistical View of Linguistic Context
+- Swarm Skills: A Portable, Self-Evolving Multi-Agent System Specification for Coordination Engineering
+- Text analysis in financial disclosures
+- Web Engineering
+- Data Engineering for Scaling Language Models to 128K Context
+- SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering
+- Understanding the Skills Gap between Higher Education Institutions and the Software Engineering Industry
+- Why Johnny Can’t Prompt: How Non-AI Experts Try (and Fail) to Design LLM Prompts — DOI: `10.1145/3544548.3581388`
+- Stance Detection with Collaborative Role-Infused LLM-Based Agents — DOI: `10.1609/icwsm.v18i1.31360`
+- Exploring LLMs Applications in Law: A Literature Review on Current Legal NLP Approaches — DOI: `10.1109/access.2025.3533217`
+- Deep learning-based software engineering: progress, challenges, and opportunities — DOI: `10.1007/s11432-023-4127-5`
+- Generative AI and LLMs for Critical Infrastructure Protection: Evaluation Benchmarks, Agentic AI, Challenges, and Opportunities — DOI: `10.3390/s25061666`
+- Data Decentralisation of LLM-Based Chatbot Systems in Chronic Disease Self-Management — DOI: `10.1145/3582515.3609536`
+- Urban building energy modeling (UBEM) tools: A state-of-the-art review of bottom-up physics-based approaches — DOI: `10.1016/j.scs.2020.102408`
+- Large Language Model-Based Agents for Software Engineering: A Survey — DOI: `10.48550/arxiv.2409.02977`
+- LLMs-as-Judges: A Comprehensive Survey on LLM-based Evaluation Methods — DOI: `10.48550/arxiv.2412.05579`
+- GPT models in construction industry: Opportunities, limitations, and a use case validation — DOI: `10.1016/j.dibe.2023.100300`
+- LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision and the Road Ahead — DOI: `10.48550/arxiv.2404.04834`
+- A Survey on Large Language Models for Software Engineering — DOI: `10.48550/arxiv.2312.15223`
+- Business insights using RAG–LLMs: a review and case study — DOI: `10.1080/12460125.2024.2410040`
+- Agent-as-a-Graph: Knowledge Graph-Based Tool and Agent Retrieval for LLM Multi-Agent Systems — DOI: `10.5220/0014473600004052`
+- Your LLM Agent Can Leak Your Data: Data Exfiltration via Backdoored Tool Use — DOI: `10.18653/v1/2026.findings-acl.1257`
+- Tool-Augmented Disambiguation LLM Agent Utilizing UMLS for Biomedical Entity Linking — DOI: `10.5220/0014355600004052`
+- MDRE-LLM: A Tool for Analyzing and Applying LLMs in Software Reverse Engineering — DOI: `10.1109/saner64311.2025.00090`
+- Towards Verifiably Safe Tool Use for LLM Agents — DOI: `10.1145/3786582.3786839`
+- Z-SPACE: A MULTI-AGENT TOOL ORCHESTRATION FRAMEWORK FOR ENTERPRISE-GRADE LLM AUTOMATION — DOI: `10.2139/ssrn.5896270`
+- Reducing Compliance Violations in Ethereum Smart Contracts: A Multi-Agent LLM Approach to ERC Standard Auditing — DOI: `10.2139/ssrn.6752726`
+- Improving Gas Efficiency in Smart Contracts: Data-Driven Insights and LLM-Assisted Remediation — DOI: `10.1109/tse.2026.3658163`
+- Determining When to Use an Agent-Oriented Software Engineering Paradigm — DOI: `10.1007/3-540-70657-7_13`
+- Bridging MDE and LLM-Based Agent Frameworks for Multi-Agent Systems: A Quasi-Systematic Review and Metamodel — DOI: `10.5220/0014236700004058`
+- A Web-based modeling tool for the SEMAT Essence theory of Software Engineering — DOI: `10.5334/jors.ad`
+- Investigating the Use of LLMs for Evidence Briefings Generation in Software Engineering
+- Membrane transporters in drug development — DOI: `10.1038/nrd3028`
+- Data‐Driven Materials Science: Status, Challenges, and Perspectives — DOI: `10.1002/advs.201900808`
+- Promoting novelty, rigor, and style in energy social science: Towards codes of practice for appropriate methods and research design — DOI: `10.1016/j.erss.2018.07.007`
+- Model-driven development of Web applications — DOI: `10.1145/358108.358110`
+- Great Expectations: Is there Evidence for Predictive Coding in Auditory Cortex? — DOI: `10.1016/j.neuroscience.2017.07.061`
+- Human ΔNp73 regulates a dominant negative feedback loop for TAp73 and p53 — DOI: `10.1038/sj.cdd.4400962`
+- The Fanconi Anemia Pathway Protects Genome Integrity from R-loops — DOI: `10.1371/journal.pgen.1005674`
+- A data-driven drug repositioning framework discovered a potential therapeutic agent targeting COVID-19 — DOI: `10.1101/2020.03.11.986836`
+- Guidelines for the management of atrial fibrillation: The Task Force for the Management of Atrial Fibrillation of the European Society of Cardiology (ESC) — DOI: `10.1093/eurheartj/ehq278`
+- Microglia: Agents of the CNS Pro-Inflammatory Response — DOI: `10.3390/cells9071717`
+- Advances in COVID-19 mRNA vaccine development — DOI: `10.1038/s41392-022-00950-y`
+- Artificial Intelligence (AI): Multidisciplinary perspectives on emerging challenges, opportunities, and agenda for research, practice and policy — DOI: `10.1016/j.ijinfomgt.2019.08.002`
+- Testing, Verification, and Test-Driven Development — DOI: `10.1007/978-1-4842-8279-3_8`
+- Chemical/Biological Agent Resistance Test (CBART) Test Fixture System Verification and Analytical Monitioring System Development — DOI: `10.21236/ada546890`
+- Test-driven agent-based simulation development — DOI: `10.1109/wsc.2013.6721538`
+- Regression Test Selection Techniques for Test-Driven Development — DOI: `10.1109/icstw.2011.28`
+- User input verification and test driven development in the NJOY21 nuclear data processing code — DOI: `10.2172/1375892`
+- Analysis of Test Driven Development on sentiment and coding activities in GitHub repositories — DOI: `10.7287/peerj.preprints.1920v2`
+- Analysis of Test Driven Development on sentiment and coding activities in GitHub repositories — DOI: `10.7287/peerj.preprints.1920v1`
+- Engineering Agent Feedback Loops — DOI: `10.1007/979-8-8688-2361-9_11`
+- TDD: 1st International Workshop on Test-Driven Development Committee — DOI: `10.1109/icstw.2010.76`
+- Gamification in Test-Driven Development Practice — DOI: `10.1145/3617553.3617889`
+- Conditionals, Recursion, and Loops — DOI: `10.1007/978-3-031-66638-4_2`
+- Design for Test — DOI: `10.1007/978-0-387-38152-7_17`
+- Test-Driven Development 101 — DOI: `10.1007/978-1-4842-6972-5_3`
+- MDD4ABMS: Model-driven Agent-based Simulation Development — DOI: `10.37423/2025.edcl1087`
+- Teaching Test-Driven Development and Object-Oriented Design by Example — DOI: `10.1109/icstw58534.2023.00075`
+- A Very Brief History of Test-Driven Development — DOI: `10.1007/978-1-4842-6972-5_1`
+- Robust Vera coding techniques for gate-level and tester-compliant SoC verification environments — DOI: `10.1109/mtv.2004.22`
+- Behavior-Driven Development — DOI: `10.1007/978-1-4842-6972-5_10`
+- Comparative Study of Test-Driven Development TDD, Behavior-Driven Development BDD and Acceptance Test–Driven Development ATDD — DOI: `10.31142/ijtsrd23698`
+- Scalable, Constrained Random Software Driven Verification — DOI: `10.1109/mtv.2016.19`
+- Towards Product Lining Model-Driven Development Code Generators
+- Verification of colorable hypergraph states with stabilizer test
+- Astrotourism for Development: An Overview of Resources from the IAU Office of Astronomy for Development
+- Deductive Verification of Unmodified Linux Kernel Library Functions — DOI: `10.1007/978-3-030-03421-4_15`
+- Quantitative Comparison of Credible Compilation and Verification In Coding Agent Compiler Development
+- A Plan Reuse Mechanism for LLM-Driven Agent
+- Sustainable, Local Socio-Economic Development Through Astronomy
+- The Meta-Agent Challenge: Are Current Agents Capable of Autonomous Agent Development?
+- Deep Generative Attacks and Countermeasures for Data-Driven Offline Signature Verification
+- Code as Agent Harness
+- TDAD: Test-Driven Agentic Development - Reducing Code Regressions in AI Coding Agents via Graph-Based Impact Analysis
+- Coverage-Driven Verification - An approach to verify code for robots that directly interact with humans — DOI: `10.1007/978-3-319-26287-1_5`
+- Your Code Agent Can Grow Alongside You with Structured Memory
+- Combining STPA and BDD for Safety Analysis and Verification in Agile Development: A Controlled Experiment
+- Curiosity Driven Multi-agent Reinforcement Learning for 3D Game Testing
+- Contestable Multi-Agent Debate with Arena-based Argumentative Computation for Multimedia Verification — DOI: `10.1145/3805622.3812606`
+- Agent-based modelling for market acceptance of electric vehicles: Evidence from China — DOI: `10.1016/j.spc.2021.04.007`
+- FUTURE-AI: international consensus guideline for trustworthy and deployable artificial intelligence in healthcare — DOI: `10.1136/bmj-2024-081554`
+- AI-big data analytics for building automation and management systems: a survey, actual challenges and future perspectives — DOI: `10.1007/s10462-022-10286-2`
+- AgentHarm: A Benchmark for Measuring Harmfulness of LLM Agents — DOI: `10.48550/arxiv.2410.09024`
+- Database resources of the National Genomics Data Center, China National Center for Bioinformation in 2026 — DOI: `10.1093/nar/gkaf1172`
+- A survey on large language models for software engineering — DOI: `10.1007/s11432-025-4670-0`
+- Fine-Grained Image Analysis With Deep Learning: A Survey — DOI: `10.1109/tpami.2021.3126648`
+- Leveraging Prompt Engineering in Large Language Models for Accelerating Chemical Research — DOI: `10.1021/acscentsci.4c01935`
+- Permeability Benchmarking: Guidelines for Comparing <i>in Silico</i>, <i>in Vitro</i>, and <i>in Vivo</i> Measurements — DOI: `10.1021/acs.jcim.4c01815`
+- Stimulating E-Mobility Diffusion in Germany (EMOSIM): An Agent-Based Simulation Approach — DOI: `10.3390/en14030656`
+- 6G Wireless Communication Systems — DOI: `10.1002/9781119883111.ch5`
+- Strategies to save energy in the context of the energy crisis: a review — DOI: `10.1007/s10311-023-01591-5`
+- Prompt Injection Attacks in Large Language Models and AI Agent Systems: A Comprehensive Review of Vulnerabilities, Attack Vectors, and Defense Mechanisms — DOI: `10.3390/info17010054`
+- Transition to low-carbon economy: Assessing cumulative impacts of individual behavioral changes — DOI: `10.1016/j.enpol.2018.03.045`
+- Survey on 6G Frontiers: Trends, Applications, Requirements, Technologies and Future Research — DOI: `10.1109/ojcoms.2021.3071496`
+- Exploring Sustainable Development Goals and Curriculum Adoption: A Scoping Review from 2020–2025 — DOI: `10.3390/soc15080212`
+- MultiCAT-Bench: A Multi-Categorical Agent Tool Use Benchmark — DOI: `10.1109/access.2026.3710376`
+- Benchmarking AI Models in Software Engineering: A Review, Search Tool, and Unified Approach for Elevating Benchmark Quality — DOI: `10.1109/tse.2025.3644183`
+- Software benchmark design and use — DOI: `10.1007/978-0-387-34876-6_3`
+- Emergent Autonomous Sub-Agent Spawning in LLM-Based Multi-Agent Software Engineering Systems:An Empirical Case Study, Controlled Pilot Experiment, and Benchmark Framework"Can AI Agents Have Babies?" — DOI: `10.51244/ijrsi.2026.1303000020`
+- Practical AI Benchmark: Evaluating Integrated Reasoning, Multimodal Analysis, and Tool Use in Industrial Contexts — DOI: `10.46254/af6.20250214`
+- AgentTelemetry: A Fault Detection Benchmark and Toolkit for LLM Agent Observability — DOI: `10.1145/3805760.3814931`
+- AgentDroid: A Multi-Agent Tool for Detecting Fraudulent Android Applications — DOI: `10.1109/ase63991.2025.00362`
+- PI-ping - Benchmark Tool for Testing Latencies and Throughput in Operating Systems — DOI: `10.1007/978-90-481-9112-3_96`
+- Agentic and Multi-agent Systems: A Systematic Review of Tool Use, Benchmarks, and Governance — DOI: `10.21203/rs.3.rs-9839978/v1`
+- Defining syntax and providing tool support for Agent UML using a textual notation — DOI: `10.1504/ijaose.2007.014406`
+- An Educational Software Tool for Critiquing and Supporting Software Design Courses — DOI: `10.20944/preprints202501.1130.v1`
+- Small-Scale XMI Programming: A Revolution in UML Tool Use? — DOI: `10.1023/a:1021860700141`
+- NIST Alternatives for Resilient Communities (NIST ARC) Software Tool — DOI: `10.6028/nist.tn.2239pt2`
+- The WSDL2Agent Tool — DOI: `10.1007/3-7643-7348-2_9`
+- SoftWipe – a tool and benchmark to assess scientific software quality — DOI: `10.1101/2020.10.07.330621`
+- INTERCONNECTED TOOL-ASSISTANCE FOR DEVELOPMENT OF AGENT-ORIENTED SOFTWARE SYSTEMS — DOI: `10.5220/0002329903080314`
+- Zero Trust Architecture for Generative AI: Securing Prompts, Retrieval, and Agent Tool-Use in Regulated Environments — DOI: `10.52783/jisem.v11i2s.14516`
+- A versatile software tool making best use of sparse data for closed loop process control — DOI: `10.1016/j.advengsoft.2010.12.006`
+- ML-Dev-Bench: Comparative Analysis of AI Agents on ML development workflows — DOI: `10.48550/arxiv.2502.00964`
+- Through the Chat Window and Into the Real World: Preparing for AI Agents — DOI: `10.51593/20240034`
+- Catastrophic Cyber Capabilities Benchmark (3CB): Robustly Evaluating LLM Agent Cyber Offense Capabilities — DOI: `10.48550/arxiv.2410.09114`
+- Large Language Model Agents: A Comprehensive Survey on Architectures, Capabilities, and Applications — DOI: `10.20944/preprints202512.2119.v1`
+- Training Turn-by-Turn Verifiers for Dialogue Tutoring Agents: The Curious Case of LLMs as Your Coding Tutors — DOI: `10.18653/v1/2025.findings-acl.642`
+- Agentic Services Computing — DOI: `10.34726/12000`
+- Complex QA and language models hybrid architectures, Survey — DOI: `10.48550/arxiv.2302.09051`
+- Forewarned is Forearmed: A Survey on Large Language Model-based Agents in Autonomous Cyberattacks — DOI: `10.48550/arxiv.2505.12786`
+- LangChain vs. LangGraph vs. LangSmith: Taxonomies of Agentic AI Toolchains for End-to-End Orchestration — DOI: `10.36227/techrxiv.175695645.52670060/v1`
+- The First International AI Safety Report — DOI: `10.70777/si.v2i2.14755`
+- WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning — DOI: `10.18653/v1/2025.emnlp-main.401`
+- Kolb-Based Experiential Learning for Generalist Agents with Human-Level Kaggle Data Science Performance — DOI: `10.48550/arxiv.2411.03562`
+- "Should I Give Up Now?" Investigating LLM Pitfalls in Software Engineering — DOI: `10.1145/3801972`
+- Claw-SWE-Bench: A Benchmark for Evaluating OpenClaw-style Agent Harnesses on Coding Tasks
+- SWE-Edit: Rethinking Code Editing for Efficient SWE-Agent
+- ChatGPT-5 in Education: New Capabilities and Opportunities for Teaching and Learning — DOI: `10.20944/preprints202508.0684.v1`
+- Transforming agency: On the mode of existence of large language models — DOI: `10.1007/s11097-025-10094-3`
+- Challenges and Paths Towards AI for Software Engineering — DOI: `10.32388/vv1661`
+- Scaffolding of retrieval practice and verbal prompts — DOI: `10.4324/9781003467069-3`
+- Agent Prompts: Scaffolding Students for Productive Reflection in an Intelligent Learning Environment — DOI: `10.1007/978-3-642-13437-1_92`
+- Reflection and Preflection Prompts and Scaffolding — DOI: `10.4135/9781483346397.n253`
+- Scaffolding self-regulated problem solving: the influence of content-independent metacognitive prompts on students’ general problem-solving skills — DOI: `10.1515/cti-2025-0012`
+- Incorporation of Agent Prompts as Scaffolding of Reflection in an Intelligent Learning Environment — DOI: `10.1007/978-3-642-30171-1_15`
+- Scaffolding Reflective and Critical Thinking through Writing Prompts: Evidence from Journalism Internships — DOI: `10.21203/rs.3.rs-6850000/v1`
+- Scaffolding through Question Prompts to Avoid Pernicious Einstellung (Set) Effect — DOI: `10.18260/p.26137`
+- Integrating K-W-L Prompts into Science Journal Writing: Can Simple Question Scaffolding Increase Student Content Knowledge? — DOI: `10.15760/etd.2125`
+- Scaffolding reasoning skills in the science classroom — DOI: `10.31274/rtd-20201118-274`
+- Using Teacher Prompts to Increase Leadership Skills in Preschool Children — DOI: `10.31390/gradschool_theses.4648`
+- Scaffolding Critical Thinking Among Interns Through The Use Of Prompts For Reflective Writing — DOI: `10.55057/ajress.2024.6.2.44`
+- On Scaffolding Adaptive Teaching Prompts Within Virtual Labs — DOI: `10.4018/jdet.2008040103`
+- Agent-Based Epidemic Spreading — DOI: `10.1201/9781003734062-40`
+- Response latency to SRL scaffolding prompts predicts course performance — DOI: `10.1037/e510202022-001`
+- Non-cognitive Skills and Factors in Educational Attainment — DOI: `10.1007/978-94-6300-591-3`
+- Social and Emotional Skills for Scaffolding — DOI: `10.4324/9781003506560-8`
+- Effects of Scaffolding Creative Problem-solving Through Question Prompts in Project-based Community Service Learning — DOI: `10.18260/p.23923`
+- Non-Cognitive Skills and Factors in Educational Success and Academic Achievement — DOI: `10.1007/978-94-6300-591-3_1`
+- Metacognitive Scaffolding Agent Based on BDI Model for Interactive Learning Environments — DOI: `10.7763/ijcce.2014.v3.299`
+- 5 Using Reflective Writing Prompts and Storytelling Skills to Maximize Growth and Reflection — DOI: `10.3138/9781487510381-006`
+- SWE-bench Goes Live!
+- SWE-ABS: Adversarial Benchmark Strengthening Exposes Inflated Success Rates on Test-based Benchmark
+- Training Software Engineering Agents and Verifiers with SWE-Gym
+- SWE-Shepherd: Advancing PRMs for Reinforcing Code Agents
+- Saving SWE-Bench: A Benchmark Mutation Approach for Realistic Agent Evaluation
+- SWE-rebench: An Automated Pipeline for Task Collection and Decontaminated Evaluation of Software Engineering Agents
+- SWE-Debate: Competitive Multi-Agent Debate for Software Issue Resolution
+- SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+- SWE-Pruner: Self-Adaptive Context Pruning for Coding Agents
+- Kimi-Dev: Agentless Training as Skill Prior for SWE-Agents
+- UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench
+- SWE-Bench+: Enhanced Coding Benchmark for LLMs
+- SWE-Bench Mobile: Can Large Language Model Agents Develop Industry-Level Mobile Applications?
+- Harnessing the power of synthetic data in healthcare: innovation, application, and privacy — DOI: `10.1038/s41746-023-00927-3`
+- PROTAC targeted protein degraders: the past is prologue — DOI: `10.1038/s41573-021-00371-6`
+- A framework for the development of effective anti-metastatic agents — DOI: `10.1038/s41571-018-0134-8`
+- Characteristic trajectories of ecosystem services in mountains — DOI: `10.1002/fee.1470`
+- Developing a coding scheme for analysing classroom dialogue across educational contexts — DOI: `10.1016/j.lcsi.2015.12.001`
+- Nanobiotics against antimicrobial resistance: harnessing the power of nanoscale materials and technologies — DOI: `10.1186/s12951-022-01573-9`
+- Evaluative infrastructures: Accounting for platform organization — DOI: `10.1016/j.aos.2017.05.002`
+- Large language models empowered agent-based modeling and simulation: a survey and perspectives — DOI: `10.1057/s41599-024-03611-3`
+- Teaching Machine Learning in K–12 Classroom: Pedagogical and Technological Trajectories for Artificial Intelligence Education — DOI: `10.1109/access.2021.3097962`
+- What Do We Learn from the Weather? The New Climate-Economy Literature — DOI: `10.1257/jel.52.3.740`
+- Harnessing the tumor microenvironment: targeted cancer therapies through modulation of epithelial-mesenchymal transition — DOI: `10.1186/s13045-024-01634-6`
+- Peptides as Therapeutic Agents: Challenges and Opportunities in the Green Transition Era — DOI: `10.3390/molecules28207165`
+- Harnessing the Power of Smart and Connected Health to Tackle COVID-19: IoT, AI, Robotics, and Blockchain for a Better World — DOI: `10.1109/jiot.2021.3073904`
+- ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate — DOI: `10.48550/arxiv.2308.07201`
+- Green coding : an empirical approach to harness the energy consumption ofsoftware services — DOI: `10.70675/b28d4fb6z6723z49e5z9aa0zf4cfe5c76f78`
+- Harness Engineering for LLM Agents: A Survey of Harness Component Taxonomy, Evaluation, and Model–Harness Coevolution — DOI: `10.20944/preprints202606.2203.v1`
+- Negotiation within directive trajectories — DOI: `10.4324/9781315207773-5`
+- Alternative trajectories and attunements to requests for a hug — DOI: `10.4324/9781315207773-9`
+- harness: Curated Agentic Harnesses for R Professional Roles — DOI: `10.32614/cran.package.harness`
+- Evaluation of silver nanoparticles attached to methylene blue as an antimicrobial agent and its cytotoxicity — DOI: `10.1016/j.pdpdt.2022.102904`
+- Bounded Attractor Dynamics in LLM Agent Personality Trajectories&amp;nbsp; — DOI: `10.2139/ssrn.6655759`
+- Harness Pull — DOI: `10.5040/9781350870345`
+- Event-triggered consensus control of agent-based full-vehicle suspension systems_supp1-3298060.gif — DOI: `10.1109/tvt.2023.3298060/mm2`
+- Event-triggered consensus control of agent-based full-vehicle suspension systems_supp2-3298060.gif — DOI: `10.1109/tvt.2023.3298060/mm1`
+- Optimizing Multi-Agent Collaboration with Genetic Algorithm in Wire Harness Assembly — DOI: `10.15170/ttk-szjszk-2025b-7`
+- New Technique Provides Better Low-Density-Cement Evaluation — DOI: `10.2523/24050-ms`
+- PROPRIOCEPTIVE SENSORY CODING OF 2-D MOVEMENT TRAJECTORIES IN HUMANS: A MICRONEUROGRAPHIC STUDY — DOI: `10.1142/9789812811899_0019`
+- A Live Coding Session With the Cloud and a Virtual Agent — DOI: `10.21428/92fbeb44.7299536b`
+- What Context Does a Coding Agent Actually Need to Act? — DOI: `10.2139/ssrn.6929318`
+- Agent Harness for Large Language Model Agents: A Survey — DOI: `10.20944/preprints202604.0428.v1`
+- Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses — DOI: `10.48550/arxiv.2604.25850`
+- ClayBuddy: A Framework, Evaluation,&Mitigation of Coding Agent Failures
+- DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal — DOI: `10.48550/arxiv.2503.14269`
+- Chasing the Public Score: User Pressure and Evaluation Exploitation in Coding Agent Workflows — DOI: `10.48550/arxiv.2604.20200`
+- Agent trajectories as programs: fingerprinting and programming coding-agent behavior
+- Holistic Agent Leaderboard: The Missing Infrastructure for AI Agent Evaluation — DOI: `10.48550/arxiv.2510.11977`
+- What makes a harness a harness: necessary and sufficient conditions for an agent harness
+- Auditing Agent Harness Safety
+- Strained Coherence: A Pre-Failure Signal in Coding Agent Execution Trajectories
+- AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation
+- SWE-PolyBench: A multi-language benchmark for repository level evaluation of coding agents — DOI: `10.48550/arxiv.2504.08703`
+- Auto-Configuring Scientific Simulators with Lightweight Coding-Agent Adapters
+- NOVA: A Verification-Aware Agent Harness for Architecture Evolution in Industrial Recommender Systems
+- Towards Verifiable Multimodal Deep Research: A Multi-Agent Harness for Interleaved Report Generation
+- REAP: Automatic Curation of Coding Agent Benchmarks from Interactive Production Usage
+- From Failed Trajectories to Reliable LLM Agents: Diagnosing and Repairing Harness Flaws
+- Dissecting model behavior through agent trajectories
+- GaP: A Graph-as-Policy Multi-Agent Self-Learning Harness For Variational Automation Tasks
+- MapCoder-Lite: Squeezing Multi-Agent Coding into a Single Small LLM — DOI: `10.48550/arxiv.2509.17489`
+- AutoHarness: improving LLM agents by automatically synthesizing a code harness
+- From Prompts to Contracts: Harness Engineering for Auditable Enterprise LLM Agents
+- Evolving Agents in the Dark: Retrospective Harness Optimization via Self-Preference
+- AutoMegaKernel: A Statically-Checked Agent Harness for Self-Retargeting Megakernel Synthesis
+- RuBench: A Repository-Level Agentic Coding Benchmark with Natively Authored Russian Task Specifications
+- SOPBench: Evaluating Language Agents at Following Standard Operating Procedures and Constraints
+- ProofAgent Harness: Open Infrastructure for Adversarial Evaluation of AI Agents
+- VeRO: A Harness for Agents to Optimize Agents
+- End-to-end optimization of nonlinear transform codes for perceptual quality
+- List Decoding of Lifted Gabidulin Codes via the Plücker Embedding
+- Recursive Agent Harnesses
+- Virtual Agents for Alcohol Use Counseling: Exploring LLM-Powered Motivational Interviewing — DOI: `10.1145/3652988.3673932`
+- LLM-Based Agents for Tool Learning: A Survey — DOI: `10.1007/s41019-025-00296-9`
+- Personal LLM Agents: Insights and Survey about the Capability, Efficiency and Security — DOI: `10.48550/arxiv.2401.05459`
+- A Survey on LLM-as-a-Judge — DOI: `10.48550/arxiv.2411.15594`
+- Executable Code Actions Elicit Better LLM Agents — DOI: `10.48550/arxiv.2402.01030`
+- Autonomous GIS: the next-generation AI-powered GIS — DOI: `10.1080/17538947.2023.2278895`
+- From News to Forecast: Integrating Event Analysis in LLM-Based Time Series Forecasting with Reflection — DOI: `10.48550/arxiv.2409.17515`
+- Devil’s Advocate: Anticipatory Reflection for LLM Agents — DOI: `10.18653/v1/2024.findings-emnlp.53`
+- Toward Autonomous LLM-Based AI Agents for Predictive Maintenance: State of the Art, Challenges, and Future Perspectives — DOI: `10.3390/app152111515`
+- Survey on Large Language Model-Enhanced Reinforcement Learning: Concept, Taxonomy, and Methods — DOI: `10.1109/tnnls.2024.3497992`
+- Optima: Optimizing Effectiveness and Efficiency for LLM-Based Multi-Agent System — DOI: `10.18653/v1/2025.findings-acl.601`
+- Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent" — DOI: `10.32388/p3nbe5`
+- Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent" — DOI: `10.32388/z3cve7`
+- Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent" — DOI: `10.32388/gaogr7`
+- Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent" — DOI: `10.32388/1mmgbb`
+- Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent" — DOI: `10.32388/yeymn9`
+- Spec2RTL-Agent: Automated Hardware Code Generation from Complex Specifications Using LLM Agent Systems — DOI: `10.1109/iclad65226.2025.00013`
+- Experience, Memory, Reflection: An Interview with Henry Bugbee — DOI: `10.5422/fordham/9780823275359.003.0011`
+- Learned Importance Scoring for Adaptive Memory Compaction in LLM-Based Agent Systems — DOI: `10.2139/ssrn.6576151`
+- Memory in LLM-based Multi-agent Systems: Mechanisms, Challenges, and Collective Intelligence — DOI: `10.36227/techrxiv.176539617.79044553/v1`
+- From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms — DOI: `10.20944/preprints202601.0618.v2`
+- From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms — DOI: `10.20944/preprints202601.0618.v1`
+- A Multi-Agent Large Language Model (Llm) Framework for Code-Complying Design Automation of Concrete Structures — DOI: `10.2139/ssrn.5193679`
+- DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent — DOI: `10.32388/g493w2`
+- FTDI: A Budget-Aware Self-Healing Framework for Resilient LLM Multi-Agent Code Generation — DOI: `10.2139/ssrn.6387100`
+- : A Performance-Enhanced LLM Trading Agent With Layered Memory and Character Design_supp1-3593370.pdf — DOI: `10.1109/tbdata.2025.3593370/mm1`
+- GI-Agent Search-Based LLM Agent for Code Optimization with Genetic Improvement — DOI: `10.1145/3786162.3793232`
+- LLM-Based Multi-Agent Systems for Code Generation: A Multi-Vocal Literature Review ⋆ — DOI: `10.2139/ssrn.6332149`
+- Reusable code at the Hartford Insurance Group — DOI: `10.1145/75722.75728`
+- Sensuous atmospheres of landscape and memory — DOI: `10.54103/2240-9599/27271`
+- LLM-Based Multi-Agent Systems for Code Generation: A Multi-Vocal Literature Review ⋆ — DOI: `10.2139/ssrn.6328882`
+- MRMMIA: Membership Inference Attacks on Memory in Chat Agents
+- Are We Ready For An Agent-Native Memory System?
+- Focus Agent: LLM-Powered Virtual Focus Group — DOI: `10.1145/3652988.3673918`
+- Agent Memory Below the Prompt: Persistent Q4 KV Cache for Multi-Agent LLM Inference on Edge Devices
+- Meta-Policy Reflexion: Reusable Reflective Memory and Rule Admissibility for Resource-Efficient LLM Agent
+- Securing LLM-Agent Long-Term Memory Against Poisoning: Non-Malleable, Origin-Bound Authority with Machine-Checked Guarantees
+- Perceptual Self-Reflection in Agentic Physics Simulation Code Generation
+- Distilling Feedback into Memory-as-a-Tool
+- Learning Hierarchical Procedural Memory for LLM Agents through Bayesian Selection and Contrastive Refinement
+- YouZhi: Towards High-Concurrency Financial LLMs via Adaptive GQA-to-MLA Transition
+- KG-Agent: An Efficient Autonomous Agent Framework for Complex Reasoning over Knowledge Graph
+- Small LLMs Are Weak Tool Learners: A Multi-LLM Agent
+- MedAide: Information Fusion and Anatomy of Medical Intents via LLM-based Agent Collaboration
+- Task Memory Engine (TME): Enhancing State Awareness for Multi-Step LLM Agent Tasks
+- Influencing Children's Self-Efficacy and Self-Regulation of Reading and Writing Through Modeling — DOI: `10.1080/10573560600837578`
+- Social origins of self-regulatory competence — DOI: `10.1207/s15326985ep3204_1`
+- Curiosity-Driven Exploration by Self-Supervised Prediction — DOI: `10.1109/cvprw.2017.70`
+- Traumatic brain injury: integrated approaches to improve prevention, clinical care, and research — DOI: `10.1016/s1474-4422(17)30371-x`
+- On Relational Meaning: The Acquisition of Verb Meaning — DOI: `10.2307/1128738`
+- Microbiota Transfer Therapy alters gut ecosystem and improves gastrointestinal and autism symptoms: an open-label study — DOI: `10.1186/s40168-016-0225-7`
+- Product Market Synergies and Competition in Mergers and Acquisitions: A Text-Based Analysis — DOI: `10.2139/ssrn.1181022`
+- Artificial intelligence and human behavioral development: A perspective on new skills and competences acquisition for the educational context — DOI: `10.1016/j.chb.2023.107903`
+- Teacher self-assessment: A mechanism for facilitating professional growth — DOI: `10.1016/j.tate.2006.04.035`
+- Supporting Self-Regulated Learning in Online Learning Environments and MOOCs: A Systematic Review — DOI: `10.1080/10447318.2018.1543084`
+- Self-organization, free energy minimization, and optimal grip on a field of affordances — DOI: `10.3389/fnhum.2014.00599`
+- Sex and gender analysis improves science and engineering — DOI: `10.1038/s41586-019-1657-6`
+- Skill-Augmented AI Coding Agents: A Two-Layer Framework for SKILL.md Design and Developer Productivity — DOI: `10.58806/ijmir.2026.v3i6n03`
+- Understanding Neural Mechanisms of Action Observation for Improving Human Motor Skill Acquisition — DOI: `10.5772/intechopen.69266`
+- Incorporating Competency-Based Training into Traditional Training for improving Skill Acquisition and Self-Employability — DOI: `10.47067/real.v5i4.285`
+- Video Self-Modeling for Learning-Related Social Skill Acquisition — DOI: `10.1037/e628612012-391`
+- Australasian Skill Acquisition Network Annual Conference — DOI: `10.36905/jses.2019.03.01`
+- Individual differences in skill acquisition — DOI: `10.4324/9780203646564-11`
+- Acquisition of Sport Knowledge and Skill — DOI: `10.4324/9780203839010.ch14`
+- A historical perspective on skill acquisition — DOI: `10.4324/9780203646564-6`
+- Verbal coding and display coding in the acquisition and retention of tracking skill. — DOI: `10.1037/h0022524`
+- Knowledge and Skill Acquisition as a Self-Regulative Process — DOI: `10.1201/b18012-8`
+- Understanding the Dynamics of Skill Acquisition — DOI: `10.5040/9781718214125.ch-005`
+- The evolution of coordination during skill acquisition — DOI: `10.4324/9780203646564-24`
+- Introduction to Skill Acquisition in Judo — DOI: `10.4324/9781003051343-2`
+- Enhancing skill Acquisition and Self-Employment Through Entrepreneurship Education Curriculum in Tertiary Education in Ogun State, Nigeria — DOI: `10.55248/gengpi.6.0425.1405`
+- Nonsuicidal Self-injury Assessment Skill Acquisition Measure — DOI: `10.1037/t56174-000`
+- Cognitive Skill Acquisition — DOI: `10.1007/springerreference_302238`
+- Knowledge and Skill Acquisition as a Self-Regulative Process — DOI: `10.1201/b17976-8`
+- Toward Weight-level Self-improving Agents with Meta-knowledge Discovery — DOI: `10.36227/techrxiv.175744083.37752625/v1`
+- Assessment Procedures for Predicting and Optimizing Skill Acquisition After Extensive Practice — DOI: `10.4324/9780203056899-16`
+- AtomicCommitBench: Can Coding Agents Reconstruct Commit Histories from Squashed Patches?
+- Hierarchical Cooperative Multi-Agent Reinforcement Learning with Skill Discovery
+- MetaSkill-Evolve: Recursive Self-Improvement of LLM Agents via Two-Timescale Meta-Skill Evolution
+- SEVerA: Verified Synthesis of Self-Evolving Agents
+- Pseudo RGB-D for Self-Improving Monocular SLAM and Depth Prediction
+- Creating Multimodal Interactive Agents with Imitation and Self-Supervised Learning
+- SkillWeaver: Web Agents can Self-Improve by Discovering and Honing Skills
+- A Survey on ChatGPT: AI–Generated Contents, Challenges, and Solutions — DOI: `10.1109/ojcs.2023.3300321`
+- Advancing the Search Frontier with AI Agents — DOI: `10.1145/3655615`
+- Applications of Blockchains in the Internet of Things: A Comprehensive Survey — DOI: `10.1109/comst.2018.2886932`
+- ChatGPT’s Security Risks and Benefits: Offensive and Defensive Use-Cases, Mitigation Measures, and Future Implications — DOI: `10.1109/access.2024.3367792`
+- Security Considerations in AI-Robotics: A Survey of Current Methods, Challenges, and Opportunities — DOI: `10.1109/access.2024.3363657`
+- Security of Smart Grid: Cybersecurity Issues, Potential Cyberattacks, Major Incidents, and Future Directions — DOI: `10.3390/en18010141`
+- Defending Against Indirect Prompt Injection Attacks With Spotlighting — DOI: `10.48550/arxiv.2403.14720`
+- Agriculture-Food Supply Chain Management Based on Blockchain and IoT: A Narrative on Enterprise Blockchain Interoperability — DOI: `10.3390/agriculture12010040`
+- Generative artificial intelligence — DOI: `10.1007/s12525-023-00680-1`
+- Fear and Logging in the Internet of Things — DOI: `10.14722/ndss.2018.23282`
+- LLMs in Cyber Security: Bridging Practice and Education — DOI: `10.3390/bdcc9070184`
+- Decentralized Identity With Applications to Security and Privacy for the Internet of Things — DOI: `10.37256/cnc.1220233048`
+- Blockchain for Security in Digital Twins — DOI: `10.3390/fi17090385`
+- Open Challenges in Multi-Agent Security: Towards Secure Systems of Interacting AI Agents — DOI: `10.48550/arxiv.2505.02077`
+- Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context — DOI: `10.48550/arxiv.2403.05530`
+- Transforming Data Annotation with AI Agents: A Review of Architectures, Reasoning, Applications, and Impact — DOI: `10.3390/fi17080353`
+- Medical large language models are vulnerable to data-poisoning attacks — DOI: `10.1038/s41591-024-03445-1`
+- A Review on Agent-to-Agent Protocol: Concept, State-of-the-art, Challenges and Future Directions — DOI: `10.36227/techrxiv.174612014.42157096/v1`
+- Cross-Agent Multimodal Provenance-Aware Framework for Robust Prompt Injection Defense in Large Language and Vision-Language Models — DOI: `10.1109/icca66035.2025.11430791`
+- A Multi-Agent Framework for Explainable Prompt Injection Detection in Large Language Models — DOI: `10.21203/rs.3.rs-10302085/v1`
+- Prompt Injections — DOI: `10.1201/9781003726692-7`
+- GraphShield: A Graph-Structured Defense Framework for Prompt Injection in RAG and Multi-Agent LLM Systems — DOI: `10.2139/ssrn.7082874`
+- Enhancing Security in Large Language Models: A Comprehensive Review of Prompt Injection Attacks and Defenses — DOI: `10.36227/techrxiv.172954263.32914470/v1`
+- Prompt Injection Attacks on Large Language Models: Multi-Model Security Analysis with Categorized Attack Types — DOI: `10.5220/0013838400004000`
+- Prompt Infection: LLM-to-LLM Prompt Injection within Multi-agent Systems — DOI: `10.1007/978-3-032-16092-8_28`
+- Mitigating LLM Prompt Injection, Hallucination, and Security Risks using Semantically Encoded Compiler Stage Watermarks — DOI: `10.2139/ssrn.5476487`
+- Mitigating AI LLM Prompt Injection, Hallucination, and Security Risks using Semantically Encoded Compiler Stage Watermarks — DOI: `10.2139/ssrn.5460154`
+- A Grouping Model for Prompt Agent based Damage Assessment — DOI: `10.5220/0004101301090116`
+- Multilingual Prompt-Injection-Based Jailbreak Vulnerability Analysis : A Comparative Study of English, Korean Plain Speech, and Honorific Style — DOI: `10.33778/kcsa.2025.25.5.117`
+- Exploring Privacy and Security Risks in LLMs: Data Leakage, Prompt Injection, and Membership Inference — DOI: `10.1109/ism66958.2025.00011`
+- Prompting for LLM Security and RAG: A Survey from Zero-Shot to Automatic Prompt Optimization (APO) and Prompt-Injection Defenses — DOI: `10.1109/icaic67076.2026.11395889`
+- To Protect the LLM Agent Against the Prompt Injection Attack with Polymorphic Prompt — DOI: `10.1109/dsn-s65789.2025.00037`
+- Analisis Kualitatif Kerentanan AI Agent terhadap Serangan Prompt Injection dan Strategi Mitigasinya — DOI: `10.55606/juitik.v6i2.2369`
+- Adaptive Prompt Generation Agent: A Dynamic Prompt Engineering Framework for Chinese Text Generation — DOI: `10.1109/gaiis69281.2026.11519120`
+- A Novel Security Framework against Prompt Injection Attacks — DOI: `10.1109/ccai65422.2025.11189427`
+- ObliInjection: Order-Oblivious Prompt Injection Attack to LLM Agents with Multi-source Data — DOI: `10.14722/ndss.2026.240702`
+- Enhancing System Security: LLM-Driven Defense Against Prompt Injection Vulnerabilities — DOI: `10.1109/tcset64720.2024.10755823`
+- Figure 7: Prompt structure of the ValidationAgent agent. — DOI: `10.7717/peerj-cs.3939/fig-7`
+- WASP: Benchmarking Web Agent Security Against Prompt Injection Attacks — DOI: `10.48550/arxiv.2504.18575`
+- AgentArmor: Enforcing Program Analysis on Agent Runtime Trace to Defend Against Prompt Injection — DOI: `10.48550/arxiv.2508.01249`
+- EchoLeak: The First Real-World Zero-Click Prompt Injection Exploit in a Production LLM System — DOI: `10.48550/arxiv.2509.10540`
+- IPIGuard: A Novel Tool Dependency Graph-Based Defense Against Indirect Prompt Injection in LLM Agents — DOI: `10.48550/arxiv.2508.15310`
+- AgentVigil: Generic Black-Box Red-teaming for Indirect Prompt Injection against LLM Agents
+- Manipulating Multimodal Agents via Cross-Modal Prompt Injection — DOI: `10.1145/3746027.3755211`
+- VPI-Bench: Visual Prompt Injection Attacks for Computer-Use Agents — DOI: `10.48550/arxiv.2506.02456`
+- Simple Prompt Injection Attacks Can Leak Personal Data Observed by LLM Agents During Task Execution — DOI: `10.48550/arxiv.2506.01055`
+- Defending Against Prompt Injection with DataFilter — DOI: `10.48550/arxiv.2510.19207`
+- Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale — DOI: `10.48550/arxiv.2601.10338`
+- Sleeper Channels and Provenance Gates: Persistent Prompt Injection in Always-on Autonomous AI Agents
+- A Multi-Agent LLM Defense Pipeline Against Prompt Injection Attacks — DOI: `10.1109/wiecon-ece69386.2025.11526251`
+- Defending The AI-Powered Commerce Stack: A Security Framework For Prompt Injection, Review Integrity, And Privacy In Genai Retail Systems — DOI: `10.63278/jicrcr.vi.3471`
+- MAD-Spear: A Conformity-Driven Prompt Injection Attack on Multi-Agent Debate Systems — DOI: `10.48550/arxiv.2507.13038`
+- LLM Firewall Using Validator Agent for Prevention Against Prompt Injection Attacks — DOI: `10.3390/app16010085`
+- AegisAgent: An Autonomous Defense Agent Against Prompt Injection Attacks in LLM-HARs — DOI: `10.48550/arxiv.2512.20986`
+- Agent Skills Enable a New Class of Realistic and Trivially Simple Prompt Injections — DOI: `10.48550/arxiv.2510.26328`
+- SecAlign: Defending Against Prompt Injection with Preference Optimization — DOI: `10.1145/3719027.3744836`
+- StruQ: Defending Against Prompt Injection with Structured Queries
+- Caging the Agents: A Zero Trust Security Architecture for Autonomous AI in Healthcare
+- WebInject: Prompt Injection Attack to Web Agents
+- Automatic and Universal Prompt Injection Attacks against Large Language Models
+- Detecting Prompt Injection Attacks Against Application Using Classifiers
+- PROV-AGENT: Unified Provenance for Tracking AI Agent Interactions in Agentic Workflows
+- UniGuardian: A Unified Defense for Detecting Prompt Injection, Backdoor Attacks and Adversarial Attacks in Large Language Models
+- Securing AI Agents Against Prompt Injection Attacks
+- WASP: Benchmarking Web Agent Security Against Prompt Injection Attacks
+- Skill-Inject: Measuring Agent Vulnerability to Skill File Attacks
+- SkillJect: Effectively Automating Skill-Based Prompt Injection for Skill-Enabled Agents
+- Design Patterns for Securing LLM Agents against Prompt Injections
+- ACE: A Security Architecture for LLM-Integrated App Systems — DOI: `10.14722/ndss.2026.230352`
+- Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale
+- Countermind: A Multi-Layered Security Architecture for Large Language Models — DOI: `10.36227/techrxiv.175994550.08962082/v1`
+- Impact of COVID-19 on the food supply chain — DOI: `10.1093/fqsafe/fyaa024`
+- Product safety and security in the global supply chain: Issues, challenges and research opportunities — DOI: `10.1016/j.jom.2011.06.007`
+- Supply chain risk management and artificial intelligence: state of the art and future research directions — DOI: `10.1080/00207543.2018.1530476`
+- Agri-food 4.0: A survey of the supply chains and technologies for the future agriculture — DOI: `10.1016/j.compind.2020.103187`
+- Supply chain disruptions and resilience: a major review and future research agenda — DOI: `10.1007/s10479-020-03912-1`
+- Supply chain traceability: a review of the benefits and its relationship with supply chain resilience — DOI: `10.1080/09537287.2021.1983661`
+- Distributed Ledger Technologies in Supply Chain Security Management: A Comprehensive Survey — DOI: `10.1109/tem.2021.3053655`
+- Examining potential benefits and challenges associated with the Internet of Things integration in supply chains — DOI: `10.1108/jmtm-05-2017-0094`
+- Cyber Security Threat Modeling for Supply Chain Organizational Environments — DOI: `10.3390/fi11030063`
+- Sustainable Energy Transition for Renewable and Low Carbon Grid Electricity Generation and Supply — DOI: `10.3389/fenrg.2021.743114`
+- Social sustainability tensions in multi-tier supply chain: A systematic literature review towards conceptual framework development — DOI: `10.1016/j.jclepro.2020.123075`
+- Cyber Threat Predictive Analytics for Improving Cyber Supply Chain Security — DOI: `10.1109/access.2021.3087109`
+- Information Security in Big Data: Privacy and Data Mining — DOI: `10.1109/access.2014.2362522`
+- OECD-FAO Guidance for Responsible Agricultural Supply Chains — DOI: `10.1787/9789264251052-en`
+- Applications of Blockchain Technology in Sustainable Manufacturing and Supply Chain Management: A Systematic Review — DOI: `10.3390/su13147870`
+- Artificial intelligence-driven supply chain resilience in Vietnamese manufacturing small- and medium-sized enterprises — DOI: `10.1080/00207543.2023.2179859`
+- Sustainable supply chain management towards disruption and organizational ambidexterity: A data driven analysis — DOI: `10.1016/j.spc.2020.09.017`
+- Third-Party SaaS Integration Security: Lessons from Supply Chain Attacks — DOI: `10.2139/ssrn.5783722`
+- Third‐Party Vendor and Supply‐Chain Security — DOI: `10.1002/9781394433711.ch14`
+- Third‐party and Supply‐chain Security — DOI: `10.1002/9781394423088.ch14`
+- Third-Party and Supply Chain Security — DOI: `10.1007/978-1-4842-8596-1_13`
+- Third Party Logistics Networks — DOI: `10.1081/e-escm-120050506`
+- Third Party Logistics in the Food Supply Chain — DOI: `10.1002/9780470995556.ch11`
+- Third party support and risk costs in supply chain coordination — DOI: `10.17918/etd-6779`
+- Third-Party Vendor Audit — DOI: `10.4324/9781003581321-23`
+- DATABASE SECURITY IN SUPPLY CHAIN SYSTEMS: SAFEGUARDING VENDOR INFORMATION, TRANSACTION RECORDS, AND THIRD-PARTY DATA EXCHANGE MECHANISMS — DOI: `10.29121/digisecforensics.v2.i1.2025.94`
+- Third-party electric vehicle battery remanufacturing supply chains — DOI: `10.1016/j.clscn.2025.100218`
+- Know Your Supply Chain — DOI: `10.4324/9781003581321-3`
+- Notable Supply Chain Cyber Events — DOI: `10.4324/9781003581321-4`
+- Supply chain disruptions: Insights from South African third-party logistics service providers and clients — DOI: `10.4102/jtscm.v12i0.377`
+- Strategic supply chain alignment: The role of third-party logistics service providers during disruption recovery — DOI: `10.4102/jtscm.v16i0.738`
+- Industry expectations of supply chain management graduates: Perspectives from third-party logistics providers in South Africa — DOI: `10.4102/jtscm.v12i0.379`
+- Agent-based negotiation framework for agricultural supply chain supported by third party logistics — DOI: `10.1109/cscwd.2016.7566055`
+- In-house or Third Party Distribution? — DOI: `10.1007/978-3-642-59997-2_7`
+- The Geography of Global Supply Chains: Evidence from Third‐Party Logistics — DOI: `10.1111/j.1745-493x.2012.03268.x`
+- Skills needed in supply chain-human agency and social capital analysis in third party logistics — DOI: `10.1108/md-04-2017-0428`
+- Navigating Supply Chain Cyber Risk — DOI: `10.4324/9781003581321`
+- Skill-Inject: Measuring Agent Vulnerability to Skill File Attacks — DOI: `10.48550/arxiv.2602.20156`
+- PhantomSkill: Malicious Code Injection in Agent Skill Ecosystems
+- Research Directions in Software Supply Chain Security — DOI: `10.1145/3714464`
+- Software Supply Chain Security for ITSM & Third-Party Risk
+- Formal Analysis and Supply Chain Security for Agentic AI Skills — DOI: `10.5281/zenodo.18787663`
+- A Landscape Study of Open-Source Tools for Software Bill of Materials (SBOM) and Supply Chain Security — DOI: `10.1109/svm66695.2025.00010`
+- Decoding Web3: In-depth Analysis of the Third-Party Package Supply Chain — DOI: `10.1145/3671016.3671402`
+- ARGO-SLSA: Software Supply Chain Security in Argo Workflows — DOI: `10.1109/mercon67903.2025.11217128`
+- SBOMproof: Beyond Alleged SBOM Compliance for Supply Chain Security of Container Images — DOI: `10.48550/arxiv.2510.05798`
+- Software Composition Analysis and Supply Chain Security in Apache Projects: an Empirical Study — DOI: `10.1109/msr66628.2025.00027`
+- Revisiting Third-Party Library Detection: A Ground Truth Dataset and Its Implications Across Security Tasks — DOI: `10.48550/arxiv.2509.04091`
+- SECURITY RISKS OF THIRD-PARTY LIBRARIES IN IOS APPLICATIONS — DOI: `10.52058/2786-6025-2025-6(47)-956-965`
+- Software supply chain security: a systematic literature review — DOI: `10.1080/1206212x.2024.2390978`
+- A game theory approach in hydrogen supply chain resilience: focus on pricing, sourcing, and transmission security — DOI: `10.1007/s10479-025-06739-w`
+- Exploitation of material consolidation trade-offs in multi-tier complex supply networks — DOI: `10.1016/j.sca.2023.100050`
+- SoK: Analysis of Software Supply Chain Security by Establishing Secure Design Properties
+- Modeling and Assessment of IoT Supply Chain Security Risks: The Role of Structural and Parametric Uncertainties
+- Quantum protocols for the millionaire problem with a third party are trivial — DOI: `10.1142/s0219749913500251`
+- GoSurf: Identifying Software Supply Chain Attack Vectors in Go — DOI: `10.1145/3689944.3696166`
+- Anchors that Don't Lift: Understanding Supply Chain Driven Kernel Lock-In and Governance-Mediated Mitigation Strategies in SOHO Devices
+- Changing Neighbors k Secure Sum Protocol for Secure Multi Party Computation
+- Research on Third-Party Libraries in AndroidApps: A Taxonomy and Systematic LiteratureReview
+- Confidence Scoring for LLM-Generated SQL in Supply Chain Data Extraction — DOI: `10.1145/xxxxxx.xxxxxx`
+- Large Language Models for Supply Chain Decisions
+- A General Simulation Framework for Supply Chain Modeling: State of the Art and Case Study
+- An Integrated Supply Chain Network Design for Advanced Air Mobility Aircraft Manufacturing Using Stochastic Optimization — DOI: `10.1016/j.sca.2024.100083`
+- An Attack to Break Permutation-Based Private Third-Party Inference Schemes for LLMs
+- Cognitive control and parsing: Reexamining the role of Broca’s area in sentence comprehension — DOI: `10.3758/cabn.5.3.263`
+- Computational Analyses of Multilevel Discourse Comprehension — DOI: `10.1111/j.1756-8765.2010.01081.x`
+- Was Weber Wrong? A Human Capital Theory of Protestant Economic History<sup>*</sup> — DOI: `10.1162/qjec.2009.124.2.531`
+- The myth of language universals: Language diversity and its importance for cognitive science — DOI: `10.1017/s0140525x0999094x`
+- Toward a Framework for Levels of Robot Autonomy in Human-Robot Interaction — DOI: `10.5898/jhri.3.2.beer`
+- Factors of process model comprehension—Findings from a series of experiments — DOI: `10.1016/j.dss.2011.12.013`
+- Co-constructing intersubjectivity with artificial conversational agents: People are more likely to initiate repairs of misunderstandings with agents represented as human — DOI: `10.1016/j.chb.2015.12.039`
+- Toward a mechanistic psychology of dialogue — DOI: `10.1017/s0140525x04000056`
+- A Review and Critique of Social Skills Training With Schizophrenic Patients — DOI: `10.1093/schbul/6.1.42`
+- Verbal Working Memory as Emergent from Language Comprehension and Production — DOI: `10.3389/fnhum.2020.00068`
+- An Evolutionary Upgrade of Cognitive Load Theory: Using the Human Motor System and Collaboration to Support the Learning of Complex Cognitive Tasks — DOI: `10.1007/s10648-011-9179-2`
+- Water Quality Criterion for the Protection of Human Health: Methylmercury
+- Human-like systematic generalization through a meta-learning neural network — DOI: `10.1038/s41586-023-06668-3`
+- Mapping the Landscape of Human‐Level Artificial General Intelligence — DOI: `10.1609/aimag.v33i1.2322`
+- A Review of Intent Detection, Arbitration, and Communication Aspects of Shared Control for Physical Human–Robot Interaction — DOI: `10.1115/1.4039145`
+- Distributed situation awareness in dynamic systems: theoretical development and application of an ergonomics methodology — DOI: `10.1080/00140130600612762`
+- DESIGN OF PEDAGOGICAL MOBILE ANCIENT HUMAN SETTLEMENT LEARNING FOR SUPPORTING GEO-HISTORY COMPREHENSION, 21ST CENTURY SKILL THROUGH GOOGLE EARTH APPLICATION — DOI: `10.20319/icssh.2025.127137`
+- Story Knowledge and Comprehension Skill — DOI: `10.4324/9780203053324-13`
+- Predisposition and skill dialectics in the human professional activity: philosophical comprehension — DOI: `10.21847/1728-9343.2020.3(167).206673`
+- Completing System Specifications in the AOSM — DOI: `10.1201/9781003428183-13`
+- The Roles of Emotional Comprehension and Representational Drawing Skill in Children's Expressive Drawing — DOI: `10.1002/icd.1842`
+- Interacting with Haggis: Implementing Agent Based Specifications in a Functional Style — DOI: `10.1007/978-0-387-35175-9_24`
+- Executing Logical Agent Specifications — DOI: `10.1007/978-0-387-89299-3_1`
+- Skill Hierarchies in Reading Comprehension — DOI: `10.4324/9781315107493-29`
+- Toward Strategic Human Skill Development Through Human and Agent Interaction: Improving Negotiation Skill by Interacting with Bargaining Agent — DOI: `10.20965/jaciii.2010.p0831`
+- Tool Demonstration: CHET: Checking Specifications in Java Systems — DOI: `10.1109/wpc.2005.40`
+- Correlation of comprehension reading skill and higher-order thinking skill with scientific literacy skill of senior high school biology teacher — DOI: `10.21009/biosferjpb.11-1.1`
+- Effects of Listening Skill Training on Mock Jurors' Comprehension of Information Received During Trial Proceedings — DOI: `10.58809/xrty3449`
+- Multiple Intelligences: Does It Offer a New Assistance in Encouraging Students’ Reading Comprehension Skill? — DOI: `10.5220/0010306902430248`
+- Contextual inference reading comprehension skill activities as determinants of reading comprehension performance — DOI: `10.5642/jlaea.ctso2722`
+- Learners’ Comprehension Skill and Performance — DOI: `10.36948/ijfmr.2026.v08i02.66730`
+- Executable Specifications for Agent Oriented Conceptual Modelling — DOI: `10.1109/iat.2005.74`
+- Targeting skill and will : an intervention designed to motivate struggling adolescents while improving comprehension proficiency — DOI: `10.18130/v3vs7n`
+- A Traceability Technique for Specifications — DOI: `10.1109/icpc.2008.30`
+- The Effectiveness of HOTS (Higher Order Thinking Skill) in Teaching Reading Comprehension — DOI: `10.21776/ub.educafl.2019.002.1.5`
+- Designing for Human-Agent Alignment: Understanding what humans want from their agents — DOI: `10.1145/3613905.3650948`
+- The Observability Gap: Why Output-Level Human Feedback Fails for LLM Coding Agents
+- Needs-aware Artificial Intelligence: AI that 'serves [human] needs'
+- From Control to Foresight: Simulation as a New Paradigm for Human-Agent Collaboration
+- Advanced Data Protection Control (ADPC): An Interdisciplinary Overview
+- Can You Explain That? Lucid Explanations Help Human-AI Collaborative Image Retrieval
+- Skill Preferences: Learning to Extract and Execute Robotic Skills from Human Feedback
+- Human-Robot collaboration in surgery: Advances and challenges towards autonomous surgical assistants
+- Human-Centered Evaluation of an LLM-Based Process Modeling Copilot: A Mixed-Methods Study with Domain Experts
+- Experimental Investigation of Trust in Anthropomorphic Agents as Task Partners — DOI: `10.1145/3527188.3563921`
+- Designing AI Systems that Augment Human Performed vs. Demonstrated Critical Thinking
+- Inference of Human-derived Specifications of Object Placement via Demonstration — DOI: `10.24963/ijcai.2025/460`
+- Cultural Evolution of Sustainable Behaviors: Pro-environmental Tipping Points in an Agent-Based Model — DOI: `10.1016/j.oneear.2020.01.003`
+- The Potential of Blockchain Technology and Smart Contracts in the Energy Sector: A Review — DOI: `10.3390/app14010253`
+- Blockchain Technology in Current Agricultural Systems: From Techniques to Applications — DOI: `10.1109/access.2020.3014522`
+- SwiftSage: A Generative Agent with Fast and Slow Thinking for Complex Interactive Tasks — DOI: `10.48550/arxiv.2305.17390`
+- Cultural Evolution of Sustainable Behaviors: Pro-Environmental Tipping Points in an Agent-Based Model — DOI: `10.31234/osf.io/w6dpa`
+- A Survey on Evaluation of Large Language Models — DOI: `10.48550/arxiv.2307.03109`
+- Leveraging commitments and goals in agent interaction.
+- A Rule of Persons, Not Machines: The Limits of Legal Automation
+- Vibe Coding vs. Agentic Coding: Fundamentals and Practical Implications of Agentic AI — DOI: `10.48550/arxiv.2505.19443`
+- Macroprudential Policy in a Heterogeneous Environment—An Application of Agent-Based Approach in Systemic Risk Modelling — DOI: `10.3390/e22020129`
+- Is ChatGPT Leading Generative AI? What is Beyond Expectations? — DOI: `10.21541/apjess.1293702`
+- Innovation in African-American high-tech enterprises: a multi-agent approach — DOI: `10.9770/jesi.2020.7.4(35)`
+- Self-adapting agent organisations
+- Artificial intelligence in the service of entrepreneurial finance: knowledge structure and the foundational algorithmic paradigm — DOI: `10.1186/s40854-025-00759-y`
+- Behavlets: a method for practical player modelling using psychology-based player traits and domain specific features — DOI: `10.1007/s11257-016-9170-1`
+- Co-operative conflict resolution in autonomous aircraft operations using a multi-agent approach
+- Is ChatGPT Leading Generative AI? What is Beyond Expectations? — DOI: `10.2139/ssrn.4341500`
+- Lawmaps: enabling legal AI development through visualisation of the implicit structure of legislation and lawyerly process — DOI: `10.1007/s10506-021-09298-0`
+- A Review on Vibe Coding: Fundamentals, State-of-the-art, Challenges and Future Directions — DOI: `10.36227/techrxiv.174681482.27435614/v1`
+- The why, when, and how of computing in biology classrooms — DOI: `10.12688/f1000research.20873.2`
+- Typed contracts for gradual typing — DOI: `10.17760/d20467251`
+- Toward Intuitive and Accessible Machine Learning Education: A Structured Pythonic Pseudocode Approach — DOI: `10.22541/au.174595459.99720502/v1`
+- Structured flowcharts outperform pseudocode: an experimental comparison — DOI: `10.1109/52.35587`
+- Toward Intuitive and Accessible Machine Learning Education: A Structured Pythonic Pseudocode Approach — DOI: `10.20944/preprints202504.2484.v1`
+- Contract-Governed Adversarial Evaluator Hardening: Stage-Gated Recursive Improvement with Typed Promotion Contracts — DOI: `10.2139/ssrn.6542998`
+- Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison' — DOI: `10.1109/52.43063`
+- Practical typed lazy contracts — DOI: `10.1145/2398856.2364539`
+- Practical typed lazy contracts — DOI: `10.1145/2364527.2364539`
+- A Tree-Structured Multitask Model Architectures Recommendation System_supp1-3288537.pdf — DOI: `10.1109/tnnls.2023.3288537/mm1`
+- Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison' by D.A. Scanlan — DOI: `10.1109/52.41650`
+- Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison' by D.A. Scanlan — DOI: `10.1109/52.50788`
+- Supplementary file 1. Simulation model pseudocode. — DOI: `10.7554/elife.40339.010`
+- Algorithm: Pseudocode. — DOI: `10.7717/peerj-cs.3334/table-9`
+- ReSSERAct: Safeguarding LLM Agent Decisions against Stale and Contradictory Evidence via Typed Hybrid State — DOI: `10.2139/ssrn.6878396`
+- pseudocode — DOI: `10.1007/springerreference_22416`
+- Supplementary file 1: Simulation model pseudocode. — DOI: `10.7554/elife.25008.029`
+- HABCOeSNN pseudocode. — DOI: `10.7717/peerj-cs.3184/table-101`
+- Do Structured Flowcharts Outperform Pseudocode? Evidence From Eye Movements — DOI: `10.1109/access.2022.3230981`
+- TEKNIK PERANGKINGAN META-SEARCH ENGINE — DOI: `10.33369/pseudocode.1.1.15-23`
+- Verification, Validation and Integrity of Distributed and Interchanged Rule Based Policies and Contracts in the Semantic Web
+- From Skill Text to Skill Structure: The Scheduling-Structural-Logical Representation for Agent Skills
+- SPEAR: An Engineering Case Study of Multi-Agent Coordination for Smart Contract Auditing
+- GraSP: Graph-Structured Skill Compositions for LLM Agents
+- PDFS: Practical Data Feed Service for Smart Contracts
+- Approximate Optimality of Linear Contracts Under Uncertainty
+- Blockchain-based Smart Contracts: A Systematic Mapping Study — DOI: `10.5121/csit.2017.71011`
+- Development and Applications of Portable Biosensors — DOI: `10.1177/2211068215581349`
+- From Skills to Symbols: Learning Symbolic Representations for Abstract High-Level Planning — DOI: `10.1613/jair.5575`
+- IEA International Computer and Information Literacy Study 2018 Assessment Framework — DOI: `10.1007/978-3-030-19389-8`
+- Design for additive manufacturing: Framework and methodology — DOI: `10.1016/j.cirp.2020.05.006`
+- The digital skills divide: evidence from the European tourism industry — DOI: `10.1108/jtf-07-2020-0114`
+- Stepping Up Skills for More Jobs and Higher Productivity — DOI: `10.1596/27892`
+- Towards a framework for cross-boundary collaborative open learning for cross-institutional academic development — DOI: `10.17869/enu.1025583`
+- Autonomous Skill Acquisition on a Mobile Manipulator — DOI: `10.1609/aaai.v25i1.7982`
+- The 2009 UNESCO Framework for Cultural Statistics (FCS) — DOI: `10.15220/978-92-9189-075-0-en`
+- 2016 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure — DOI: `10.1093/eurheartj/ehw128`
+- Preference-based reinforcement learning: a formal framework and a policy iteration algorithm — DOI: `10.1007/s10994-012-5313-8`
+- An introductory resource guide for implementing the Health Insurance Portability and Accountability Act (HIPAA) security rule — DOI: `10.6028/nist.sp.800-66r1`
+- Conceptual Framework of Harmful Gambling: An International Collaboration — DOI: `10.11575/prism/9479`
+- Ethical Framework for Harnessing the Power of AI in Healthcare and Beyond — DOI: `10.1109/access.2024.3369912`
+- Understanding Benefit and Risk Framework of Fintech Adoption: Comparison of Early Adopters and Late Adopters — DOI: `10.24251/hicss.2018.486`
+- Strategies, Methods, and Supports for Developing Skills within Learning Communities: A Systematic Review of the Literature — DOI: `10.3390/admsci14090231`
+- SKOPE-IT (Shareable Knowledge Objects as Portable Intelligent Tutors): overlaying natural language tutoring on an adaptive learning system for mathematics — DOI: `10.1186/s40594-018-0109-4`
+- CoordiLang: Assessing Multi-Agent Coordination Skills in Large Language Models — DOI: `10.31219/osf.io/nbm4f`
+- Cross-functional skills of the fashion industry professional : T-shaped person skills framework for the fashion professional — DOI: `10.32469/10355/90117`
+- A Framework for Autonomous, Cross-Cloud Threat Mitigation Using Multi-Agent Reinforcement Learning — DOI: `10.63412/kb44xf51`
+- A Framework for Autonomous, Cross-Cloud Threat Mitigation Using Multi-Agent Reinforcement Learning — DOI: `10.36227/techrxiv.175695551.16717982/v1`
+- Real-time Truck Scheduling in Cross-Docking : A Hybrid Multi-Agent Simulation Framework — DOI: `10.70675/a52adc1fzadbfz4486zb574zffffd9d4b420`
+- AI Agent-Based Framework for Personalized Music Recommendation — DOI: `10.1109/worldsuas66815.2025.11199092`
+- AI-Driven Cross-Disciplinary Idea Generation: A Multi-Agent Framework with World Café Simulation — DOI: `10.2139/ssrn.6263108`
+- Transferable Skills And Portable Careers — DOI: `10.1126/science.opms.r0700030`
+- Six Skills for Success: How the National Guard Youth ChalleNGe Program Can Support Participants in Developing Portable Skills Employers Value — DOI: `10.7249/rba271-1`
+- A Neuro-Symbolic and Blockchain-Enhanced Multi-Agent Framework for Fair and Consistent Cross-Regulatory Audit Intelligence — DOI: `10.20944/preprints202512.1648.v1`
+- Portable High-level Agent Programming with golog++ — DOI: `10.5220/0010253902180227`
+- Research on cross domain collaboration framework based on adaptive AI algorithm and multi agent architecture — DOI: `10.1109/cac67268.2025.11487652`
+- Portable Powered Hand Tools — DOI: `10.1201/9780080928692-8`
+- Organizational Design with Portable Skills — DOI: `10.2139/ssrn.2901951`
+- Toward an Integrative Framework of Conversational Agent Persuasion: A Cross-Disciplinary Review and Causal Knowledge Analysis — DOI: `10.2139/ssrn.5388867`
+- A cross-sectional study of undergraduates’ ethical reasoning skills at a liberal arts institution — DOI: `10.31219/osf.io/8uwtp`
+- A multi-agent debate workflow for construction projects: A cross-stage decision framework — DOI: `10.70401/jbde.2025.0018`
+- Multiple Linguistic Thresholds in the Cross-linguistic Transfer of Metalinguistic Awareness Skills: A Change-point Analysis to the Linguistic Threshold Hypothesis — DOI: `10.31219/osf.io/2bazq_v1`
+- AgenticMemory: A Binary Graph Format for Persistent, Portable, and Navigable AI Agent Memory — DOI: `10.2139/ssrn.6265798`
+- Change agent skills — DOI: `10.1007/978-3-0348-8260-6_9`
+- Hitachi at MRP 2019: Unified Encoder-to-Biaffine Network for Cross-Framework Meaning Representation Parsing — DOI: `10.18653/v1/k19-2011`
+- From Alife Agents to a Kingdom of N Queens
+- AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions — DOI: `10.1007/978-3-032-13562-9_23`
+- How game complexity affects the playing behavior of synthetic agents — DOI: `10.1007/978-3-030-01713-2_22`
+- A mechanism for discovering semantic relationships among agent communication protocols — DOI: `10.1007/s10458-010-9154-1`
+- AMAP Agentic Planning Technical Report
+- Portable Agent Memory: A Protocol for Cryptographically-Verified Memory Transfer Across Heterogeneous AI Agents
+- Skill Coverage: A Test Adequacy Metric for Agent Skills
+- Dynamic change within workflow systems — DOI: `10.1145/224019.224021`
+- A Survey of Agent Platforms — DOI: `10.18564/jasss.2661`
+- Design and control of workflow processes : business process management for the service industry — DOI: `10.6100/ir557134`
+- Agnostic Learning with Unknown Utilities — DOI: `10.4230/lipics.concur.2020.3`
+- Explainable Artificial Intelligence (XAI): Concepts, taxonomies, opportunities and challenges toward responsible AI — DOI: `10.1016/j.inffus.2019.12.012`
+- Improving Steering and Verification in AI-Assisted Data Analysis with Interactive Task Decomposition — DOI: `10.1145/3654777.3676345`
+- Computerization of workflows, guidelines, and care pathways: a review of implementation challenges for process-oriented health information systems — DOI: `10.1136/amiajnl-2010-000033`
+- Characterising performance of environmental models — DOI: `10.1016/j.envsoft.2012.09.011`
+- Using Formal Verification to Evaluate Human-Automation Interaction: A Review — DOI: `10.1109/tsmca.2012.2210406`
+- Agent-based Cloud service composition — DOI: `10.1007/s10489-012-0380-x`
+- A flexible model supporting the specification and enforcement of role-based authorization in workflow management systems — DOI: `10.1145/266741.266746`
+- Verification of itineraries for mobile agent enabled interorganizational workflow — DOI: `10.1109/dexa.2001.953122`
+- A Trustworthy Intent-Driven LLM-Agent Workflow with State Verification for Power System Simulation — DOI: `10.2139/ssrn.7074124`
+- Task Decomposition and Planning in Resource-Constrained Workflow — DOI: `10.1109/icnc.2009.130`
+- Modeling and Verification for Planning and Scheduling in a Workflow Framework — DOI: `10.1109/icicta.2010.347`
+- AI planning in portal-based workflow management systems — DOI: `10.1109/kimas.2005.1427051`
+- dnaudit + pydnaweb: A lightweight text-based planning and documentation workflow for genetic cloning with automatic verification — DOI: `10.1101/2025.05.31.657172`
+- Automating Best-Practice Refactoring in Java via Multi-Agent Planning and Verification — DOI: `10.21203/rs.3.rs-9145617/v1`
+- An Agent-Based Grid Workflow Management System Using AI Planning — DOI: `10.1109/nwesp.2005.15`
+- Validation and Verification of Joint-Actions in Multi-agent Planning — DOI: `10.1109/icit.2015.11`
+- Relaxed Soundness Verification for Interorganizational Workflow Processes — DOI: `10.5220/0005349302210228`
+- Monitor SAP WORKFLOW without Agent(SWI2_ADM1) — DOI: `10.1007/978-1-4842-9705-6_2`
+- Re-execute SAP WORKFLOW Agent rules(SWI1_RULE) — DOI: `10.1007/978-1-4842-9705-6_5`
+- Automated Agent Decomposition for Classical Planning — DOI: `10.1609/icaps.v23i1.13564`
+- A Multi-Agent Collaboration-Based Method for Satellite Remote Sensing Workflow Planning — DOI: `10.1109/cait70489.2026.11553641`
+- On verification issues in conceptual modelling of workflow processes — DOI: `10.14264/105918`
+- GROMACS-Agent: Text-to-Workflow Generation for Molecular Dynamics A multi-agent framework for topology-aware GROMACS workflow generation, evaluation, correction, and selected safe execution — DOI: `10.26434/chemrxiv.15005078/v1`
+- On Verification of Workflow and Planning Domain Models Using Attribute Grammars — DOI: `10.1007/978-3-319-62434-1_28`
+- Research on Multi-Agent Based SC Production Planning Decomposition Model — DOI: `10.1109/wicom.2007.1149`
+- Planning with Action Abstraction and Plan Decomposition Hierarchies — DOI: `10.1109/iat.2006.99`
+- From Reactive to Deliberative Multi-agent Planning — DOI: `10.5220/0002192700670075`
+- Individual Planning in Agent Populations: Exploiting Anonymity and Frame-Action Hypergraphs
+- Securing Generative AI Agentic Workflows: Risks, Mitigation, and a Proposed Firewall Architecture
+- HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning
+- Provenance-Based Assessment of Plans in Context
+- WORKSWORLD: A Domain for Integrated Numeric Planning and Scheduling of Distributed Pipelined Workflows
+- MedScore: Generalizable Factuality Evaluation of Free-Form Medical Answers by Domain-adapted Claim Decomposition and Verification
+- Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments
+- Efficient Multi-agent Epistemic Planning: Teaching Planners About Nested Belief
+- FlowBench: Revisiting and Benchmarking Workflow-Guided Planning for LLM-based Agents
+- MolSSI and BioExcel Workflow Workshop 2018 Report
+- Visualizations for an Explainable Planning Agent
+- KubeAdaptor: A Docking Framework for Workflow Containerization on Kubernetes
+- Multimedia Verification Through Multi-Agent Deep Research Multimodal Large Language Models
+- Lean4Agent: Formal Modeling and Verification for Agent Workflow and Trajectory
+- Flow-Bench: A Dataset for Computational Workflow Anomaly Detection
+- QLoRA: Efficient Finetuning of Quantized LLMs — DOI: `10.48550/arxiv.2305.14314`
+- ChatGPT Utility in Healthcare Education, Research, and Practice: Systematic Review on the Promising Perspectives and Valid Concerns — DOI: `10.3390/healthcare11060887`
+- Character-LLM: A Trainable Agent for Role-Playing — DOI: `10.18653/v1/2023.emnlp-main.814`
+- MM-LLMs: Recent Advances in MultiModal Large Language Models — DOI: `10.18653/v1/2024.findings-acl.738`
+- Evaluating the Effectiveness of LLMs in Introductory Computer Science Education: A Semester-Long Field Study — DOI: `10.1145/3657604.3662036`
+- The future landscape of large language models in medicine — DOI: `10.1038/s43856-023-00370-1`
+- NExT-GPT: Any-to-Any Multimodal LLM — DOI: `10.48550/arxiv.2309.05519`
+- Augmenting large language models with chemistry tools — DOI: `10.1038/s42256-024-00832-8`
+- Combating misinformation in the age of LLMs: Opportunities and challenges — DOI: `10.1002/aaai.12188`
+- VELMA: Verbalization Embodiment of LLM Agents for Vision and Language Navigation in Street View — DOI: `10.1609/aaai.v38i17.29858`
+- Figure 8: Prompt for multi-agent LLM for best instruction improvement. — DOI: `10.7717/peerj-cs.2328/fig-8`
+- Figure 7: Prompt for multi-agent LLM for best instruction choice. — DOI: `10.7717/peerj-cs.2328/fig-7`
+- Instruction-Following Long-Horizon Manipulation by LLM-Empowered Symbolic Planner — DOI: `10.1109/robio64047.2024.10907585`
+- LLM-Prefetch: Accelerating Long-Context LLM Inference via Explicit Prefetching — DOI: `10.1109/iscait69154.2026.11477382`
+- HierMem: Context Curation Over Context Scaling — Hierarchical Memory with Invariant Constraint Placement for Long-Horizon LLM Conversations — DOI: `10.21203/rs.3.rs-10055780/v1`
+- Generation-driven Contrastive Self-training for Zero-shot Text Classification with Instruction-following LLM — DOI: `10.18653/v1/2024.eacl-long.39`
+- OPEx: A Component-Wise Analysis of LLM-Centric Agents in Embodied Instruction Following — DOI: `10.18653/v1/2024.acl-long.37`
+- Table B.10: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Stable Diffusion—Image to Prompts” competition by fine-tuned Llama 2. — DOI: `10.7717/peerj-cs.2328/table-13`
+- LLM-Driven Multi-Agent Architecture for Automated Physical Education Instruction — DOI: `10.1109/icaice68195.2025.11382371`
+- RIS-Kernel: A Model-agnostic Architecture for Long-context LLM Inference via Sparse Attention — DOI: `10.2139/ssrn.6869438`
+- RoboGPT: An LLM-Based Long-Term Decision-Making Embodied Agent for Instruction Following Tasks — DOI: `10.1109/tcds.2025.3543364`
+- The Long Context Conundrum: Challenges and Innovations in Scaling LLM Memory — DOI: `10.63337/term.2025.53588`
+- ICL-Agent: Improving LLM Agent Capabilities via a Novel In-Context Learning Approach — DOI: `10.1109/etai68332.2026.11485338`
+- SagaLLM: Persistent Context Management, Constraint Validation, and Transaction Guarantees — DOI: `10.1145/3749421.3749435`
+- An LLM-based autonomous multi-agent system — DOI: `10.62791/20338`
+- Table B.13: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Regression with a Tabular Paris Housing Price Dataset” competition by fine-tuned Llama 2. — DOI: `10.7717/peerj-cs.2328/table-16`
+- ToolScope: Enhancing LLM Agent Tool Use through Tool Merging and Context-Aware Filtering — DOI: `10.18653/v1/2026.acl-long.1573`
+- Table B.7: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Climate Activism Stance and Hate Event Detection Shared Task” competition by fine-tuned Llama 2. — DOI: `10.7717/peerj-cs.2328/table-10`
+- A Checks-and-Balances Framework for Context-Aware Ethical AI Alignment — DOI: `10.1145/3749421.3749434`
+- Is In-Context Learning Sufficient for Instruction Following in LLMs?
+- Multilingual Long-Form Speech Instruction Following: KIT's Submission to IWSLT 2026
+- When Models Can't Follow: Testing Instruction Adherence Across 256 LLMs
+- Releasing the CRaQAn (Coreference Resolution in Question-Answering): An open-source dataset and dataset creation methodology using instruction-following models
+- SlimInfer: Accelerating Long-Context LLM Inference via Dynamic Token Pruning
+- A$^2$RD: Agentic Autoregressive Diffusion for Long Video Consistency
+- Agents at Risk: How Users Unwittingly Undermine LLM Safety
+- AlayaDB: The Data Foundation for Efficient and Effective Long-context LLM Inference
+- Evaluating the Instruction-Following Robustness of Large Language Models to Prompt Injection
+- Focus-dLLM: Accelerating Long-Context Diffusion LLM Inference via Confidence-Guided Context Focusing
+- FinLFQA: Evaluating Attributed Text Generation of LLMs in Financial Long-Form Question Answering
+- WizardLM: Empowering large pre-trained language models to follow complex instructions
+- Blockchain and Building Information Modeling (BIM): Review and Applications in Post-Disaster Recovery — DOI: `10.3390/buildings9060149`
+- A survey of socially interactive robots — DOI: `10.1016/s0921-8890(02)00372-x`
+- Explainable Goal-driven Agents and Robots - A Comprehensive Review — DOI: `10.1145/3564240`
+- SodaBot: a software agent environment and construction system
+- “What It Wants Me To Say”: Bridging the Abstraction Gap Between End-User Programmers and Code-Generating Large Language Models — DOI: `10.1145/3544548.3580817`
+- A Metaverse: Taxonomy, Components, Applications, and Open Challenges — DOI: `10.1109/access.2021.3140175`
+- Methods That Support the Validation of Agent-Based Models: An Overview and Discussion — DOI: `10.18564/jasss.5258`
+- SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering — DOI: `10.48550/arxiv.2405.15793`
+- Ubiquitous animated agents for augmented reality — DOI: `10.1109/ismar.2006.297806`
+- Computer Science Curricula 2013: Curriculum Guidelines for Undergraduate Degree Programs in Computer Science — DOI: `10.1145/2534860`
+- A Contemporary Systematic Review on Meta-heuristic Optimization Algorithms with Their MATLAB and Python Code Reference — DOI: `10.1007/s11831-023-10030-1`
+- Towards Pervasive Intelligence: Reflections on the Evolution of the Agent Factory Framework — DOI: `10.1007/978-0-387-89299-3_6`
+- ScholarOne - Exploring clusters of novice programmers’ anxiety-induced behaviors during block- and text-based coding: A predictive and moderation analysis of programming quality and error debugging skills — DOI: `10.31124/advance.172355715.59582096/v1`
+- Semantic error debugging of building energy models: A multi-agent approach based on retrieval-augmented generation — DOI: `10.2139/ssrn.5967224`
+- Debugging &amp; Error-Handling: How to Find and Fix Errors in a Structured Way — DOI: `10.1007/978-3-658-42912-6_26`
+- Debugging agent programs with "why?" Questions — DOI: `10.26686/wgtn.12909974`
+- Debugging &amp; Error-Handling: How Do I Search for and Fix Errors in a Structured Way? — DOI: `10.1007/978-3-658-42912-6_36`
+- Exploring Clusters of Novice Programmers’ Anxiety-Induced Behaviors During Block- and Text-Based Coding: A Predictive and Moderation Analysis of Programming Quality and Error Debugging Skills — DOI: `10.1177/07356331241270707`
+- Debugging agent programs with "why?" Questions — DOI: `10.26686/wgtn.12909974.v1`
+- Error Handling and Debugging — DOI: `10.1007/978-1-4302-0546-3_9`
+- Documentation, Error Handling, Debugging, and Testing — DOI: `10.1007/978-1-4302-0364-3_8`
+- Debugging — DOI: `10.1007/979-8-8688-0285-0_17`
+- Improving the Debugging Skills of a Novice Programmer Through Enhanced Knowledge of Interactive Debugging — DOI: `10.2139/ssrn.4626326`
+- Efficient error recovery for multiple description video coding — DOI: `10.1109/icip.2004.1419427`
+- Debugging and Error Handling — DOI: `10.1007/978-1-4302-0580-7_7`
+- Error Handling and Debugging — DOI: `10.1007/978-1-4302-0387-2_9`
+- Interactive error recovery in facsimile without retransmission — DOI: `10.1109/itcc.2003.1197529`
+- Error Handling and Debugging Strategies — DOI: `10.1007/978-1-4302-0113-7_9`
+- Debugging and Error Handling — DOI: `10.1007/978-1-4302-0025-3_6`
+- The application of error--sensitive testing strategies to debugging — DOI: `10.1145/1006147.1006158`
+- Empirical studies of program bugs and debugging strategies of novice BASIC programmers and the transferability of debugging skills to non-programming domains — DOI: `10.5353/th_b2978910`
+- Systematic Debugging of Attribute Grammars
+- Debugging Transactions and Tracking their Provenance with Reenactment
+- Support for Debugging Automatically Parallelized Programs
+- Execution replay and debugging
+- Kodezi Chronos: A Debugging-First Language Model for Repository-Scale Code Understanding
+- On-the-fly Query-Based Debugging with Examples
+- Debug2Fix: Can Interactive Debugging Help Coding Agents Fix More Bugs?
+- Generalized Systematic Debugging for Attribute Grammars
+- A brief overview of the MAD debugging activities
+- Don't Vibe Code, Do Skele-Code: Interactive No-Code Notebooks for Subject Matter Experts to Build Lower-Cost Agentic Workflows
+- Generation of and Debugging with Logical Pre and Postconditions
+- Control and Debugging of Distributed Programs Using Fiddle
+- Analysing app reviews for software engineering: a systematic literature review — DOI: `10.1007/s10664-021-10065-7`
+- Opinion Mining for Software Development: A Systematic Literature Review — DOI: `10.1145/3490388`
+- Short communication: Landlab v2.0: a software package for Earth surface dynamics — DOI: `10.5194/esurf-8-379-2020`
+- Pattern Languages in HCI: A Critical Review — DOI: `10.1207/s15327051hci2101_3`
+- ChatGPT: Challenges and Benefits in Software Programming for Higher Education — DOI: `10.3390/su16031245`
+- Software Startups - A Research Agenda — DOI: `10.48550/arxiv.2308.12816`
+- A Comparative Review of AI Techniques for Automated Code Generation in Software Development: Advancements, Challenges, and Future Directions — DOI: `10.18421/tem131-76`
+- A Survey on Large Language Models for Code Generation — DOI: `10.48550/arxiv.2406.00515`
+- Continuously Assessing and Improving Software Quality With Software Analytics Tools: A Case Study — DOI: `10.1109/access.2019.2917403`
+- DevOps in practice: A multiple case study of five companies — DOI: `10.1016/j.infsof.2019.06.010`
+- IntegronFinder 2.0: Identification and Analysis of Integrons across Bacteria, with a Focus on Antibiotic Resistance in Klebsiella — DOI: `10.3390/microorganisms10040700`
+- SOEN-101: Code Generation by Emulating Software Process Models Using Large Language Model Agents — DOI: `10.48550/arxiv.2403.15852`
+- A Research Agenda for Service-Oriented Architecture (SOA): Maintenance and Evolution of Service-Oriented Systems — DOI: `10.1184/r1/6571745`
+- Lightweight Software Architecture Evaluation for Industry: A Comprehensive Review — DOI: `10.3390/s22031252`
+- Characterizing industry-academia collaborations in software engineering: evidence from 101 projects — DOI: `10.1007/s10664-019-09711-y`
+- Pattern-Based Refactoring Process of Sequential Source Code — DOI: `10.1109/csmr.2013.49`
+- Search-Based Refactoring Using Recorded Code Changes — DOI: `10.1109/csmr.2013.31`
+- Code Smells in Software Development: A Review of Common Issues and Refactoring Approaches — DOI: `10.21275/sr231208200259`
+- Automate Code Refactoring for Enhanced Software Maintenance and Development — DOI: `10.56155/978-81-955020-9-7-21`
+- Move code refactoring with dynamic analysis — DOI: `10.1109/icsm.2012.6405324`
+- Refactoring a Java code base to AspectJ: an illustrative example — DOI: `10.1109/icsm.2005.75`
+- AI-Driven Transformation of Code Review and Refactoring in Software Engineering: A Practitioner's Perspective — DOI: `10.2139/ssrn.5320778`
+- Refactoring edit history of source code — DOI: `10.1109/icsm.2012.6405336`
+- Refactoring Legacy Code Using Cleaning Up Cycles: An Experience Report — DOI: `10.1109/icsme58944.2024.00079`
+- MUARF: Leveraging Multi-Agent Workflows for Automated Code Refactoring — DOI: `10.1109/icse-companion66252.2025.00071`
+- Automatic Refactoring Candidate Identification Leveraging Effective Code Representation — DOI: `10.1109/icsme58846.2023.00047`
+- Automated refactoring of object oriented code into aspects — DOI: `10.1109/icsm.2005.27`
+- Improving Code Maintainability: A Case Study on the Impact of Refactoring — DOI: `10.1109/icsme.2016.52`
+- How Does Test Code Differ from Production Code in Terms of Refactoring? An Empirical Study — DOI: `10.1109/icsme64153.2025.00079`
+- On the Impact of Refactoring Operations on Code Quality Metrics — DOI: `10.1109/icsme.2014.73`
+- How AI is Transforming Code Review and Refactoring in Software Development — DOI: `10.2139/ssrn.4934460`
+- A New Software Maintenance Scenario Based on Refactoring Techniques — DOI: `10.1109/csmr.2012.41`
+- Refactoring in Software Maintenance and Development: Application with Case Study — DOI: `10.21203/rs.3.rs-7499060/v1`
+- A Systematic Literature Review on Generative AI in Software Engineering: Code Generation and Refactoring — DOI: `10.20944/preprints202605.1638.v1`
+- Automated Refactoring of Software using Version History and a Code Element Recentness Measure — DOI: `10.5220/0006815304550462`
+- RMove: Recommending Move Method Refactoring Opportunities using Structural and Semantic Representations of Code — DOI: `10.1109/icsme55016.2022.00033`
+- Many-Objective Optimization of Non-Functional Attributes based on Refactoring of Software Models — DOI: `10.1016/j.infsof.2023.107159`
+- Multi-objective Software Architecture Refactoring driven by Quality Attributes — DOI: `10.1109/icsa-c57050.2023.00046`
+- Technical Debt Friction for Maintenance Prioritization: An Industrial Multi-Case Study
+- Agentic Refactoring: An Empirical Study of AI Coding Agents
+- Assessing the Impact of Refactoring Energy-Inefficient Code Patterns on Software Sustainability: An Industry Case Study — DOI: `10.1109/ase56229.2023.00205`
+- Software Testing and Code Refactoring: A Survey with Practitioners
+- LLM-based Multi-Agent System for Intelligent Refactoring of Haskell Code — DOI: `10.1007/978-3-032-12089-2_26`
+- How do Agents Refactor: An Empirical Study
+- CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+- How Do I Refactor This? An Empirical Study on Refactoring Trends and Topics in Stack Overflow — DOI: `10.1007/s10664-021-10045-x`
+- RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+- Use of Source Code Similarity Metrics in Software Defect Prediction
+- The role of artificial intelligence in achieving the Sustainable Development Goals — DOI: `10.1038/s41467-019-14108-y`
+- Research-Based Design of Pedagogical Agent Roles: a Review, Progress, and Recommendations — DOI: `10.1007/s40593-015-0055-y`
+- Interactive evolutionary computation: fusion of the capabilities of EC optimization and human evaluation — DOI: `10.1109/5.949485`
+- Researchers' perspectives on Industry 4.0: multi-disciplinary analysis and opportunities for operations management — DOI: `10.1080/00207543.2020.1798035`
+- The Role of Entrepreneurship in US Job Creation and Economic Dynamism — DOI: `10.1257/jep.28.3.3`
+- Adaptive Load Balancing: A Study in Multi-Agent Learning — DOI: `10.1613/jair.121`
+- A Multi-Agent Software Architecture for Enterprise Time Series Forecasting — DOI: `10.5220/0015040600004015`
+- Intelligent communication through software agent and ontology for multi-site software engineering — DOI: `10.1049/ic:20040359`
+- Role-Based Approaches for Engineering Interactions in Large-Scale Multi-agent Systems — DOI: `10.1007/978-3-540-24625-1_14`
+- Characterization and Evaluation of Multi-agent System Architectural Styles — DOI: `10.1007/11738817_11`
+- On efficient communication and service agent discovery in multi-agent systems — DOI: `10.1049/ic:20040356`
+- Combining adaptive behavior and role modeling with statecharts — DOI: `10.1049/ic:20040363`
+- Dynamic Multi-agent Architecture Using Conversational Role Delegation — DOI: `10.1007/978-3-540-24620-6_13`
+- Farm: A Scalable Environment for Multi-agent Development and Evaluation — DOI: `10.1007/978-3-540-24625-1_13`
+- Next Generation Enterprise Modelling - The Role of Organizational Theory and Multi-Agent Systems — DOI: `10.5220/0005097404820487`
+- A generative approach for open multi-agent systems — DOI: `10.1049/ic:20040355`
+- A multi-agent system for distributed cluster analysis — DOI: `10.1049/ic:20040372`
+- Incorporating product-line engineering techniques into agent-oriented software engineering for efficiently building safety-critical, multi-agent systems — DOI: `10.31274/rtd-180813-16746`
+- Agent-based Semantic Negotiation Protocol for Semantic Heterogeneity Solving in Multi-agent System — DOI: `10.5220/0006344602470254`
+- On the Role of Software Architecture for Simulating Multi-Agent Systems Alexander Helleboogh, Danny Weyns, and Tom Holvoet — DOI: `10.1201/9781420070248-16`
+- Generating test oracle for role binding in multi-agent systems — DOI: `10.1109/apsec.2003.1254363`
+- GAMA: towards architecture-centric software engineering of mobile agent systems — DOI: `10.1049/ic:20040360`
+- Agent Software Engineering with Role Modelling — DOI: `10.1007/3-540-44564-1_10`
+- Recommender Systems for Software Project Managers — DOI: `10.1145/3463274.3463951`
+- A Methodology to Engineer and Validate Dynamic Multi-level Multi-agent Based Simulations — DOI: `10.1007/978-3-642-38859-0_10`
+- Leveraging Generative AI: Improving Software Metadata Classification with Generated Code-Comment Pairs
+- The Financing of R&amp;D and Innovation — DOI: `10.3386/w15325`
+- A Model for Advancing Digital Inclusion through Business Analytics and Partnerships — DOI: `10.32628/gisrrj236535`
+- Securing Digital Transformation: A Framework for Mainframe and Cloud Ape Governance — DOI: `10.63282/3050-9246.ijetcsit-v6i3p111`
+- AI-Powered Market Segmentation and Personalization Strategies for Enhancing Digital Product Lifecycle Management — DOI: `10.55248/gengpi.6.0625.21107`
+- A framework for leveraging artificial intelligence in strategic business decision-making — DOI: `10.51594/gjabr.v3i11.171`
+- From REST to MCP: An Empirical Study of API Wrapping and Automated Server Generation for LLM Agents — DOI: `10.48550/arxiv.2507.16044`
+- Privacy and data protection in mobile applications : A study on the app development ecosystem and the technical implementation of GDPR — DOI: `10.2824/114584`
+- A Review of TRiSM Frameworks in Artificial Intelligence Systems: Fundamentals, Taxonomy, Use Cases, Key Challenges and Future Directions — DOI: `10.36227/techrxiv.174913612.20443736/v1`
+- Intelligent Automation: Leveraging LLMs in DevOps Toolchains — DOI: `10.63282/3050-9416.ijaibdcms-v5i4p109`
+- A Conceptual Framework for CI/CD Pipeline Security Controls in Hybrid Application Deployments — DOI: `10.54660/ijfei.2024.1.2.25-47`
+- A Comprehensive Introspection on AI Risks: Taxonomy, Challenges and Future Directions — DOI: `10.36227/techrxiv.175339321.17050891/v1`
+- The Librarian Skillset and the Needs of Artificial Intelligence — DOI: `10.1080/01639374.2025.2539787`
+- SkillWiki: A Living Knowledge Infrastructure for Agent Skills
+- Internet of Things — DOI: `10.1007/978-981-32-9915-3_11`
+- Oracle HCM Extensibility: Architectural Patterns for Custom API Development — DOI: `10.63282/3050-9246.ijetcsit-v5i1p103`
+- ContextNest: Verifiable Context Governance for Autonomous AI Agent
+- Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+- lifecycle: Manage the Life Cycle of your Package Functions — DOI: `10.32614/cran.package.lifecycle`
+- Data Lifecycle Management – Provenance, Versioning, and Quality Assurance — DOI: `10.4324/9781003790334-9`
+- IMLMA: An Intelligent Algorithm for Model Lifecycle Management with Automated Retraining, Versioning, and Monitoring — DOI: `10.26689/jera.v9i5.12394`
+- Concurrent versioning principles for collaboration: towards PLM for hardware and software data management — DOI: `10.1504/ijplm.2014.065457`
+- Aligning AI Governance, AI Development Lifecycle, and Systems Development Lifecycle Processes — DOI: `10.1007/979-8-8688-0983-5_21`
+- Deprecation of "ip6.int" — DOI: `10.17487/rfc4159`
+- Deprecation of ICMP Source Quench Messages — DOI: `10.17487/rfc6633`
+- AI Governance Across the Deal Lifecycle &lt;br&gt; — DOI: `10.2139/ssrn.6274559`
+- A Biosecurity Agent for Lifecycle LLM Biosecurity Alignment — DOI: `10.1101/2025.09.17.676717`
+- deprecation, n. — DOI: `10.1093/oed/2231398916`
+- Consequences of Laughter: Reflections on Performing Comedic Self- Deprecation and Reacting to Deprecation in General — DOI: `10.4324/9781003608752-7`
+- Graph Databases Lifecycle Methodology and Tool to Support Index/Store Versioning — DOI: `10.18293/dms2015-016`
+- Di-Agent: A Multi-Agent Llm Framework for Full Lifecycle Bearing Health Management — DOI: `10.2139/ssrn.5292405`
+- Optimizing Enterprise Data Governance through AI-Driven Information Lifecycle Management in SAP Ecosystems — DOI: `10.21275/sr24703091025`
+- SOA and Services Lifecycle Governance — DOI: `10.1002/9781119197584.ch8`
+- Origin, skill, lifecycle, use and demise — DOI: `10.2307/jj.14638146.13`
+- The Limits of Behavioral Pruning: Why Enterprise RAG Lifecycle Management Is a Governance Problem — DOI: `10.5220/0014912100004018`
+- Understanding data governance in AI: A lifecycle perspective — DOI: `10.61557/ksqf4883`
+- Integrating Cybersecurity into IT Project Lifecycle Management: A Proactive Governance Model — DOI: `10.55248/gengpi.6.0825.2918`
+- A Multi-Agent Collaborative Decision-Making Framework for Highway Full Lifecycle Management — DOI: `10.2139/ssrn.6508383`
+- Agentic AI Governance and Lifecycle Management in Healthcare
+- Dynamic Skill Lifecycle Management for Agentic Reinforcement Learning
+- Advanced Drone Swarm Security by Using Blockchain Governance Game — DOI: `10.3390/math10183338`
+- AIP: A Graph Representation for Learning and Governing Agent Skills
+- VeML: An End-to-End Machine Learning Lifecycle for Large-scale and High-dimensional Data — DOI: `10.1109/access.2023.3296136`
+- RoboLineage: Agent-Native Data Lifecycle Governance Across Robot Policy Iterations
+- Video-Skill-CoT: Skill-based Chain-of-Thoughts for Domain-Adaptive Video Reasoning
+
+## Failures
+
+- semantic-scholar / "software development coding agent skill design": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "agent skill specification software engineering": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "agent skill libraries coding assistants": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "skill shadowing LLM agents software development": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "progressive disclosure agent skills context engineering": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "LLM agent tool use contracts software engineering": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "coding agent verification loops test driven development": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "software engineering agent benchmark tool use 2025 2026": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "SWE-bench agent scaffolding skills prompts": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "LLM code agent memory reflection reusable experience": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "self-improving coding agents skill acquisition": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "human comprehension agent skill specifications": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "structured pseudocode agent skills typed contracts": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "cross-framework portable agent skills": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "agent workflow decomposition planning verification": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "LLM agent instruction following long context skills": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "coding agent error recovery debugging skills": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "software maintenance agent code review refactoring skills": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "multi-agent software engineering role skills evaluation": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+- semantic-scholar / "agent skill lifecycle governance versioning deprecation": source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)

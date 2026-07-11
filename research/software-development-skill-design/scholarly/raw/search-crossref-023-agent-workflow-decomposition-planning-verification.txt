@@ -1,0 +1,20 @@
+10.1109/dexa.2001.953122	Verification of itineraries for mobile agent enabled interorganizational workflow
+10.2139/ssrn.7074124	A Trustworthy Intent-Driven LLM-Agent Workflow with State Verification for Power System Simulation
+10.1109/icnc.2009.130	Task Decomposition and Planning in Resource-Constrained Workflow
+10.1109/icicta.2010.347	Modeling and Verification for Planning and Scheduling in a Workflow Framework
+10.1109/kimas.2005.1427051	AI planning in portal-based workflow management systems
+10.1101/2025.05.31.657172	dnaudit + pydnaweb: A lightweight text-based planning and documentation workflow for genetic cloning with automatic verification
+10.21203/rs.3.rs-9145617/v1	Automating Best-Practice Refactoring in Java via Multi-Agent Planning and Verification
+10.1109/nwesp.2005.15	An Agent-Based Grid Workflow Management System Using AI Planning
+10.1109/icit.2015.11	Validation and Verification of Joint-Actions in Multi-agent Planning
+10.5220/0005349302210228	Relaxed Soundness Verification for Interorganizational Workflow Processes
+10.1007/978-1-4842-9705-6_2	Monitor SAP WORKFLOW without Agent(SWI2_ADM1)
+10.1007/978-1-4842-9705-6_5	Re-execute SAP WORKFLOW Agent rules(SWI1_RULE)
+10.1609/icaps.v23i1.13564	Automated Agent Decomposition for Classical Planning
+10.1109/cait70489.2026.11553641	A Multi-Agent Collaboration-Based Method for Satellite Remote Sensing Workflow Planning
+10.14264/105918	On verification issues in conceptual modelling of workflow processes
+10.26434/chemrxiv.15005078/v1	GROMACS-Agent: Text-to-Workflow Generation for Molecular Dynamics A multi-agent framework for topology-aware GROMACS workflow generation, evaluation, correction, and selected safe execution
+10.1007/978-3-319-62434-1_28	On Verification of Workflow and Planning Domain Models Using Attribute Grammars
+10.1109/wicom.2007.1149	Research on Multi-Agent Based SC Production Planning Decomposition Model
+10.1109/iat.2006.99	Planning with Action Abstraction and Plan Decomposition Hierarchies
+10.5220/0002192700670075	From Reactive to Deliberative Multi-agent Planning

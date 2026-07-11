@@ -1,0 +1,20 @@
+10.1038/s41586-020-2649-2	Array programming with NumPy
+10.1145/336512.336523	Requirements engineering
+	Array programming with NumPy
+10.1145/3586183.3606763	Generative Agents: Interactive Simulacra of Human Behavior
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1038/s41467-019-14108-y	The role of artificial intelligence in achieving the Sustainable Development Goals
+	The StarCraft Multi-Agent Challenge
+10.1017/s0269888905000494	Self-organization in multi-agent systems
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+	Software agents: A review
+10.1007/s40593-015-0055-y	Research-Based Design of Pedagogical Agent Roles: a Review, Progress, and Recommendations
+10.3389/frvir.2021.645153	A Review on Virtual Reality Skill Training Applications
+10.1002/jee.20118	Identity, Critical Agency, and Engineering: An Affective Model for Predicting Engineering as a Career Choice
+10.1109/5.949485	Interactive evolutionary computation: fusion of the capabilities of EC optimization and human evaluation
+10.1080/00207543.2020.1798035	Researchers' perspectives on Industry 4.0: multi-disciplinary analysis and opportunities for operations management
+10.1257/jep.28.3.3	The Role of Entrepreneurship in US Job Creation and Economic Dynamism
+10.1038/s41586-019-1657-6	Sex and gender analysis improves science and engineering
+10.1613/jair.121	Adaptive Load Balancing: A Study in Multi-Agent Learning

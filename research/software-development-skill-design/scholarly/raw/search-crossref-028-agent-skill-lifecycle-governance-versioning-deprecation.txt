@@ -1,0 +1,20 @@
+10.32614/cran.package.lifecycle	lifecycle: Manage the Life Cycle of your Package Functions
+10.4324/9781003790334-9	Data Lifecycle Management – Provenance, Versioning, and Quality Assurance
+10.26689/jera.v9i5.12394	IMLMA: An Intelligent Algorithm for Model Lifecycle Management with Automated Retraining, Versioning, and Monitoring
+10.1504/ijplm.2014.065457	Concurrent versioning principles for collaboration: towards PLM for hardware and software data management
+10.1007/979-8-8688-0983-5_21	Aligning AI Governance, AI Development Lifecycle, and Systems Development Lifecycle Processes
+10.17487/rfc4159	Deprecation of "ip6.int"
+10.17487/rfc6633	Deprecation of ICMP Source Quench Messages
+10.2139/ssrn.6274559	AI Governance Across the Deal Lifecycle &lt;br&gt;
+10.1101/2025.09.17.676717	A Biosecurity Agent for Lifecycle LLM Biosecurity Alignment
+10.1093/oed/2231398916	deprecation, n.
+10.4324/9781003608752-7	Consequences of Laughter: Reflections on Performing Comedic Self- Deprecation and Reacting to Deprecation in General
+10.18293/dms2015-016	Graph Databases Lifecycle Methodology and Tool to Support Index/Store Versioning
+10.2139/ssrn.5292405	Di-Agent: A Multi-Agent Llm Framework for Full Lifecycle Bearing Health Management
+10.21275/sr24703091025	Optimizing Enterprise Data Governance through AI-Driven Information Lifecycle Management in SAP Ecosystems
+10.1002/9781119197584.ch8	SOA and Services Lifecycle Governance
+10.2307/jj.14638146.13	Origin, skill, lifecycle, use and demise
+10.5220/0014912100004018	The Limits of Behavioral Pruning: Why Enterprise RAG Lifecycle Management Is a Governance Problem
+10.61557/ksqf4883	Understanding data governance in AI: A lifecycle perspective
+10.55248/gengpi.6.0825.2918	Integrating Cybersecurity into IT Project Lifecycle Management: A Proactive Governance Model
+10.2139/ssrn.6508383	A Multi-Agent Collaborative Decision-Making Framework for Highway Full Lifecycle Management

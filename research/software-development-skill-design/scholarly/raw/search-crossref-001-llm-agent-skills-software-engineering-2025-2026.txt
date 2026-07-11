@@ -1,0 +1,20 @@
+10.38071/2026-00397-5	Developing and Evaluating an LLM-based Agent for ExplorViz Using CopilotKit
+10.1145/3696630.3728717	Facilitating Trustworthy Human-Agent Collaboration in LLM-based Multi-Agent System oriented Software Engineering
+10.3390/software5020026	Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt-Engineering Quality Assurance
+10.1109/asew67777.2025.00059	ALMAS: an Autonomous LLM-based Multi-Agent Software Engineering Framework
+10.1109/cbase67452.2025.11335473	LLM Dual-Agent for Taste Preference Prediction
+10.1109/asew67777.2025.00064	Traceability and Accountability in Role-Specialized Multi-Agent LLM Pipelines
+10.37190/e-inf260109	A Modular Multi-Agent {LLM} Architecture for Text-to-Diagram Generation and User-Guided Refinement
+10.1109/cain66642.2025.00039	Assessing and Enhancing the Robustness of LLM-Based Multi-Agent Systems Through Chaos Engineering
+10.1109/icse55347.2025.00157	RepairAgent: An Autonomous, LLM-Based Agent for Program Repair
+10.1109/icse55347.2025.00226	NIODebugger: A Novel Approach to Repair Non-Idempotent-Outcome Tests with LLM-Based Agent
+10.1016/j.infsof.2026.108022	Artifact validity under varying agent configurations in LLM-assisted software development: A comparative analysis
+10.1109/ase63991.2025.00370	BuilDroid: A Self-Correcting LLM Agent for Automated Android Builds
+10.1145/3696630.3728714	Towards the Versioning of LLM-Agent-Based Software
+10.1080/08874417.2026.2650523	Interactive LLM Agent Review for Software Engineering Artifacts
+10.1145/3786582.3786818	Setup AGent (SAG): A Dual-Model LLM Agent for Autonomous End-to-End Java Project Configuration
+10.5220/0014301900004058	NOMAD: A Multi-Agent LLM System for UML Class Diagram Generation from Natural Language Requirements
+10.1109/ase63991.2025.00090	An LLM-based multi-agent framework for agile effort estimation
+10.1145/3712003	LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision, and the Road Ahead
+10.1109/icisessc68634.2026.11542788	Benchmarking Multi-Agent LLM and Single Agent LLM Efficiency for Contextual Text Generation
+10.1109/apsec66846.2025.00077	A Comparative Study Towards Designing a Hybrid Architecture of Microservices and LLM-based Multi-Agent Systems

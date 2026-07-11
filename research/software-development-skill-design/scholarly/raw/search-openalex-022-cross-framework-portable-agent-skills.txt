@@ -1,0 +1,20 @@
+10.1177/2211068215581349	Development and Applications of Portable Biosensors
+10.1007/s10956-006-9037-z	Mad City Mystery: Developing Scientific Argumentation Skills with a Place-based Augmented Reality Game on Handheld Computers
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1613/jair.5575	From Skills to Symbols: Learning Symbolic Representations for Abstract High-Level Planning
+10.1007/978-3-030-19389-8	IEA International Computer and Information Literacy Study 2018 Assessment Framework
+10.1016/j.cirp.2020.05.006	Design for additive manufacturing: Framework and methodology
+	Constructing Skill Trees for Reinforcement Learning Agents from Demonstration Trajectories
+10.1108/jtf-07-2020-0114	The digital skills divide: evidence from the European tourism industry
+10.1596/27892	Stepping Up Skills for More Jobs and Higher Productivity
+10.17869/enu.1025583	Towards a framework for cross-boundary collaborative open learning for cross-institutional academic development
+10.1609/aaai.v25i1.7982	Autonomous Skill Acquisition on a Mobile Manipulator
+10.15220/978-92-9189-075-0-en	The 2009 UNESCO Framework for Cultural Statistics (FCS)
+10.1093/eurheartj/ehw128	2016 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure
+10.1007/s10994-012-5313-8	Preference-based reinforcement learning: a formal framework and a policy iteration algorithm
+10.6028/nist.sp.800-66r1	An introductory resource guide for implementing the Health Insurance Portability and Accountability Act (HIPAA) security rule
+10.11575/prism/9479	Conceptual Framework of Harmful Gambling: An International Collaboration
+10.1109/access.2024.3369912	Ethical Framework for Harnessing the Power of AI in Healthcare and Beyond
+10.24251/hicss.2018.486	Understanding Benefit and Risk Framework of Fintech Adoption: Comparison of Early Adopters and Late Adopters
+10.3390/admsci14090231	Strategies, Methods, and Supports for Developing Skills within Learning Communities: A Systematic Review of the Literature
+10.1186/s40594-018-0109-4	SKOPE-IT (Shareable Knowledge Objects as Portable Intelligent Tutors): overlaying natural language tutoring on an adaptive learning system for mathematics

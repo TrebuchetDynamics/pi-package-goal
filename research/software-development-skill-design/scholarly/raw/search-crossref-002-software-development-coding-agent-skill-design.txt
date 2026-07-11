@@ -1,0 +1,20 @@
+10.1007/978-1-4842-3153-1_1	Introduction to Software Development
+10.1007/978-1-4842-3153-1_5	Software Architecture
+10.1007/978-1-4842-3153-1	Software Development, Design and Coding
+10.1007/978-1-4842-3153-1_2	Software Process Models
+10.1007/978-1-4842-3153-1_11	Design Patterns
+10.1007/978-1-4842-3153-1_6	Design Principles
+10.1007/978-1-4842-3153-1_7	Structured Design
+10.4018/979-8-3373-2660-3.ch009	Navigating Skill Development and Ethical Challenges in Coding Education with Generative AI
+10.1007/978-1-4842-3153-1_13	Parallel Design Patterns
+10.1007/978-1-4842-3153-1_10	Object-Oriented Design Principles
+10.1007/978-1-4842-3153-1_4	Requirements
+10.1007/978-1-4842-3153-1_15	Debugging
+10.1007/978-1-4842-3153-1_9	Object-Oriented Analysis and Design
+10.1007/978-1-4842-3153-1_12	Parallel Programming
+10.1007/978-1-4842-3153-1_14	Code Construction
+10.1007/978-1-4842-3153-1_16	Unit Testing
+10.1007/978-1-4842-3153-1_3	Project Management Essentials
+10.1007/978-1-4842-3153-1_8	Object-Oriented Overview
+10.1007/979-8-8688-0285-0_1	Introduction to Software Development
+10.1007/978-1-4842-3153-1_19	Wrapping It all Up

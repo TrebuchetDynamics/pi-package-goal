@@ -1,0 +1,20 @@
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.48550/arxiv.2305.14314	QLoRA: Efficient Finetuning of Quantized LLMs
+10.1145/3544548.3581388	Why Johnny Can’t Prompt: How Non-AI Experts Try (and Fail) to Design LLM Prompts
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.3390/healthcare11060887	ChatGPT Utility in Healthcare Education, Research, and Practice: Systematic Review on the Promising Perspectives and Valid Concerns
+10.18653/v1/2023.emnlp-main.814	Character-LLM: A Trainable Agent for Role-Playing
+10.1007/s10462-024-10888-y	Large language models (LLMs): survey, technical frameworks, and future challenges
+10.1609/aaai.v38i17.29936	ExpeL: LLM Agents Are Experiential Learners
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.18653/v1/2024.findings-acl.738	MM-LLMs: Recent Advances in MultiModal Large Language Models
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills
+10.1145/3657604.3662036	Evaluating the Effectiveness of LLMs in Introductory Computer Science Education: A Semester-Long Field Study
+10.1038/s43856-023-00370-1	The future landscape of large language models in medicine
+10.1039/d4sc03921a	A review of large language models and autonomous agents in chemistry
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.48550/arxiv.2303.12712	Sparks of Artificial General Intelligence: Early experiments with GPT-4
+10.48550/arxiv.2309.05519	NExT-GPT: Any-to-Any Multimodal LLM
+10.1038/s42256-024-00832-8	Augmenting large language models with chemistry tools
+10.1002/aaai.12188	Combating misinformation in the age of LLMs: Opportunities and challenges
+10.1609/aaai.v38i17.29858	VELMA: Verbalization Embodiment of LLM Agents for Vision and Language Navigation in Street View

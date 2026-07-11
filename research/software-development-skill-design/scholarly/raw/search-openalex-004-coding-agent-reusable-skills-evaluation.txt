@@ -1,0 +1,20 @@
+10.1136/bmj.n2061	A new framework for developing and evaluating complex interventions: update of Medical Research Council guidance
+10.1007/s10462-021-09996-w	Multi-agent deep reinforcement learning: a survey
+10.5334/2003-1-reuse-01	Reusing Online Resources: A Sustainable Approach to eLearning
+10.1145/129852.129857	Exploiting reusable specifications through analogy
+10.1186/1756-0500-3-175	OntoFox: web-based support for ontology reuse
+	A Model for Organizational Interaction: based on Agents, founded in Logic
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1080/088395100117106	Autonomous agents for business process management
+10.1016/j.jenvman.2023.119230	A systematic review of industrial wastewater management: Evaluating challenges and enablers
+10.6028/nist.sp.800-19	Mobile agent security
+10.1017/s0269888905000494	Self-organization in multi-agent systems
+10.1609/aaai.v30i1.9914	Affective Personalization of a Social Robot Tutor for Children’s Second Language Skills
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills
+10.1016/j.compenvurbsys.2008.09.004	Key challenges in agent-based modelling for geo-spatial simulation
+10.1016/j.techfore.2015.10.005	The thorny road to technology legitimation — Institutional work for potable water reuse in California
+10.1145/226239.226255	Using design patterns to develop reusable object-oriented communication software
+10.1136/bmjopen-2017-018647	Sharing and reuse of individual participant data from clinical trials: principles and recommendations
+10.1145/336512.336523	Requirements engineering
+	Constructing Skill Trees for Reinforcement Learning Agents from Demonstration Trajectories
+10.18564/jasss.3423	Agent-Based Modelling of Social-Ecological Systems: Achievements, Challenges, and a Way Forward

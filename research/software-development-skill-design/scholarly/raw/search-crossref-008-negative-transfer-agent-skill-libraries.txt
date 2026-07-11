@@ -1,0 +1,20 @@
+10.1007/s44163-026-01642-0	A multi-agent reinforcement learning algorithm for collaborative skill transfer in physical education
+10.1038/s41598-026-35877-9	Personalized skill transfer optimization in swimming training through multi-agent reinforcement learning driven digital twin environments
+10.1201/9780429187735-6	Design of Interactive Skill-Transfer Agent From a Viewpoint of Ecological Psychology
+10.1145/3319619.3326794	Skill emergence and transfer in multi-agent environments
+10.36227/techrxiv.177204917.78786098/v1	Agent, Sub-Agent, Skill, or Tool? A Practitioner's Guide to Extending Agentic AI Systems
+10.64898/2026.05.13.724757	S2F-agent: Skill-grounded agent for Sequence-to-Function computational genomics workflows
+10.1007/978-1-4471-1632-5_9	Skill, Education and Social Value: Some Thoughts on the Metonymy of Skill and Skill Transfer
+10.2139/ssrn.4790564	Skill Matters: Dynamic Skill Learning for Multi-Agent Cooperative Reinforcement Learning
+10.1111/ejn.16194/v1/review1	Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.1111/ejn.16194/v1/decision1	Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.1111/ejn.16194/v3/decision1	Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.5040/9798216021544.0006	Transfer Students: Trends, Pathways, and Implications for Libraries
+10.1111/ejn.16194/v1/review2	Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.1046/j.1365-2532.1999.00211.x	Skill mix in primary care—creating a bibliography
+10.1111/ejn.16194/v2/decision1	Decision letter for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.1111/ejn.16194/v2/review1	Review for "Relationship between skill training and skill transfer through the example of bimanual motor learning"
+10.1051/ro/2021087	A multi-objective multi-agent optimization algorithm for the multi-skill resource-constrained project scheduling problem with transfer times
+10.23889/suthesis.52478	Learning Algorithm Design for Human-Robot Skill Transfer
+10.23889/suthesis.54879	Learning Algorithm Design for Human-Robot Skill Transfer
+10.1299/jsmeicbtt.2008.4.0_66	Mixed Reality-Based Casting Skill Transfer and Human Resource Development

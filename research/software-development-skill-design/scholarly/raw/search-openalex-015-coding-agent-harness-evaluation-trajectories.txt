@@ -1,0 +1,20 @@
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1038/s41746-023-00927-3	Harnessing the power of synthetic data in healthcare: innovation, application, and privacy
+10.1038/s41573-021-00371-6	PROTAC targeted protein degraders: the past is prologue
+10.1016/j.jenvman.2023.119230	A systematic review of industrial wastewater management: Evaluating challenges and enablers
+10.1038/s41571-018-0134-8	A framework for the development of effective anti-metastatic agents
+10.1002/fee.1470	Characteristic trajectories of ecosystem services in mountains
+10.1016/j.lcsi.2015.12.001	Developing a coding scheme for analysing classroom dialogue across educational contexts
+10.1186/s12951-022-01573-9	Nanobiotics against antimicrobial resistance: harnessing the power of nanoscale materials and technologies
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.70777/si.v2i3.15161	AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges
+10.1016/j.aos.2017.05.002	Evaluative infrastructures: Accounting for platform organization
+10.1057/s41599-024-03611-3	Large language models empowered agent-based modeling and simulation: a survey and perspectives
+10.1109/access.2021.3097962	Teaching Machine Learning in K–12 Classroom: Pedagogical and Technological Trajectories for Artificial Intelligence Education
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.1039/d4sc03921a	A review of large language models and autonomous agents in chemistry
+10.1257/jel.52.3.740	What Do We Learn from the Weather? The New Climate-Economy Literature
+10.1186/s13045-024-01634-6	Harnessing the tumor microenvironment: targeted cancer therapies through modulation of epithelial-mesenchymal transition
+10.3390/molecules28207165	Peptides as Therapeutic Agents: Challenges and Opportunities in the Green Transition Era
+10.1109/jiot.2021.3073904	Harnessing the Power of Smart and Connected Health to Tackle COVID-19: IoT, AI, Robotics, and Blockchain for a Better World
+10.48550/arxiv.2308.07201	ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate

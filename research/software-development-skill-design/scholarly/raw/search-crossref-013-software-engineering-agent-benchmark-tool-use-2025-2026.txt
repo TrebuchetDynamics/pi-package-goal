@@ -1,0 +1,20 @@
+10.1109/access.2026.3710376	MultiCAT-Bench: A Multi-Categorical Agent Tool Use Benchmark
+10.1109/tse.2025.3644183	Benchmarking AI Models in Software Engineering: A Review, Search Tool, and Unified Approach for Elevating Benchmark Quality
+10.1007/978-0-387-34876-6_3	Software benchmark design and use
+10.51244/ijrsi.2026.1303000020	Emergent Autonomous Sub-Agent Spawning in LLM-Based Multi-Agent Software Engineering Systems:An Empirical Case Study, Controlled Pilot Experiment, and Benchmark Framework"Can AI Agents Have Babies?"
+10.46254/af6.20250214	Practical AI Benchmark: Evaluating Integrated Reasoning, Multimodal Analysis, and Tool Use in Industrial Contexts
+10.1145/3805760.3814931	AgentTelemetry: A Fault Detection Benchmark and Toolkit for LLM Agent Observability
+10.1109/ase63991.2025.00362	AgentDroid: A Multi-Agent Tool for Detecting Fraudulent Android Applications
+10.1007/3-540-70657-7_13	Determining When to Use an Agent-Oriented Software Engineering Paradigm
+10.1007/978-90-481-9112-3_96	PI-ping - Benchmark Tool for Testing Latencies and Throughput in Operating Systems
+10.21203/rs.3.rs-9839978/v1	Agentic and Multi-agent Systems: A Systematic Review of Tool Use, Benchmarks, and Governance
+10.1145/3696630.3728717	Facilitating Trustworthy Human-Agent Collaboration in LLM-based Multi-Agent System oriented Software Engineering
+10.1504/ijaose.2007.014406	Defining syntax and providing tool support for Agent UML using a textual notation
+10.20944/preprints202501.1130.v1	An Educational Software Tool for Critiquing and Supporting Software Design Courses
+10.1023/a:1021860700141	Small-Scale XMI Programming: A Revolution in UML Tool Use?
+10.6028/nist.tn.2239pt2	NIST Alternatives for Resilient Communities (NIST ARC) Software Tool
+10.1007/3-7643-7348-2_9	The WSDL2Agent Tool
+10.1101/2020.10.07.330621	SoftWipe – a tool and benchmark to assess scientific software quality
+10.5220/0002329903080314	INTERCONNECTED TOOL-ASSISTANCE FOR DEVELOPMENT OF AGENT-ORIENTED SOFTWARE SYSTEMS
+10.52783/jisem.v11i2s.14516	Zero Trust Architecture for Generative AI: Securing Prompts, Retrieval, and Agent Tool-Use in Regulated Environments
+10.1016/j.advengsoft.2010.12.006	A versatile software tool making best use of sparse data for closed loop process control

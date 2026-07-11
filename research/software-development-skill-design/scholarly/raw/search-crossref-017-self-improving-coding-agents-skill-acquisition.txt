@@ -1,0 +1,20 @@
+10.2139/ssrn.6438922	Beyond Prescribed Intelligence: Toward Self-Directed Skill Acquisition in LLM-Based Cybersecurity Agents
+10.58806/ijmir.2026.v3i6n03	Skill-Augmented AI Coding Agents: A Two-Layer Framework for SKILL.md Design and Developer Productivity
+10.5772/intechopen.69266	Understanding Neural Mechanisms of Action Observation for Improving Human Motor Skill Acquisition
+10.47067/real.v5i4.285	Incorporating Competency-Based Training into Traditional Training for improving Skill Acquisition and Self-Employability
+10.1037/e628612012-391	Video Self-Modeling for Learning-Related Social Skill Acquisition
+10.36905/jses.2019.03.01	Australasian Skill Acquisition Network Annual Conference
+10.4324/9780203646564-11	Individual differences in skill acquisition
+10.4324/9780203839010.ch14	Acquisition of Sport Knowledge and Skill
+10.4324/9780203646564-6	A historical perspective on skill acquisition
+10.1037/h0022524	Verbal coding and display coding in the acquisition and retention of tracking skill.
+10.1201/b18012-8	Knowledge and Skill Acquisition as a Self-Regulative Process
+10.5040/9781718214125.ch-005	Understanding the Dynamics of Skill Acquisition
+10.4324/9780203646564-24	The evolution of coordination during skill acquisition
+10.4324/9781003051343-2	Introduction to Skill Acquisition in Judo
+10.55248/gengpi.6.0425.1405	Enhancing skill Acquisition and Self-Employment Through Entrepreneurship Education Curriculum in Tertiary Education in Ogun State, Nigeria
+10.1037/t56174-000	Nonsuicidal Self-injury Assessment Skill Acquisition Measure
+10.1007/springerreference_302238	Cognitive Skill Acquisition
+10.1201/b17976-8	Knowledge and Skill Acquisition as a Self-Regulative Process
+10.36227/techrxiv.175744083.37752625/v1	Toward Weight-level Self-improving Agents with Meta-knowledge Discovery
+10.4324/9780203056899-16	Assessment Procedures for Predicting and Optimizing Skill Acquisition After Extensive Practice

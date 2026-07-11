@@ -1,0 +1,20 @@
+10.1109/icca66035.2025.11430791	Cross-Agent Multimodal Provenance-Aware Framework for Robust Prompt Injection Defense in Large Language and Vision-Language Models
+10.21203/rs.3.rs-10302085/v1	A Multi-Agent Framework for Explainable Prompt Injection Detection in Large Language Models
+10.1201/9781003726692-7	Prompt Injections
+10.2139/ssrn.7082874	GraphShield: A Graph-Structured Defense Framework for Prompt Injection in RAG and Multi-Agent LLM Systems
+10.36227/techrxiv.172954263.32914470/v1	Enhancing Security in Large Language Models: A Comprehensive Review of Prompt Injection Attacks and Defenses
+10.5220/0013838400004000	Prompt Injection Attacks on Large Language Models: Multi-Model Security Analysis with Categorized Attack Types
+10.1007/978-3-032-16092-8_28	Prompt Infection: LLM-to-LLM Prompt Injection within Multi-agent Systems
+10.2139/ssrn.5476487	Mitigating LLM Prompt Injection, Hallucination, and Security Risks using Semantically Encoded Compiler Stage Watermarks
+10.2139/ssrn.5460154	Mitigating AI LLM Prompt Injection, Hallucination, and Security Risks using Semantically Encoded Compiler Stage Watermarks
+10.5220/0004101301090116	A Grouping Model for Prompt Agent based Damage Assessment
+10.33778/kcsa.2025.25.5.117	Multilingual Prompt-Injection-Based Jailbreak Vulnerability Analysis : A Comparative Study of English, Korean Plain Speech, and Honorific Style
+10.1109/ism66958.2025.00011	Exploring Privacy and Security Risks in LLMs: Data Leakage, Prompt Injection, and Membership Inference
+10.1109/icaic67076.2026.11395889	Prompting for LLM Security and RAG: A Survey from Zero-Shot to Automatic Prompt Optimization (APO) and Prompt-Injection Defenses
+10.1109/dsn-s65789.2025.00037	To Protect the LLM Agent Against the Prompt Injection Attack with Polymorphic Prompt
+10.55606/juitik.v6i2.2369	Analisis Kualitatif Kerentanan AI Agent terhadap Serangan Prompt Injection dan Strategi Mitigasinya
+10.1109/gaiis69281.2026.11519120	Adaptive Prompt Generation Agent: A Dynamic Prompt Engineering Framework for Chinese Text Generation
+10.1109/ccai65422.2025.11189427	A Novel Security Framework against Prompt Injection Attacks
+10.14722/ndss.2026.240702	ObliInjection: Order-Oblivious Prompt Injection Attack to LLM Agents with Multi-source Data
+10.1109/tcset64720.2024.10755823	Enhancing System Security: LLM-Driven Defense Against Prompt Injection Vulnerabilities
+10.7717/peerj-cs.3939/fig-7	Figure 7: Prompt structure of the ValidationAgent agent.

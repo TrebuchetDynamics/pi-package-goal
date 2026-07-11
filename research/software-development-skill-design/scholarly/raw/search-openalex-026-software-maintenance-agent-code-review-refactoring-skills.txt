@@ -1,0 +1,20 @@
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.2298/csis110214013b	Software agents: Languages, tools, platforms
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+10.48550/arxiv.2308.10620	Large Language Models for Software Engineering: A Systematic Literature Review
+10.1007/s10664-021-10065-7	Analysing app reviews for software engineering: a systematic literature review
+10.1145/3490388	Opinion Mining for Software Development: A Systematic Literature Review
+10.5194/esurf-8-379-2020	Short communication: Landlab v2.0: a software package for Earth surface dynamics
+10.1207/s15327051hci2101_3	Pattern Languages in HCI: A Critical Review
+10.3390/su16031245	ChatGPT: Challenges and Benefits in Software Programming for Higher Education
+10.48550/arxiv.2308.12816	Software Startups - A Research Agenda
+10.18421/tem131-76	A Comparative Review of AI Techniques for Automated Code Generation in Software Development: Advancements, Challenges, and Future Directions
+10.48550/arxiv.2406.00515	A Survey on Large Language Models for Code Generation
+10.1109/access.2019.2917403	Continuously Assessing and Improving Software Quality With Software Analytics Tools: A Case Study
+10.1016/j.infsof.2019.06.010	DevOps in practice: A multiple case study of five companies
+10.36227/techrxiv.174681482.27435614/v1	A Review on Vibe Coding: Fundamentals, State-of-the-art, Challenges and Future Directions
+10.3390/microorganisms10040700	IntegronFinder 2.0: Identification and Analysis of Integrons across Bacteria, with a Focus on Antibiotic Resistance in Klebsiella
+10.48550/arxiv.2403.15852	SOEN-101: Code Generation by Emulating Software Process Models Using Large Language Model Agents
+10.1184/r1/6571745	A Research Agenda for Service-Oriented Architecture (SOA): Maintenance and Evolution of Service-Oriented Systems
+10.3390/s22031252	Lightweight Software Architecture Evaluation for Industry: A Comprehensive Review
+10.1007/s10664-019-09711-y	Characterizing industry-academia collaborations in software engineering: evidence from 101 projects

@@ -1,0 +1,20 @@
+10.1093/fqsafe/fyaa024	Impact of COVID-19 on the food supply chain
+10.1016/j.jom.2011.06.007	Product safety and security in the global supply chain: Issues, challenges and research opportunities
+10.1080/00207543.2018.1530476	Supply chain risk management and artificial intelligence: state of the art and future research directions
+10.1016/j.compind.2020.103187	Agri-food 4.0: A survey of the supply chains and technologies for the future agriculture
+10.1007/s10479-020-03912-1	Supply chain disruptions and resilience: a major review and future research agenda
+10.6028/nist.sp.800-19	Mobile agent security
+10.1080/09537287.2021.1983661	Supply chain traceability: a review of the benefits and its relationship with supply chain resilience
+10.1109/tem.2021.3053655	Distributed Ledger Technologies in Supply Chain Security Management: A Comprehensive Survey
+10.1108/jmtm-05-2017-0094	Examining potential benefits and challenges associated with the Internet of Things integration in supply chains
+10.3390/agriculture12010040	Agriculture-Food Supply Chain Management Based on Blockchain and IoT: A Narrative on Enterprise Blockchain Interoperability
+10.3390/fi11030063	Cyber Security Threat Modeling for Supply Chain Organizational Environments
+10.3389/fenrg.2021.743114	Sustainable Energy Transition for Renewable and Low Carbon Grid Electricity Generation and Supply
+10.1016/j.jclepro.2020.123075	Social sustainability tensions in multi-tier supply chain: A systematic literature review towards conceptual framework development
+10.1109/access.2021.3087109	Cyber Threat Predictive Analytics for Improving Cyber Supply Chain Security
+10.1109/access.2014.2362522	Information Security in Big Data: Privacy and Data Mining
+10.1016/j.ijinfomgt.2019.08.002	Artificial Intelligence (AI): Multidisciplinary perspectives on emerging challenges, opportunities, and agenda for research, practice and policy
+10.1787/9789264251052-en	OECD-FAO Guidance for Responsible Agricultural Supply Chains
+10.3390/su13147870	Applications of Blockchain Technology in Sustainable Manufacturing and Supply Chain Management: A Systematic Review
+10.1080/00207543.2023.2179859	Artificial intelligence-driven supply chain resilience in Vietnamese manufacturing small- and medium-sized enterprises
+10.1016/j.spc.2020.09.017	Sustainable supply chain management towards disruption and organizational ambidexterity: A data driven analysis

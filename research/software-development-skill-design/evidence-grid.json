@@ -1,0 +1,78 @@
+{
+  "question": "What very recent evidence can improve reusable agent skills for software development in pi-package-goal?",
+  "basis": "Retrieved metadata and abstracts only; no full-text screening or extraction acceptance was performed.",
+  "items": [
+    {
+      "paper": "SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?",
+      "id": "10.48550/arxiv.2603.15401",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "49 public skills, pinned GitHub repositories, about 565 paired task instances across six SWE subdomains, execution-based acceptance tests",
+      "visible_result": "The abstract reports 39/49 skills with zero pass-rate improvement, +1.2% average gain, token overhead up to 451%, seven specialized skills with meaningful gains, and three regressions attributed to version-mismatched guidance.",
+      "bounded_implication": "Require paired skill/no-skill task evaluation, deterministic acceptance tests, token accounting, and version compatibility checks before claiming a skill helps.",
+      "confidence": "directly relevant but recent preprint; abstract-level evidence"
+    },
+    {
+      "paper": "SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering",
+      "id": "10.48550/arxiv.2604.09297",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "16 SkillsBench SE tasks; 38 analyzed skill edits; pass rate and inference cost optimized together",
+      "visible_result": "The abstract reports that pruning and substitution dominated successful edits and reports cost reductions up to 31.7% over static bundles under its benchmark conditions.",
+      "bounded_implication": "Treat skill quality as utility, cost, and harmful-guidance risk—not completeness or pass rate alone; try deletion before expansion.",
+      "confidence": "directly relevant but small benchmark and recent preprint; abstract-level evidence"
+    },
+    {
+      "paper": "More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries",
+      "id": "arXiv:2605.24050",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "Libraries scaled from a small helpful set to 202 skills; pass-rate loss decomposed into selection and context effects",
+      "visible_result": "The abstract reports degradation up to 21% and attributes the primary bottleneck to wrong-skill selection rather than enlarged context.",
+      "bounded_implication": "Add routing regression tests, anti-triggers, overlap review, and bounded bundles; do not assume a larger catalog is better.",
+      "confidence": "directly relevant but recent preprint; abstract-level evidence"
+    },
+    {
+      "paper": "Toward User Comprehension Supports for LLM Agent Skill Specifications",
+      "id": "arXiv:2605.19362",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "Rule-based coding of 878 cybersecurity SKILL markdown specifications plus a six-skill DNS/C2 subset",
+      "visible_result": "The abstract reports examples in 19.0% and all four comprehension anchors in 2.3%: operational basis, output contract, boundary disclosure, and example capability demonstration.",
+      "bounded_implication": "Keep the four-anchor requirement in write-a-skill and test it on non-trivial first-party skills.",
+      "confidence": "large corpus but domain-specific and recent preprint; abstract-level evidence"
+    },
+    {
+      "paper": "Supply-Chain Poisoning Attacks Against LLM Coding Agent Skill Ecosystems",
+      "id": "10.48550/arxiv.2604.03081",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "1,070 generated adversarial skills from 81 seeds, 15 MITRE ATT&CK categories, four frameworks, five models",
+      "visible_result": "The abstract reports document-driven payload bypass rates of 11.6%–33.5%; static analysis caught most cases but 2.5% evaded both detection and alignment.",
+      "bounded_implication": "Review documentation examples and referenced scripts as executable supply-chain content; provenance and package tests alone are insufficient.",
+      "confidence": "directly relevant adversarial study but recent preprint; abstract-level evidence"
+    },
+    {
+      "paper": "Agent Skills Enable a New Class of Realistic and Trivially Simple Prompt Injections",
+      "id": "10.48550/arxiv.2510.26328",
+      "source_venue_year": "arXiv, 2025",
+      "conditions": "Malicious instructions hidden in long skill files and referenced scripts; approval carry-over tested in a coding-agent scenario",
+      "visible_result": "The abstract reports exfiltration-oriented prompt injections and bypass of system-level guardrails through reused approval scope.",
+      "bounded_implication": "Minimize standing skill text, inspect every reference/script, and never let a prior narrow approval silently authorize a broader action.",
+      "confidence": "directly relevant security demonstration but preprint; abstract-level evidence"
+    },
+    {
+      "paper": "AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation",
+      "id": "arXiv:2607.06624",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "Interactive code-agent trajectories; formal verification where available plus written trajectory review and pairwise comparison",
+      "visible_result": "The abstract argues that binary task success misses instruction following, tool use, verification, recovery, and communication behavior.",
+      "bounded_implication": "Evaluate representative skill runs as trajectories, not only final test status.",
+      "confidence": "very recent benchmark preprint; methodology signal, not independent consensus"
+    },
+    {
+      "paper": "Skill Coverage: A Test Adequacy Metric for Agent Skills",
+      "id": "arXiv:2606.20659",
+      "source_venue_year": "arXiv, 2026",
+      "conditions": "Natural-language skill constraints mapped to trajectory-level exercise and adherence signals",
+      "visible_result": "The abstract proposes skill coverage because task outcomes alone do not show which instructions were exercised or followed.",
+      "bounded_implication": "For critical skills, map each red line and verification rule to at least one scenario that exercises it.",
+      "confidence": "very recent preprint; promising evaluation concept requiring local validation"
+    }
+  ]
+}

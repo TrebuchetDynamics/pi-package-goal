@@ -1,0 +1,19 @@
+{
+  "gaps": [
+    "Most direct agent-skill evidence is from 2026 preprints and has not matured into broad peer-reviewed consensus.",
+    "The sweep used retrieved metadata and abstracts; no human-approved full-text acquisition, screening, or extraction acceptance occurred.",
+    "Results from SWE-Skills-Bench, SkillsBench, cybersecurity-skill corpora, or adversarially generated skills may not transfer to Pi, this model mix, or this repository.",
+    "No local paired task benchmark currently proves which pi-package-goal skills improve outcomes versus the same agent without a skill.",
+    "The local section audit is a heading/phrase heuristic; it can miss equivalent anchors written under different names and should not be treated as a compliance verdict.",
+    "The all-sources sweep timed out after 25 of 28 queries and produced substantial off-topic source noise; the focused four-source scholarly sweep completed all 28 queries.",
+    "Semantic Scholar rate-limited 20 of 28 focused queries; OpenAlex, Crossref, and arXiv completed all 28.",
+    "OSS search-plan output is discovery guidance only; no repository was cloned, security-reviewed, license-approved, or recommended for integration."
+  ],
+  "human_gates": [
+    "Screening include/exclude decisions",
+    "Full-text acquisition and licensing review",
+    "Evidence extraction acceptance",
+    "Final scientific claim approval",
+    "Any third-party skill import or package integration"
+  ]
+}

@@ -1,0 +1,20 @@
+	AgentTrap: Measuring Runtime Trust Failures in Third-Party Agent Skills
+10.48550/arxiv.2604.03081	Supply-Chain Poisoning Attacks Against LLM Coding Agent Skill Ecosystems
+	Exploiting LLM Agent Supply Chains via Payload-less Skills
+10.48550/arxiv.2602.20156	Skill-Inject: Measuring Agent Vulnerability to Skill File Attacks
+	PhantomSkill: Malicious Code Injection in Agent Skill Ecosystems
+10.2139/ssrn.5783722	Third-Party SaaS Integration Security: Lessons from Supply Chain Attacks
+10.29121/digisecforensics.v2.i1.2025.94	DATABASE SECURITY IN SUPPLY CHAIN SYSTEMS: SAFEGUARDING VENDOR INFORMATION, TRANSACTION RECORDS, AND THIRD-PARTY DATA EXCHANGE MECHANISMS
+10.1145/3714464	Research Directions in Software Supply Chain Security
+	Software Supply Chain Security for ITSM & Third-Party Risk
+10.5281/zenodo.18787663	Formal Analysis and Supply Chain Security for Agentic AI Skills
+10.1109/svm66695.2025.00010	A Landscape Study of Open-Source Tools for Software Bill of Materials (SBOM) and Supply Chain Security
+10.1145/3671016.3671402	Decoding Web3: In-depth Analysis of the Third-Party Package Supply Chain
+10.1109/mercon67903.2025.11217128	ARGO-SLSA: Software Supply Chain Security in Argo Workflows
+10.48550/arxiv.2510.05798	SBOMproof: Beyond Alleged SBOM Compliance for Supply Chain Security of Container Images
+10.1109/msr66628.2025.00027	Software Composition Analysis and Supply Chain Security in Apache Projects: an Empirical Study
+10.1108/md-04-2017-0428	Skills needed in supply chain-human agency and social capital analysis in third party logistics
+10.48550/arxiv.2509.04091	Revisiting Third-Party Library Detection: A Ground Truth Dataset and Its Implications Across Security Tasks
+10.52058/2786-6025-2025-6(47)-956-965	SECURITY RISKS OF THIRD-PARTY LIBRARIES IN IOS APPLICATIONS
+10.1080/1206212x.2024.2390978	Software supply chain security: a systematic literature review
+10.1007/s10479-025-06739-w	A game theory approach in hydrogen supply chain resilience: focus on pricing, sourcing, and transmission security

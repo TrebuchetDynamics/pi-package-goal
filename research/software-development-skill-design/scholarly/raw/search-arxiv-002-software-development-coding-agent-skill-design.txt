@@ -1,0 +1,20 @@
+	Using Software Categories for the Development of Generative Software
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+10.1145/3183519.3183549	We Don't Need Another Hero? The Impact of "Heroes" on Software Development
+10.1145/3661167.3661171	Agent-Driven Automatic Software Improvement
+	Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+	Agents That Teach: Towards Designing Incidental Learning Back into AI-Assisted Software Development
+10.1007/978-3-031-72781-8_2	Autonomous Agents in Software Development: A Vision Paper
+10.1109/icse.2012.6227139	Semi-Automatically Extracting FAQs to Improve Accessibility of Software Development Knowledge
+10.1109/icse-seis.2019.00013	Software Engineering in Civic Tech: A Case Study about Code for Ireland
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+10.1109/ms.2024.3374821	Overwhelmed Software Developers
+10.1109/semotion.2017.5	Consequences of Unhappiness While Developing Software
+	Transforming Software Development with Generative AI: Empirical Insights on Collaboration and Workflow
+	Navigating Cultural Diversity: Barriers and Potentials in Multicultural Agile Software Development Teams
+	Quantum Software Development Lifecycle
+10.1145/3084226.3084242	On the Unhappiness of Software Developers
+10.1109/ms.2021.3098116	Challenges for Inclusion in Software Engineering: The Case of the Emerging Papua New Guinean Society
+10.1016/j.jss.2019.110394	How does Object-Oriented Code Refactoring Influence Software Quality? Research Landscape and Challenges
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)

@@ -1,0 +1,20 @@
+10.1080/00461520.2016.1207538	Supporting Learners' Agentic Engagement With Feedback: A Systematic Review and a Taxonomy of Recipience Processes
+10.3389/frvir.2021.645153	A Review on Virtual Reality Skill Training Applications
+10.1207/s15516709cog2502_2	From implicit skills to explicit knowledge: a bottom‐up model of skill learning
+10.1007/s11423-023-10203-6	Teachers’ AI digital competencies and twenty-first century skills in the post-pandemic world
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1007/s11257-011-9106-8	A review of recent advances in learner and skill modeling in intelligent learning environments
+	The StarCraft Multi-Agent Challenge
+10.1613/jair.1.11396	A Survey on Transfer Learning for Multiagent Reinforcement Learning Systems
+	The future of skills: employment in 2030
+10.1016/j.ijinfomgt.2023.102642	Opinion Paper: “So what if ChatGPT wrote it?” Multidisciplinary perspectives on opportunities, challenges and implications of generative conversational AI for research, practice and policy
+10.1007/s10956-006-9037-z	Mad City Mystery: Developing Scientific Argumentation Skills with a Place-based Augmented Reality Game on Handheld Computers
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills
+10.1126/scirobotics.aat7544	Improving social skills in children with ASD using a long-term, in-home social robot
+10.1145/3386867	Voice in Human–Agent Interaction
+10.1002/mrm.20048	Quantitative description of proton exchange processes between water and endogenous and exogenous agents for WEX, CEST, and APT experiments
+10.1080/00071773.2011.11006732	Applying Intelligence to the Reflexes: Embodied Skills and Habits between Dreyfus and Descartes
+10.1086/424846	Diagnosis and Treatment of Diabetic Foot Infections
+10.1111/j.1467-9922.2012.00740.x	Transfer of Learning Transformed
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1108/lht-02-2020-0038	Intelligent libraries: a review on expert systems, artificial intelligence, and robot

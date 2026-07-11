@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Memento-Skills: Let Agents Design Agents
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Systematic Debugging of Attribute Grammars
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Debugging Transactions and Tracking their Provenance with Reenactment
+	Support for Debugging Automatically Parallelized Programs
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	Execution replay and debugging
+	Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+	Kodezi Chronos: A Debugging-First Language Model for Repository-Scale Code Understanding
+	On-the-fly Query-Based Debugging with Examples
+	Debug2Fix: Can Interactive Debugging Help Coding Agents Fix More Bugs?
+	Generalized Systematic Debugging for Attribute Grammars
+	A brief overview of the MAD debugging activities
+	Don't Vibe Code, Do Skele-Code: Interactive No-Code Notebooks for Subject Matter Experts to Build Lower-Cost Agentic Workflows
+	Generation of and Debugging with Logical Pre and Postconditions
+	Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes
+	Control and Debugging of Distributed Programs Using Fiddle

@@ -1,0 +1,19 @@
+10.17760/d20467251	Typed contracts for gradual typing
+10.22541/au.174595459.99720502/v1	Toward Intuitive and Accessible Machine Learning Education: A Structured Pythonic Pseudocode Approach
+10.1109/52.35587	Structured flowcharts outperform pseudocode: an experimental comparison
+10.20944/preprints202504.2484.v1	Toward Intuitive and Accessible Machine Learning Education: A Structured Pythonic Pseudocode Approach
+10.2139/ssrn.6542998	Contract-Governed Adversarial Evaluator Hardening: Stage-Gated Recursive Improvement with Typed Promotion Contracts
+10.1109/52.43063	Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison'
+10.1145/2398856.2364539	Practical typed lazy contracts
+10.1145/2364527.2364539	Practical typed lazy contracts
+10.1109/tnnls.2023.3288537/mm1	A Tree-Structured Multitask Model Architectures Recommendation System_supp1-3288537.pdf
+10.1109/52.41650	Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison' by D.A. Scanlan
+10.1109/52.50788	Comments, with reply, on 'Structured flowcharts outperform pseudocode: an experimental comparison' by D.A. Scanlan
+10.7554/elife.40339.010	Supplementary file 1. Simulation model pseudocode.
+10.7717/peerj-cs.3334/table-9	Algorithm: Pseudocode.
+10.2139/ssrn.6878396	ReSSERAct: Safeguarding LLM Agent Decisions against Stale and Contradictory Evidence via Typed Hybrid State
+10.1007/springerreference_22416	pseudocode
+10.7554/elife.25008.029	Supplementary file 1: Simulation model pseudocode.
+10.7717/peerj-cs.3184/table-101	HABCOeSNN pseudocode.
+10.1109/access.2022.3230981	Do Structured Flowcharts Outperform Pseudocode? Evidence From Eye Movements
+10.33369/pseudocode.1.1.15-23	TEKNIK PERANGKINGAN META-SEARCH ENGINE

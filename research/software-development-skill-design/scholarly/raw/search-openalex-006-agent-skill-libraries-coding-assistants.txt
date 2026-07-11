@@ -1,0 +1,20 @@
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+10.1186/s41239-022-00362-6	The impact of a virtual teaching assistant (chatbot) on students' learning in Ghanaian higher education
+10.1108/lht-08-2018-0105	The intelligent library
+10.2196/20346	The Effectiveness of Artificial Intelligence Conversational Agents in Health Care: Systematic Review
+10.1145/3581641.3584037	The Programmer’s Assistant: Conversational Interaction with a Large Language Model for Software Development
+	Agent Technology: Computing as Interaction (A Roadmap for Agent Based Computing)
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.1145/3386867	Voice in Human–Agent Interaction
+10.1145/3373759	Use of Intelligent Voice Assistants by Older Adults with Low Technology Use
+	The future of skills: employment in 2030
+10.6028/nist.sp.800-19	Mobile agent security
+10.1186/s41239-023-00392-8	Artificial intelligence in higher education: the state of the field
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+	Software agents: A review
+10.1186/s41239-019-0171-0	Systematic review of research on artificial intelligence applications in higher education – where are the educators?
+10.1016/j.ijinfomgt.2023.102642	Opinion Paper: “So what if ChatGPT wrote it?” Multidisciplinary perspectives on opportunities, challenges and implications of generative conversational AI for research, practice and policy
+10.1145/3613904.3642697	A Design Space for Intelligent and Interactive Writing Assistants
+10.1145/3491102.3501995	“It’s Kind of Like Code-Switching”: Black Older Adults’ Experiences with a Voice Assistant for Health Information Seeking

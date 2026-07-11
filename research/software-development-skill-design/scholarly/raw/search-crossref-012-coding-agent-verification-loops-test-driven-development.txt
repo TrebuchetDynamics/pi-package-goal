@@ -1,0 +1,20 @@
+10.1007/978-1-4842-8279-3_8	Testing, Verification, and Test-Driven Development
+10.21236/ada546890	Chemical/Biological Agent Resistance Test (CBART) Test Fixture System Verification and Analytical Monitioring System Development
+10.1109/wsc.2013.6721538	Test-driven agent-based simulation development
+10.1109/icstw.2011.28	Regression Test Selection Techniques for Test-Driven Development
+10.2172/1375892	User input verification and test driven development in the NJOY21 nuclear data processing code
+10.7287/peerj.preprints.1920v2	Analysis of Test Driven Development on sentiment and coding activities in GitHub repositories
+10.7287/peerj.preprints.1920v1	Analysis of Test Driven Development on sentiment and coding activities in GitHub repositories
+10.1007/979-8-8688-2361-9_11	Engineering Agent Feedback Loops
+10.1109/icstw.2010.76	TDD: 1st International Workshop on Test-Driven Development Committee
+10.1145/3617553.3617889	Gamification in Test-Driven Development Practice
+10.1007/978-3-031-66638-4_2	Conditionals, Recursion, and Loops
+10.1007/978-0-387-38152-7_17	Design for Test
+10.1007/978-1-4842-6972-5_3	Test-Driven Development 101
+10.37423/2025.edcl1087	MDD4ABMS: Model-driven Agent-based Simulation Development
+10.1109/icstw58534.2023.00075	Teaching Test-Driven Development and Object-Oriented Design by Example
+10.1007/978-1-4842-6972-5_1	A Very Brief History of Test-Driven Development
+10.1109/mtv.2004.22	Robust Vera coding techniques for gate-level and tester-compliant SoC verification environments
+10.1007/978-1-4842-6972-5_10	Behavior-Driven Development
+10.31142/ijtsrd23698	Comparative Study of Test-Driven Development TDD, Behavior-Driven Development BDD and Acceptance Test–Driven Development ATDD
+10.1109/mtv.2016.19	Scalable, Constrained Random Software Driven Verification

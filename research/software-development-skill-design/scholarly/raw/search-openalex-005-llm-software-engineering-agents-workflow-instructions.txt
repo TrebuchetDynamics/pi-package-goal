@@ -1,0 +1,20 @@
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1609/aaai.v38i17.29936	ExpeL: LLM Agents Are Experiential Learners
+10.1007/s10462-024-10888-y	Large language models (LLMs): survey, technical frameworks, and future challenges
+10.48550/arxiv.2308.10620	Large Language Models for Software Engineering: A Systematic Literature Review
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1186/s42400-025-00361-w	When LLMs meet cybersecurity: a systematic literature review
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+10.48550/arxiv.2303.10130	GPTs are GPTs: An Early Look at the Labor Market Impact Potential of Large Language Models
+10.1145/3640543.3645143	LAVE: LLM-Powered Agent Assistance and Language Augmentation for Video Editing
+10.3389/fcomp.2025.1519437	Research directions for using LLM in software requirement engineering: a systematic review
+10.1039/d3dd00113j	14 examples of how LLMs can transform materials science and chemistry: a reflection on a large language model hackathon
+10.70777/si.v2i3.15161	AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges
+10.48550/arxiv.2303.12712	Sparks of Artificial General Intelligence: Early experiments with GPT-4
+10.48550/arxiv.2308.08155	AIKernel Semantic DSL Compiler and Deterministic Agent Execution Architecture
+10.18653/v1/2025.findings-emnlp.320	Agent Laboratory: Using LLM Agents as Research Assistants
+10.1145/3711896.3736570	Evaluation and Benchmarking of LLM Agents: A Survey
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.1007/s10462-025-11241-7	A review of LLMs and their applications in the architecture, engineering and construction industry
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?

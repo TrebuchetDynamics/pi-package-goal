@@ -1,0 +1,20 @@
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1016/j.spc.2021.04.007	Agent-based modelling for market acceptance of electric vehicles: Evidence from China
+10.1136/bmj-2024-081554	FUTURE-AI: international consensus guideline for trustworthy and deployable artificial intelligence in healthcare
+10.48550/arxiv.2509.06216	Agentic Software Engineering: Foundational Pillars and a Research Roadmap
+10.1007/s10462-022-10286-2	AI-big data analytics for building automation and management systems: a survey, actual challenges and future perspectives
+10.48550/arxiv.2410.09024	AgentHarm: A Benchmark for Measuring Harmfulness of LLM Agents
+10.1093/nar/gkaf1172	Database resources of the National Genomics Data Center, China National Center for Bioinformation in 2026
+10.1007/s11432-025-4670-0	A survey on large language models for software engineering
+10.18653/v1/2026.findings-acl.1330	A Survey on Evaluation of LLM-based Agents
+10.1109/tpami.2021.3126648	Fine-Grained Image Analysis With Deep Learning: A Survey
+10.1021/acscentsci.4c01935	Leveraging Prompt Engineering in Large Language Models for Accelerating Chemical Research
+10.1021/acs.jcim.4c01815	Permeability Benchmarking: Guidelines for Comparing <i>in Silico</i>, <i>in Vitro</i>, and <i>in Vivo</i> Measurements
+10.3390/en14030656	Stimulating E-Mobility Diffusion in Germany (EMOSIM): An Agent-Based Simulation Approach
+10.1002/9781119883111.ch5	6G Wireless Communication Systems
+10.1007/s10311-023-01591-5	Strategies to save energy in the context of the energy crisis: a review
+10.1007/s11704-025-50058-z	A comprehensive taxonomy of prompt engineering techniques for large language models
+10.3390/info17010054	Prompt Injection Attacks in Large Language Models and AI Agent Systems: A Comprehensive Review of Vulnerabilities, Attack Vectors, and Defense Mechanisms
+10.1016/j.enpol.2018.03.045	Transition to low-carbon economy: Assessing cumulative impacts of individual behavioral changes
+10.1109/ojcoms.2021.3071496	Survey on 6G Frontiers: Trends, Applications, Requirements, Technologies and Future Research
+10.3390/soc15080212	Exploring Sustainable Development Goals and Curriculum Adoption: A Scoping Review from 2020–2025

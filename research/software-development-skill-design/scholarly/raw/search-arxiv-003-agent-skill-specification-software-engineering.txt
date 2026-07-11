@@ -1,0 +1,20 @@
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)
+10.1109/icse-seis.2019.00013	Software Engineering in Civic Tech: A Case Study about Code for Ireland
+10.1109/tse.2018.2877759	Cognitive Biases in Software Engineering: A Systematic Mapping Study
+10.1145/3715003	The Future of AI-Driven Software Engineering
+10.1145/3530019.3530022	Text and Team: What Article Metadata Characteristics Drive Citations in Software Engineering?
+10.1145/2897676.2897677	Nmag micromagnetic simulation tool - software engineering lessons learned
+10.1145/3712004	Software Engineering for Collective Cyber-Physical Ecosystems
+10.1145/3644815.3644951	An Exploratory Study of V-Model in Building ML-Enabled Software: A Systems Engineering Perspective
+	What Does a Software Engineer Look Like? Exploring Societal Stereotypes in LLMs
+	Bridging the Gap: Adapting Evidence to Decision Frameworks to support the link between Software Engineering academia and industry
+10.1007/978-3-031-94544-1_5	A Mosaic of Perspectives: Understanding Ownership in Software Engineering
+10.1007/s10664-020-09825-8	PHANTOM: Curating GitHub for engineered software projects using time-series clustering
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+	Insights from the Frontline: GenAI Utilization Among Software Engineering Students
+10.1109/tse.2021.3106280	Socio-Technical Grounded Theory for Software Engineering
+10.1145/3183519.3183549	We Don't Need Another Hero? The Impact of "Heroes" on Software Development
+10.1109/se-hpccse.2016.008	The Scalability-Efficiency/Maintainability-Portability Trade-off in Simulation Software Engineering: Examples and a Preliminary Systematic Literature Review
+10.1109/ms.2021.3098116	Challenges for Inclusion in Software Engineering: The Case of the Emerging Papua New Guinean Society
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Foundation Model Engineering: Engineering Foundation Models Just as Engineering Software

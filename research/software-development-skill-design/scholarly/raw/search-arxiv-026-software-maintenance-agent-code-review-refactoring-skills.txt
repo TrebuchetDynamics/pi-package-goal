@@ -1,0 +1,20 @@
+10.1016/j.jss.2019.110394	How does Object-Oriented Code Refactoring Influence Software Quality? Research Landscape and Challenges
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1109/icsme55016.2022.00033	RMove: Recommending Move Method Refactoring Opportunities using Structural and Semantic Representations of Code
+10.1016/j.infsof.2023.107159	Many-Objective Optimization of Non-Functional Attributes based on Refactoring of Software Models
+10.1109/icsa-c57050.2023.00046	Multi-objective Software Architecture Refactoring driven by Quality Attributes
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+10.1145/3661167.3661171	Agent-Driven Automatic Software Improvement
+	Technical Debt Friction for Maintenance Prioritization: An Industrial Multi-Case Study
+	Agentic Refactoring: An Empirical Study of AI Coding Agents
+10.1109/ase56229.2023.00205	Assessing the Impact of Refactoring Energy-Inefficient Code Patterns on Software Sustainability: An Industry Case Study
+	Software Testing and Code Refactoring: A Survey with Practitioners
+10.1007/978-3-032-12089-2_26	LLM-based Multi-Agent System for Intelligent Refactoring of Haskell Code
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Memento-Skills: Let Agents Design Agents
+	How do Agents Refactor: An Empirical Study
+	CoDocBench: A Dataset for Code-Documentation Alignment in Software Maintenance
+10.1007/s10664-021-10045-x	How Do I Refactor This? An Empirical Study on Refactoring Trends and Topics in Stack Overflow
+	RefAgent: A Multi-agent LLM-based Framework for Automatic Software Refactoring
+	Use of Source Code Similarity Metrics in Software Defect Prediction
+10.1109/icse-seis.2019.00013	Software Engineering in Civic Tech: A Case Study about Code for Ireland

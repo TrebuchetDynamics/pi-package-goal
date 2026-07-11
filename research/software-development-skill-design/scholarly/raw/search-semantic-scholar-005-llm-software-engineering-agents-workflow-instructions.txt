@@ -1,0 +1,20 @@
+10.48550/arxiv.2408.08054	Text2BIM: Generating Building Models Using a Large Language Model-based Multi-Agent Framework
+10.1145/3715754	Demystifying LLM-Based Software Engineering Agents
+10.48550/arxiv.2407.01489	Agentless: Demystifying LLM-based Software Engineering Agents
+10.48550/arxiv.2505.20411	SWE-rebench: An Automated Pipeline for Task Collection and Decontaminated Evaluation of Software Engineering Agents
+10.48550/arxiv.2511.13646	Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly?
+10.1109/ase63991.2025.00234	Understanding Software Engineering Agents: A Study of Thought-Action-Result Trajectories
+10.48550/arxiv.2506.07636	SWE-Dev: Building Software Engineering Agents with Training and Inference Scaling
+10.48550/arxiv.2511.19635	Agint: Agentic Graph Compilation for Software Engineering Agents
+10.48550/arxiv.2508.03501	Training Long-Context, Multi-Turn Software Engineering Agents with Reinforcement Learning
+	Ambig-SWE: Interactive Agents to Overcome Underspecificity in Software Engineering
+10.48550/arxiv.2507.09063	SetupBench: Assessing Software Engineering Agents' Ability to Bootstrap Development Environments
+10.48550/arxiv.2511.13998	LoCoBench-Agent: An Interactive Benchmark for LLM Agents in Long-Context Software Engineering
+10.48550/arxiv.2507.23370	Trae Agent: An LLM-based Agent for Software Engineering with Test-time Scaling
+10.48550/arxiv.2508.00083	A Survey on Code Generation with LLM-based Agents
+10.48550/arxiv.2602.07900	Rethinking the Value of Agent-Generated Tests for LLM-Based Software Engineering Agents
+10.48550/arxiv.2408.07060	Diversity Empowers Intelligence: Integrating Expertise of Software Engineering Agents
+10.48550/arxiv.2506.17772	PAGENT: Learning to Patch Software Engineering Agents
+10.18653/v1/2026.acl-long.862	Taming System Complexity: Demystifying Software Engineering Agents in Diagnosing Linux Kernel Faults
+10.48550/arxiv.2510.21903	TOM-SWE: User Mental Modeling For Software Engineering Agents
+10.1109/rew66121.2025.00038	Generating Context-Aware Learning Materials for Software Security via LLM Agents and Traceability

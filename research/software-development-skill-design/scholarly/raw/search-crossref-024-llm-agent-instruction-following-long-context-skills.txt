@@ -1,0 +1,20 @@
+10.7717/peerj-cs.2328/fig-8	Figure 8: Prompt for multi-agent LLM for best instruction improvement.
+10.7717/peerj-cs.2328/fig-7	Figure 7: Prompt for multi-agent LLM for best instruction choice.
+10.1109/robio64047.2024.10907585	Instruction-Following Long-Horizon Manipulation by LLM-Empowered Symbolic Planner
+10.1109/iscait69154.2026.11477382	LLM-Prefetch: Accelerating Long-Context LLM Inference via Explicit Prefetching
+10.21203/rs.3.rs-10055780/v1	HierMem: Context Curation Over Context Scaling — Hierarchical Memory with Invariant Constraint Placement for Long-Horizon LLM Conversations
+10.18653/v1/2024.eacl-long.39	Generation-driven Contrastive Self-training for Zero-shot Text Classification with Instruction-following LLM
+10.18653/v1/2024.acl-long.37	OPEx: A Component-Wise Analysis of LLM-Centric Agents in Embodied Instruction Following
+10.7717/peerj-cs.2328/table-13	Table B.10: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Stable Diffusion—Image to Prompts” competition by fine-tuned Llama 2.
+10.1109/icaice68195.2025.11382371	LLM-Driven Multi-Agent Architecture for Automated Physical Education Instruction
+10.2139/ssrn.6869438	RIS-Kernel: A Model-agnostic Architecture for Long-context LLM Inference via Sparse Attention
+10.1109/tcds.2025.3543364	RoboGPT: An LLM-Based Long-Term Decision-Making Embodied Agent for Instruction Following Tasks
+10.63337/term.2025.53588	The Long Context Conundrum: Challenges and Innovations in Scaling LLM Memory
+10.1109/etai68332.2026.11485338	ICL-Agent: Improving LLM Agent Capabilities via a Novel In-Context Learning Approach
+10.1145/3749421.3749435	SagaLLM: Persistent Context Management, Constraint Validation, and Transaction Guarantees
+10.62791/20338	An LLM-based autonomous multi-agent system
+10.7717/peerj-cs.2328/table-16	Table B.13: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Regression with a Tabular Paris Housing Price Dataset” competition by fine-tuned Llama 2.
+10.18653/v1/2026.acl-long.1573	ToolScope: Enhancing LLM Agent Tool Use through Tool Merging and Context-Aware Filtering
+10.7717/peerj-cs.2328/table-10	Table B.7: An automatically chosen and improved with multi-agent LLM best sample instruction generated for “Climate Activism Stance and Hate Event Detection Shared Task” competition by fine-tuned Llama 2.
+10.2139/ssrn.6871959	Harnessing Agent Skills: Architectural Patterns and a Reference Architecture for Skill-Mediated LLM Agents
+10.1145/3749421.3749434	A Checks-and-Balances Framework for Context-Aware Ethical AI Alignment

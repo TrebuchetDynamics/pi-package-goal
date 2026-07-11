@@ -1,0 +1,20 @@
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents
+	Agentic Skill Discovery
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Reinforcement Learning for Self-Improving Agent with Skill Library
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	ComSD: Balancing Behavioral Quality and Diversity in Unsupervised Skill Discovery
+	AtomicCommitBench: Can Coding Agents Reconstruct Commit Histories from Squashed Patches?
+	CODESKILL: Learning Self-Evolving Skills for Coding Agents
+	Hierarchical Cooperative Multi-Agent Reinforcement Learning with Skill Discovery
+	MetaSkill-Evolve: Recursive Self-Improvement of LLM Agents via Two-Timescale Meta-Skill Evolution
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Contractual Skills: A GovernSpec Design Framework for Enterprise AI Agents
+	SEVerA: Verified Synthesis of Self-Evolving Agents
+	Pseudo RGB-D for Self-Improving Monocular SLAM and Depth Prediction
+	Creating Multimodal Interactive Agents with Imitation and Self-Supervised Learning
+	GRASP: Gated Regression-Aware Skill Proposer for Self-Improving LLM Agents
+	SkillWeaver: Web Agents can Self-Improve by Discovering and Honing Skills
+	Scaling Coding Agents via Atomic Skills
+	Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes

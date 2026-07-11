@@ -1,0 +1,20 @@
+10.1145/224019.224021	Dynamic change within workflow systems
+10.18564/jasss.2661	A Survey of Agent Platforms
+	A Model for Organizational Interaction: based on Agents, founded in Logic
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.6100/ir557134	Design and control of workflow processes : business process management for the service industry
+10.4230/lipics.concur.2020.3	Agnostic Learning with Unknown Utilities
+10.1145/3342355	Formal Specification and Verification of Autonomous Robotic Systems
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.70777/si.v2i3.15161	AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges
+10.1016/j.inffus.2025.103599	AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1016/j.inffus.2019.12.012	Explainable Artificial Intelligence (XAI): Concepts, taxonomies, opportunities and challenges toward responsible AI
+10.1145/3654777.3676345	Improving Steering and Verification in AI-Assisted Data Analysis with Interactive Task Decomposition
+10.1136/amiajnl-2010-000033	Computerization of workflows, guidelines, and care pathways: a review of implementation challenges for process-oriented health information systems
+10.1016/j.envsoft.2012.09.011	Characterising performance of environmental models
+10.48550/arxiv.2308.08155	AIKernel Semantic DSL Compiler and Deterministic Agent Execution Architecture
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.1109/tsmca.2012.2210406	Using Formal Verification to Evaluate Human-Automation Interaction: A Review
+10.1007/s10489-012-0380-x	Agent-based Cloud service composition
+10.1145/266741.266746	A flexible model supporting the specification and enforcement of role-based authorization in workflow management systems

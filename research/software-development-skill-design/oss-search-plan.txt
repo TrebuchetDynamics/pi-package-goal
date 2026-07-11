@@ -1,0 +1,35 @@
+# OSS search plan: recent best practices for reusable AI agent skills for software development coding agents
+
+- Codeberg (forge): https://codeberg.org/explore/repos?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: stars, forks, activity, license
+  Gate: pattern-reference before dependency/integration
+- GitHub (forge): https://github.com/search?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents&type=repositories
+  Signals: stars, forks, recent commits, issues, license, topics
+  Gate: pattern-reference before dependency/integration
+- GitLab (forge): https://gitlab.com/search?search=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents&scope=projects
+  Signals: last activity, stars, forks, license, CI config
+  Gate: pattern-reference before dependency/integration
+- OpenSSF Scorecard (security): scorecard --repo <candidate-url>
+  Signals: branch protection, dependency update policy, CI tests, security policy
+  Gate: security review before integration
+- PyPI (package-registry): https://pypi.org/search/?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: release cadence, project links, license, downloads
+  Gate: dependency approval before import
+- Software Heritage (archive): https://archive.softwareheritage.org/browse/search/?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: archive presence, origin URLs, visit status
+  Gate: archive/reference only
+- SourceHut (forge): https://sr.ht/projects?search=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: mailing-list activity, repository activity, license
+  Gate: pattern-reference before dependency/integration
+- Zenodo/GitHub links (research-archive): https://zenodo.org/search?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: DOI, software release archive, license
+  Gate: citation/reference review
+- crates.io (package-registry): https://crates.io/search?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: downloads, recent versions, repository, license
+  Gate: dependency approval before import
+- npm (package-registry): https://www.npmjs.com/search?q=recent%20best%20practices%20for%20reusable%20AI%20agent%20skills%20for%20software%20development%20coding%20agents
+  Signals: weekly downloads, versions, maintainers, repository link
+  Gate: dependency approval before import
+- pkg.go.dev (package-registry): https://pkg.go.dev/search?q=recent+best+practices+for+reusable+AI+agent+skills+for+software+development+coding+agents
+  Signals: import path, versions, licenses, dependents
+  Gate: dependency approval before import

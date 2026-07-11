@@ -1,0 +1,20 @@
+10.31219/osf.io/nbm4f	CoordiLang: Assessing Multi-Agent Coordination Skills in Large Language Models
+10.32469/10355/90117	Cross-functional skills of the fashion industry professional : T-shaped person skills framework for the fashion professional
+10.63412/kb44xf51	A Framework for Autonomous, Cross-Cloud Threat Mitigation Using Multi-Agent Reinforcement Learning
+10.36227/techrxiv.175695551.16717982/v1	A Framework for Autonomous, Cross-Cloud Threat Mitigation Using Multi-Agent Reinforcement Learning
+10.70675/a52adc1fzadbfz4486zb574zffffd9d4b420	Real-time Truck Scheduling in Cross-Docking : A Hybrid Multi-Agent Simulation Framework
+10.1109/worldsuas66815.2025.11199092	AI Agent-Based Framework for Personalized Music Recommendation
+10.2139/ssrn.6263108	AI-Driven Cross-Disciplinary Idea Generation: A Multi-Agent Framework with World Café Simulation
+10.1126/science.opms.r0700030	Transferable Skills And Portable Careers
+10.7249/rba271-1	Six Skills for Success: How the National Guard Youth ChalleNGe Program Can Support Participants in Developing Portable Skills Employers Value
+10.20944/preprints202512.1648.v1	A Neuro-Symbolic and Blockchain-Enhanced Multi-Agent Framework for Fair and Consistent Cross-Regulatory Audit Intelligence
+10.5220/0010253902180227	Portable High-level Agent Programming with golog++
+10.1109/cac67268.2025.11487652	Research on cross domain collaboration framework based on adaptive AI algorithm and multi agent architecture
+10.1201/9780080928692-8	Portable Powered Hand Tools
+10.2139/ssrn.2901951	Organizational Design with Portable Skills
+10.2139/ssrn.5388867	Toward an Integrative Framework of Conversational Agent Persuasion: A Cross-Disciplinary Review and Causal Knowledge Analysis
+10.31219/osf.io/8uwtp	A cross-sectional study of undergraduates’ ethical reasoning skills at a liberal arts institution
+10.70401/jbde.2025.0018	A multi-agent debate workflow for construction projects: A cross-stage decision framework
+10.31219/osf.io/2bazq_v1	Multiple Linguistic Thresholds in the Cross-linguistic Transfer of Metalinguistic Awareness Skills: A Change-point Analysis to the Linguistic Threshold Hypothesis
+10.2139/ssrn.6265798	AgenticMemory: A Binary Graph Format for Persistent, Portable, and Navigable AI Agent Memory
+10.1007/978-3-0348-8260-6_9	Change agent skills

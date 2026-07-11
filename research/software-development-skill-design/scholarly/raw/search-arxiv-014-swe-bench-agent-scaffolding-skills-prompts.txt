@@ -1,0 +1,20 @@
+	SWE-bench Goes Live!
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	SWE-ABS: Adversarial Benchmark Strengthening Exposes Inflated Success Rates on Test-based Benchmark
+	SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+	Training Software Engineering Agents and Verifiers with SWE-Gym
+	Memento-Skills: Let Agents Design Agents
+	Socratic-SWE: Self-Evolving Coding Agents via Trace-Derived Agent Skills
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	SWE-Shepherd: Advancing PRMs for Reinforcing Code Agents
+	Saving SWE-Bench: A Benchmark Mutation Approach for Realistic Agent Evaluation
+	SWE-rebench: An Automated Pipeline for Task Collection and Decontaminated Evaluation of Software Engineering Agents
+	SWE-Debate: Competitive Multi-Agent Debate for Software Issue Resolution
+	SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+	SWE-Pruner: Self-Adaptive Context Pruning for Coding Agents
+	Kimi-Dev: Agentless Training as Skill Prior for SWE-Agents
+	UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench
+	SWE-Bench+: Enhanced Coding Benchmark for LLMs
+	SWE-Bench Mobile: Can Large Language Model Agents Develop Industry-Level Mobile Applications?
+	Claw-SWE-Bench: A Benchmark for Evaluating OpenClaw-style Agent Harnesses on Coding Tasks

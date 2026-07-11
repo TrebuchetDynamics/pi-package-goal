@@ -1,0 +1,20 @@
+	Skill Drift Is Contract Violation: Proactive Maintenance for LLM Agent Skill Libraries
+	From Raw Experience to Skill Consumption: A Systematic Study of Model-Generated Agent Skills
+	SkillResolve-Bench: Measuring and Resolving Same-Capability Ambiguity in Agent Skill Retrieval
+	Offline Multi-agent Continual Cooperation via Skill Partition and Reuse
+10.64898/2026.06.11.731523	Trustworthy agentic genomics through versioned skill libraries
+10.1109/isbdas69350.2026.11484408	Constraint-Consistent Skill Composition for Reliable Zero-Shot Task Generalization in LLM Agents
+10.48550/arxiv.2601.07470	Learning How to Remember: A Meta-Cognitive Management Method for Structured and Transferable Agent Memory
+	Not All Skills Help: Measuring and Repairing Agent Knowledge
+	SkillComposer: Learning to Evolve Agent Skills for Specification and Generalization
+	Automating SKILL.md Generation for Computer-Using Agents via Interaction Trajectory Mining
+	The Scaling Laws of Skills in LLM Agent Systems
+10.1109/access.2026.3676711	N-to-1 Knowledge Transfer in Reinforcement Learning via Adaptive Q-Function Selection
+10.1109/iccnct68477.2026.11590009	AI Knowledge Fabric (Universal Cognitive Agent)
+10.48550/arxiv.2604.17308	SkillFlow:Benchmarking Lifelong Skill Discovery and Evolution for Autonomous Agents
+	GRASP: Gated Regression-Aware Skill Proposer for Self-Improving LLM Agents
+	Continual Quadruped Robots Coordination via Semantic Skill Discovery
+	SkillsVote: Lifecycle Governance of Agent Skills from Collection, Recommendation to Evolution
+10.48550/arxiv.2604.04804	SkillX: Automatically Constructing Skill Knowledge Bases for Agents
+	Compositional Skill Routing for LLM Agents: Decompose, Retrieve, and Compose
+	When Search Becomes Memory: Turning Robot Design Trials into Transferable Skills

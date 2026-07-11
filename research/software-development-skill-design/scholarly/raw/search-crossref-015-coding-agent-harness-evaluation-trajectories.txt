@@ -1,0 +1,20 @@
+10.70675/b28d4fb6z6723z49e5z9aa0zf4cfe5c76f78	Green coding : an empirical approach to harness the energy consumption ofsoftware services
+10.20944/preprints202606.2203.v1	Harness Engineering for LLM Agents: A Survey of Harness Component Taxonomy, Evaluation, and Model–Harness Coevolution
+10.4324/9781315207773-5	Negotiation within directive trajectories
+10.4324/9781315207773-9	Alternative trajectories and attunements to requests for a hug
+10.32614/cran.package.harness	harness: Curated Agentic Harnesses for R Professional Roles
+10.1145/2814940.2814975	Performance Evaluation of Tile Coding in Reinforcement Learning
+10.3403/30297779	Information technology. Advanced image coding and evaluation
+10.3403/30297779u	Information technology. Advanced image coding and evaluation
+10.1016/j.pdpdt.2022.102904	Evaluation of silver nanoparticles attached to methylene blue as an antimicrobial agent and its cytotoxicity
+10.32614/cran.package.myownrobs	myownrobs: AI Coding Agent for 'RStudio'
+10.2139/ssrn.6655759	Bounded Attractor Dynamics in LLM Agent Personality Trajectories&amp;nbsp;
+10.5040/9781350870345	Harness Pull
+10.1109/tvt.2023.3298060/mm2	Event-triggered consensus control of agent-based full-vehicle suspension systems_supp1-3298060.gif
+10.1109/tvt.2023.3298060/mm1	Event-triggered consensus control of agent-based full-vehicle suspension systems_supp2-3298060.gif
+10.15170/ttk-szjszk-2025b-7	Optimizing Multi-Agent Collaboration with Genetic Algorithm in Wire Harness Assembly
+10.2523/24050-ms	New Technique Provides Better Low-Density-Cement Evaluation
+10.1142/9789812811899_0019	PROPRIOCEPTIVE SENSORY CODING OF 2-D MOVEMENT TRAJECTORIES IN HUMANS: A MICRONEUROGRAPHIC STUDY
+10.21428/92fbeb44.7299536b	A Live Coding Session With the Cloud and a Virtual Agent
+10.2139/ssrn.6929318	What Context Does a Coding Agent Actually Need to Act?
+10.20944/preprints202604.0428.v1	Agent Harness for Large Language Model Agents: A Survey

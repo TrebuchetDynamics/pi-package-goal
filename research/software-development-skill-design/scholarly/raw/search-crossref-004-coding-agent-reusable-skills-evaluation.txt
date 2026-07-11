@@ -1,0 +1,20 @@
+10.1520/e1273-88r13	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273-88r97e01	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273-88r25	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273-88r08	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273-88r19	Specification for Color Coding of Reusable Laboratory Pipets
+10.1520/e1273-88r03	Specification for Color Coding of Reusable Laboratory Pipets
+10.14264/338614	Preliminary Evaluation of the ‘Secret Agent Society’ Social-Emotional Skills Programme with Typically Developing Children
+10.1145/2814940.2814975	Performance Evaluation of Tile Coding in Reinforcement Learning
+10.1017/cbo9780511571350.012	Coding procedures
+10.3403/30297779	Information technology. Advanced image coding and evaluation
+10.3403/30297779u	Information technology. Advanced image coding and evaluation
+10.32614/cran.package.myownrobs	myownrobs: AI Coding Agent for 'RStudio'
+10.2139/ssrn.5256510	A Scalable and Reusable Agent-Based Model for Last-Mile Delivery Systems Using the Agent/Group/Role Approach
+10.1145/336595.337045	An agent model platform for realizing efficient and reusable agent software
+10.2466/pms.110.1.245-256	Repetition Blindness for Faces Reflects Identity Coding but Not Emotion Coding
+10.22215/etd/2003-05450	Performance evaluation of systems built with reusable frameworks.
+10.1007/978-3-662-04401-8_14	Reusable Patterns for Agent Coordination
+10.1007/11678823_7	Reusable Components for Implementing Agent Interactions
+10.2466/pms.1974.39.1.111	Analysis of WISC Coding: 5. Prediction of Coding Performance

@@ -1,0 +1,20 @@
+	Individual Planning in Agent Populations: Exploiting Anonymity and Frame-Action Hypergraphs
+	Securing Generative AI Agentic Workflows: Risks, Mitigation, and a Proposed Firewall Architecture
+	HDDL 2.1: Towards Defining a Formalism and a Semantics for Temporal HTN Planning
+	Provenance-Based Assessment of Plans in Context
+	AMAP Agentic Planning Technical Report
+	PROV-AGENT: Unified Provenance for Tracking AI Agent Interactions in Agentic Workflows
+	WORKSWORLD: A Domain for Integrated Numeric Planning and Scheduling of Distributed Pipelined Workflows
+10.1007/978-3-030-03421-4_15	Deductive Verification of Unmodified Linux Kernel Library Functions
+	MedScore: Generalizable Factuality Evaluation of Free-Form Medical Answers by Domain-adapted Claim Decomposition and Verification
+	Predicted Composite Signed-Distance Fields for Real-Time Motion Planning in Dynamic Environments
+	Efficient Multi-agent Epistemic Planning: Teaching Planners About Nested Belief
+	FlowBench: Revisiting and Benchmarking Workflow-Guided Planning for LLM-based Agents
+	MolSSI and BioExcel Workflow Workshop 2018 Report
+	Visualizations for an Explainable Planning Agent
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+	KubeAdaptor: A Docking Framework for Workflow Containerization on Kubernetes
+	Multimedia Verification Through Multi-Agent Deep Research Multimodal Large Language Models
+	Lean4Agent: Formal Modeling and Verification for Agent Workflow and Trajectory
+	Flow-Bench: A Dataset for Computational Workflow Anomaly Detection
+10.1145/3805622.3812606	Contestable Multi-Agent Debate with Arena-based Argumentative Computation for Multimedia Verification

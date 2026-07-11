@@ -1,0 +1,20 @@
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)
+	What Does a Software Engineer Look Like? Exploring Societal Stereotypes in LLMs
+	Bridging the Gap: Adapting Evidence to Decision Frameworks to support the link between Software Engineering academia and industry
+10.1109/icse-seis.2019.00013	Software Engineering in Civic Tech: A Case Study about Code for Ireland
+10.1109/tse.2018.2877759	Cognitive Biases in Software Engineering: A Systematic Mapping Study
+10.1145/3715003	The Future of AI-Driven Software Engineering
+	Reproducible, Explainable, and Effective Evaluations of Agentic AI for Software Engineering
+10.1145/2897676.2897677	Nmag micromagnetic simulation tool - software engineering lessons learned
+10.1145/3530019.3530022	Text and Team: What Article Metadata Characteristics Drive Citations in Software Engineering?
+10.1145/3644815.3644951	An Exploratory Study of V-Model in Building ML-Enabled Software: A Systems Engineering Perspective
+10.1145/3712004	Software Engineering for Collective Cyber-Physical Ecosystems
+10.1007/978-3-031-94544-1_5	A Mosaic of Perspectives: Understanding Ownership in Software Engineering
+	Insights from the Frontline: GenAI Utilization Among Software Engineering Students
+	"ENERGY STAR" LLM-Enabled Software Engineering Tools
+10.1007/s10664-020-09825-8	PHANTOM: Curating GitHub for engineered software projects using time-series clustering
+10.1145/3793655.3793716	Towards Comprehensive Benchmarking Infrastructure for LLMs In Software Engineering
+	Aleena: Alignment Agent for Research Software Engineering Collaborations
+10.1007/s10664-021-10053-x	Developers Perception of Peer Code Review in Research Software Development
+10.1145/3793657.3793873	How Software Engineering Research Overlooks Local Industry: A Smaller Economy Perspective
+10.5334/jors.ad	A Web-based modeling tool for the SEMAT Essence theory of Software Engineering

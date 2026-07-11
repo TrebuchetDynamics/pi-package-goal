@@ -1,0 +1,20 @@
+10.1016/j.sca.2023.100050	Exploitation of material consolidation trade-offs in multi-tier complex supply networks
+	SoK: Analysis of Software Supply Chain Security by Establishing Secure Design Properties
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Modeling and Assessment of IoT Supply Chain Security Risks: The Role of Structural and Parametric Uncertainties
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+10.5281/zenodo.18787663	Formal Analysis and Supply Chain Security for Agentic AI Skills
+10.1142/s0219749913500251	Quantum protocols for the millionaire problem with a third party are trivial
+10.1145/3689944.3696166	GoSurf: Identifying Software Supply Chain Attack Vectors in Go
+	Anchors that Don't Lift: Understanding Supply Chain Driven Kernel Lock-In and Governance-Mediated Mitigation Strategies in SOHO Devices
+	Changing Neighbors k Secure Sum Protocol for Secure Multi Party Computation
+	Research on Third-Party Libraries in AndroidApps: A Taxonomy and Systematic LiteratureReview
+	AgentTrap: Measuring Runtime Trust Failures in Third-Party Agent Skills
+	Memento-Skills: Let Agents Design Agents
+10.1145/xxxxxx.xxxxxx	Confidence Scoring for LLM-Generated SQL in Supply Chain Data Extraction
+	Exploiting LLM Agent Supply Chains via Payload-less Skills
+	Large Language Models for Supply Chain Decisions
+	A General Simulation Framework for Supply Chain Modeling: State of the Art and Case Study
+10.1016/j.sca.2024.100083	An Integrated Supply Chain Network Design for Advanced Air Mobility Aircraft Manufacturing Using Stochastic Optimization
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	An Attack to Break Permutation-Based Private Third-Party Inference Schemes for LLMs

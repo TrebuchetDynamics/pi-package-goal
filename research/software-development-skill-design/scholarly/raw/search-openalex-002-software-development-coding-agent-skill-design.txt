@@ -1,0 +1,20 @@
+10.3386/w8337	The Skill Content of Recent Technological Change: An Empirical Exploration
+10.1145/3586183.3606763	Generative Agents: Interactive Simulacra of Human Behavior
+10.18653/v1/2024.acl-long.810	ChatDev: Communicative Agents for Software Development
+10.1093/jamia/ocy072	Conversational agents in healthcare: a systematic review
+10.1038/s41586-020-2649-2	Array programming with NumPy
+10.48550/arxiv.2107.03374	Evaluating Large Language Models Trained on Code
+10.2139/ssrn.272691	The Skill Content of Recent Technological Change: An Empirical Exploration
+10.48550/arxiv.2307.07924	ChatDev: Communicative Agents for Software Development
+	Array programming with NumPy
+10.1007/s11704-024-40231-1	A survey on large language model based autonomous agents
+	Software agents: A review
+10.1109/access.2019.2953499	A Survey on Digital Twin: Definitions, Characteristics, Applications, and Design Implications
+10.1007/s00163-017-0262-7	Process models in design and development
+10.5860/choice.46-2158	Two bits: the cultural significance of free software
+10.2196/20346	The Effectiveness of Artificial Intelligence Conversational Agents in Health Care: Systematic Review
+10.1007/s40471-017-0128-6	Recent Developments in Mendelian Randomization Studies
+10.1086/204722	The Development of Indigenous Knowledge
+10.1080/00461520.2016.1207538	Supporting Learners' Agentic Engagement With Feedback: A Systematic Review and a Taxonomy of Recipience Processes
+10.1145/3581641.3584037	The Programmer’s Assistant: Conversational Interaction with a Large Language Model for Software Development
+10.1145/67933.67937	Four paradigms of information systems development

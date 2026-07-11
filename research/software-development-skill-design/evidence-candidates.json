@@ -1,0 +1,573 @@
+[
+  {
+    "Title": "SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?",
+    "Identifiers": {
+      "DOI": "10.48550/arxiv.2603.15401",
+      "ArXivID": "2603.15401",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "0b15556cb5b8042f9fa9a98ae6f19a047313e87e",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Agent skills, structured procedural knowledge packages injected at inference time, are increasingly used to augment LLM agents on software engineering tasks. However, their real utility in end-to-end development settings remains unclear. We present SWE-Skills-Bench, the first requirement-driven benchmark that isolates the marginal utility of agent skills in real-world software engineering (SWE). It pairs 49 public SWE skills with authentic GitHub repositories pinned at fixed commits and requirement documents with explicit acceptance criteria, yielding approximately 565 task instances across six SWE subdomains. We introduce a deterministic verification framework that maps each task's acceptance criteria to execution-based tests, enabling controlled paired evaluation with and without the skill. Our results show that skill injection benefits are far more limited than rapid adoption suggests: 39 of 49 skills yield zero pass-rate improvement, and the average gain is only +1.2%. Token overhead varies from modest savings to a 451% increase while pass rates remain unchanged. Only seven specialized skills produce meaningful gains (up to +30%), while three degrade performance (up to -10%) due to version-mismatched guidance conflicting with project context. These findings suggest that agent skills are a narrow intervention whose utility depends strongly on domain fit, abstraction level, and contextual compatibility. SWE-Skills-Bench provides a testbed for evaluating the design, selection, and deployment of skills in software engineering agents. SWE-Skills-Bench is available at https://github.com/GeniusHTX/SWE-Skills-Bench.",
+    "Year": 2026,
+    "Venue": "arXiv.org",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/0b15556cb5b8042f9fa9a98ae6f19a047313e87e"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=LLM+agent+skills+software+engineering+2025+2026",
+        "RetrievedAt": "",
+        "Metadata": {}
+      }
+    ]
+  },
+  {
+    "Title": "SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering",
+    "Identifiers": {
+      "DOI": "10.48550/arxiv.2604.09297",
+      "ArXivID": "2604.09297",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "1066cfff569db5e55ae0f920cbb23c31d3b823b4",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Agent skills are increasingly used to configure coding agents for software engineering (SE) tasks, yet current practice treats them as static, hand-crafted assets, or evolved on pass rate alone. This is insufficient: a skill can improve task success while substantially raising token cost, or introducing misleading guidance. We argue that SE agent skill bundles can be treated as multi-objective search objects and present SkillMOO, a framework that evolves skill bundles through LLM-proposed edits and NSGA-II Pareto selection on pass rate and inference cost. Evaluated across all 16 SkillsBench SE tasks, SkillMOO achieves the top pass rate rank on 11 of 12 non-zero-pass tasks while achieving cost reductions of up to 31.7% over static bundles, with pass rate gains up to 21 percentage points. Analysis of 38 skill edits shows that pruning and substitution dominate successful operations, offering actionable principles for skill bundle design. Thereby, the current practice of deploying skills without cost-aware validation leaves better skill configurations unexplored, motivating a new class of cost-aware, search-based skill engineering.",
+    "Year": 2026,
+    "Venue": "arXiv.org",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/1066cfff569db5e55ae0f920cbb23c31d3b823b4"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=LLM+agent+skills+software+engineering+2025+2026",
+        "RetrievedAt": "",
+        "Metadata": {}
+      }
+    ]
+  },
+  {
+    "Title": "More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2605.24050",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Skill libraries allow LLM agents to load task-specific instructions on demand, letting non-expert users solve domain-specific tasks through natural language without knowing which skills exist or how they work. However, performance degrades as libraries grow -- by up to 21\\% when scaling from a small set of helpful skills to a 202-skill library. In this work, we formulate this performance degradation as the pass rate drop between loading a library of known-helpful skills and the full library. Moreover, we propose to decompose the pass rate drop by conditioning on the skill(s) invocation -- which skills the agent selects during a trajectory -- into two effects: \\emph{skill shadowing}, where the agent selects wrong skills more often as the library expands, and \\emph{context overhead}, where the enlarged context degrades execution even when selection is correct. We derive upper bounds on both effects to characterize their magnitudes of impacts to the pass rate drop. Our empirical estimates of the effects and their upper bounds both show that the \\emph{skill shadowing} effect grows with library size and significantly contributes to the performance degradation, whereas the \\emph{context overhead} effect remains small and indistinguishable from zero. This observed asymmetry establishes that the skill selection failure, not the enlarged context, is the primary bottleneck when expanding the skill libraries.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://arxiv.org/abs/2605.24050v2",
+      "https://arxiv.org/pdf/2605.24050v2",
+      "https://arxiv.org/pdf/2605.24050",
+      "https://arxiv.org/e-print/2605.24050"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+libraries+coding+assistants",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.AI,stat.AP",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Anegative+transfer+agent+skill+libraries",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.AI,stat.AP",
+          "version": "v2"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Toward User Comprehension Supports for LLM Agent Skill Specifications",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2605.19362",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Users often interpret and select agent skills through their SKILL markdown specifications. To protect users, existing audits mainly focus on malicious or unsafe skills. We study the complementary question of whether specifications help users form bounded expectations about what a skill consumes, produces, and covers. Across 878 cybersecurity skills, we used rule-based coding to measure textual cues for four comprehension anchors, namely operational basis, output contract, boundary disclosure, and example capability demonstration. Cues for operational basis were common, but only 19.0% of specifications exhibited cues for an example task, sample, or expected outcome, and only 2.3% exhibited cues for all four anchors. We further examined a small DNS/C2 telemetry subset (n$=$6) to illustrate why missing examples may matter. Examples appeared to make first local checks easier to construct, while no-example skills typically required helper code inspection to recover command arguments or output fields. We argue that agent-skill evaluation should treat specifications as user-facing capability disclosures, not merely as containers for executable instructions.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://arxiv.org/abs/2605.19362v2",
+      "https://arxiv.org/pdf/2605.19362v2",
+      "https://arxiv.org/pdf/2605.19362",
+      "https://arxiv.org/e-print/2605.19362"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Asoftware+development+coding+agent+skill+design",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+specification+software+engineering",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Acoding+agent+reusable+skills+evaluation",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+libraries+coding+assistants",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Anegative+transfer+agent+skill+libraries",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+routing+selection+retrieval+evaluation",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aprogressive+disclosure+agent+skills+context+engineering",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aself-improving+coding+agents+skill+acquisition",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Ahuman+comprehension+agent+skill+specifications",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Astructured+pseudocode+agent+skills+typed+contracts",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Across-framework+portable+agent+skills",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Acoding+agent+error+recovery+debugging+skills",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+lifecycle+governance+versioning+deprecation",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.HC,cs.AI",
+          "comment": "To appear at ACM CAIS Workshop Agent Skill 2026",
+          "version": "v2"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Supply-Chain Poisoning Attacks Against LLM Coding Agent Skill Ecosystems",
+    "Identifiers": {
+      "DOI": "10.48550/arxiv.2604.03081",
+      "ArXivID": "2604.03081",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "02834792c8d9631bbfd28163b2106e0e3cc7d127",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "LLM-based coding agents extend their capabilities via third-party agent skills distributed through open marketplaces without mandatory security review. Unlike traditional packages, these skills are executed as operational directives with system-level privileges, so a single malicious skill can compromise the host. Prior work has not examined whether supply-chain attacks can directly hijack an agent's action space, such as file writes, shell commands, and network requests, despite existing safeguards. We introduce Document-Driven Implicit Payload Execution (DDIPE), which embeds malicious logic in code examples and configuration templates within skill documentation. Because agents reuse these examples during normal tasks, the payload executes without explicit prompts. Using an LLM-driven pipeline, we generate 1,070 adversarial skills from 81 seeds across 15 MITRE ATTACK categories. Across four frameworks and five models, DDIPE achieves 11.6% to 33.5% bypass rates, while explicit instruction attacks achieve 0% under strong defenses. Static analysis detects most cases, but 2.5% evade both detection and alignment. Responsible disclosure led to four confirmed vulnerabilities and two fixes.",
+    "Year": 2026,
+    "Venue": "arXiv.org",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/02834792c8d9631bbfd28163b2106e0e3cc7d127"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=coding+agent+reusable+skills+evaluation",
+        "RetrievedAt": "",
+        "Metadata": {}
+      },
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=third+party+agent+skills+supply+chain+security",
+        "RetrievedAt": "",
+        "Metadata": {}
+      }
+    ]
+  },
+  {
+    "Title": "SkillOps: Managing LLM Agent Skill Libraries as Self-Maintaining Software Ecosystems",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2605.13716",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Large language model agents increasingly rely on skill libraries for multi-step tasks, yet these libraries can accumulate persistent defects as skills are added, reused, patched, and linked to changing dependencies. We call this failure mode skill technical debt: library-level defects that may not break a single skill locally but can harm future retrieval, composition, and execution. Existing skill-based agents mainly focus on task-time retrieval, planning, and repair, while library-time maintenance remains underexplored. We propose SkillOps, a method-agnostic plug-in framework for maintaining skill libraries. SkillOps represents each skill as a typed Skill Contract (P, O, A, V, F), organizes skills with a Hierarchical Skill Ecosystem Graph, and diagnoses library health across utility, compatibility, risk, and validation dimensions. Given a raw skill library, SkillOps produces a maintained library that can be used by existing retrieval or planning agents without changing their internal code. On ALFWorld, SkillOps achieves 79.5 percent task success as a standalone agent, outperforming the strongest baseline by 8.8 percentage points with no additional task-time large language model calls. As a plug-in layer, it improves retrieval-heavy baselines by 0.68 to 2.90 percentage points. The current rule-based maintenance implementation uses nearly zero library-time large language model calls or tokens, showing that skill-library maintenance can be added as a low-overhead architectural layer.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://arxiv.org/abs/2605.13716v1",
+      "https://arxiv.org/pdf/2605.13716v1",
+      "https://arxiv.org/pdf/2605.13716",
+      "https://arxiv.org/e-print/2605.13716"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+libraries+coding+assistants",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.MA",
+          "comment": "23 pages, 9 figures. Submitted to NeurIPS 2026. Code is available at https://github.com/Hik289/SkillOps.git",
+          "version": "v1"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Anegative+transfer+agent+skill+libraries",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.MA",
+          "comment": "23 pages, 9 figures. Submitted to NeurIPS 2026. Code is available at https://github.com/Hik289/SkillOps.git",
+          "version": "v1"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Skill Drift Is Contract Violation: Proactive Maintenance for LLM Agent Skill Libraries",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2605.10990",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "36ee1db0b0701f22d7329af9b4b451ac222f0cfe",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "LLM agents increasingly rely on reusable skill libraries, but these skills silently decay as the external services, packages, APIs, and configurations they reference evolve. Existing monitors detect such changes at the wrong granularity: they observe values, not the role those values play in a skill. A version string in a comment is noise; the same string in a pinned dependency is an operational obligation. We formulate skill drift as contract violation and introduce \\sgname{}, which extracts executable environment contracts from skill documents and validates only those role-bearing assumptions against known or live conditions. This distinction turns noisy monitoring into a precision-first maintenance signal. Contract-free CI probes produce 40\\% false positives, while \\sgname{} raises zero false alarms over 599 no-drift and hard-negative cases (Wilson 95\\% CI $[0,0.6]\\%$). In known-drift verification, \\sgname{} achieves 100\\% precision and 76\\% recall with the strongest backbone; in a pre-registered study over 49 real skills, it discovers live drift with 86\\% conservative precision. Violated contracts also make repair actionable, improving one-round success from 10\\% without localization to 78\\%. We release \\dbname{}, an 880-pair benchmark for skill degradation.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/36ee1db0b0701f22d7329af9b4b451ac222f0cfe"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=negative+transfer+agent+skill+libraries",
+        "RetrievedAt": "",
+        "Metadata": {}
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Anegative+transfer+agent+skill+libraries",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.AI",
+          "version": "v1"
+        }
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Astructured+pseudocode+agent+skills+typed+contracts",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.SE,cs.AI",
+          "version": "v1"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Skill Coverage: A Test Adequacy Metric for Agent Skills",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2606.20659",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Agent skills encode reusable procedural knowledge for large language model (LLM) agents, and existing benchmarks show that such skills can improve task-level performance. However, a task outcome does not reveal which parts of a reusable skill were exercised, nor whether the agent followed the relevant skill instructions when those parts were exercised. This gap makes it unclear whether a skill has been adequately tested, or whether observed task failures provide actionable evidence for improving agent skill effectiveness. To fill this gap, we introduce skill coverage, a trajectory-based test-adequacy metric for reusable agent skills. Our framework extracts skill behavior constraints from each skill, translating natural-language skill instructions into semi-structured constraints that specify the expected agent behavior under particular conditions. It then determines whether each constraint is covered by an agent trajectory and, for covered constraints, assigns a Pass or Fail verdict according to the agent behavior. We apply this framework to SkillsBench. The results show that agent trajectories on the benchmark leaderboard cover only 38.66 to 45.51% of the extracted skill behavior constraints on average. We then use Fail verdicts to strengthen the corresponding skill content only by emphasizing the original instructions that the agent failed to follow, and run the same tasks with the strengthened skills. This emphasis yields an average 16.0% recovery rate of the failed tasks across the five agent-model rows. These results show that skill coverage is both a test-adequacy metric and a fine-grained signal for observing skill-use behavior. In failed tasks, failed constraint labels provide actionable evidence for improving agent skill effectiveness. A project website accompanies the paper.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://arxiv.org/abs/2606.20659v2",
+      "https://arxiv.org/pdf/2606.20659v2",
+      "https://arxiv.org/pdf/2606.20659",
+      "https://arxiv.org/e-print/2606.20659"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Across-framework+portable+agent+skills",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.AI,cs.LG,cs.SE",
+          "version": "v2"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Skill Is Not Document: A Query-Conditional Benchmark and Two-Stage Retriever for LLM Agent Skill Routing",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2606.03565",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "53bd8c4017309611614d9eaef0f58c55de7d91b7",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "LLM agents often solve complex tasks by composing skills, making skill retrieval a front-end component of agent systems. Unlike document retrieval, top-K correctness in skill retrieval depends not only on the relevance of each query-skill pair, but also on whether the retrieved skills can work together under the query. This query-conditioned\"skill compatibility\"cannot be recovered from independent relevance alone. However, LLM-based synthesis pipelines already produce a useful signal for it: the LLM's own rejection decisions, which specify which skills should not be retrieved together for a given query, but are usually discarded as low-quality data. We propose Reject-as-Resource Retriever (R3) and construct R3-Skill, a bilingual (Chinese-English) benchmark for agent skill routing. R3-Skill covers four language directions and uses LLM-rewritten queries that better approximate user requests; its test-set ground truth is verified by multiple experts. It contains 10,246 skills grouped into 8 thematic super-domains, 41,592 accepted queries, and 32,828 LLM-rejected annotations, further organized into an 8-class rejection-reason taxonomy. R3-Skill keeps this normally discarded rejection signal and uses it as compatibility supervision. On R3-Skill, we train a two-stage retriever consisting of R3-Embedding and R3-Reranker. Gradient analysis explains why this query-conditional signal is weak when injected into the tested bi-encoder objective under bilateral balancing, while a cross-encoder can use it as graded ranking supervision; R3-Skill ablations support this split. The R3-Embedding + R3-Reranker pipeline reaches Hit@1 = 0.7521, NDCG@10 = 0.8173 and Set-Compat = 0.3188 on R3-Skill. The dataset, model weights, and evaluation scripts will be open-sourced.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/53bd8c4017309611614d9eaef0f58c55de7d91b7"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=agent+skill+routing+selection+retrieval+evaluation",
+        "RetrievedAt": "",
+        "Metadata": {}
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Aagent+skill+routing+selection+retrieval+evaluation",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.IR",
+          "comment": "20 pages, 8 figures",
+          "version": "v4"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation",
+    "Identifiers": {
+      "DOI": "",
+      "ArXivID": "2607.06624",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "8796b3511934fa537fb28d10ae7cab8503ea4bd1",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "We present AgentLens, a production-assessed benchmark for interactive code agents. Most code-agent benchmarks reduce a run to a single bit -- did the task pass? -- but the people who actually use these agents experience the entire trajectory: how the agent follows instructions, uses its tools, verifies its own work, recovers from mistakes, and talks to them along the way. AgentLens evaluates that whole trajectory. It pairs formal verification, where an objective check exists, with LLM-written trajectory reviews and side-by-side comparisons, so that each run yields a readable explanation of why the score is what it is. This makes AgentLens useful for more than ranking models: we use it to diagnose model behavior, compare successive versions of our own agent, and catch product regressions in a nightly evaluation pipeline. We release the benchmark as open source at https://github.com/agent-lens/agent-lens-bench.",
+    "Year": 2026,
+    "Venue": "",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/8796b3511934fa537fb28d10ae7cab8503ea4bd1"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=coding+agent+harness+evaluation+trajectories",
+        "RetrievedAt": "",
+        "Metadata": {}
+      },
+      {
+        "Source": "arxiv",
+        "RawPayloadRef": "arxiv:/api/query?max_results=20&search_query=all%3Acoding+agent+harness+evaluation+trajectories",
+        "RetrievedAt": "",
+        "Metadata": {
+          "categories": "cs.AI,cs.LG,cs.SE",
+          "version": "v1"
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Agent Skills Enable a New Class of Realistic and Trivially Simple Prompt Injections",
+    "Identifiers": {
+      "DOI": "10.48550/arxiv.2510.26328",
+      "ArXivID": "2510.26328",
+      "PMID": "",
+      "PMCID": "",
+      "OpenAlexID": "",
+      "CrossrefID": "",
+      "SemanticScholarID": "64d23577d2a98b29dd80949c5fbb3b6d44d44a84",
+      "ZoteroItemKey": "",
+      "ADSBibcode": ""
+    },
+    "Authors": [],
+    "Abstract": "Enabling continual learning in LLMs remains a key unresolved research challenge. In a recent announcement, a frontier LLM company made a step towards this by introducing Agent Skills, a framework that equips agents with new knowledge based on instructions stored in simple markdown files. Although Agent Skills can be a very useful tool, we show that they are fundamentally insecure, since they enable trivially simple prompt injections. We demonstrate how to hide malicious instructions in long Agent Skill files and referenced scripts to exfiltrate sensitive data, such as internal files or passwords. Importantly, we show how to bypass system-level guardrails of a popular coding agent: a benign, task-specific approval with the\"Don't ask again\"option can carry over to closely related but harmful actions. Overall, we conclude that despite ongoing research efforts and scaling model capabilities, frontier LLMs remain vulnerable to very simple prompt injections in realistic scenarios. Our code is available at https://github.com/aisa-group/promptinject-agent-skills.",
+    "Year": 2025,
+    "Venue": "arXiv.org",
+    "Publisher": "",
+    "URLs": [
+      "https://www.semanticscholar.org/paper/64d23577d2a98b29dd80949c5fbb3b6d44d44a84"
+    ],
+    "License": "",
+    "OpenAccess": false,
+    "SourcePayload": "",
+    "SourceRefs": [
+      {
+        "Source": "semantic-scholar",
+        "RawPayloadRef": "semantic-scholar:/graph/v1/paper/search?limit=20&query=agent+skills+provenance+security+prompt+injection",
+        "RetrievedAt": "",
+        "Metadata": {}
+      }
+    ]
+  }
+]

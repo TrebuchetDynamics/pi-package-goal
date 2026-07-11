@@ -1,0 +1,20 @@
+10.3758/cabn.5.3.263	Cognitive control and parsing: Reexamining the role of Broca’s area in sentence comprehension
+10.1111/j.1756-8765.2010.01081.x	Computational Analyses of Multilevel Discourse Comprehension
+	Skills, plans, and self-regulation
+10.1162/qjec.2009.124.2.531	Was Weber Wrong? A Human Capital Theory of Protestant Economic History<sup>*</sup>
+10.1145/129852.129857	Exploiting reusable specifications through analogy
+	The future of skills: employment in 2030
+10.1017/s0140525x0999094x	The myth of language universals: Language diversity and its importance for cognitive science
+10.5898/jhri.3.2.beer	Toward a Framework for Levels of Robot Autonomy in Human-Robot Interaction
+10.1016/j.dss.2011.12.013	Factors of process model comprehension—Findings from a series of experiments
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1016/j.chb.2015.12.039	Co-constructing intersubjectivity with artificial conversational agents: People are more likely to initiate repairs of misunderstandings with agents represented as human
+10.1017/s0140525x04000056	Toward a mechanistic psychology of dialogue
+10.1093/schbul/6.1.42	A Review and Critique of Social Skills Training With Schizophrenic Patients
+10.3389/fnhum.2020.00068	Verbal Working Memory as Emergent from Language Comprehension and Production
+10.1007/s10648-011-9179-2	An Evolutionary Upgrade of Cognitive Load Theory: Using the Human Motor System and Collaboration to Support the Learning of Complex Cognitive Tasks
+	Water Quality Criterion for the Protection of Human Health: Methylmercury
+10.1038/s41586-023-06668-3	Human-like systematic generalization through a meta-learning neural network
+10.1609/aimag.v33i1.2322	Mapping the Landscape of Human‐Level Artificial General Intelligence
+10.1115/1.4039145	A Review of Intent Detection, Arbitration, and Communication Aspects of Shared Control for Physical Human–Robot Interaction
+10.1080/00140130600612762	Distributed situation awareness in dynamic systems: theoretical development and application of an ergonomics methodology

@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	Memento-Skills: Let Agents Design Agents
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	Anything2Skill: Compiling External Knowledge into Reusable Skills for Agents
+	A Framework for Evaluating Agentic Skills at Scale
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	SciVisAgentSkills: Design and Evaluation of Agent Skills for Scientific Data Analysis and Visualization
+	MUSE-Autoskill: Self-Evolving Agents via Skill Creation, Memory, Management, and Evaluation
+	Software Delegation Contracts: Measuring Reviewability in AI Coding-Agent Work
+	Skill-Pro: Learning Reusable Skills from Experience via Non-Parametric PPO for LLM Agents
+	CODESKILL: Learning Self-Evolving Skills for Coding Agents
+	CodeClinic: Evaluating Automation of Coding Skills for Clinical Reasoning Agents
+	Piano Skills Assessment
+	Multi-Trial Guruswami--Sudan Decoding for Generalised Reed--Solomon Codes
+	Scaling Coding Agents via Atomic Skills
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication

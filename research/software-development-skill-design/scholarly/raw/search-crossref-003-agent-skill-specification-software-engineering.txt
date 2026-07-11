@@ -1,0 +1,20 @@
+10.1049/ic:20040370	Formal specification of role components in open multi-agent systems
+10.4236/jsea.2013.612075	Intelligent Agent Based Mapping of Software Requirement Specification to Design Model
+10.1023/a:1016372507161	Specification, Validation, and Synthesis of Email Agent Controllers: A Case Study in Function Rich Reactive System Design
+10.1007/978-3-540-31846-0_12	The ANote Modeling Language for Agent-Oriented Specification
+10.1007/3-540-70657-7_12	A Requirement Specification Language for Configuration Dynamics of Multi-agent Systems
+10.1007/978-3-7643-8396-1_9	Organization of the AML Specification
+10.1145/860722.860852	A formal specification language for agent-oriented software engineering
+10.1007/978-3-540-24620-6_3	Agent-Oriented Modeling by Interleaving Formal and Informal Specification
+10.1007/978-3-540-31846-0_11	Specification of Role-Based Interactions Components in Multi-agent Systems
+10.1201/9780203011188-13	Software Specification and Design
+10.1109/re63999.2025.00054	ReqInOne: A Large Language Model-Based Agent for Software Requirements Specification Generation
+10.1145/860575.860852	A formal specification language for agent-oriented software engineering
+10.1145/1082960.1082968	xTAO
+10.1007/978-3-540-75698-9_21	Formal Specification of Multi-agent Systems by Using EUSMs
+10.1109/tase.2008.39	Event-B Specification of a Situated Multi-Agent System: Study of a Platoon of Vehicles
+10.1145/568766.568770	Coordination specification in multi-agent systems
+10.1142/s0218194001000657	SLABS: A FORMAL SPECIFICATION LANGUAGE FOR AGENT-BASED SYSTEMS
+10.1007/978-3-319-61518-9_2	Specification of Constraints
+10.1201/9780203496299.ch3	Operational Specification
+10.1145/568760.568770	Coordination specification in multi-agent systems

@@ -1,0 +1,20 @@
+10.32388/p3nbe5	Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent"
+10.32388/z3cve7	Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent"
+10.32388/gaogr7	Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent"
+10.32388/1mmgbb	Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent"
+10.32388/yeymn9	Review of: "DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent"
+10.1109/iclad65226.2025.00013	Spec2RTL-Agent: Automated Hardware Code Generation from Complex Specifications Using LLM Agent Systems
+10.5422/fordham/9780823275359.003.0011	Experience, Memory, Reflection: An Interview with Henry Bugbee
+10.2139/ssrn.6576151	Learned Importance Scoring for Adaptive Memory Compaction in LLM-Based Agent Systems
+10.36227/techrxiv.176539617.79044553/v1	Memory in LLM-based Multi-agent Systems: Mechanisms, Challenges, and Collective Intelligence
+10.20944/preprints202601.0618.v2	From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms
+10.20944/preprints202601.0618.v1	From Storage to Experience: A Survey on the Evolution of LLM Agent Memory Mechanisms
+10.2139/ssrn.5193679	A Multi-Agent Large Language Model (Llm) Framework for Code-Complying Design Automation of Concrete Structures
+10.32388/g493w2	DRC-Coder: Automated DRC Checker Code Generation Using LLM Autonomous Agent
+10.2139/ssrn.6387100	FTDI: A Budget-Aware Self-Healing Framework for Resilient LLM Multi-Agent Code Generation
+10.1109/tbdata.2025.3593370/mm1	: A Performance-Enhanced LLM Trading Agent With Layered Memory and Character Design_supp1-3593370.pdf
+10.1145/3786162.3793232	GI-Agent Search-Based LLM Agent for Code Optimization with Genetic Improvement
+10.2139/ssrn.6332149	LLM-Based Multi-Agent Systems for Code Generation: A Multi-Vocal Literature Review ⋆
+10.1145/75722.75728	Reusable code at the Hartford Insurance Group
+10.54103/2240-9599/27271	Sensuous atmospheres of landscape and memory
+10.2139/ssrn.6328882	LLM-Based Multi-Agent Systems for Code Generation: A Multi-Vocal Literature Review ⋆

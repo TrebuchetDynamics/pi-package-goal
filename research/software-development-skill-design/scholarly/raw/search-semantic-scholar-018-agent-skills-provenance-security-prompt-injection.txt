@@ -1,0 +1,20 @@
+10.48550/arxiv.2504.18575	WASP: Benchmarking Web Agent Security Against Prompt Injection Attacks
+10.1109/icca66035.2025.11430791	Cross-Agent Multimodal Provenance-Aware Framework for Robust Prompt Injection Defense in Large Language and Vision-Language Models
+10.48550/arxiv.2508.01249	AgentArmor: Enforcing Program Analysis on Agent Runtime Trace to Defend Against Prompt Injection
+10.1109/dsn-s65789.2025.00037	To Protect the LLM Agent Against the Prompt Injection Attack with Polymorphic Prompt
+10.48550/arxiv.2509.10540	EchoLeak: The First Real-World Zero-Click Prompt Injection Exploit in a Production LLM System
+10.48550/arxiv.2508.15310	IPIGuard: A Novel Tool Dependency Graph-Based Defense Against Indirect Prompt Injection in LLM Agents
+	AgentVigil: Generic Black-Box Red-teaming for Indirect Prompt Injection against LLM Agents
+10.1145/3746027.3755211	Manipulating Multimodal Agents via Cross-Modal Prompt Injection
+10.48550/arxiv.2506.02456	VPI-Bench: Visual Prompt Injection Attacks for Computer-Use Agents
+10.48550/arxiv.2506.01055	Simple Prompt Injection Attacks Can Leak Personal Data Observed by LLM Agents During Task Execution
+10.48550/arxiv.2510.19207	Defending Against Prompt Injection with DataFilter
+10.48550/arxiv.2601.10338	Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale
+	Sleeper Channels and Provenance Gates: Persistent Prompt Injection in Always-on Autonomous AI Agents
+10.1109/wiecon-ece69386.2025.11526251	A Multi-Agent LLM Defense Pipeline Against Prompt Injection Attacks
+10.63278/jicrcr.vi.3471	Defending The AI-Powered Commerce Stack: A Security Framework For Prompt Injection, Review Integrity, And Privacy In Genai Retail Systems
+10.48550/arxiv.2507.13038	MAD-Spear: A Conformity-Driven Prompt Injection Attack on Multi-Agent Debate Systems
+10.3390/app16010085	LLM Firewall Using Validator Agent for Prevention Against Prompt Injection Attacks
+10.48550/arxiv.2512.20986	AegisAgent: An Autonomous Defense Agent Against Prompt Injection Attacks in LLM-HARs
+10.48550/arxiv.2510.26328	Agent Skills Enable a New Class of Realistic and Trivially Simple Prompt Injections
+10.48550/arxiv.2403.14720	Defending Against Indirect Prompt Injection Attacks With Spotlighting

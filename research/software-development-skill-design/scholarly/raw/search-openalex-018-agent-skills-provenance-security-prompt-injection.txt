@@ -1,0 +1,20 @@
+10.1109/ojcs.2023.3300321	A Survey on ChatGPT: AI–Generated Contents, Challenges, and Solutions
+10.1145/3655615	Advancing the Search Frontier with AI Agents
+10.1109/comst.2018.2886932	Applications of Blockchains in the Internet of Things: A Comprehensive Survey
+10.1109/access.2024.3367792	ChatGPT’s Security Risks and Benefits: Offensive and Defensive Use-Cases, Mitigation Measures, and Future Implications
+10.1109/access.2024.3363657	Security Considerations in AI-Robotics: A Survey of Current Methods, Challenges, and Opportunities
+10.3390/en18010141	Security of Smart Grid: Cybersecurity Issues, Potential Cyberattacks, Major Incidents, and Future Directions
+10.3390/info16060469	AI-Powered Educational Agents: Opportunities, Innovations, and Ethical Challenges
+10.48550/arxiv.2403.14720	Defending Against Indirect Prompt Injection Attacks With Spotlighting
+10.3390/agriculture12010040	Agriculture-Food Supply Chain Management Based on Blockchain and IoT: A Narrative on Enterprise Blockchain Interoperability
+10.1007/s12525-023-00680-1	Generative artificial intelligence
+10.14722/ndss.2018.23282	Fear and Logging in the Internet of Things
+10.3390/bdcc9070184	LLMs in Cyber Security: Bridging Practice and Education
+10.48550/arxiv.2506.04133	TRiSM for Agentic AI: A Review of Trust, Risk, and Security Management in LLM-based Agentic Multi-Agent Systems
+10.37256/cnc.1220233048	Decentralized Identity With Applications to Security and Privacy for the Internet of Things
+10.3390/fi17090385	Blockchain for Security in Digital Twins
+10.48550/arxiv.2505.02077	Open Challenges in Multi-Agent Security: Towards Secure Systems of Interacting AI Agents
+10.48550/arxiv.2403.05530	Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context
+10.3390/fi17080353	Transforming Data Annotation with AI Agents: A Review of Architectures, Reasoning, Applications, and Impact
+10.1038/s41591-024-03445-1	Medical large language models are vulnerable to data-poisoning attacks
+10.36227/techrxiv.174612014.42157096/v1	A Review on Agent-to-Agent Protocol: Concept, State-of-the-art, Challenges and Future Directions

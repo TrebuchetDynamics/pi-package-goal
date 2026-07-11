@@ -1,0 +1,20 @@
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Memento-Skills: Let Agents Design Agents
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	Swarm Skills: A Portable, Self-Evolving Multi-Agent System Specification for Coordination Engineering
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	A Survey of Multi-Agent Deep Reinforcement Learning with Communication
+10.1145/3652988.3673918	Focus Agent: LLM-Powered Virtual Focus Group
+	Piano Skills Assessment
+10.18653/v1/k19-2011	Hitachi at MRP 2019: Unified Encoder-to-Biaffine Network for Cross-Framework Meaning Representation Parsing
+	A Framework for Evaluating Agentic Skills at Scale
+	From Alife Agents to a Kingdom of N Queens
+10.1145/3786167.3788406	SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs
+10.1007/978-3-032-13562-9_23	AOAD-MAT: Transformer-based multi-agent deep reinforcement learning model considering agents' order of action decisions
+10.1007/978-3-030-01713-2_22	How game complexity affects the playing behavior of synthetic agents
+10.1007/s10458-010-9154-1	A mechanism for discovering semantic relationships among agent communication protocols
+	AMAP Agentic Planning Technical Report
+	Portable Agent Memory: A Protocol for Cryptographically-Verified Memory Transfer Across Heterogeneous AI Agents
+	Skill Coverage: A Test Adequacy Metric for Agent Skills

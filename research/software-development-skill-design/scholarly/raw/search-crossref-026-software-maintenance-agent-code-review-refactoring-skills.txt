@@ -1,0 +1,20 @@
+10.1109/csmr.2013.49	Pattern-Based Refactoring Process of Sequential Source Code
+10.1109/csmr.2013.31	Search-Based Refactoring Using Recorded Code Changes
+10.21275/sr231208200259	Code Smells in Software Development: A Review of Common Issues and Refactoring Approaches
+10.56155/978-81-955020-9-7-21	Automate Code Refactoring for Enhanced Software Maintenance and Development
+10.1109/icsm.2012.6405324	Move code refactoring with dynamic analysis
+10.1109/icsm.2005.75	Refactoring a Java code base to AspectJ: an illustrative example
+10.2139/ssrn.5320778	AI-Driven Transformation of Code Review and Refactoring in Software Engineering: A Practitioner's Perspective
+10.1109/icsm.2012.6405336	Refactoring edit history of source code
+10.1109/icsme58944.2024.00079	Refactoring Legacy Code Using Cleaning Up Cycles: An Experience Report
+10.1109/icse-companion66252.2025.00071	MUARF: Leveraging Multi-Agent Workflows for Automated Code Refactoring
+10.1109/icsme58846.2023.00047	Automatic Refactoring Candidate Identification Leveraging Effective Code Representation
+10.1109/icsm.2005.27	Automated refactoring of object oriented code into aspects
+10.1109/icsme.2016.52	Improving Code Maintainability: A Case Study on the Impact of Refactoring
+10.1109/icsme64153.2025.00079	How Does Test Code Differ from Production Code in Terms of Refactoring? An Empirical Study
+10.1109/icsme.2014.73	On the Impact of Refactoring Operations on Code Quality Metrics
+10.2139/ssrn.4934460	How AI is Transforming Code Review and Refactoring in Software Development
+10.1109/csmr.2012.41	A New Software Maintenance Scenario Based on Refactoring Techniques
+10.21203/rs.3.rs-7499060/v1	Refactoring in Software Maintenance and Development: Application with Case Study
+10.20944/preprints202605.1638.v1	A Systematic Literature Review on Generative AI in Software Engineering: Code Generation and Refactoring
+10.5220/0006815304550462	Automated Refactoring of Software using Version History and a Code Element Recentness Measure

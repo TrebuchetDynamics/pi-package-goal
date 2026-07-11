@@ -1,0 +1,20 @@
+10.2139/ssrn.5783722	Third-Party SaaS Integration Security: Lessons from Supply Chain Attacks
+10.1002/9781394433711.ch14	Third‐Party Vendor and Supply‐Chain Security
+10.1002/9781394423088.ch14	Third‐party and Supply‐chain Security
+10.1007/978-1-4842-8596-1_13	Third-Party and Supply Chain Security
+10.1081/e-escm-120050506	Third Party Logistics Networks
+10.1002/9780470995556.ch11	Third Party Logistics in the Food Supply Chain
+10.17918/etd-6779	Third party support and risk costs in supply chain coordination
+10.4324/9781003581321-23	Third-Party Vendor Audit
+10.29121/digisecforensics.v2.i1.2025.94	DATABASE SECURITY IN SUPPLY CHAIN SYSTEMS: SAFEGUARDING VENDOR INFORMATION, TRANSACTION RECORDS, AND THIRD-PARTY DATA EXCHANGE MECHANISMS
+10.1016/j.clscn.2025.100218	Third-party electric vehicle battery remanufacturing supply chains
+10.4324/9781003581321-3	Know Your Supply Chain
+10.4324/9781003581321-4	Notable Supply Chain Cyber Events
+10.4102/jtscm.v12i0.377	Supply chain disruptions: Insights from South African third-party logistics service providers and clients
+10.4102/jtscm.v16i0.738	Strategic supply chain alignment: The role of third-party logistics service providers during disruption recovery
+10.4102/jtscm.v12i0.379	Industry expectations of supply chain management graduates: Perspectives from third-party logistics providers in South Africa
+10.1109/cscwd.2016.7566055	Agent-based negotiation framework for agricultural supply chain supported by third party logistics
+10.1007/978-3-642-59997-2_7	In-house or Third Party Distribution?
+10.1111/j.1745-493x.2012.03268.x	The Geography of Global Supply Chains: Evidence from Third‐Party Logistics
+10.1108/md-04-2017-0428	Skills needed in supply chain-human agency and social capital analysis in third party logistics
+10.4324/9781003581321	Navigating Supply Chain Cyber Risk

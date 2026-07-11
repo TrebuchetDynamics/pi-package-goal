@@ -1,0 +1,20 @@
+10.48550/arxiv.2604.25850	Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses
+	ClayBuddy: A Framework, Evaluation,&Mitigation of Coding Agent Failures
+10.48550/arxiv.2503.14269	DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal
+10.48550/arxiv.2604.20200	Chasing the Public Score: User Pressure and Evaluation Exploitation in Coding Agent Workflows
+	Agent trajectories as programs: fingerprinting and programming coding-agent behavior
+10.48550/arxiv.2510.11977	Holistic Agent Leaderboard: The Missing Infrastructure for AI Agent Evaluation
+	What makes a harness a harness: necessary and sufficient conditions for an agent harness
+	Auditing Agent Harness Safety
+	Strained Coherence: A Pre-Failure Signal in Coding Agent Execution Trajectories
+	AgentLens: Production-Assessed Trajectory Reviews for Coding Agent Evaluation
+10.48550/arxiv.2504.08703	SWE-PolyBench: A multi-language benchmark for repository level evaluation of coding agents
+	Auto-Configuring Scientific Simulators with Lightweight Coding-Agent Adapters
+	NOVA: A Verification-Aware Agent Harness for Architecture Evolution in Industrial Recommender Systems
+	Towards Verifiable Multimodal Deep Research: A Multi-Agent Harness for Interleaved Report Generation
+	REAP: Automatic Curation of Coding Agent Benchmarks from Interactive Production Usage
+	From Failed Trajectories to Reliable LLM Agents: Diagnosing and Repairing Harness Flaws
+	SciVisAgentSkills: Design and Evaluation of Agent Skills for Scientific Data Analysis and Visualization
+	Dissecting model behavior through agent trajectories
+	GaP: A Graph-as-Policy Multi-Agent Self-Learning Harness For Variational Automation Tasks
+10.48550/arxiv.2509.17489	MapCoder-Lite: Squeezing Multi-Agent Coding into a Single Small LLM

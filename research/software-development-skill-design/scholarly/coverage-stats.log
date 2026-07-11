@@ -1,0 +1,30 @@
+Source coverage for research/software-development-skill-design/scholarly
+  arxiv                    560 records (28 files)
+  crossref                 559 records (28 files)
+  openalex                 560 records (28 files)
+  semantic-scholar         160 records (8 files)
+
+Total unique DOIs: 1364
+Library (results.jsonl): 1839 records
+
+Failed queries (20):
+  [semantic-scholar] "software development coding agent skill design" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "agent skill specification software engineering" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "agent skill libraries coding assistants" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "skill shadowing LLM agents software development" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "progressive disclosure agent skills context engineering" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "LLM agent tool use contracts software engineering" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "coding agent verification loops test driven development" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "software engineering agent benchmark tool use 2025 2026" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "SWE-bench agent scaffolding skills prompts" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "LLM code agent memory reflection reusable experience" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "self-improving coding agents skill acquisition" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "human comprehension agent skill specifications" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "structured pseudocode agent skills typed contracts" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "cross-framework portable agent skills" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "agent workflow decomposition planning verification" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "LLM agent instruction following long context skills" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "coding agent error recovery debugging skills" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "software maintenance agent code review refactoring skills" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "multi-agent software engineering role skills evaluation" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)
+  [semantic-scholar] "agent skill lifecycle governance versioning deprecation" — source HTTP status 429: rate limited; reduce request frequency, try again later, or configure an API key (check connector env vars)

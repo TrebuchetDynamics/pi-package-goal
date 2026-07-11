@@ -1,0 +1,20 @@
+10.1145/336512.336523	Requirements engineering
+10.1109/52.60586	Prospects for an engineering discipline of software
+	Software agents: A review
+10.1002/aic.16489	The promise of artificial intelligence in chemical engineering: Is it here, finally?
+10.1002/jee.20118	Identity, Critical Agency, and Engineering: An Affective Model for Predicting Engineering as a Career Choice
+10.5860/choice.46-2158	Two bits: the cultural significance of free software
+10.1145/3442188.3445918	Towards Accountability for Machine Learning Datasets: Practices from Software Engineering and Infrastructure
+10.1016/j.infsof.2016.07.006	Challenges and best practices in industry-academia collaborations in software engineering: A systematic literature review
+10.1145/310641.310642	A software model and specification language for non-WIMP user interfaces
+10.1016/j.jss.2018.11.041	End-user development, end-user programming and end-user software engineering: A systematic mapping study
+10.1145/129852.129857	Exploiting reusable specifications through analogy
+	A Model for Organizational Interaction: based on Agents, founded in Logic
+10.1186/s40411-016-0032-7	Game development software engineering process life cycle: a systematic review
+10.1109/tse.2014.2360674	Investigating Country Differences in Mobile App User Behavior and Challenges for Software Engineering
+10.1145/3342355	Formal Specification and Verification of Autonomous Robotic Systems
+	Agent Technology: Enabling Next Generation Computing (A Roadmap for Agent Based Computing)
+10.6028/nist.sp.800-19	Mobile agent security
+10.2298/csis110214013b	Software agents: Languages, tools, platforms
+10.1080/08839519508945480	APPLYING AGENT TECHNOLOGY
+	Software construction using components

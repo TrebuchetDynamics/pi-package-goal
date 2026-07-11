@@ -1,0 +1,20 @@
+10.1007/s11704-026-60308-3	A Survey of Large Language Models
+10.48550/arxiv.2309.07864	The Rise and Potential of Large Language Model Based Agents: A Survey
+10.1145/3640543.3645143	LAVE: LLM-Powered Agent Assistance and Language Augmentation for Video Editing
+10.4230/oasics.icpec.2025.4	Can Open Large Language Models Catch Vulnerabilities?
+10.1145/3652988.3673932	Virtual Agents for Alcohol Use Counseling: Exploring LLM-Powered Motivational Interviewing
+10.1007/s41019-025-00296-9	LLM-Based Agents for Tool Learning: A Survey
+10.3390/fi17090404	The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges
+10.48550/arxiv.2401.05459	Personal LLM Agents: Insights and Survey about the Capability, Efficiency and Security
+10.1145/3581641.3584037	The Programmer’s Assistant: Conversational Interaction with a Large Language Model for Software Development
+10.48550/arxiv.2411.15594	A Survey on LLM-as-a-Judge
+10.1007/s40593-023-00340-7	GPT-3-Driven Pedagogical Agents to Train Children’s Curious Question-Asking Skills
+10.48550/arxiv.2402.01030	Executable Code Actions Elicit Better LLM Agents
+10.1080/17538947.2023.2278895	Autonomous GIS: the next-generation AI-powered GIS
+10.18653/v1/2026.findings-acl.1330	A Survey on Evaluation of LLM-based Agents
+10.48550/arxiv.2409.17515	From News to Forecast: Integrating Event Analysis in LLM-Based Time Series Forecasting with Reflection
+10.18653/v1/2024.findings-emnlp.53	Devil’s Advocate: Anticipatory Reflection for LLM Agents
+10.3390/app152111515	Toward Autonomous LLM-Based AI Agents for Predictive Maintenance: State of the Art, Challenges, and Future Perspectives
+10.1016/j.dibe.2023.100300	GPT models in construction industry: Opportunities, limitations, and a use case validation
+10.1109/tnnls.2024.3497992	Survey on Large Language Model-Enhanced Reinforcement Learning: Concept, Taxonomy, and Methods
+10.18653/v1/2025.findings-acl.601	Optima: Optimizing Effectiveness and Efficiency for LLM-Based Multi-Agent System

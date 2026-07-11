@@ -1,0 +1,20 @@
+	Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward
+	Memento-Skills: Let Agents Design Agents
+	ClawTrace: Cost-Aware Tracing for LLM Agent Skill Distillation
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Meta Context Engineering via Agentic Skill Evolution
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Context Engineering for Multi-Agent LLM Code Assistants Using Elicit, NotebookLM, ChatGPT, and Claude Code
+	Graph-of-Skills: Dependency-Aware Structural Retrieval for Massive Agent Skills
+	SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?
+	Buildrix: An Open Platform for Sharing and Benchmarking Agentic AI Skills in Building Engineering
+10.1145/3786167.3788406	SWEnergy: An Empirical Study on Energy Efficiency in Agentic Issue Resolution Frameworks with SLMs
+	Exploiting Context to Identify Lexical Atoms -- A Statistical View of Linguistic Context
+	Swarm Skills: A Portable, Self-Evolving Multi-Agent System Specification for Coordination Engineering
+10.1145/3709354	Morescient GAI for Software Engineering (Extended Version)
+	Text analysis in financial disclosures
+	Web Engineering
+	Data Engineering for Scaling Language Models to 128K Context
+	SkillMOO: Multi-Objective Optimization of Agent Skills for Software Engineering
+	Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering
+	Understanding the Skills Gap between Higher Education Institutions and the Software Engineering Industry

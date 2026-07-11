@@ -1,0 +1,20 @@
+	Skill Is Not Document: A Query-Conditional Benchmark and Two-Stage Retriever for LLM Agent Skill Routing
+	SkillFlow: Scalable and Efficient Agent Skill Retrieval System
+	An Agent-Oriented Pluggable Experience-RAG Skill for Experience-Driven Retrieval Strategy Orchestration
+10.48550/arxiv.2511.01854	Tool-to-Agent Retrieval: Bridging Tools and Agents for Scalable LLM Multi-Agent Systems
+	Skill-Based Mixture-of-Experts: Adaptive Routing for Heterogeneous Reasoning via Inferred Skills
+	Skill-RM: Unifying Heterogeneous Evaluation Criteria via Agent Skill
+	Compositional Skill Routing for LLM Agents: Decompose, Retrieve, and Compose
+	Under the Hood of SKILL.md: Semantic Supply-chain Attacks on AI Agent Skill Registry
+	MOCHA: Multi-Objective Chebyshev Annealing for Agent Skill Optimization
+10.48550/arxiv.2602.16653	Agent Skill Framework: Perspectives on the Potential of Small Language Models in Industrial Environments
+	Retrieval-Conditioned Topology Selection with Provable Budget Conservation for Multi-Agent Code Generation
+	SkillResolve-Bench: Measuring and Resolving Same-Capability Ambiguity in Agent Skill Retrieval
+10.48550/arxiv.2510.17843	GRETEL: A Goal-driven Retrieval and Execution-based Trial Framework for LLM Tool Selection Enhancing
+10.48550/arxiv.2604.24594	Skill Retrieval Augmentation for Agentic AI
+	SkillRet: A Large-Scale Benchmark for Skill Retrieval in LLM Agents
+10.48550/arxiv.2508.04903	RCR-Router: Efficient Role-Aware Context Routing for Multi-Agent LLM Systems with Structured Memory
+	SkillDAG: Self-Evolving Typed Skill Graphs for LLM Skill Selection at Scale
+10.48550/arxiv.2602.02386	Trust by Design: Skill Profiles for Transparent, Cost-Aware LLM Routing
+	Traceable Fault Diagnosis for Battery Energy Storage Systems via Retrieval-Augmented Multi-Agent O&M Assistant
+10.18653/v1/2026.findings-acl.2152	When Rules Learn: A Self-Evolving Agent for Legal Case Retrieval

@@ -1,0 +1,20 @@
+	Toward User Comprehension Supports for LLM Agent Skill Specifications
+	Investigating Retrieval Method Selection with Axiomatic Features
+	Skill Is Not Document: A Query-Conditional Benchmark and Two-Stage Retriever for LLM Agent Skill Routing
+	Skill-as-Pseudocode: Refactoring Skill Libraries to Pseudocode for LLM Agents
+	SkCC: Portable and Secure Skill Compilation for Cross-Framework LLM Agents
+	Smart Routing for Multimodal Video Retrieval: When to Search What
+	LLandMark: A Multi-Agent Framework for Landmark-Aware Multimodal Interactive Video Retrieval
+	Agentic Skill Discovery
+10.1007/s10791-018-9343-0	Overcoming low-utility facets for complex answer retrieval
+	Compositional Skill Routing for LLM Agents: Decompose, Retrieve, and Compose
+	Evaluation Agent: Efficient and Promptable Evaluation Framework for Visual Generative Models
+	When Lower Privileges Suffice: Investigating Over-Privileged Tool Selection in LLM Agents
+	An Agent-Oriented Pluggable Experience-RAG Skill for Experience-Driven Retrieval Strategy Orchestration
+	SkillFlow: Scalable and Efficient Agent Skill Retrieval System
+	SkillRouter: Skill Routing for LLM Agents at Scale
+	Group of Skills: Group-Structured Skill Retrieval for Agent Skill Libraries
+	SkillRet: A Large-Scale Benchmark for Skill Retrieval in LLM Agents
+	Skill Retrieval Augmentation for Agentic AI
+	Ragas: Automated Evaluation of Retrieval Augmented Generation
+	Node Disjoint Multipath Routing Considering Link and Node Stability protocol: A characteristic Evaluation
