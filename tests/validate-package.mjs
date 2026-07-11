@@ -744,7 +744,7 @@ async function testSkills() {
   }
 
   const engineeringRoutingRoles = {
-    "skills/engineering/autonomous-codebase-improver/SKILL.md": /broad, open-ended repository improvement.*not a single known defect/i,
+    "skills/engineering/autonomous-codebase-improver/SKILL.md": /broad, open-ended or continuous roadmap-driven repository improvement.*not a single known defect/i,
     "skills/engineering/bug-harvest/SKILL.md": /search for one unknown.*bug.*not an already-reported defect/i,
     "skills/engineering/diagnose/SKILL.md": /specific reported failure.*root cause/i,
     "skills/superpowers/systematic-debugging/SKILL.md": /only when that explicit systematic-debugging command/i,
@@ -755,6 +755,23 @@ async function testSkills() {
   for (const [file, role] of Object.entries(engineeringRoutingRoles)) {
     assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
   }
+  const autonomousImprover = read("skills/engineering/autonomous-codebase-improver/SKILL.md");
+  assert.match(autonomousImprover, /selection rationale/i, "autonomous improver must justify why its slice outranks alternatives");
+  assert.match(autonomousImprover, /at most three candidates/i, "autonomous improver must compare a bounded candidate set");
+  assert.match(autonomousImprover, /documented work over invented improvements/i, "autonomous improver must prefer documented repo work");
+  assert.match(autonomousImprover, /code smell is a lead, not a bug/i, "autonomous improver must not invent bugs from smells");
+  assert.match(autonomousImprover, /## Failure handling/, "autonomous improver must define validation-failure recovery");
+  assert.match(autonomousImprover, /baseline already fails/i, "autonomous improver must distinguish pre-existing failures");
+  assert.match(autonomousImprover, /same blocker twice/i, "autonomous improver must stop repeated blind retries");
+  assert.match(autonomousImprover, /single-slice mode.*continuous campaign mode/is, "autonomous improver must distinguish bounded and continuous operation");
+  assert.match(autonomousImprover, /ROADMAP\.md.*TODO\.md/is, "autonomous improver must consume repository task sources");
+  assert.match(autonomousImprover, /correctness.*security.*CI\/pipeline.*performance.*UI/is, "autonomous improver must inspect broad weakness lanes");
+  assert.match(autonomousImprover, /Campaign state:[\s\S]*- queue:[\s\S]*- completed:[\s\S]*- blocked:/, "autonomous improver must track a continuous campaign queue");
+  assert.match(autonomousImprover, /Do not stop after one successful slice/i, "continuous campaigns must keep advancing safe work");
+  assert.match(autonomousImprover, /CI\/pipeline.*`diagnose`/is, "autonomous improver must route pipeline failures explicitly");
+  assert.match(autonomousImprover, /each explicit task.*acceptance criteria/i, "autonomous improver completion must cover task acceptance");
+  assert.doesNotMatch(autonomousImprover, /new\/changed skill files/, "autonomous improver must remain repository-agnostic");
+  assert.match(autonomousImprover, /## Example/, "autonomous improver must include a concrete example");
 
   const reviewRoutingRoles = {
     "skills/delivery/autoreview/SKILL.md": /available second-model review helper.*not ordinary self-review/i,
