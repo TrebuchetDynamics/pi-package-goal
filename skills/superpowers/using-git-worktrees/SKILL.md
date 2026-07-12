@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from the current workspace or before executing implementation plans.
+description: Use only when the user explicitly asks for a separate worktree or branch.
 license: MIT; adapted from https://github.com/obra/superpowers
 ---
 
@@ -8,11 +8,11 @@ license: MIT; adapted from https://github.com/obra/superpowers
 
 ## Overview
 
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
+Set up an isolated workspace only when the user explicitly requests one. Otherwise work in the current checkout and on the current branch.
 
-**Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
+**Core principle:** One branch by default. Explicit user intent is required before creating a branch or worktree.
 
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+**Announce at start:** "You explicitly requested isolation, so I'm using the using-git-worktrees skill."
 
 ## Step 0: Detect Existing Isolation
 
@@ -39,11 +39,7 @@ Report with branch state:
 
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
-Has the user already indicated their worktree preference in your instructions? If not, ask for consent before creating a worktree:
-
-> "Would you like me to set up an isolated worktree? It protects your current branch from changes."
-
-Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
+If the user has not explicitly requested a separate worktree or branch, work in place and skip to Step 2. Do not suggest isolation proactively. Honor any declared preference for one-branch development.
 
 ## Step 1: Create Isolated Workspace
 
@@ -51,7 +47,7 @@ Honor any existing declared preference without asking. If the user declines cons
 
 ### 1a. Native Worktree Tools (preferred)
 
-The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
+The user has explicitly asked for an isolated workspace. Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
 
@@ -144,6 +140,7 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
+| No explicit isolation request | Work in the current checkout and branch |
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
 | Native worktree tool available | Use it (Step 1a) |
@@ -187,6 +184,7 @@ Ready to implement <feature-name>
 ## Red Flags
 
 **Never:**
+- Create or suggest a branch/worktree without an explicit user request
 - Create a worktree when Step 0 detects existing isolation
 - Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`). This is the #1 mistake — if you have it, use it.
 - Skip Step 1a by jumping straight to Step 1b's git commands
@@ -195,6 +193,7 @@ Ready to implement <feature-name>
 - Proceed with failing tests without asking
 
 **Always:**
+- Default to the current checkout and branch
 - Run Step 0 detection first
 - Prefer native tools over git fallback
 - Follow directory priority: explicit instructions > existing project-local directory > default

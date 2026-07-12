@@ -32,10 +32,7 @@ For each task:
 
 ### Step 3: Complete Development
 
-After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+After all tasks complete and verified, report the changed files and validation results. Use `superpowers:finishing-a-development-branch` only when the user explicitly requested branch delivery, merging, a PR, or cleanup.
 
 ## When to Stop and Ask for Help
 
@@ -61,14 +58,14 @@ After all tasks complete and verified:
 - Don't skip verifications
 - Reference skills when plan says to
 - Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+- Work in the current checkout and branch unless the user explicitly requests isolation
 
 ## Integration
 
-**Required workflow skills:**
-- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
+**Workflow skills:**
 - **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+- **superpowers:using-git-worktrees** - Optional; only when the user explicitly requests isolation
+- **superpowers:finishing-a-development-branch** - Optional; only for explicit branch delivery or cleanup
 ## Shared contract
 
 Follow [the shared skill contract](../../shared/COMMON-CONTRACT.md) for repo study, dirty-worktree hygiene, verification evidence, safe handoffs, and safety defaults.
