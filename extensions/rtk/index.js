@@ -274,16 +274,22 @@ async function findUsableRtk(pi, runtime, { force = false } = {}) {
   const now = Date.now();
   if (!force && runtime.status && now - runtime.checkedAt < STATUS_TTL_MS) return runtime.status.ok ? runtime.status : null;
 
+  let unsupported = null;
   for (const candidate of rtkCommandCandidates()) {
     const version = await execRtk(pi, ["--version"], { rtkCommand: candidate }).catch(() => ({ code: 1, stdout: "" }));
     if (version.code !== 0) continue;
-    const status = { ok: true, reason: "rtk-ai/rtk available", version: String(version.stdout ?? "").trim(), command: candidate };
+    const versionText = String(version.stdout ?? "").trim();
+    if (!isSupportedRtkVersion(versionText)) {
+      unsupported = { ok: false, reason: `rtk is too old or invalid; need >= ${MIN_SUPPORTED_RTK.join(".")}`, version: versionText, command: candidate };
+      continue;
+    }
+    const status = { ok: true, reason: "rtk-ai/rtk available", version: versionText, command: candidate };
     runtime.status = status;
     runtime.checkedAt = now;
     return status;
   }
 
-  runtime.status = { ok: false, reason: "rtk binary not found; /rtk install shows the manual install command", version: "", command: "" };
+  runtime.status = unsupported ?? { ok: false, reason: "rtk binary not found; /rtk install shows the manual install command", version: "", command: "" };
   runtime.checkedAt = now;
   return null;
 }

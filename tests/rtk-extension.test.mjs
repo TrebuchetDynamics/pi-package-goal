@@ -140,4 +140,25 @@ assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /Manual RTK install required/);
 assert.match(notices.at(-1).message, /brew install rtk/);
 
+{
+  let toolCallHandler;
+  const calls = [];
+  registerRtkExtension({
+    registerCommand() {},
+    on(name, handler) {
+      if (name === "tool_call") toolCallHandler = handler;
+    },
+    async exec(command, args) {
+      calls.push([command, ...args]);
+      if (args[0] === "--version") return { code: 0, stdout: "rtk 0.22.9", stderr: "" };
+      if (args[0] === "rewrite") return { code: 0, stdout: "rtk git status", stderr: "" };
+      return { code: 1, stdout: "", stderr: "" };
+    },
+  });
+  const event = { toolName: "bash", input: { command: "git status" } };
+  await toolCallHandler(event, { signal: undefined, hasUI: false });
+  assert.equal(event.input.command, "git status");
+  assert.equal(calls.some((call) => call.includes("rewrite")), false);
+}
+
 console.log("rtk-extension ok");
