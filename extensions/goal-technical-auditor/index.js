@@ -33,7 +33,7 @@ export default function goalTechnicalAuditor(pi) {
         `Starting goal-driven technical audit automation for ${scopeLabel}. Token budget: ${tokenBudget || DEFAULT_TOKEN_BUDGET}.`,
         "info",
       );
-      pi.sendUserMessage(goalCommand);
+      pi.sendUserMessage(goalCommand, ctx.isIdle?.() === false ? { deliverAs: "followUp" } : undefined);
     },
   });
 }

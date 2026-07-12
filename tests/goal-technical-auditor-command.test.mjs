@@ -93,7 +93,7 @@ registerGoalTechnicalAuditor({
     registeredDefinition = definition;
     registeredHandler = definition.handler;
   },
-  sendUserMessage: (message) => sentMessages.push(message),
+  sendUserMessage: (message, options) => sentMessages.push({ message, options }),
 });
 assert.deepEqual(registeredDefinition.getArgumentCompletions("e", { cwd: process.cwd() }), [{ value: "extensions/", label: "extensions/" }]);
 
@@ -122,5 +122,15 @@ await registeredHandler("definitely-missing-goal-audit-scope", { cwd: process.cw
 assert.deepEqual(sentMessages, []);
 assert.equal(notices.at(-1).level, "warning");
 assert.match(notices.at(-1).message, /Scope path does not exist: definitely-missing-goal-audit-scope/);
+
+notices.length = 0;
+await registeredHandler("--tokens 300k .", {
+  cwd: process.cwd(),
+  isIdle: () => false,
+  ui: { notify: (message, level) => notices.push({ message, level }) },
+});
+assert.equal(sentMessages.length, 1);
+assert.match(sentMessages[0].message, /^\/goal --tokens 300k /);
+assert.deepEqual(sentMessages[0].options, { deliverAs: "followUp" });
 
 console.log("goal-technical-auditor-command ok");
