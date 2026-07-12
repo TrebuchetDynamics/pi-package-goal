@@ -533,7 +533,8 @@ async function testUnderstandExtension() {
   const goalTechnicalAuditorExtension = read("extensions/goal-technical-auditor/index.js");
   assert.match(goalTechnicalAuditorExtension, /registerCommand\("goal-technical-auditor"/);
   assert.match(goalTechnicalAuditorExtension, /buildGoalTechnicalAuditorObjective/);
-  assert.match(goalTechnicalAuditorExtension, /sendUserMessage\(goalCommand\)/);
+  assert.match(goalTechnicalAuditorExtension, /sendUserMessage\(goalCommand, ctx\.isIdle/);
+  assert.match(goalTechnicalAuditorExtension, /deliverAs: "followUp"/);
   assert.ok(exists("extensions/goal-technical-auditor/lib/command.js"), "goal-technical-auditor command helper must exist");
   assert.ok(exists("tests/goal-technical-auditor-command.test.mjs"), "goal-technical-auditor helper test must exist");
   assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
