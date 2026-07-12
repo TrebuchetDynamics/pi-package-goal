@@ -92,6 +92,28 @@ export function parseUnderstandCommand(commandName, args = "") {
 
 export { splitCommandArgs as splitArgs, splitFirstArg } from "../_shared/pi-bridge/command-grammar.js";
 
+const UNDERSTAND_ANALYSIS_FLAGS = new Set(["--full", "--auto-update", "--no-auto-update", "--review", "--no-agent-map"]);
+
+export function validateUnderstandAnalysisArgs(args = "") {
+  const targets = [];
+  const tokens = splitCommandArgs(args);
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token === "--language") {
+      if (!tokens[index + 1] || tokens[index + 1].startsWith("--")) {
+        return { ok: false, message: "Error: --language requires a value." };
+      }
+      index += 1;
+    } else if (token.startsWith("--")) {
+      if (!UNDERSTAND_ANALYSIS_FLAGS.has(token)) return { ok: false, message: `Error: unknown /understand option: ${token}` };
+    } else {
+      targets.push(token);
+    }
+  }
+  if (targets.length > 1) return { ok: false, message: `Error: /understand accepts at most one target directory path, got: ${targets.join(", ")}` };
+  return { ok: true };
+}
+
 function normalizeFolderToken(folder) {
   const withoutAt = String(folder ?? "").replace(/^@/, "").trim();
   const withoutDotSuffix = withoutAt.replace(/[\\/]\.$/, "");
@@ -248,7 +270,8 @@ export function buildAutoAgentArgs(understandArgs = "") {
     return previous !== "--language";
   });
   if (!pathToken || isCurrentDirectoryToken(pathToken)) return "";
-  return `@${pathToken}`;
+  const scopedPath = `@${pathToken}`;
+  return /\s/.test(scopedPath) ? JSON.stringify(scopedPath) : scopedPath;
 }
 
 export function buildAutoAgentCommand(understandArgs = "") {
@@ -763,6 +786,14 @@ function registerUnderstandCommand(pi, name, paths) {
       if (parsed.type === "refactor") {
         await handleRefactorCommand(pi, ctx, paths, parsed.args);
         return;
+      }
+
+      if (parsed.skillName === "understand") {
+        const validation = validateUnderstandAnalysisArgs(parsed.args);
+        if (!validation.ok) {
+          await postMessage(pi, validation.message, validation);
+          return;
+        }
       }
 
       const skillArgs = parsed.skillName === "understand"

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
+import understandAnythingExtension, {
   buildAutoAgentArgs,
   buildAutoAgentCommand,
   buildSkillInvocation,
@@ -18,6 +18,7 @@ import {
   parseUnderstandCommand,
   resolveContainedOutputPath as resolveContainedUnderstandOutputPath,
   splitFirstArg,
+  validateUnderstandAnalysisArgs,
 } from "../extensions/understand/index.js";
 import {
   appendRefactorIgnoreNote,
@@ -91,6 +92,11 @@ assert.deepEqual(parseUnderstandCommand("understand-refactor", "auth flow plan.m
   args: "auth flow plan.md",
 });
 
+assert.deepEqual(validateUnderstandAnalysisArgs("src --full --language zh"), { ok: true });
+assert.deepEqual(validateUnderstandAnalysisArgs("--language"), { ok: false, message: "Error: --language requires a value." });
+assert.deepEqual(validateUnderstandAnalysisArgs("--bogus"), { ok: false, message: "Error: unknown /understand option: --bogus" });
+assert.deepEqual(validateUnderstandAnalysisArgs("src test"), { ok: false, message: "Error: /understand accepts at most one target directory path, got: src, test" });
+
 assert.deepEqual(splitArgs("'project a' \"project b\" out.md"), ["project a", "project b", "out.md"]);
 assert.deepEqual(parseCompareArgs("@project-a @project-b"), {
   ok: true,
@@ -151,6 +157,7 @@ assert.equal(buildAutoAgentArgs("."), "");
 assert.equal(buildAutoAgentArgs("./"), "");
 assert.equal(buildAutoAgentCommand(""), "/understand-agent");
 assert.equal(buildAutoAgentCommand("src/frontend --language zh"), "/understand-agent @src/frontend");
+assert.equal(buildAutoAgentCommand('"src/my project" --language zh'), '/understand-agent "@src/my project"');
 assert.equal(normalizeSkillArgs("."), "");
 assert.equal(normalizeSkillArgs("./ --language rust"), "--language rust");
 assert.equal(buildUnderstandSkillArgs("", "/repo/tmux"), "/repo/tmux");
@@ -389,6 +396,20 @@ function makePiRecorder() {
   assert.match(recorder.postedMessages[0].content, /\/understand-refactor @internal\/channels\/telegram\/\. auth flow custom-plan\.md/);
   assert.equal(recorder.dispatchedUserMessages.length, 1);
   assert.match(recorder.dispatchedUserMessages[0].content, /User: internal\/channels\/telegram$/);
+}
+
+{
+  const commands = new Map();
+  const recorder = makePiRecorder();
+  understandAnythingExtension({
+    ...recorder.pi,
+    on() {},
+    registerCommand(name, definition) { commands.set(name, definition); },
+  });
+  await commands.get("understand").handler("--bogus", { cwd: fixtureRoot, isIdle: () => true });
+  assert.equal(recorder.dispatchedUserMessages.length, 0);
+  assert.equal(recorder.postedMessages.length, 1);
+  assert.match(recorder.postedMessages[0].content, /unknown \/understand option: --bogus/);
 }
 
 console.log("understand-extension ok");
