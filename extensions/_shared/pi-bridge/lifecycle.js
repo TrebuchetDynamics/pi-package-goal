@@ -89,11 +89,7 @@ export function createRepoBackedSkillBridge(config) {
   async function sendSkillInvocation(pi, ctx, paths, request) {
     await ensureInstalled(pi, ctx, paths, request.ensureOptions ?? {});
     const message = await readSkillInvocation(request);
-    if (ctx.isIdle()) {
-      pi.sendUserMessage(message);
-    } else {
-      pi.sendUserMessage(message, { deliverAs: "followUp" });
-    }
+    pi.sendUserMessage(message, { deliverAs: "followUp" });
   }
 
   async function checkoutHead(pi, ctx, paths) {

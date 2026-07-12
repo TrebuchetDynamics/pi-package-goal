@@ -376,7 +376,7 @@ function makePiRecorder() {
   assert.equal(recorder.dispatchedUserMessages.length, 1);
   assert.match(recorder.dispatchedUserMessages[0].content, /<skill name="understand"/);
   assert.match(recorder.dispatchedUserMessages[0].content, /Run analysis\./);
-  assert.equal(recorder.dispatchedUserMessages[0].options, undefined);
+  assert.deepEqual(recorder.dispatchedUserMessages[0].options, { deliverAs: "followUp" });
 }
 
 {

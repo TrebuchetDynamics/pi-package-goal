@@ -61,6 +61,9 @@ await bridge.sendSkillInvocation(pi, ctx, paths, {
   args: "run it",
 });
 assert.deepEqual(afterEvents, ["installed", "updated", "updated", "present"]);
-assert.deepEqual(sentMessages, [{ content: "/tmp/demo-repo/skill.md\n# Demo Skill\nARGS:run it", options: undefined }]);
+assert.deepEqual(sentMessages, [{
+  content: "/tmp/demo-repo/skill.md\n# Demo Skill\nARGS:run it",
+  options: { deliverAs: "followUp" },
+}]);
 
 console.log("pi-bridge-lifecycle ok");
