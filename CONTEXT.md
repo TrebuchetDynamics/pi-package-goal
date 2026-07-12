@@ -64,10 +64,6 @@ _Avoid_: bundling the Rust binary, silently executing remote installers without 
 The package-local extension at `extensions/onklaud/index.js` is a thin `/goal` launcher plus CLI helper: `/onklaud explain` describes the boundary, `/onklaud status` checks CLI health, `/onklaud install` explicitly installs the CLI into user-local paths after confirmation or `--yes`, and `/onklaud <task>` queues a goal prompt that uses Onklaud 5 as an advisory council while Pi keeps ownership of edits, validation, commits, and pushes.
 _Avoid_: presenting Onklaud as a separate repo-mutating coding agent, installing implicitly, writing outside user-local install/bin paths by default, sending secrets or credential-bearing logs to external model councils, treating Onklaud advice as verified source truth, letting external CLIs mutate the repo directly
 
-**OpenWiki Extension**:
-The package-local extension at `extensions/openwiki/index.js` registers `/openwiki` as a user-controlled bridge to the external `langchain-ai/openwiki` CLI: `/openwiki install` clones/builds it into user-local paths after confirmation or `--yes`, bare `/openwiki` chooses init versus update from repo state, `/openwiki <message>` runs a one-shot docs request, and `/openwiki progress` reads the repo-local non-secret `.openwiki` progress file.
-_Avoid_: bundling OpenWiki code, installing silently, hiding that OpenWiki may edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`, committing generated docs without validation, exposing `~/.openwiki/.env` provider secrets, storing secrets in repo-local `.openwiki` progress
-
 **Provider Bridge Pattern**:
 A documented extension design pattern for registering external or CLI-backed model providers while keeping Pi responsible for tool execution. Provider bridges need explicit status commands, auth-source disclosure, smoke-test guidance, and owner approval for credential reuse or unofficial endpoints before bundling.
 _Avoid_: bundling provider proxies by default, silently reading credential files, letting upstream CLIs edit files outside Pi's tools, treating prompt-bridged tool calls as native reliability

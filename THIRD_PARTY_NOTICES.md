@@ -182,14 +182,6 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/TrebuchetDynamics-research-forge-LICENSE`
 
-## langchain-ai/openwiki
-
-- Source: https://github.com/langchain-ai/openwiki
-- Snapshot inspected: `58b4bd33a3e824e09c082e1b6f0764d97666b856`
-- Usage: source evidence for the package-local `extensions/openwiki/index.js` CLI bridge; OpenWiki is cloned/built on explicit `/openwiki install` and is not bundled in this package tarball.
-- License: MIT
-- Full license copy: `licenses/langchain-ai-openwiki-LICENSE`
-
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk

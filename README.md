@@ -2,7 +2,7 @@
 
 `pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/onklaud`, and `/openwiki`;
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, and `/onklaud`;
 - agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
 - the `trebuchet-neon` TUI theme; and
 - `tx` tmux plus `autofolderrefactor` helper bins.
@@ -295,24 +295,6 @@ Commands:
 
 The extension treats Onklaud output as advice, not authority: Pi still owns file edits, tests, validation, commits, and pushes. It does not send secrets intentionally; review CLI auth outside Pi before relying on model-backed council calls.
 
-### `/openwiki`
-
-`/openwiki` is a user-controlled bridge to the external [langchain-ai/openwiki](https://github.com/langchain-ai/openwiki) documentation CLI. It does not bundle OpenWiki or install it silently.
-
-Commands:
-
-```text
-/openwiki
-/openwiki document the API docs
-/openwiki progress
-/openwiki status
-/openwiki install --yes
-/openwiki init --yes
-/openwiki update --yes
-```
-
-`/openwiki` now chooses `init` when no `openwiki/` docs exist and `update` when they do. `/openwiki <message>` runs a one-shot docs request. The extension keeps non-secret repo-local progress in `.openwiki`; OpenWiki's provider config/secrets stay in `~/.openwiki/.env`. `init` and `update` can edit `openwiki/`, `AGENTS.md`, or `CLAUDE.md`; use normal repo validation before committing generated docs.
-
 ## Included CLI and tmux helpers
 
 ### `autofolderrefactor`
@@ -525,8 +507,7 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/folder-refactor",
       "./extensions/rtk",
       "./extensions/ponytail",
-      "./extensions/onklaud",
-      "./extensions/openwiki"
+      "./extensions/onklaud"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

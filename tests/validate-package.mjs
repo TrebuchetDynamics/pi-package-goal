@@ -474,7 +474,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/onklaud", "./extensions/openwiki"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/onklaud"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -565,14 +565,6 @@ async function testUnderstandExtension() {
   assert.match(onklaudExtension, /sendUserMessage\(goalCommand, options\)/);
   assert.ok(exists("extensions/onklaud/command.js"), "onklaud command helper must live with the extension");
   assert.ok(exists("tests/onklaud-extension-command.test.mjs"), "onklaud helper test must exist");
-
-  const openwikiExtension = read("extensions/openwiki/index.js");
-  assert.match(openwikiExtension, /registerCommand\("openwiki"/);
-  assert.match(openwikiExtension, /OPENWIKI_REPO_URL/);
-  assert.match(openwikiExtension, /pnpm/);
-  assert.doesNotMatch(openwikiExtension, /corepack/);
-  assert.ok(exists("extensions/openwiki/command.js"), "openwiki command helper must live with the extension");
-  assert.ok(exists("tests/openwiki-extension-command.test.mjs"), "openwiki helper test must exist");
 
   const lifecycle = read("extensions/_shared/pi-bridge/lifecycle.js");
   assert.match(lifecycle, /createRepoBackedSkillBridge/);
