@@ -187,6 +187,14 @@ Examples:
 /goal-technical-auditor "bug hunt"
 ```
 
+The controller records audit passes and findings in a committed `docs/audits/` ledger, validates and commits one finding at a time on the current branch, preserves twice-failed slices in Git stashes, and re-audits before final delivery. It performs one final push after validation; `main`, `master`, and the remote default branch require confirmation.
+
+| Control | Effect |
+| --- | --- |
+| `/goal-technical-auditor status` | Show phase, branch, findings, blockers, and next action. |
+| `/goal-technical-auditor resume` | Resume only after branch, HEAD, ledger, and worktree drift checks pass. |
+| `/goal-technical-auditor abort` | Pause the associated `/goal` while preserving commits, ledger, and stashes. |
+
 ### `/understand`
 
 `/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.

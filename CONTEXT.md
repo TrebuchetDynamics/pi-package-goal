@@ -97,8 +97,8 @@ A planning skill under `skills/planning/nack/` that treats short user pushback (
 _Avoid_: argumentative loops, treating pushback as approval, broad plan grilling, external code-review handling
 
 **Goal Technical Auditor Extension**:
-The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a thin launcher that turns a scope and token budget into a `/goal` objective for `technical-auditor` Full mode plus an autonomous safe improvement loop. The loop works through all safe audit recommendations, reruns the audit on the same scope, and stops only when recommendations are fixed, deferred with reason, or blocked with an owner decision.
-_Avoid_: hidden workflow modes, silently starting broad automation for invalid arguments, weakening the command's predictable Full-mode meaning
+The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a deterministic controller around `/goal` and `technical-auditor` Full mode. It persists phase/finding state in Pi session entries, commits a Markdown audit ledger, validates and commits one finding at a time on the current branch, stashes twice-failed slices, re-audits until no new safe actionable finding remains, and permits completion only after final validation and one successful push. Protected/default branches require confirmation.
+_Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting broad automation for invalid arguments, premature `goal_complete`, destructive rollback, force-push/history rewriting, or weakening the command's predictable Full-mode meaning
 
 **Skill Router Skill**:
 A front-door planning skill under `skills/planning/skill-router/` that selects exactly one primary skill for a user task and routes blank tasks to `autonomous-codebase-improver` so the agent can still work autonomously from repo evidence.
