@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import registerGoalTechnicalAuditor from "../extensions/goal-technical-auditor/index.js";
-import { buildGoalTechnicalAuditorObjective, DEFAULT_TOKEN_BUDGET, formatScopeForObjective, goalTechnicalAuditorCompletions, interpretScopeOrPrompt, parseGoalTechnicalAuditorArgs, validateGoalTechnicalAuditorLaunch, validateScopeInsideCwd } from "../extensions/goal-technical-auditor/lib/command.js";
+import { buildGoalTechnicalAuditorObjective, DEFAULT_TOKEN_BUDGET, formatScopeForObjective, goalTechnicalAuditorCompletions, interpretScopeOrPrompt, parseGoalTechnicalAuditorArgs, parseGoalTechnicalAuditorCommand, validateGoalTechnicalAuditorLaunch, validateScopeInsideCwd } from "../extensions/goal-technical-auditor/lib/command.js";
 
 assert.equal(DEFAULT_TOKEN_BUDGET, "700k");
 assert.deepEqual(parseGoalTechnicalAuditorArgs(""), { scope: ".", tokenBudget: "700k", dryRun: false, help: false, focus: null, prompt: "", error: null });
@@ -22,6 +22,17 @@ assert.deepEqual(interpretScopeOrPrompt(["hunt", "bugs", "in", "repo"]), { scope
 assert.equal(parseGoalTechnicalAuditorArgs("--help").help, true);
 assert.match(parseGoalTechnicalAuditorArgs("--focus cleanup").error, /Unknown focus: cleanup/);
 assert.match(parseGoalTechnicalAuditorArgs("--mode audit-only").error, /Unknown option: --mode/);
+assert.deepEqual(parseGoalTechnicalAuditorCommand("status"), { action: "status" });
+assert.deepEqual(parseGoalTechnicalAuditorCommand("resume"), { action: "resume" });
+assert.deepEqual(parseGoalTechnicalAuditorCommand("abort"), { action: "abort" });
+assert.match(parseGoalTechnicalAuditorCommand("status now").error, /does not accept arguments/);
+assert.equal(parseGoalTechnicalAuditorCommand("skills").action, "start");
+assert.equal(parseGoalTechnicalAuditorCommand("skills").objective.scope, "skills");
+assert.match(parseGoalTechnicalAuditorCommand('"unterminated').error, /Unclosed quote/);
+const controlCompletions = goalTechnicalAuditorCompletions("").map((item) => item.value);
+assert.equal(controlCompletions.includes("status"), true);
+assert.equal(controlCompletions.includes("resume"), true);
+assert.equal(controlCompletions.includes("abort"), true);
 assert.equal(formatScopeForObjective("."), "the current Pi working directory (`.`)");
 assert.equal(formatScopeForObjective("skills/engineering"), "folder/path `skills/engineering`");
 
@@ -68,6 +79,9 @@ assert.match(objective.goalCommand, /rerun technical-auditor Full mode on the sa
 assert.match(objective.goalCommand, /every audit recommendation from every pass/);
 assert.match(objective.goalCommand, /Continue autonomously while safe useful recommendations remain/);
 assert.match(objective.goalCommand, /Do not publish, deploy, spend money, rewrite history, force-push, expose secrets/);
+assert.match(objective.goalCommand, /technical_auditor_checkpoint/);
+assert.match(objective.goalCommand, /Do not call goal_complete directly/);
+assert.match(objective.goalCommand, /one finding at a time/);
 
 const promptObjective = buildGoalTechnicalAuditorObjective("bug hunt");
 assert.equal(promptObjective.scope, ".");

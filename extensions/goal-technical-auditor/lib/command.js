@@ -6,6 +6,28 @@ export const DEFAULT_TOKEN_BUDGET = "700k";
 export const BUG_HUNT_REFACTOR_FOCUS = "bug-hunt-refactor";
 export const GOAL_TECHNICAL_AUDITOR_USAGE = `Usage: /goal-technical-auditor [--tokens 700k] [--dry-run] [--focus ${BUG_HUNT_REFACTOR_FOCUS}] [scope|prompt]\nExamples: /goal-technical-auditor ., /goal-technical-auditor lib, /goal-technical-auditor --dry-run --focus ${BUG_HUNT_REFACTOR_FOCUS} ., /goal-technical-auditor "bug hunt"`;
 
+const CONTROL_ACTIONS = new Set(["status", "resume", "abort"]);
+
+export function parseGoalTechnicalAuditorCommand(input = "") {
+  let tokens;
+  try {
+    tokens = splitCommandArgs(input);
+  } catch (error) {
+    return { action: "error", error: error.message };
+  }
+
+  const action = tokens[0]?.toLowerCase();
+  if (CONTROL_ACTIONS.has(action)) {
+    if (tokens.length > 1) return { action: "error", error: `/goal-technical-auditor ${action} does not accept arguments.` };
+    return { action };
+  }
+
+  const objective = buildGoalTechnicalAuditorObjective(input);
+  return objective.error
+    ? { action: "error", error: objective.error, objective }
+    : { action: "start", objective };
+}
+
 export function parseGoalTechnicalAuditorArgs(input) {
   let tokens;
   try {
@@ -120,7 +142,7 @@ export function validateGoalTechnicalAuditorLaunch(cwd, { scope, prompt }) {
 }
 
 export function goalTechnicalAuditorCompletions(prefix = "", cwd = process.cwd()) {
-  const staticValues = [".", "--tokens 700k .", "--tokens 500k .", "--tokens 200k .", "--dry-run .", `--focus ${BUG_HUNT_REFACTOR_FOCUS} .`];
+  const staticValues = ["status", "resume", "abort", ".", "--tokens 700k .", "--tokens 500k .", "--tokens 200k .", "--dry-run .", `--focus ${BUG_HUNT_REFACTOR_FOCUS} .`];
   const dirs = safeTopLevelDirs(cwd).map((dir) => `${dir}/`);
   return [...new Set([...staticValues, ...dirs])]
     .filter((value) => value.startsWith(prefix))
@@ -180,6 +202,12 @@ Preflight before audit:
 - Read repo instructions and package/project manifests.
 - Identify the package/project test command and run the relevant baseline when feasible.
 - Check codebase map freshness when codebase-map-understand.md is present; treat it as leads only.${promptText}${focusText}
+
+Controller contract:
+- Use technical_auditor_checkpoint for every preflight, audit, finding, validation, re-audit, and finalization transition.
+- Work on one finding at a time. Do not begin another finding until the controller accepts the current finding outcome.
+- Treat checkpoint rejection as authoritative workflow state and follow the returned next action.
+- Do not call goal_complete directly. The controller permits completion only after final validation and delivery succeed.
 
 Mega automation contract:
 1. Load and follow /skill:technical-auditor in Full mode. No mode argument means Full mode: broad audit plus architecture-deepening review.
