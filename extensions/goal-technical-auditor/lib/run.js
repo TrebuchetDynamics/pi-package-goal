@@ -1,3 +1,8 @@
+import { execFile } from "node:child_process";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { promisify } from "node:util";
+
 export const RUN_ENTRY_TYPE = "goal-technical-auditor-run";
 export const CHECKPOINT_TOOL_NAME = "technical_auditor_checkpoint";
 
@@ -261,4 +266,159 @@ export function renderAuditLedger(run) {
     : "- None recorded";
 
   return `# Goal Technical Auditor Ledger\n\n- Run: \`${run.id}\`\n- Phase: \`${run.phase}\`\n- Scope: \`${run.scope}\`\n- Branch: \`${run.branch}\`\n- Baseline commit: \`${run.baselineCommit ?? "not recorded"}\`\n- Latest green commit: \`${run.latestGreenCommit ?? "not recorded"}\`\n- Audit passes: ${run.auditPass}\n- Clean audit pass: ${run.cleanAuditPass ?? "not recorded"}\n\n## Objective\n\n${run.objective}\n\n## Findings\n\n| ID | Severity | Status | Title | Evidence | Commit / stash |\n| --- | --- | --- | --- | --- | --- |\n${findings}\n\n## Validation receipts\n\n${receipts}\n\n## Delivery\n\n${run.delivery ? `Pushed \`${run.delivery.branch}\` to \`${run.delivery.remote}\` in session state.` : "Final push not yet recorded in session state."}\n`;
+}
+
+const execFileAsync = promisify(execFile);
+const MAX_OUTPUT_BYTES = 50 * 1024;
+
+function bounded(value) {
+  const text = String(value ?? "");
+  return Buffer.byteLength(text) <= MAX_OUTPUT_BYTES ? text : `${text.slice(0, MAX_OUTPUT_BYTES)}\n[output truncated]`;
+}
+
+async function runProcess(command, args, { cwd, signal, allowFailure = false } = {}) {
+  try {
+    const result = await execFileAsync(command, args, {
+      cwd,
+      signal,
+      maxBuffer: 2 * MAX_OUTPUT_BYTES,
+      encoding: "utf8",
+    });
+    return { code: 0, stdout: bounded(result.stdout), stderr: bounded(result.stderr) };
+  } catch (error) {
+    const result = {
+      code: Number.isInteger(error.code) ? error.code : 1,
+      stdout: bounded(error.stdout),
+      stderr: bounded(error.stderr || error.message),
+    };
+    if (allowFailure) return result;
+    throw new Error(`${command} ${args.join(" ")} failed (${result.code}): ${result.stderr || result.stdout}`);
+  }
+}
+
+async function git(cwd, args, options = {}) {
+  return runProcess("git", args, { cwd, ...options });
+}
+
+export async function runValidation(cwd, commands, { signal } = {}) {
+  const receipts = [];
+  for (const command of commands) {
+    const result = await runProcess(process.env.SHELL || "/bin/sh", ["-lc", command], {
+      cwd,
+      signal,
+      allowFailure: true,
+    });
+    receipts.push({ command, ...result });
+    if (result.code !== 0) return { ok: false, receipts };
+  }
+  return { ok: true, receipts };
+}
+
+export async function inspectRepository(cwd, { signal } = {}) {
+  const root = (await git(cwd, ["rev-parse", "--show-toplevel"], { signal })).stdout.trim();
+  const branchResult = await git(root, ["symbolic-ref", "--quiet", "--short", "HEAD"], { signal, allowFailure: true });
+  if (branchResult.code !== 0 || !branchResult.stdout.trim()) throw new Error("Goal technical auditor requires a checked-out branch.");
+  const branch = branchResult.stdout.trim();
+  const head = (await git(root, ["rev-parse", "HEAD"], { signal })).stdout.trim();
+  const upstreamResult = await git(root, ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], { signal, allowFailure: true });
+  return { root, branch, head, upstream: upstreamResult.code === 0 ? upstreamResult.stdout.trim() : null };
+}
+
+export async function worktreePaths(cwd, { signal } = {}) {
+  const result = await git(cwd, ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { signal });
+  const fields = result.stdout.split("\0").filter(Boolean);
+  const paths = [];
+  for (let index = 0; index < fields.length; index += 1) {
+    const entry = fields[index];
+    const status = entry.slice(0, 2);
+    paths.push(entry.slice(3));
+    if (/[RC]/.test(status)) index += 1;
+  }
+  return [...new Set(paths)].sort();
+}
+
+export async function detectSecretRisks(cwd, { signal } = {}) {
+  const riskyNames = /(^|\/)(?:\.env(?:\..*)?|id_(?:rsa|dsa|ecdsa|ed25519)|credentials(?:\..*)?|.*\.(?:pem|p12|pfx|key))$/i;
+  const secretText = /(?:BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|(?:api[_-]?key|secret|token|password)\s*[:=]\s*[^\s]{8,})/i;
+  const paths = await worktreePaths(cwd, { signal });
+  const risks = paths.filter((path) => riskyNames.test(path)).map((path) => `suspicious path: ${path}`);
+  const diff = await git(cwd, ["diff", "HEAD", "--no-ext-diff", "--unified=0", "--", "."], { signal, allowFailure: true });
+  if (secretText.test(diff.stdout)) risks.push("suspicious credential-like content in tracked diff (value redacted)");
+  for (const path of paths) {
+    if (risks.some((risk) => risk.endsWith(path))) continue;
+    try {
+      const content = await readFile(resolve(cwd, path), "utf8");
+      if (secretText.test(content)) risks.push(`suspicious credential-like content: ${path} (value redacted)`);
+    } catch {}
+  }
+  return [...new Set(risks)];
+}
+
+export async function commitAll(cwd, message, { signal } = {}) {
+  await git(cwd, ["add", "-A"], { signal });
+  const staged = await git(cwd, ["diff", "--cached", "--quiet"], { signal, allowFailure: true });
+  if (staged.code === 0) return null;
+  await git(cwd, ["-c", "commit.gpgsign=false", "commit", "-m", message], { signal });
+  return (await git(cwd, ["rev-parse", "HEAD"], { signal })).stdout.trim();
+}
+
+export async function stashAll(cwd, message, { signal } = {}) {
+  if ((await worktreePaths(cwd, { signal })).length === 0) return null;
+  await git(cwd, ["stash", "push", "--include-untracked", "-m", message], { signal });
+  return (await git(cwd, ["stash", "list", "-1", "--format=%gd"], { signal })).stdout.trim();
+}
+
+let mutationQueueModule;
+
+async function withLedgerMutationQueue(path, mutation) {
+  mutationQueueModule ??= import("@earendil-works/pi-coding-agent").catch((error) => {
+    if (error.code === "ERR_MODULE_NOT_FOUND") return null;
+    throw error;
+  });
+  const module = await mutationQueueModule;
+  return module?.withFileMutationQueue ? module.withFileMutationQueue(path, mutation) : mutation();
+}
+
+export async function writeRunLedger(run) {
+  return withLedgerMutationQueue(run.ledgerPath, async () => {
+    await mkdir(dirname(run.ledgerPath), { recursive: true });
+    await writeFile(run.ledgerPath, renderAuditLedger(run), "utf8");
+    return run.ledgerPath;
+  });
+}
+
+export function isProtectedBranch(branch, defaultBranch) {
+  return branch === "main" || branch === "master" || branch === defaultBranch;
+}
+
+export async function resolvePushTarget(cwd, run, { signal } = {}) {
+  if (run.upstream) {
+    const [remote, ...branchParts] = run.upstream.split("/");
+    const defaultResult = await git(cwd, ["symbolic-ref", "--quiet", "--short", `refs/remotes/${remote}/HEAD`], { signal, allowFailure: true });
+    return {
+      remote,
+      branch: branchParts.join("/"),
+      setUpstream: false,
+      defaultBranch: defaultResult.code === 0 ? defaultResult.stdout.trim().replace(`${remote}/`, "") : null,
+    };
+  }
+
+  const remotes = (await git(cwd, ["remote"], { signal })).stdout.trim().split(/\s+/).filter(Boolean);
+  if (remotes.length !== 1) throw new Error(`Expected exactly one Git remote without an upstream; found ${remotes.length}.`);
+  const remote = remotes[0];
+  const defaultResult = await git(cwd, ["symbolic-ref", "--quiet", "--short", `refs/remotes/${remote}/HEAD`], { signal, allowFailure: true });
+  return {
+    remote,
+    branch: run.branch,
+    setUpstream: true,
+    defaultBranch: defaultResult.code === 0 ? defaultResult.stdout.trim().replace(`${remote}/`, "") : null,
+  };
+}
+
+export async function pushRun(cwd, target, { signal } = {}) {
+  const args = target.setUpstream
+    ? ["push", "--set-upstream", target.remote, `HEAD:${target.branch}`]
+    : ["push", target.remote, `HEAD:${target.branch}`];
+  await git(cwd, args, { signal });
+  return target;
 }
