@@ -422,3 +422,142 @@ export async function pushRun(cwd, target, { signal } = {}) {
   await git(cwd, args, { signal });
   return target;
 }
+
+function withReceiptCommit(run, commit) {
+  return commit ? { ...run, commits: [...run.commits, commit], latestGreenCommit: commit } : run;
+}
+
+export async function processCheckpoint(run, params, { cwd, signal } = {}) {
+  const root = cwd ?? run.cwd;
+
+  switch (params.action) {
+    case "preflight": {
+      const risks = await detectSecretRisks(root, { signal });
+      if (risks.length) throw new Error(`Preflight blocked:\n${risks.join("\n")}`);
+      const commands = [...new Set([...params.focusedValidationCommands, ...params.projectValidationCommands])];
+      const validation = await runValidation(root, commands, { signal });
+      const baselineCommit = await commitAll(root, "chore: checkpoint before autonomous audit", { signal })
+        ?? (await inspectRepository(root, { signal })).head;
+      const next = applyRunEvent(run, {
+        type: "preflight_recorded",
+        baselineCommit,
+        latestGreenCommit: baselineCommit,
+        focusedValidationCommands: params.focusedValidationCommands,
+        projectValidationCommands: params.projectValidationCommands,
+        receipts: validation.receipts,
+      });
+      await writeRunLedger(next);
+      return {
+        run: next,
+        message: validation.ok
+          ? "Preflight recorded; run the initial audit."
+          : "Baseline validation failed and was recorded as Milestone 0 evidence; run the initial audit.",
+      };
+    }
+    case "record_audit": {
+      const unexpected = (await worktreePaths(root, { signal }))
+        .filter((path) => resolve(root, path) !== resolve(run.ledgerPath));
+      if (unexpected.length) throw new Error(`Audit phase contains production changes: ${unexpected.join(", ")}`);
+      let next = applyRunEvent(run, { type: "audit_recorded", findings: params.findings });
+      await writeRunLedger(next);
+      const receiptCommit = await commitAll(root, `docs: record technical audit pass ${next.auditPass}`, { signal });
+      next = withReceiptCommit(next, receiptCommit);
+      return {
+        run: next,
+        message: next.phase === "implementing"
+          ? "Audit recorded; begin one pending finding."
+          : "Clean audit recorded; request final validation.",
+      };
+    }
+    case "begin_finding": {
+      const paths = await worktreePaths(root, { signal });
+      if (paths.length) throw new Error(`Cannot begin a finding with a dirty worktree: ${paths.join(", ")}`);
+      const head = (await inspectRepository(root, { signal })).head;
+      return {
+        run: applyRunEvent(run, { type: "finding_started", findingId: params.findingId, sliceBaseCommit: head }),
+        message: `Finding ${params.findingId} active; implement only this finding.`,
+      };
+    }
+    case "validate_finding": {
+      const active = run.findings.find((finding) => finding.status === "active");
+      if (!active) throw new Error("No active finding to validate.");
+      const repo = await inspectRepository(root, { signal });
+      if (repo.head !== run.sliceBaseCommit) throw new Error(`Git drift during ${active.id}: expected ${run.sliceBaseCommit}, found ${repo.head}.`);
+      const commands = [...new Set([...run.focusedValidationCommands, ...run.projectValidationCommands])];
+      const validation = await runValidation(root, commands, { signal });
+      if (validation.ok) {
+        const risks = await detectSecretRisks(root, { signal });
+        if (risks.length) throw new Error(`Commit blocked:\n${risks.join("\n")}`);
+        const codeCommit = await commitAll(root, `fix: resolve audit finding ${active.id}`, { signal });
+        if (!codeCommit) throw new Error(`Finding ${active.id} produced no committable changes.`);
+        let next = applyRunEvent(run, { type: "finding_fixed", receipts: validation.receipts, commit: codeCommit });
+        await writeRunLedger(next);
+        const ledgerCommit = await commitAll(root, `docs: record audit finding ${active.id}`, { signal });
+        next = withReceiptCommit(next, ledgerCommit);
+        return {
+          run: next,
+          message: `Finding ${active.id} validated and committed; begin the next pending finding or request re-audit.`,
+        };
+      }
+      if (active.attempts < 1) {
+        return {
+          run: applyRunEvent(run, { type: "finding_validation_failed", receipts: validation.receipts }),
+          message: `Validation failed for ${active.id}; repair once, then validate again.`,
+        };
+      }
+      const stashRef = await stashAll(root, `goal-auditor failed ${active.id}`, { signal });
+      let next = applyRunEvent(run, { type: "finding_validation_failed", receipts: validation.receipts, stashRef });
+      await writeRunLedger(next);
+      const ledgerCommit = await commitAll(root, `docs: record failed audit finding ${active.id}`, { signal });
+      next = withReceiptCommit(next, ledgerCommit);
+      return {
+        run: next,
+        message: `Finding ${active.id} failed twice; preserved as ${stashRef} and restored the green branch. Continue with an independent finding.`,
+      };
+    }
+    case "defer_finding": {
+      const dirty = await worktreePaths(root, { signal });
+      const stashRef = dirty.length ? await stashAll(root, `goal-auditor ${params.status} ${params.findingId}`, { signal }) : null;
+      let next = applyRunEvent(run, {
+        type: "finding_deferred",
+        findingId: params.findingId,
+        status: params.status,
+        reason: params.reason,
+        stashRef,
+      });
+      await writeRunLedger(next);
+      const commit = await commitAll(root, `docs: ${params.status} audit finding ${params.findingId}`, { signal });
+      next = withReceiptCommit(next, commit);
+      return {
+        run: next,
+        message: `Finding ${params.findingId} marked ${params.status}${stashRef ? `; preserved work as ${stashRef}` : ""}.`,
+      };
+    }
+    case "request_reaudit": {
+      let next = applyRunEvent(run, { type: "reaudit_requested" });
+      await writeRunLedger(next);
+      const commit = await commitAll(root, "docs: begin technical re-audit", { signal });
+      next = withReceiptCommit(next, commit);
+      return { run: next, message: "Run Technical Auditor Full mode again on the same scope." };
+    }
+    case "finalize": {
+      if (run.phase === "delivery_pending") return { run, message: "Final validation is already committed; resume delivery." };
+      const blocker = completionBlocker({ ...run, phase: "ready_to_complete" });
+      if (blocker) throw new Error(blocker);
+      const commands = [...new Set([...run.focusedValidationCommands, ...run.projectValidationCommands])];
+      const validation = await runValidation(root, commands, { signal });
+      if (!validation.ok) {
+        const failed = validation.receipts.find((receipt) => receipt.code !== 0);
+        throw new Error(`Final validation failed: ${failed.command}`);
+      }
+      let next = applyRunEvent(run, { type: "final_validation_passed", receipts: validation.receipts });
+      await writeRunLedger(next);
+      const ledgerCommit = await commitAll(root, "docs: finalize technical audit ledger", { signal });
+      next = withReceiptCommit(next, ledgerCommit);
+      if ((await worktreePaths(root, { signal })).length) throw new Error("Final worktree is not clean after ledger commit.");
+      return { run: next, message: "Final validation passed and ledger committed; deliver the run." };
+    }
+    default:
+      throw new Error(`Unknown checkpoint action: ${params.action}`);
+  }
+}

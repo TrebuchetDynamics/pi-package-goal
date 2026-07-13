@@ -6,9 +6,11 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import {
   commitAll,
+  createAuditRun,
   detectSecretRisks,
   inspectRepository,
   isProtectedBranch,
+  processCheckpoint,
   pushRun,
   resolvePushTarget,
   runValidation,
@@ -88,6 +90,56 @@ try {
   await pushRun(repo, target);
   const remoteHead = (await git(repo, ["ls-remote", "origin", "refs/heads/feature/audit"])).stdout;
   assert.match(remoteHead, /refs\/heads\/feature\/audit/);
+
+  let controlled = createAuditRun({
+    id: "run-2",
+    cwd: repo,
+    branch: "feature/audit",
+    upstream: null,
+    scope: ".",
+    objective: "audit",
+    tokenBudget: "700k",
+    ledgerPath: join(repo, "docs", "audits", "controlled.md"),
+    now: 1,
+  });
+  await writeFile(join(repo, "existing.txt"), "existing user work\n");
+  ({ run: controlled } = await processCheckpoint(controlled, {
+    action: "preflight",
+    focusedValidationCommands: ["node check.mjs"],
+    projectValidationCommands: ["node check.mjs"],
+  }, { cwd: repo }));
+  assert.equal(controlled.phase, "auditing");
+  assert.ok(controlled.baselineCommit);
+  assert.equal(controlled.findings.filter((finding) => finding.id.startsWith("M0-")).length, 0);
+
+  ({ run: controlled } = await processCheckpoint(controlled, {
+    action: "record_audit",
+    findings: [{ id: "F-1", title: "Add behavior", severity: "High", evidence: "check.mjs:1", recommendation: "change output", safe: true }],
+  }, { cwd: repo }));
+  assert.equal(controlled.phase, "implementing");
+
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "begin_finding", findingId: "F-1" }, { cwd: repo }));
+  await writeFile(join(repo, "check.mjs"), 'console.log("fixed")\n');
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "validate_finding" }, { cwd: repo }));
+  assert.equal(controlled.findings[0].status, "fixed");
+  assert.ok(controlled.findings[0].commit);
+  assert.deepEqual(await worktreePaths(repo), []);
+
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "request_reaudit" }, { cwd: repo }));
+  ({ run: controlled } = await processCheckpoint(controlled, {
+    action: "record_audit",
+    findings: [{ id: "F-2", title: "Failing candidate", severity: "Medium", evidence: "check.mjs:1", recommendation: "exercise recovery", safe: true }],
+  }, { cwd: repo }));
+  controlled = { ...controlled, focusedValidationCommands: ["node -e 'process.exit(9)'"], projectValidationCommands: [] };
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "begin_finding", findingId: "F-2" }, { cwd: repo }));
+  await writeFile(join(repo, "failed-slice.txt"), "recoverable\n");
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "validate_finding" }, { cwd: repo }));
+  assert.equal(controlled.findings.find((finding) => finding.id === "F-2").attempts, 1);
+  ({ run: controlled } = await processCheckpoint(controlled, { action: "validate_finding" }, { cwd: repo }));
+  const failedFinding = controlled.findings.find((finding) => finding.id === "F-2");
+  assert.equal(failedFinding.status, "failed");
+  assert.match(failedFinding.stashRef, /^stash@\{/);
+  assert.deepEqual(await worktreePaths(repo), []);
 } finally {
   await rm(root, { recursive: true, force: true });
 }

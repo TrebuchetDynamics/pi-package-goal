@@ -7,15 +7,29 @@ import {
   validateGoalTechnicalAuditorLaunch,
 } from "./lib/command.js";
 import {
+  CHECKPOINT_TOOL_NAME,
   RUN_ENTRY_TYPE,
   applyRunEvent,
   createAuditRun,
   formatRunStatus,
   inspectRepository,
   nextRunAction,
+  processCheckpoint,
   restoreAuditRun,
   worktreePaths,
 } from "./lib/run.js";
+
+const optional = (schema) => ({ ...schema, optional: true });
+const stringEnum = (values) => ({ type: "string", enum: values });
+const objectSchema = (properties) => ({
+  type: "object",
+  properties: Object.fromEntries(Object.entries(properties).map(([key, value]) => {
+    const { optional: _optional, ...schema } = value;
+    return [key, schema];
+  })),
+  required: Object.entries(properties).filter(([, value]) => !value.optional).map(([key]) => key),
+  additionalProperties: false,
+});
 
 export default function goalTechnicalAuditor(pi) {
   let run = null;
@@ -29,6 +43,67 @@ export default function goalTechnicalAuditor(pi) {
   function sendWhenReady(ctx, content) {
     pi.sendUserMessage(content, ctx.isIdle?.() === false ? { deliverAs: "followUp" } : undefined);
   }
+
+  function syncCheckpointTool(state) {
+    if (!pi.getActiveTools || !pi.setActiveTools) return;
+    const active = new Set(pi.getActiveTools());
+    if (state && !new Set(["complete", "aborted"]).has(state.phase)) active.add(CHECKPOINT_TOOL_NAME);
+    else active.delete(CHECKPOINT_TOOL_NAME);
+    pi.setActiveTools([...active]);
+  }
+
+  function validateCheckpointParams(params) {
+    if (params.action === "preflight" && (!Array.isArray(params.focusedValidationCommands) || !Array.isArray(params.projectValidationCommands))) {
+      throw new Error("preflight requires focusedValidationCommands and projectValidationCommands");
+    }
+    if (params.action === "preflight" && params.focusedValidationCommands.length + params.projectValidationCommands.length === 0) {
+      throw new Error("preflight requires at least one validation command");
+    }
+    if (params.action === "record_audit" && !Array.isArray(params.findings)) throw new Error("record_audit requires findings");
+    if (params.action === "begin_finding" && !params.findingId) throw new Error("begin_finding requires findingId");
+    if (params.action === "defer_finding" && (!params.findingId || !params.status || !params.reason?.trim())) {
+      throw new Error("defer_finding requires findingId, status, and reason");
+    }
+  }
+
+  pi.registerTool?.({
+    name: CHECKPOINT_TOOL_NAME,
+    label: "Technical Auditor Checkpoint",
+    description: "Advance the active goal technical auditor run through deterministic audit, validation, commit, recovery, and delivery gates.",
+    promptSnippet: "Record and advance the active goal technical auditor controller run",
+    promptGuidelines: ["Use technical_auditor_checkpoint for every goal technical auditor phase transition; do not claim completion without it."],
+    parameters: objectSchema({
+      action: stringEnum(["preflight", "record_audit", "begin_finding", "validate_finding", "defer_finding", "request_reaudit", "finalize"]),
+      focusedValidationCommands: optional({ type: "array", items: { type: "string" } }),
+      projectValidationCommands: optional({ type: "array", items: { type: "string" } }),
+      findings: optional({
+        type: "array",
+        items: objectSchema({
+          id: { type: "string" },
+          title: { type: "string" },
+          severity: stringEnum(["Critical", "High", "Medium", "Low"]),
+          evidence: { type: "string" },
+          recommendation: { type: "string" },
+          safe: { type: "boolean" },
+        }),
+      }),
+      findingId: optional({ type: "string" }),
+      status: optional(stringEnum(["deferred", "blocked"])),
+      reason: optional({ type: "string" }),
+    }),
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
+      if (!run || new Set(["complete", "aborted"]).has(run.phase)) throw new Error("No active goal technical auditor run.");
+      validateCheckpointParams(params);
+      const result = await processCheckpoint(run, params, { cwd: ctx.cwd, signal });
+      persistRun(ctx, result.run);
+      syncCheckpointTool(run);
+      return {
+        content: [{ type: "text", text: `${result.message}\nNext: ${nextRunAction(result.run)}` }],
+        details: { run: result.run },
+      };
+    },
+  });
+  syncCheckpointTool(run);
 
   pi.registerCommand("goal-technical-auditor", {
     description: "Start a goal-driven technical-auditor Full-mode automation loop",
@@ -52,6 +127,7 @@ export default function goalTechnicalAuditor(pi) {
           return;
         }
         persistRun(ctx, applyRunEvent(run, { type: "aborted", reason: "aborted by user" }));
+        syncCheckpointTool(run);
         sendWhenReady(ctx, "/goal pause");
         return;
       }
@@ -123,6 +199,7 @@ export default function goalTechnicalAuditor(pi) {
         ledgerPath: `${repo.root}/docs/audits/${slug}-${date}-goal-technical-auditor.md`,
       });
       persistRun(ctx, next);
+      syncCheckpointTool(run);
       ctx.ui.notify(`Starting controlled technical audit for ${objective.scopeLabel} on ${repo.branch}.`, "info");
       sendWhenReady(ctx, objective.goalCommand);
     },
@@ -130,6 +207,7 @@ export default function goalTechnicalAuditor(pi) {
 
   pi.on?.("session_start", (_event, ctx) => {
     run = restoreAuditRun(ctx.sessionManager.getBranch?.() ?? ctx.sessionManager.getEntries());
+    syncCheckpointTool(run);
     ctx.ui.setStatus?.(RUN_ENTRY_TYPE, run ? `${run.phase}: ${run.scope}` : "");
   });
 

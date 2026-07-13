@@ -51,13 +51,24 @@ try {
 
   registerGoalTechnicalAuditor(pi);
   assert.ok(commands.has("goal-technical-auditor"));
+  assert.ok(registeredTools.has("technical_auditor_checkpoint"));
+  assert.equal(activeTools.includes("technical_auditor_checkpoint"), false);
   await commands.get("goal-technical-auditor").handler("--tokens 300k .", ctx);
+  assert.equal(activeTools.includes("technical_auditor_checkpoint"), true);
   assert.equal(entries.at(-1).customType, "goal-technical-auditor-run");
   assert.match(userMessages.at(-1).content, /^\/goal --tokens 300k /);
   assert.equal(entries.at(-1).data.run.branch, "feature/audit");
 
   await commands.get("goal-technical-auditor").handler("status", ctx);
   assert.match(notices.at(-1).message, /phase: preflight/);
+
+  const checkpointResult = await registeredTools.get("technical_auditor_checkpoint").execute("tool-1", {
+    action: "preflight",
+    focusedValidationCommands: ["true"],
+    projectValidationCommands: ["true"],
+  }, undefined, undefined, ctx);
+  assert.equal(checkpointResult.details.run.phase, "auditing");
+  assert.equal(entries.at(-1).data.run.phase, "auditing");
 
   await commands.get("goal-technical-auditor").handler("abort", ctx);
   assert.equal(entries.at(-1).data.run.phase, "aborted");
