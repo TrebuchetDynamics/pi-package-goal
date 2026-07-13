@@ -58,6 +58,9 @@ try {
   assert.equal(entries.at(-1).customType, "goal-technical-auditor-run");
   assert.match(userMessages.at(-1).content, /^\/goal --tokens 300k /);
   assert.equal(entries.at(-1).data.run.branch, "feature/audit");
+  const blocked = await events.get("tool_call")({ toolName: "goal_complete", input: { summary: "done" } }, ctx);
+  assert.equal(blocked.block, true);
+  assert.match(blocked.reason, /controller/);
 
   await commands.get("goal-technical-auditor").handler("status", ctx);
   assert.match(notices.at(-1).message, /phase: preflight/);
@@ -84,6 +87,21 @@ try {
   await events.get("message_end")({ message: { customType: "pi-goal-event", details: { kind: "budget_limited" } } }, ctx);
   assert.equal(entries.at(-1).data.run.phase, "paused");
   assert.match(entries.at(-1).data.run.blocker, /token budget/);
+
+  const ready = {
+    ...entries.at(-1).data.run,
+    phase: "ready_to_complete",
+    resumePhase: null,
+    cleanAuditPass: 1,
+    findings: [],
+    delivery: { remote: "origin", branch: "feature/audit", pushedAt: 1 },
+  };
+  entries.push({ type: "custom", customType: "goal-technical-auditor-run", data: { run: ready } });
+  await events.get("session_start")({ reason: "reload" }, ctx);
+  const allowed = await events.get("tool_call")({ toolName: "goal_complete", input: { summary: "verified" } }, ctx);
+  assert.equal(allowed, undefined);
+  await events.get("tool_result")({ toolName: "goal_complete", isError: false }, ctx);
+  assert.equal(entries.at(-1).data.run.phase, "complete");
 
   console.log("goal-technical-auditor-extension ok");
 } finally {

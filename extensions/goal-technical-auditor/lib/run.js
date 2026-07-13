@@ -427,6 +427,55 @@ function withReceiptCommit(run, commit) {
   return commit ? { ...run, commits: [...run.commits, commit], latestGreenCommit: commit } : run;
 }
 
+export async function deliverRun(run, { cwd = run.cwd, signal, hasUI, confirmProtectedBranch } = {}) {
+  requirePhase(run, ["delivery_pending"], "deliver");
+  const repo = await inspectRepository(cwd, { signal });
+  if (repo.branch !== run.branch || repo.head !== run.latestGreenCommit) {
+    return {
+      run: applyRunEvent(run, {
+        type: "blocked",
+        reason: `Git drift before push: expected ${run.branch}@${run.latestGreenCommit}, found ${repo.branch}@${repo.head}.`,
+      }),
+      message: "Delivery blocked by Git drift.",
+    };
+  }
+  if ((await worktreePaths(cwd, { signal })).length) {
+    return {
+      run: applyRunEvent(run, { type: "blocked", reason: "Worktree became dirty before push." }),
+      message: "Delivery blocked by dirty worktree.",
+    };
+  }
+
+  const target = await resolvePushTarget(cwd, run, { signal });
+  if (isProtectedBranch(run.branch, target.defaultBranch)) {
+    if (!hasUI) {
+      return {
+        run: applyRunEvent(run, {
+          type: "blocked",
+          reason: `Confirmation required before pushing protected/default branch ${run.branch}.`,
+        }),
+        message: "Protected branch push requires interactive confirmation.",
+      };
+    }
+    const confirmed = await confirmProtectedBranch(run.branch, target.remote);
+    if (!confirmed) {
+      return {
+        run: applyRunEvent(run, {
+          type: "blocked",
+          reason: `User declined push of protected/default branch ${run.branch}.`,
+        }),
+        message: "Protected branch push declined.",
+      };
+    }
+  }
+
+  await pushRun(cwd, target, { signal });
+  return {
+    run: applyRunEvent(run, { type: "push_succeeded", remote: target.remote, branch: target.branch }),
+    message: `Pushed ${target.branch} to ${target.remote}; call goal_complete with verification evidence.`,
+  };
+}
+
 export async function processCheckpoint(run, params, { cwd, signal } = {}) {
   const root = cwd ?? run.cwd;
 

@@ -10,7 +10,9 @@ import {
   CHECKPOINT_TOOL_NAME,
   RUN_ENTRY_TYPE,
   applyRunEvent,
+  completionBlocker,
   createAuditRun,
+  deliverRun,
   formatRunStatus,
   inspectRepository,
   nextRunAction,
@@ -94,7 +96,15 @@ export default function goalTechnicalAuditor(pi) {
     async execute(_toolCallId, params, signal, _onUpdate, ctx) {
       if (!run || new Set(["complete", "aborted"]).has(run.phase)) throw new Error("No active goal technical auditor run.");
       validateCheckpointParams(params);
-      const result = await processCheckpoint(run, params, { cwd: ctx.cwd, signal });
+      let result = await processCheckpoint(run, params, { cwd: ctx.cwd, signal });
+      if (result.run.phase === "delivery_pending") {
+        result = await deliverRun(result.run, {
+          cwd: ctx.cwd,
+          signal,
+          hasUI: ctx.hasUI,
+          confirmProtectedBranch: (branch, remote) => ctx.ui.confirm("Push protected branch?", `Push ${branch} to ${remote}?`),
+        });
+      }
       persistRun(ctx, result.run);
       syncCheckpointTool(run);
       return {
@@ -203,6 +213,18 @@ export default function goalTechnicalAuditor(pi) {
       ctx.ui.notify(`Starting controlled technical audit for ${objective.scopeLabel} on ${repo.branch}.`, "info");
       sendWhenReady(ctx, objective.goalCommand);
     },
+  });
+
+  pi.on?.("tool_call", (event) => {
+    if (!new Set(["goal_complete", "update_goal"]).has(event.toolName) || !run || new Set(["complete", "aborted"]).has(run.phase)) return;
+    const blocker = completionBlocker(run);
+    if (blocker) return { block: true, reason: `Goal technical auditor controller blocked completion: ${blocker}` };
+  });
+
+  pi.on?.("tool_result", (event, ctx) => {
+    if (!new Set(["goal_complete", "update_goal"]).has(event.toolName) || event.isError || run?.phase !== "ready_to_complete") return;
+    persistRun(ctx, applyRunEvent(run, { type: "completed" }));
+    syncCheckpointTool(run);
   });
 
   pi.on?.("session_start", (_event, ctx) => {

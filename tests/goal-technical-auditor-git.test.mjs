@@ -7,6 +7,7 @@ import { promisify } from "node:util";
 import {
   commitAll,
   createAuditRun,
+  deliverRun,
   detectSecretRisks,
   inspectRepository,
   isProtectedBranch,
@@ -140,6 +141,35 @@ try {
   assert.equal(failedFinding.status, "failed");
   assert.match(failedFinding.stashRef, /^stash@\{/);
   assert.deepEqual(await worktreePaths(repo), []);
+
+  const deliveryHead = (await inspectRepository(repo)).head;
+  const deliveryRun = {
+    ...controlled,
+    phase: "delivery_pending",
+    resumePhase: null,
+    branch: "feature/audit",
+    upstream: null,
+    latestGreenCommit: deliveryHead,
+    findings: [],
+    cleanAuditPass: controlled.auditPass,
+  };
+  const deliveredResult = await deliverRun(deliveryRun, {
+    cwd: repo,
+    hasUI: true,
+    confirmProtectedBranch: async () => true,
+  });
+  assert.equal(deliveredResult.run.phase, "ready_to_complete");
+
+  await git(repo, ["branch", "-m", "main"]);
+  const mainHead = (await inspectRepository(repo)).head;
+  const protectedResult = await deliverRun({ ...deliveryRun, branch: "main", latestGreenCommit: mainHead }, {
+    cwd: repo,
+    hasUI: false,
+  });
+  assert.equal(protectedResult.run.phase, "blocked");
+  assert.match(protectedResult.run.blocker, /Confirmation required/);
+  const remoteMain = (await git(repo, ["ls-remote", "origin", "refs/heads/main"])).stdout;
+  assert.equal(remoteMain.trim(), "");
 } finally {
   await rm(root, { recursive: true, force: true });
 }
