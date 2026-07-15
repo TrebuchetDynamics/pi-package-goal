@@ -113,7 +113,6 @@ export default function goalTechnicalAuditor(pi) {
       };
     },
   });
-  syncCheckpointTool(run);
 
   pi.registerCommand("goal-technical-auditor", {
     description: "Start a goal-driven technical-auditor Full-mode automation loop",

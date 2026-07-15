@@ -24,14 +24,24 @@ try {
   const userMessages = [];
   const notices = [];
   let activeTools = [];
+  let runtimeInitialized = false;
+  let runtimeActionCalls = 0;
   const pi = {
     registerCommand: (name, definition) => commands.set(name, definition),
     registerTool: (definition) => registeredTools.set(definition.name, definition),
     on: (name, handler) => events.set(name, handler),
     appendEntry: (customType, data) => entries.push({ type: "custom", customType, data }),
     sendUserMessage: (content, options) => userMessages.push({ content, options }),
-    getActiveTools: () => [...activeTools],
-    setActiveTools: (names) => { activeTools = [...names]; },
+    getActiveTools: () => {
+      if (!runtimeInitialized) throw new Error("Extension runtime not initialized. Action methods cannot be called during extension loading.");
+      runtimeActionCalls += 1;
+      return [...activeTools];
+    },
+    setActiveTools: (names) => {
+      if (!runtimeInitialized) throw new Error("Extension runtime not initialized. Action methods cannot be called during extension loading.");
+      runtimeActionCalls += 1;
+      activeTools = [...names];
+    },
   };
   const ctx = {
     cwd: fixture,
@@ -49,10 +59,15 @@ try {
     },
   };
 
-  registerGoalTechnicalAuditor(pi);
+  assert.doesNotThrow(() => registerGoalTechnicalAuditor(pi));
   assert.ok(commands.has("goal-technical-auditor"));
   assert.ok(registeredTools.has("technical_auditor_checkpoint"));
+  assert.equal(runtimeActionCalls, 0);
   assert.equal(activeTools.includes("technical_auditor_checkpoint"), false);
+
+  runtimeInitialized = true;
+  await events.get("session_start")({ reason: "startup" }, ctx);
+  assert.equal(runtimeActionCalls, 2);
   await commands.get("goal-technical-auditor").handler("--tokens 300k .", ctx);
   assert.equal(activeTools.includes("technical_auditor_checkpoint"), true);
   assert.equal(entries.at(-1).customType, "goal-technical-auditor-run");
