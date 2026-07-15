@@ -404,6 +404,7 @@ Theme discipline:
 | --- | --- |
 | `tdd` | Add behavior test-first with a red-green-refactor loop. |
 | `diagnose` | Reproduce and fix broken, flaky, or slow behavior. |
+| `unused-code` | Prove code has no live path, then delete it in small validated batches. |
 | `prompt-cache-auditor` | Audit and fix LLM prompt-cache misses, cache-key bugs, and provider cache verification gaps. |
 | `prototype` | Try a disposable design, state model, UI, or logic option before committing. |
 | `skill-folder-refactor` | Refactor one folder into clearer subfolders while preserving behavior and reusing shared code. |

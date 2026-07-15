@@ -13,6 +13,7 @@ const expectedSkills = [
   "tdd",
   "diagnose",
   "bug-harvest",
+  "unused-code",
   "wiki-docs",
   "improve-codebase-architecture",
   "technical-auditor",
@@ -752,6 +753,7 @@ async function testSkills() {
   const engineeringRoutingRoles = {
     "skills/engineering/autonomous-codebase-improver/SKILL.md": /broad, open-ended or continuous roadmap-driven repository improvement.*not a single known defect/i,
     "skills/engineering/bug-harvest/SKILL.md": /search for one unknown.*bug.*not an already-reported defect/i,
+    "skills/engineering/unused-code/SKILL.md": /proven unreachable code.*not for dependency pruning.*speculative cleanup/i,
     "skills/engineering/diagnose/SKILL.md": /specific reported failure.*root cause/i,
     "skills/superpowers/systematic-debugging/SKILL.md": /only when that explicit systematic-debugging command/i,
     "skills/engineering/share-code/SKILL.md": /proven duplicate code.*not a topology-only folder split/i,
@@ -761,6 +763,13 @@ async function testSkills() {
   for (const [file, role] of Object.entries(engineeringRoutingRoles)) {
     assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
   }
+  const unusedCode = read("skills/engineering/unused-code/SKILL.md");
+  assert.match(unusedCode, /Age, low coverage, and unfamiliarity are leads, not proof/);
+  assert.match(unusedCode, /string\/config\/template references/);
+  assert.match(unusedCode, /public APIs, migrations, schemas, plugin hooks, reflective registrations/);
+  assert.match(unusedCode, /No evidence-backed candidate means delete nothing/);
+  assert.match(unusedCode, /baseline and post-delete command receipts/);
+
   const autonomousImprover = read("skills/engineering/autonomous-codebase-improver/SKILL.md");
   assert.match(autonomousImprover, /selection rationale/i, "autonomous improver must justify why its slice outranks alternatives");
   assert.match(autonomousImprover, /at most three candidates/i, "autonomous improver must compare a bounded candidate set");

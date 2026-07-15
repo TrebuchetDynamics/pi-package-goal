@@ -74,7 +74,8 @@ function installedSkillCount(skillsDir) {
 }
 
 function assertInstalledSkillTree(skillsDir) {
-  assert.equal(installedSkillCount(skillsDir), 72);
+  assert.equal(installedSkillCount(skillsDir), 73);
+  assert.ok(fs.existsSync(path.join(skillsDir, "unused-code", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "shared", "COMMON-CONTRACT.md")));
   assert.match(fs.readFileSync(path.join(skillsDir, "caveman", "SKILL.md"), "utf8"), /\.\.\/shared\/COMMON-CONTRACT\.md/);
   assert.match(fs.readFileSync(path.join(skillsDir, "technical-auditor", "references", "architecture-deepening-mode.md"), "utf8"), /\.\.\/\.\.\/grill-with-docs\/CONTEXT-FORMAT\.md/);
