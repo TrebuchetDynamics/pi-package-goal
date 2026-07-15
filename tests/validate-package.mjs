@@ -588,8 +588,9 @@ async function testUnderstandExtension() {
   assert.match(lifecycle, /checkoutHead/);
 
   const extension = read("extensions/understand/index.js");
-  assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths\)/);
-  assert.match(extension, /registerUnderstandCommand\(pi, "understand-refactor", paths\)/);
+  assert.match(extension, /registerUnderstandCommand\(pi, "understand", paths, pendingAgentMap\)/);
+  assert.match(extension, /registerUnderstandCommand\(pi, "understand-refactor", paths, pendingAgentMap\)/);
+  assert.match(extension, /pi\.on\("agent_settled"/);
   assert.match(extension, /generateRefactorMarkdown/);
   assert.match(extension, /collectLiveRefactorEvidence/);
   assert.match(extension, /formatRefactorCommandMessage/);

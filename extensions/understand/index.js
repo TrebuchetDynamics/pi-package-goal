@@ -148,7 +148,6 @@ export function buildSkillInvocation({ skillName, skillPath, skillContent, args 
         "",
         "Pi bridge policy:",
         "- Treat `.understand-anything/.understandignore` review confirmation as pre-approved; continue automatically instead of stopping for yes/continue.",
-        "- If a queued `/understand-agent` follow-up appears while awaiting that confirmation, treat it as the already-approved confirmation signal: do not answer it, do not explain command availability, do not treat it as part of the analysis target, and continue the current analysis.",
       ].join("\n")
     : "";
   return [
@@ -733,7 +732,7 @@ export async function handleRefactorCommand(pi, ctx, paths, args = "") {
   return result;
 }
 
-function registerUnderstandCommand(pi, name, paths) {
+function registerUnderstandCommand(pi, name, paths, pendingAgentMap) {
   const description = name === "understand"
     ? "Run Understand-Anything analysis and related graph workflows"
     : name === "understand-agent"
@@ -799,9 +798,13 @@ function registerUnderstandCommand(pi, name, paths) {
       const skillArgs = parsed.skillName === "understand"
         ? buildUnderstandSkillArgs(parsed.args, ctx.cwd)
         : normalizeSkillArgs(parsed.args.replace(/(?:^|\s)--no-agent-map(?=\s|$)/g, " "));
-      await sendSkillInvocation(pi, ctx, paths, parsed.skillName, skillArgs);
-      if (shouldAutoWriteAgentMap(parsed)) {
-        pi.sendUserMessage(buildAutoAgentCommand(parsed.args), { deliverAs: "followUp" });
+      const autoMapArgs = shouldAutoWriteAgentMap(parsed) ? buildAutoAgentArgs(parsed.args) : null;
+      if (autoMapArgs !== null) pendingAgentMap.args = autoMapArgs;
+      try {
+        await sendSkillInvocation(pi, ctx, paths, parsed.skillName, skillArgs);
+      } catch (error) {
+        if (autoMapArgs !== null && pendingAgentMap.args === autoMapArgs) pendingAgentMap.args = null;
+        throw error;
       }
     },
   });
@@ -809,17 +812,26 @@ function registerUnderstandCommand(pi, name, paths) {
 
 export default function understandAnythingExtension(pi) {
   const paths = getUnderstandPaths();
+  const pendingAgentMap = { args: null };
 
   pi.on("resources_discover", async () => {
     if (await isInstalled(paths)) return { skillPaths: [paths.skillsRoot] };
     return undefined;
   });
 
-  registerUnderstandCommand(pi, "understand", paths);
-  registerUnderstandCommand(pi, "understand-agent", paths);
-  registerUnderstandCommand(pi, "understand-compare", paths);
-  registerUnderstandCommand(pi, "understand-refactor", paths);
+  pi.on("agent_settled", async (_event, ctx) => {
+    if (pendingAgentMap.args === null) return;
+    const args = pendingAgentMap.args;
+    pendingAgentMap.args = null;
+    const result = await writeAgentMap(ctx, args);
+    await postMessage(pi, result.message, result);
+  });
+
+  registerUnderstandCommand(pi, "understand", paths, pendingAgentMap);
+  registerUnderstandCommand(pi, "understand-agent", paths, pendingAgentMap);
+  registerUnderstandCommand(pi, "understand-compare", paths, pendingAgentMap);
+  registerUnderstandCommand(pi, "understand-refactor", paths, pendingAgentMap);
   for (const name of SKILL_NAMES) {
-    if (name !== "understand") registerUnderstandCommand(pi, name, paths);
+    if (name !== "understand") registerUnderstandCommand(pi, name, paths, pendingAgentMap);
   }
 }

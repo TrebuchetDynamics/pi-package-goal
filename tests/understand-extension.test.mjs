@@ -186,9 +186,7 @@ const invocation = buildSkillInvocation({
 assert.match(invocation, /^<skill name="understand" location="\/tmp\/ua\/understand-anything-plugin\/skills\/understand\/SKILL\.md">/);
 assert.match(invocation, /References are relative to \/tmp\/ua\/understand-anything-plugin\/skills\/understand\./);
 assert.match(invocation, /Treat `\.understand-anything\/\.understandignore` review confirmation as pre-approved/);
-assert.match(invocation, /treat it as the already-approved confirmation signal/);
-assert.match(invocation, /do not answer it, do not explain command availability/);
-assert.match(invocation, /do not treat it as part of the analysis target/);
+assert.doesNotMatch(invocation, /queued `\/understand-agent` follow-up/);
 assert.match(invocation, /User: src$/);
 
 const markdown = generateAgentMapMarkdown({
@@ -410,6 +408,38 @@ function makePiRecorder() {
   assert.equal(recorder.dispatchedUserMessages.length, 0);
   assert.equal(recorder.postedMessages.length, 1);
   assert.match(recorder.postedMessages[0].content, /unknown \/understand option: --bogus/);
+}
+
+{
+  const previousUaDir = process.env.UA_DIR;
+  process.env.UA_DIR = missingGraphRoot;
+  try {
+    const commands = new Map();
+    const events = new Map();
+    const dispatchedUserMessages = [];
+    const postedMessages = [];
+    let processing = false;
+    understandAnythingExtension({
+      on(name, handler) { events.set(name, handler); },
+      registerCommand(name, definition) { commands.set(name, definition); },
+      sendMessage(message) { postedMessages.push(message); },
+      sendUserMessage(content, options) {
+        if (processing) throw new Error("Agent is already processing a prompt. Use steer() or followUp() to queue messages, or wait for completion.");
+        processing = true;
+        dispatchedUserMessages.push({ content, options });
+      },
+    });
+
+    await assert.doesNotReject(commands.get("understand").handler("", { cwd: fixtureRoot, isIdle: () => !processing, hasUI: false }));
+    assert.equal(dispatchedUserMessages.length, 1);
+    processing = false;
+    await events.get("agent_settled")({}, { cwd: fixtureRoot });
+    assert.equal(dispatchedUserMessages.length, 1);
+    assert.match(postedMessages.at(-1).content, /Wrote agent-readable codebase map/);
+  } finally {
+    if (previousUaDir === undefined) delete process.env.UA_DIR;
+    else process.env.UA_DIR = previousUaDir;
+  }
 }
 
 console.log("understand-extension ok");
