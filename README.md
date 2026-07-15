@@ -444,6 +444,7 @@ Bundled from `obra/superpowers` under `skills/superpowers/`: `brainstorming`, `d
 | `ui-design` | Orchestrate the UI/UX skills and pick the right frontend/design workflow for the task. |
 | `ui-ux-pro-max` | Apply broad UI/UX design-system, typography, color, layout, accessibility, and motion guidance. |
 | `frontend-design` | Create distinctive production-grade frontend interfaces that avoid generic AI aesthetics. |
+| `beautify-github-readme` | Redesign a repository README or create GitHub-safe README SVG assets from real project evidence. |
 | `design-taste-frontend` | Use Taste Skill v2 anti-slop rules for landing pages, portfolios, and redesigns. |
 | `design-taste-frontend-v1` | Use the original Taste Skill v1 when exact legacy behavior is needed. |
 | `gpt-taste` | Apply stricter GPT/Codex-oriented taste rules for high-variance layouts and GSAP-heavy pages. |

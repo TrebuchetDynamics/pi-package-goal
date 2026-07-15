@@ -124,6 +124,10 @@ _Avoid_: treating age, low coverage, one search, or one unused warning as proof;
 A source-backed documentation skill under `skills/engineering/wiki-docs/` for README, architecture, onboarding, and Karpathy-style project wiki work. It maps existing docs to live code claims, uses `codebase-map-understand.md` only as an optional lead source, updates one bounded docs slice by default, and validates links/examples/tests where practical.
 _Avoid_: blind full-wiki regeneration, treating generated maps as truth, uncited architecture claims, overwriting human docs tone without preserving intent
 
+**Beautify GitHub README Skill**:
+A third-party frontend skill under `skills/frontend/beautify-github-readme/` for evidence-based GitHub README visual redesigns, read-only README audits, and standalone GitHub-safe SVG assets. It keeps whole-README and SVG-only modes explicit and runs its bundled Python audit helper by package-relative path.
+_Avoid_: routing general website UI or ordinary documentation maintenance here, inventing project claims, treating inspection as edit permission, or committing/pushing/publishing without explicit authorization
+
 **Bug-Hunt Refactor Focus**:
 An opt-in `/goal-technical-auditor --focus bug-hunt-refactor` objective emphasis for code reduction, proven shared-code extraction, and pre/during/post refactor bug hunts while preserving the command's technical-auditor Full-mode launch shape.
 _Avoid_: making bug-hunt refactoring the default for every audit, speculative utilities, one-call-site abstractions, broad repo-wide dedupe sweeps

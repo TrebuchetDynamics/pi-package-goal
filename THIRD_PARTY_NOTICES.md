@@ -129,6 +129,17 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/Nutlope-hallmark-LICENSE`
 
+## oil-oil/beautify-github-readme
+
+- Source: https://github.com/oil-oil/beautify-github-readme
+- Snapshot inspected: `4119e6a7c58d1b48fe883784133413391b148180`
+- Bundled paths:
+  - `skills/frontend/beautify-github-readme/`
+- Local changes: narrowed package routing, added package-relative helper execution, an explicit output contract, provenance frontmatter, and shared-contract guidance.
+- Security assumptions: the bundled Python audit helper is read-only, uses only the standard library, and receives the target README path explicitly.
+- License: MIT
+- Full license copy: `licenses/oil-oil-beautify-github-readme-LICENSE`
+
 ## google-labs-code/stitch-skills
 
 - Source: https://github.com/google-labs-code/stitch-skills

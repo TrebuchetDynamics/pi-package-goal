@@ -66,6 +66,26 @@ function testPiLogAuditRedactsFreeText() {
   }
 }
 
+function testBeautifyReadmeAudit() {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "beautify-readme-audit-"));
+  try {
+    const assetsDir = path.join(fixture, "assets", "readme");
+    const readme = path.join(fixture, "README.md");
+    fs.mkdirSync(assetsDir, { recursive: true });
+    fs.writeFileSync(path.join(assetsDir, "hero.svg"), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320"><title>Demo hero</title></svg>');
+    fs.writeFileSync(readme, '<img src="./assets/readme/hero.svg" alt="Demo project hero">\n');
+
+    const script = path.join(root, "skills/frontend/beautify-github-readme/scripts/audit_readme.py");
+    const output = execFileSync("python3", [script, readme], { cwd: os.tmpdir(), encoding: "utf8" });
+    assert.match(output, /OK: image references and SVG basics passed/);
+
+    fs.writeFileSync(readme, '<img src="./assets/readme/hero.svg">\n');
+    assert.throws(() => execFileSync("python3", [script, readme], { cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] }), { status: 1 });
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
 function installedSkillCount(skillsDir) {
   return fs.readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name !== "shared")
@@ -74,7 +94,8 @@ function installedSkillCount(skillsDir) {
 }
 
 function assertInstalledSkillTree(skillsDir) {
-  assert.equal(installedSkillCount(skillsDir), 73);
+  assert.equal(installedSkillCount(skillsDir), 74);
+  assert.ok(fs.existsSync(path.join(skillsDir, "beautify-github-readme", "scripts", "audit_readme.py")));
   assert.ok(fs.existsSync(path.join(skillsDir, "unused-code", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "shared", "COMMON-CONTRACT.md")));
   assert.match(fs.readFileSync(path.join(skillsDir, "caveman", "SKILL.md"), "utf8"), /\.\.\/shared\/COMMON-CONTRACT\.md/);
@@ -150,6 +171,7 @@ function testStitchSkillUsesBundledResourcePrefix() {
 
 testPromptCacheSummary();
 testPiLogAuditRedactsFreeText();
+testBeautifyReadmeAudit();
 testAgentSkillsInstaller();
 testClaudeSkillsInstallerCompatibilityWrapper();
 testStitchSkillUsesBundledResourcePrefix();

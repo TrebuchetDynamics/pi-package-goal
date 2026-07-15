@@ -50,6 +50,7 @@ const expectedSkills = [
   "ui-ux-pro-max",
   "ui-design",
   "frontend-design",
+  "beautify-github-readme",
   "design-taste-frontend",
   "design-taste-frontend-v1",
   "gpt-taste",
@@ -731,6 +732,7 @@ async function testSkills() {
   const frontendRoutingRoles = {
     "skills/frontend/ui-design/SKILL.md": /front door for broad or ambiguous UI\/UX work/i,
     "skills/frontend/frontend-design/SKILL.md": /working web components, pages, or product interfaces/i,
+    "skills/frontend/beautify-github-readme/SKILL.md": /GitHub repository README.*README SVG assets.*not general website UI.*ordinary documentation maintenance/i,
     "skills/frontend/design-taste-frontend/SKILL.md": /marketing sites.*not product dashboards/i,
     "skills/frontend/hallmark/SKILL.md": /audit, redesign, or study.*explicitly invokes Hallmark/i,
     "skills/frontend/ui-ux-pro-max/SKILL.md": /design-system and accessibility guidance.*not primary implementation/i,
@@ -739,6 +741,14 @@ async function testSkills() {
   for (const [file, role] of Object.entries(frontendRoutingRoles)) {
     assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
   }
+
+  const beautifyReadme = read("skills/frontend/beautify-github-readme/SKILL.md");
+  assert.match(beautifyReadme, /source_commit: 4119e6a7c58d1b48fe883784133413391b148180/);
+  assert.match(beautifyReadme, /Set `SKILL_DIR` to the directory containing this `SKILL\.md`/);
+  assert.match(beautifyReadme, /README mode/);
+  assert.match(beautifyReadme, /SVG-only mode/);
+  assert.match(beautifyReadme, /## Output contract/);
+  assert.ok(exists("skills/frontend/beautify-github-readme/scripts/audit_readme.py"), "beautify README audit helper must exist");
 
   const frontendStyleRoles = {
     "skills/frontend/minimalist-ui/SKILL.md": /style overlay.*explicitly requests.*minimalist/i,
