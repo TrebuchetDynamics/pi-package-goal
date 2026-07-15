@@ -780,6 +780,12 @@ async function testSkills() {
   assert.match(unusedCode, /public APIs, migrations, schemas, plugin hooks, reflective registrations/);
   assert.match(unusedCode, /No evidence-backed candidate means delete nothing/);
   assert.match(unusedCode, /baseline and post-delete command receipts/);
+  assert.match(unusedCode, /\.understand-anything\/knowledge-graph\.json/);
+  assert.match(unusedCode, /project\.gitCommitHash/);
+  assert.match(unusedCode, /actual edge types before scoring degree/);
+  assert.match(unusedCode, /Do not infer function-level deadness when the graph has no function-call edges/);
+  assert.match(unusedCode, /dashboard or validator “orphans” as leads, never deletion proof/);
+  assert.match(unusedCode, /do not copy its token into reports/);
 
   const autonomousImprover = read("skills/engineering/autonomous-codebase-improver/SKILL.md");
   assert.match(autonomousImprover, /selection rationale/i, "autonomous improver must justify why its slice outranks alternatives");

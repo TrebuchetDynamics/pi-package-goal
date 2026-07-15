@@ -10,10 +10,24 @@ Find code with no live path, prove it is unused, then delete the smallest safe b
 ## Quick start
 
 1. Set one repository or folder scope. Inspect `git status --short --branch`, repo instructions, manifests, entrypoints, package exports, build config, and existing validation.
-2. Read `codebase-map-understand.md` when present for candidate relationships, then verify every lead against live source.
+2. Use `codebase-map-understand.md` and `.understand-anything/knowledge-graph.json` when present to rank candidates, then verify every lead against live source.
 3. Run the narrowest meaningful baseline test, build, typecheck, or lint command before deleting anything.
 4. Rank candidates by confidence and delete leaf code first: private symbol → private file → export/config/docs made obsolete by that deletion.
 5. Validate after each small batch and inspect the final diff for accidental removals.
+
+## Understand graph pass
+
+When `.understand-anything/knowledge-graph.json` exists, use it as a bounded candidate index before broad text search:
+
+1. Compare `project.gitCommitHash` with `git rev-parse HEAD` and check candidate files in `git status --short`. A mismatch or uncommitted candidate means the graph is stale orientation only.
+2. Inspect the graph's actual edge types before scoring degree. Rank file nodes with no inbound reachability edge that the graph really models, such as `imports`, `calls`, or `depends_on`; use layers and tour membership only as secondary context.
+3. Do not infer function-level deadness when the graph has no function-call edges. `contains` and `exports` describe structure/exposure, not runtime reachability.
+4. Treat dashboard or validator “orphans” as leads, never deletion proof. Support files, evidence artifacts, runtime-loaded code, and external APIs can be intentionally disconnected.
+5. For each lead, trace the live source with language-aware references plus string/config/runtime checks from the proof gate. If the graph conflicts with source, source wins.
+
+Use stdlib Python to query the JSON when needed; add no graph-parsing dependency. Generated graph/map files stay local and uncommitted by default. A tokenized dashboard URL is for local navigation only—do not copy its token into reports.
+
+If no graph exists, continue with the normal proof gate. Do not generate one unless the user requested it or approved graph generation for a broad scan.
 
 ## Proof gate
 
@@ -25,7 +39,7 @@ Before deleting a candidate, check all applicable liveness paths:
 - public or cross-package consumers that may exist outside the checkout;
 - source history when it clarifies a replacement or compatibility promise.
 
-Deletion requires a known ownership boundary, no plausible live path, and at least one executable post-delete signal. Prefer compiler/linter evidence plus independent reference tracing. Coverage and text search alone never prove dead code.
+Deletion requires a known ownership boundary, no plausible live path, and at least one executable post-delete signal. Prefer compiler/linter evidence plus independent reference tracing. Graph degree, orphan status, coverage, and text search alone never prove dead code.
 
 ## Workflow
 
@@ -69,6 +83,7 @@ Done requires baseline and post-delete command receipts, no stale references, a 
 ```text
 Unused-code cleanup:
 - scope:
+- graph: <path + commit/freshness + edge types used, or not used>
 - deleted: <path:symbol + proof>
 - retained: <candidate + blocker>
 - validation: <baseline and post-delete receipts>
@@ -77,8 +92,8 @@ Unused-code cleanup:
 
 ## Example
 
-User: “Remove the old v1 parser now that v2 is live.”
-Agent: trace imports, exports, config strings, and runtime registration; baseline parser tests/build; delete only the private v1 leaf with no live path; rerun validation; retain any public v1 shim whose external consumers are unknown.
+User: “Use the fresh Understand graph to remove unused Rust code.”
+Agent: confirm the graph commit and edge types; treat reported orphans as leads only; select one private leaf and verify it with Rust references/config search plus a baseline build; delete it, rerun validation, and leave the generated graph uncommitted.
 
 ## Shared contract
 

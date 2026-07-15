@@ -117,8 +117,8 @@ A narrow engineering skill under `skills/engineering/bug-harvest/` that finds on
 _Avoid_: inventing bugs from code smells, scanning forever, broad architecture edits disguised as bug fixes
 
 **Unused Code Skill**:
-A deletion-focused engineering skill under `skills/engineering/unused-code/` that proves private code has no static, dynamic, configured, or external live path before removing it in small baseline-checked batches.
-_Avoid_: treating age, low coverage, one search, or one unused warning as proof; deleting public APIs, migrations, plugin hooks, reflective registrations, or unrelated dirty work without a known ownership boundary
+A deletion-focused engineering skill under `skills/engineering/unused-code/` that uses fresh Understand graph edges and orphan reports to rank leads, then proves private code has no static, dynamic, configured, or external live path in current source before removing it in small baseline-checked batches.
+_Avoid_: treating graph degree, exported/contained nodes, validator orphans, stale graph data, age, coverage, text search, or one unused warning as deletion proof; copying tokenized dashboard URLs into reports; deleting public APIs, migrations, plugin hooks, reflective registrations, or unrelated dirty work without a known ownership boundary
 
 **Wiki Docs Skill**:
 A source-backed documentation skill under `skills/engineering/wiki-docs/` for README, architecture, onboarding, and Karpathy-style project wiki work. It maps existing docs to live code claims, uses `codebase-map-understand.md` only as an optional lead source, updates one bounded docs slice by default, and validates links/examples/tests where practical.
