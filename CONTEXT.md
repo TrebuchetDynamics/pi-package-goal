@@ -100,6 +100,10 @@ _Avoid_: argumentative loops, treating pushback as approval, broad plan grilling
 The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a deterministic controller around `/goal` and `technical-auditor` Full mode. It persists phase/finding state in Pi session entries, commits a Markdown audit ledger, validates and commits one finding at a time on the current branch, stashes twice-failed slices, re-audits until no new safe actionable finding remains, and permits completion only after final validation and one successful push. Protected/default branches require confirmation.
 _Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting broad automation for invalid arguments, premature `goal_complete`, destructive rollback, force-push/history rewriting, or weakening the command's predictable Full-mode meaning
 
+**Ketch Extension**:
+The package-local extension at `extensions/ketch/index.js` exposes one `ketch` model tool that infers web search, public code search, library docs, URL scrape, or bounded crawl from a request. It prefers `$KETCH_BIN` or `ketch` on `PATH`, then auto-installs the pinned Ketch v0.11.0 release into the user cache after SHA-256 verification; it never changes Ketch backend configuration automatically.
+_Avoid_: multiple command wrappers, startup installation, unpinned downloads, unverified archives, global package-manager mutation, automatic API-key/config changes, unbounded output, or using external search for the local codebase
+
 **Skill Router Skill**:
 A front-door planning skill under `skills/planning/skill-router/` that selects exactly one primary skill for a user task and routes blank tasks to `autonomous-codebase-improver` so the agent can still work autonomously from repo evidence.
 _Avoid_: becoming a second planning layer, stacking skills up front, using routing as approval for risky actions

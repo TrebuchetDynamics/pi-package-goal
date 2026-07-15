@@ -195,6 +195,14 @@ The controller records audit passes and findings in a committed `docs/audits/` l
 | `/goal-technical-auditor resume` | Resume only after branch, HEAD, ledger, and worktree drift checks pass. |
 | `/goal-technical-auditor abort` | Pause the associated `/goal` while preserving commits, ledger, and stashes. |
 
+### Ketch research tool
+
+The package exposes one model tool, `ketch`, for live web research. It infers whether a request needs web search, public code search, library docs, URL scraping, or a bounded site crawl; `surface` remains available as an override when inference is wrong.
+
+Ketch is resolved in this order: `$KETCH_BIN`, `ketch` on `PATH`, then a pinned Ketch v0.11.0 release downloaded to the user cache with SHA-256 verification. Installation happens only on the first `ketch` tool call and does not change global package-manager state or Ketch configuration. Backends that need API keys still report Ketch's `precondition` error for the operator to configure.
+
+Ketch is an independent MIT-licensed project: [github.com/1broseidon/ketch](https://github.com/1broseidon/ketch).
+
 ### `/understand`
 
 `/understand` bridges Pi to the upstream [Understand-Anything](https://github.com/Lum1104/Understand-Anything) project.

@@ -474,7 +474,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/onklaud"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -564,6 +564,13 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /rtk-ai\/rtk/);
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
+
+  const ketchExtension = read("extensions/ketch/index.js");
+  assert.match(ketchExtension, /name: "ketch"/);
+  assert.match(ketchExtension, /inferSurface/);
+  assert.match(ketchExtension, /installKetch/);
+  assert.match(ketchExtension, /verifyChecksum/);
+  assert.ok(exists("tests/ketch-extension.test.mjs"), "ketch extension test must exist");
 
   const onklaudExtension = read("extensions/onklaud/index.js");
   assert.match(onklaudExtension, /registerCommand\("onklaud"/);

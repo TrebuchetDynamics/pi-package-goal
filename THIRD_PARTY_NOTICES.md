@@ -182,6 +182,14 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/TrebuchetDynamics-research-forge-LICENSE`
 
+## 1broseidon/ketch
+
+- Source: https://github.com/1broseidon/ketch
+- Snapshot inspected: v0.11.0 (`b04a2fafdd2f86c52bf7db05d7a8ed723e2cf155`)
+- Usage: integration target for `extensions/ketch/`; the Ketch binary is not bundled in the package tarball and is downloaded to the user cache only when the `ketch` tool is called without an available binary.
+- License: MIT
+- Full license copy: `licenses/1broseidon-ketch-LICENSE`
+
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk

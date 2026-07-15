@@ -7,7 +7,7 @@ const root = path.resolve(new URL("..", import.meta.url).pathname);
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 assert.equal(pkg.files.includes("lib"), false, "published package must not keep root lib modules");
 assert.equal(pkg.files.includes("extensions"), true, "published package must include package extensions and extension-owned libs");
-assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/onklaud"], "package must register package extensions");
+assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud"], "package must register package extensions");
 assert.deepEqual(pkg.pi.themes, ["./themes"], "package must register package themes");
 
 const reportParserSource = fs.readFileSync(path.join(root, "extensions", "goal", "lib", "report-parser.ts"), "utf8");
