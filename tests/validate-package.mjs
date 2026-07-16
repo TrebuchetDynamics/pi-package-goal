@@ -926,17 +926,23 @@ async function testSkills() {
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
 
   const gitCommitPush = read("skills/delivery/git-commit-push/SKILL.md");
-  assert.match(gitCommitPush, /Polish, validate, commit, and push safe git worktree changes/);
-  assert.match(gitCommitPush, /safely polish, validate, intentionally stage, commit, and push/);
-  assert.match(gitCommitPush, /fix safe in-scope issues directly and rerun validation/);
-  assert.match(gitCommitPush, /Ship mode \(default\)/);
-  assert.match(gitCommitPush, /never because the user omitted explicit ship wording/);
+  assert.ok(gitCommitPush.length < 9000, "git-commit-push must stay action-first and readable");
+  assert.match(gitCommitPush, /Ship local Git changes by inspecting, polishing, validating, split-committing, and pushing/);
+  assert.match(gitCommitPush, /local changes are the delivery queue, not a reason to return `review_needed`/);
+  assert.match(gitCommitPush, /Do not ask for approval merely because there are many changed files/);
+  assert.match(gitCommitPush, /If any safe topic was pushed, the overall decision is `shipped`/);
+  assert.match(gitCommitPush, /`review_needed` is valid only when no safe topic can be isolated/);
+  assert.match(gitCommitPush, /A list of uncommitted paths is not a blocker explanation/);
+  assert.match(gitCommitPush, /Conversation provenance is evidence/);
+  assert.match(gitCommitPush, /Do not stop after tests pass; commit and push/);
+  assert.match(gitCommitPush, /Do not run `git pull` or use `--autostash` as a routine first step\. Push first/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_VALIDATED: yes\|no/);
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
   assert.match(gitCommitPush, /`git diff --stat` excludes untracked files/);
-  assert.match(gitCommitPush, /modified and untracked files/);
+  assert.match(gitCommitPush, /modified and untracked paths/);
   assert.match(gitCommitPush, /Completion audit/);
-  assert.match(gitCommitPush, /Do not deploy, publish packages, rewrite history, force-push, rebase, merge remote changes/);
+  assert.match(gitCommitPush, /Do not deploy, publish, release, force-push, rewrite history, rebase, merge divergent history/);
+  assert.match(gitCommitPush, /UI, MapLibre, Maestro, test, and documentation changes/);
 }
 
 async function testDocsAndNotices() {

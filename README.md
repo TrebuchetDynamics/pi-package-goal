@@ -387,7 +387,7 @@ Theme discipline:
 | Skill | When to use it |
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
-| `git-commit-push` | Ship completed work with safe polish, validation, intentional staging, commit, and push. |
+| `git-commit-push` | Inspect and ship every isolatable safe local topic; do not stop merely because the worktree contains changes. |
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
 | `lgtm` | Resolve short approval against the latest explicit checkpoint without rerunning completed work or authorizing unproposed side effects. |
 | `caveman` | Switch to terse, low-token communication. |
@@ -468,14 +468,14 @@ Use `git-commit-push` when implementation work appears complete and you want saf
 
 The skill:
 
-1. reads repo instructions and git state;
-2. reviews changed/untracked files for secrets, local state, generated junk, and unrelated work;
-3. fixes obvious safe hygiene/validation issues in scope;
+1. treats local changes as the delivery queue and inspects every modified/staged/untracked path;
+2. separates safe coherent topics from demonstrably unrelated or unsafe files;
+3. fixes obvious hygiene and validation failures instead of stopping at the first red command;
 4. runs requested or inferred validation, including `git diff --check`;
-5. commits only safe in-scope changes, split as far as practical by reviewable topic or hunk;
-6. leaves unrelated/review-needed worktree dirt unstaged instead of blocking safe topics when isolation is possible;
-7. fetches/fast-forwards when safe, asks before true merge/rebase unless explicitly requested, then pushes; and
-8. reports final markers:
+5. explicitly stages, commits, and pushes every isolatable safe topic;
+6. reports `shipped` when safe topics were pushed even if unrelated owner files remain unstaged;
+7. pushes before attempting remote integration—routine `git pull --autostash` is not a substitute for delivery; and
+8. uses `review_needed` only when one exact owner decision prevents every safe topic from shipping, then reports compact final markers:
 
 ```text
 GIT_COMMIT_PUSH_VALIDATED: yes|no

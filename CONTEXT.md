@@ -137,8 +137,8 @@ An opt-in `/goal-technical-auditor --focus bug-hunt-refactor` objective emphasis
 _Avoid_: making bug-hunt refactoring the default for every audit, speculative utilities, one-call-site abstractions, broad repo-wide dedupe sweeps
 
 **Git Commit Push Skill**:
-A delivery skill that audits git state, reviews changed files for safety, fixes obvious safe polish/validation issues in scope, runs validation, split-commits safe in-scope work by reviewable topic/hunk, handles safe fetch/fast-forward or explicitly requested remote integration, pushes, and reports `GIT_COMMIT_PUSH_*` markers.
-_Avoid_: deploy/publish side effects, force-push/rebase/non-fast-forward merge without explicit approval, committing secrets or local state, product rewrites disguised as polish, success claims without validation and push evidence
+An action-first delivery skill that treats local changes as work to inspect, commits and pushes every isolatable safe topic, repairs obvious validation/hygiene failures, leaves demonstrably unrelated owner files unstaged, and reports compact `GIT_COMMIT_PUSH_*` markers.
+_Avoid_: returning review-needed merely because changes exist or span several domains, listing uncommitted paths without inspecting them, routine pull/autostash before delivery, stopping after validation without commit/push, deploy/publish side effects, force-push/rebase/non-fast-forward merge without explicit approval, committing secrets or local state, or success claims without validation and push evidence
 
 **Validation Receipts**:
 Concrete command outputs, test results, git state, commit hashes, and push results used to prove a skill's final claim.
