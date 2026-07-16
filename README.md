@@ -389,7 +389,7 @@ Theme discipline:
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Ship completed work with safe polish, validation, intentional staging, commit, and push. |
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
-| `lgtm` | Continue after you approve the agent's latest plan, or treat an advisor/reviewer verdict as advisory input from an ambiguous approval. |
+| `lgtm` | Resolve short approval against the latest explicit checkpoint without rerunning completed work or authorizing unproposed side effects. |
 | `caveman` | Switch to terse, low-token communication. |
 | `ponytail` | Switch to lazy-senior-dev mode: simplest solution that actually works. |
 | `ponytail-review` | Review a diff for over-engineering and what to delete. |
@@ -425,7 +425,7 @@ Theme discipline:
 | `to-issues` | Break a plan into independently grabbable implementation issues. |
 | `triage` | Create, classify, and prepare issues for workflow. |
 | `handoff` | Summarize current context for another agent or later session. |
-| `lgtm` / `nack` | Resolve short approval or pushback into the safest next action or re-check. |
+| `lgtm` / `nack` | Resolve short approval against the latest checkpoint, or re-check the latest challenged claim. |
 | `writing-shape` | Shape rough notes or drafts into a publishable article. |
 
 ### Superpowers compatibility

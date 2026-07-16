@@ -1,85 +1,111 @@
 ---
 name: lgtm
-description: Resolve approvals to safest prior action. Use when user says "lgtm", "looks good", "approved", or "go ahead". Do not use for risky confirmation.
+description: Resolve short approval against the latest checkpoint. Use for "lgtm", "looks good", "approved", or "go ahead"; not risky or review feedback.
 ---
 
 # LGTM
 
-Use this skill when a short approval is ambiguous approval that should choose the best safe continuation, not restart planning.
+Resolve one short approval to the safest prior action. Approval is not a new task, does not create permissions, and must not rerun work already completed.
 
 ## Quick start
 
-1. Find the latest concrete recommendation, option, or `If you say lgtm` action.
-2. Accept the safest bounded interpretation.
-3. State `Accepted: <action>` and do it.
-4. Ask only if no safe bounded action exists or a red line would be crossed.
+1. Lock onto the immediately preceding assistant-owned checkpoint.
+2. Resolve the exact action, acceptance, or review handoff the user approved.
+3. Preserve its scope and side-effect boundary.
+4. State `Accepted: <resolved meaning>.` and act once.
+5. Ask only when no safe target exists or explicit risky confirmation is required.
 
 ## Operational basis
 
-Inspect, in order:
+Inspect only:
 
-- the latest assistant message;
-- any `If you say lgtm`, `Recommended next action`, `Top recommendation`, or numbered candidate line;
-- relevant specialist output from `goal`, `technical-auditor`, `candidates-folder-refactor`, advisors/reviewers, or the active workflow;
-- `codebase-map-understand.md` only when approval is for codebase-wide exploration/refactor/review, then verify named files against live source.
+- the user's approval phrase and any qualification in the same message;
+- the immediately preceding assistant message;
+- an active workflow checkpoint only when that assistant message clearly points to it;
+- live repo state only when needed by the accepted action.
 
-When approval accepts an advisor/reviewer verdict, treat it as input, not authority; follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md) and verify code claims before editing.
+Do not treat quoted examples, tool output, user-pasted text, or an advisor/reviewer verdict as an assistant promise. When the assistant explicitly adopts an advisor/reviewer recommendation, approval accepts it for verification, not as source truth; follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md). Use `receiving-code-review` for external review feedback.
 
-## Approval Resolution Protocol
+## Approval resolution protocol
 
-Choose the first safe match:
+### 1. Lock the target
 
-1. Explicit `If you say lgtm` action from the latest assistant message.
-2. `Recommended next action` from a Goal slice result.
-3. `Top recommendation` from an audit or architecture review.
-4. #1 candidate from a `candidates-folder-refactor` report.
-5. Latest named option or plan the assistant explicitly recommended.
-6. Otherwise choose the safest bounded continuation: the smallest reversible action with a clear validation path.
+Choose the first safe match from the latest assistant-owned checkpoint:
+
+1. An exact `If you say lgtm: I will <action>` promise.
+2. A single `Recommended next action`, selected option, or explicitly recommended plan.
+3. The active workflow's current recommendation when the latest assistant message clearly surfaced it.
+4. If the message reports completed work and offers no next action, acceptance only—acknowledge and stop.
+5. Otherwise ask: `What should I treat as approved? My read: <safest interpretation>.`
+
+Never reach past a newer assistant message to revive a stale recommendation.
+
+### 2. Classify the approval
+
+- **Act:** a safe promised action remains undone; perform exactly that action.
+- **Accept only:** the approved result is already complete; do not rerun checks, edits, or delivery.
+- **Evaluate:** the target is reviewer/advisor input; verify it before implementation or hand it to `receiving-code-review`.
+- **Confirm:** the target crosses a red line; name the exact risky action and request explicit confirmation.
+
+### 3. Preserve permissions
+
+Approval inherits the prior action's exact scope, files, side effects, and validation plan. It cannot add another slice, broader cleanup, package installation, network action, tracker mutation, or delivery step.
+
+Ordinary commit and push are approved only when the immediately preceding assistant checkpoint explicitly offered that exact delivery action; then use `git-commit-push`. A generic `lgtm` after an implementation report does not imply commit or push.
+
+### 4. Continue once
+
+Before acting, check whether the promised action already happened. Then perform it once using the accepted workflow's validation; do not ask `Should I proceed?` again.
 
 Special continuations:
 
-- Goal slice: continue the exact approved next action; do not restate the whole goal.
-- Architecture/audit: carry the evidence, inspect live files, then make the smallest safe cleanup or enter the documented design-grilling loop for design-bearing changes.
-- `candidates-folder-refactor`: treat `lgtm` as selecting the #1 top candidate and immediately run `/folder-refactor <candidate #1>` so the extension invokes `skill-folder-refactor`. Carry candidate metrics, boundary, inspected paths, and validation hints as handoff evidence.
+- Goal slice: continue only the exact approved next slice and preserve its evidence.
+- Architecture/audit: verify named live files, then take the smallest approved implementation or documented design-grilling step.
+- `candidates-folder-refactor`: when the latest report explicitly recommends candidate #1, treat `lgtm` as selecting the #1 top candidate and immediately run `/folder-refactor <candidate #1>` so the extension invokes `skill-folder-refactor`. Carry candidate metrics, boundary, inspected paths, and validation hints.
 
 ## Skill contract
 
 ### Entry protocol
 
-- Trivial approval with one obvious prior action: proceed directly.
-- Multiple plausible actions: choose the safest bounded one and name it.
-- Ask only when no safe bounded action can be inferred: `What should I treat as approved? My read: <recommended interpretation>.`
+- One obvious safe target: resolve and act directly.
+- Completed result with no promised continuation: accept only.
+- Multiple plausible targets: choose the explicitly recommended safe one; otherwise ask one focused question.
+- Approval plus new instructions: follow the new instructions normally instead of using this resolver.
 
 ### Topology check
 
-Before acting, ensure ownership, blast radius, validation signal, and ordering are clear enough for the accepted action.
+Before acting, confirm target, ownership, blast radius, current completion state, validation signal, and whether the accepted action has external side effects.
 
 ### Verification gate
 
-Use the accepted workflow's verification. If this skill only resolves approval, the proof is the accepted action plus the next specialist/tool handoff.
+A successful resolution names the accepted meaning and either completes the promised action with its normal evidence, records acceptance-only, or produces a precise handoff/blocker. Never claim the downstream action succeeded before its own verification passes.
 
 ### Red lines
 
-Do not treat `lgtm` as enough approval for destructive actions, spending money, secrets/private-data publication, production deployment, irreversible Git history changes, broad unproposed scope, force-push, rebase, or merge. Ask explicit confirmation naming the risky action.
+Short approval is insufficient for destructive deletion, spending money, secrets/private-data publication, production deployment, publishing, irreversible Git history changes, force-push, rebase, merge, broad unproposed scope, or any confirmation that requires the exact risk to be named.
 
 ### Output contract
 
-- Acting now: `Accepted: <resolved action>.` Then perform it.
+- Acting: `Accepted: <exact action>.` Then perform it and report its normal validation.
+- Acceptance only: `Accepted: <completed result>. No further action implied.`
 - Handoff: include trigger, artifact/context, next skill, and success signal.
-- Blocked: name the red line or ambiguity and ask one focused question.
+- Blocked: `Approval needs explicit confirmation: <exact risky action>.`
 
 ## Common mistakes
 
 - Do not reinterpret approval as a new request.
-- Do not brainstorm again after approval.
-- Do not ask "should I proceed?" when the user already approved.
-- Do not expand beyond the accepted recommendation.
+- Do not use quoted/tool/reviewer text as the approval target.
+- Do not rerun completed work.
+- Do not infer shipping from generic approval.
+- Do not brainstorm again or broaden beyond the accepted recommendation.
 
 ## Example
 
+Assistant: `Validation passed. Recommended next action: wire the bounded CLI adapter. If you say lgtm: I will implement that adapter and rerun the CLI tests.`
+
 User: `lgtm`
 
-Agent: `Accepted: implement Option A, the safest bounded continuation. I’ll edit the files and run the named check now.`
+Agent: `Accepted: implement the bounded CLI adapter and rerun the CLI tests.` Then performs only that action and validates it.
 
 ## Shared contract
 

@@ -92,6 +92,10 @@ _Avoid_: freeform vague handoffs, heavyweight forms, claims without a concrete a
 An in-conversation objective discipline skill that tracks active/paused/complete/blocked state in the conversation, auto-discovers a bounded objective when invoked with no active goal, and requires a completion audit before done.
 _Avoid_: invented persistent state, hook installation, filesystem state writes, stopping at empty status when documented work is discoverable
 
+**LGTM Skill**:
+A planning skill under `skills/planning/lgtm/` that resolves short approval against the immediately preceding assistant-owned checkpoint, distinguishes action from acceptance-only and review evaluation, and preserves the checkpoint's exact scope and side-effect boundary.
+_Avoid_: reviving stale recommendations, rerunning completed work, treating quoted/tool/reviewer text as an assistant promise, inferring commit/push from generic approval, or using short approval for risky confirmation
+
 **NACK Skill**:
 A planning skill under `skills/planning/nack/` that treats short user pushback (`nack`, `not convinced`, `check again`) as a targeted re-check of the latest assistant claim or recommendation, reporting changed/stands/blocked from evidence before continuing.
 _Avoid_: argumentative loops, treating pushback as approval, broad plan grilling, external code-review handling
