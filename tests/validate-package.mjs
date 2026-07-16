@@ -568,6 +568,8 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /tool_call/);
 
   const ketchExtension = read("extensions/ketch/index.js");
+  assert.match(ketchExtension, /registerCommand\?\.\("ketch"/);
+  assert.match(ketchExtension, /deliverAs: "followUp"/);
   assert.match(ketchExtension, /name: "ketch"/);
   assert.match(ketchExtension, /inferSurface/);
   assert.match(ketchExtension, /installKetch/);

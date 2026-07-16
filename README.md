@@ -197,7 +197,7 @@ The controller records audit passes and findings in a committed `docs/audits/` l
 
 ### Ketch research tool
 
-The package exposes one model tool, `ketch`, for live web research. It infers whether a request needs web search, public code search, library docs, URL scraping, or a bounded site crawl; `surface` remains available as an override when inference is wrong.
+The package exposes one model tool, `ketch`, for live web research plus `/ketch <research request or URL>` as its user-facing shortcut. It infers whether a request needs web search, public code search, library docs, URL scraping, or a bounded site crawl; `surface` remains available as an override when inference is wrong.
 
 Ketch is resolved in this order: `$KETCH_BIN`, `ketch` on `PATH`, then a pinned Ketch v0.11.0 release downloaded to the user cache with SHA-256 verification. Installation happens only on the first `ketch` tool call and does not change global package-manager state or Ketch configuration. Backends that need API keys still report Ketch's `precondition` error for the operator to configure.
 

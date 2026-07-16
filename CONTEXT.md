@@ -101,7 +101,7 @@ The package-local extension at `extensions/goal-technical-auditor/index.js` regi
 _Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting broad automation for invalid arguments, premature `goal_complete`, destructive rollback, force-push/history rewriting, or weakening the command's predictable Full-mode meaning
 
 **Ketch Extension**:
-The package-local extension at `extensions/ketch/index.js` exposes one `ketch` model tool that infers web search, public code search, library docs, URL scrape, or bounded crawl from a request. It prefers `$KETCH_BIN` or `ketch` on `PATH`, then auto-installs the pinned Ketch v0.11.0 release into the user cache after SHA-256 verification; it never changes Ketch backend configuration automatically.
+The package-local extension at `extensions/ketch/index.js` exposes one `ketch` model tool plus a thin `/ketch <request>` command that queues the tool-backed research workflow. It infers web search, public code search, library docs, URL scrape, or bounded crawl from a request. It prefers `$KETCH_BIN` or `ketch` on `PATH`, then auto-installs the pinned Ketch v0.11.0 release into the user cache after SHA-256 verification; it never changes Ketch backend configuration automatically.
 _Avoid_: multiple command wrappers, startup installation, unpinned downloads, unverified archives, global package-manager mutation, automatic API-key/config changes, unbounded output, or using external search for the local codebase
 
 **Skill Router Skill**:

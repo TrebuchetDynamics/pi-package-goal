@@ -15,13 +15,18 @@ assert.deepEqual(buildKetchArgs({ request: "https://example.com/a", maxChars: 40
 assert.deepEqual(buildKetchArgs({ request: "crawl https://example.com/docs" }), ["crawl", "https://example.com/docs", "--depth", "2", "--json"]);
 
 const tools = new Map();
+const commands = new Map();
 const calls = [];
+const queuedMessages = [];
+const notices = [];
 const signal = new AbortController().signal;
 const previousKetchBin = process.env.KETCH_BIN;
 process.env.KETCH_BIN = "/fake/ketch";
 try {
   registerKetch({
     registerTool: (definition) => tools.set(definition.name, definition),
+    registerCommand: (name, definition) => commands.set(name, definition),
+    sendUserMessage: (content, options) => queuedMessages.push({ content, options }),
     exec: async (command, args, options) => {
       calls.push({ command, args, options });
       if (args[0] === "--version") return { code: 0, stdout: "ketch 0.11.0\n", stderr: "" };
@@ -29,6 +34,13 @@ try {
     },
   });
   assert.deepEqual([...tools.keys()], ["ketch"]);
+  assert.deepEqual([...commands.keys()], ["ketch"]);
+  await commands.get("ketch").handler("", { ui: { notify: (message) => notices.push(message) } });
+  assert.match(notices.at(-1), /Usage: \/ketch <research request or URL>/);
+  await commands.get("ketch").handler("latest Pi agent news", { ui: { notify: (message) => notices.push(message) } });
+  assert.match(queuedMessages.at(-1).content, /latest Pi agent news/);
+  assert.deepEqual(queuedMessages.at(-1).options, { deliverAs: "followUp" });
+
   const result = await tools.get("ketch").execute("tool-1", { request: "Pi agent", limit: 2 }, signal);
   assert.match(result.content[0].text, /https:\/\/example\.com/);
   assert.equal(result.details.surface, "search");

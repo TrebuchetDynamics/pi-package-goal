@@ -204,6 +204,23 @@ const parameters = {
 };
 
 export default function ketchExtension(pi) {
+  pi.registerCommand?.("ketch", {
+    description: "Research the live web, public code, docs, or a URL through Ketch",
+    handler(args, ctx) {
+      const request = String(args || "").trim();
+      if (!request) {
+        ctx.ui.notify("Usage: /ketch <research request or URL>", "info");
+        return;
+      }
+      pi.sendUserMessage([
+        "Use the ketch tool for the following research request.",
+        "Return a concise answer and cite source URLs returned by Ketch.",
+        "",
+        request,
+      ].join("\n"), { deliverAs: "followUp" });
+    },
+  });
+
   pi.registerTool({
     name: "ketch",
     label: "Ketch",
