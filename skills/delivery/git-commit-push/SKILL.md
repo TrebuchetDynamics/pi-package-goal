@@ -104,6 +104,18 @@ GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 
 For audit mode, start with `AUDIT — <what would happen>` and keep the same line limit. Never print separate Mode, Scope, Delivery, Unblocked, Final state, or Completion audit sections; their facts belong in the compact lines above.
 
+When the decision is `review_needed`, do not ask the user to "review" a schema. Ask one plain yes/no question, say what each answer does, and include only the fact needed to decide:
+
+```text
+NEEDS DECISION — Commit and push `polydart` 921b9a0 → 8898e0a?
+Why: the pointer change contains README/SVG updates only; checks passed.
+Reply `yes` to ship it or `no` to leave it local.
+GIT_COMMIT_PUSH_VALIDATED: no
+GIT_COMMIT_PUSH_DECISION: review_needed
+```
+
+If the choice is not binary, give at most three numbered options and ask for the option number.
+
 Marker mapping:
 
 - `SHIPPED` → `shipped` after safe commit(s) and successful push.

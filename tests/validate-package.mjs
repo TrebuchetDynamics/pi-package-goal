@@ -943,6 +943,9 @@ async function testSkills() {
   assert.match(gitCommitPush, /no more than three human-readable lines/);
   assert.match(gitCommitPush, /do not repeat the same hash, branch, path, or decision/);
   assert.match(gitCommitPush, /Never print separate Mode, Scope, Delivery, Unblocked, Final state, or Completion audit sections/);
+  assert.match(gitCommitPush, /do not ask the user to "review" a schema/);
+  assert.match(gitCommitPush, /Reply `yes` to ship it or `no` to leave it local/);
+  assert.match(gitCommitPush, /at most three numbered options/);
   assert.match(gitCommitPush, /Do not deploy, publish, release, force-push, rewrite history, rebase, merge divergent history/);
   assert.match(gitCommitPush, /UI, MapLibre, Maestro, test, and documentation changes/);
 }
