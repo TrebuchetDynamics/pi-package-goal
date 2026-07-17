@@ -135,7 +135,7 @@ The defaults keep history large, avoid idle status refreshes, and allow slightly
 
 ```tmux
 set -g status-interval 0
-set -g history-limit 50000
+set -g history-limit 5000
 set -sg escape-time 100
 set -g repeat-time 750
 ```
