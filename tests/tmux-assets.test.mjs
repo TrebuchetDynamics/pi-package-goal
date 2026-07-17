@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import mobileLowRedraw, { shouldReduceRedraw } from "../extensions/mobile-low-redraw/index.js";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 const tx = path.join(root, "tmux", "tx");
@@ -306,17 +307,57 @@ async function testTmuxMouseSelectionDoesNotAutoCopy() {
 async function testTmuxExtendedKeysEnabled() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /set -g extended-keys on/);
+  assert.match(config, /set -su terminal-features/);
+  assert.match(config, /set -as terminal-features ',xterm-256color:sync'/);
 }
 
 async function testTmuxConfigShowsRepoInfo() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
-  assert.match(config, /set -g status-interval 120/);
+  assert.match(config, /set -g status-interval 0/);
+  assert.match(config, /#\{>=:#\{client_width\},100\}/);
   assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
   assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
-  assert.match(config, /set -g status-left-length 100/);
+  assert.match(config, /set -g status-left-length 80/);
+  assert.match(config, /set -g window-status-format ''/);
+  assert.match(config, /set -g window-status-current-format ''/);
   assert.match(config, /source-file -q ~\/\.tmux\/local\.tmux/);
   assert.doesNotMatch(config, /source-file -q ~\/\.tmux\/status\.tmux/);
+}
+
+async function testTmuxMobileControls() {
+  const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
+  assert.match(config, /set -g detach-on-destroy off/);
+  assert.match(config, /setw -g automatic-rename off/);
+  assert.match(config, /set -sg escape-time 100/);
+  assert.match(config, /set -g repeat-time 750/);
+  assert.match(config, /set -g display-panes-time 2000/);
+  assert.match(config, /bind r refresh-client -S/);
+  assert.match(config, /bind m set-option -g mouse/);
+  assert.match(config, /bind v copy-mode/);
+}
+
+async function testMobileLowRedrawExtension() {
+  assert.equal(shouldReduceRedraw({ TMUX: "/tmp/tmux", SSH_CONNECTION: "client server" }), true);
+  assert.equal(shouldReduceRedraw({ TMUX: "/tmp/tmux" }), false);
+  assert.equal(shouldReduceRedraw({ SSH_TTY: "/dev/pts/1" }), false);
+
+  const previous = { TMUX: process.env.TMUX, SSH_CONNECTION: process.env.SSH_CONNECTION };
+  process.env.TMUX = "/tmp/tmux";
+  process.env.SSH_CONNECTION = "client server";
+  try {
+    let sessionStart;
+    mobileLowRedraw({ on: (_event, handler) => { sessionStart = handler; } });
+    const calls = [];
+    sessionStart({}, { mode: "tui", ui: { setWorkingVisible: (visible) => calls.push(visible) } });
+    sessionStart({}, { mode: "print", ui: { setWorkingVisible: (visible) => calls.push(visible) } });
+    assert.deepEqual(calls, [false]);
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
 }
 
 async function testTmuxUsesDefaultResizeBehavior() {
@@ -351,6 +392,8 @@ await testStatusHelpers();
 await testTmuxMouseSelectionDoesNotAutoCopy();
 await testTmuxExtendedKeysEnabled();
 await testTmuxConfigShowsRepoInfo();
+await testTmuxMobileControls();
+await testMobileLowRedrawExtension();
 await testTmuxUsesDefaultResizeBehavior();
 await testTmuxPluginsAreNotLoaded();
 await testTmuxConfigParsesWhenTmuxExists();

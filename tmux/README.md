@@ -56,7 +56,7 @@ tmux source-file ~/.tmux.conf
 ## Runtime flow
 
 - `install.sh` copies the shared assets into user locations: `tmux.conf`, helper scripts, optional local style, and the `tx` launcher.
-- `tmux.conf` renders session name, short current path, git branch/status, and host name in the status bar. It refreshes every 120 seconds.
+- `tmux.conf` renders session, zoom state, and host in the status bar. At 100+ columns it also shows the short current path and git branch/status. Periodic refresh is disabled to avoid idle SSH redraws.
 - `tx` reads session aliases from its config file, starts or switches to the matching tmux session, and uses the alias as the tmux session name.
 - `style.tmux` stores per-machine colors and is sourced by `tmux.conf` from `~/.tmux/style.tmux`.
 
@@ -66,10 +66,9 @@ The shared config calls `short-path.sh` and `git-status.sh` in the status bar. T
 
 Each helper takes one argument: the current pane path from `#{pane_current_path}`. `git-status.sh` prints the branch in green when clean and red when changed/untracked; outside git repos it prints nothing.
 
-For very slow SSH/mobile links, disable periodic helper calls in `~/.tmux/local.tmux`:
+For very slow SSH/mobile links, periodic helper calls are disabled by default. To simplify the status further in `~/.tmux/local.tmux`:
 
 ```tmux
-set -g status-interval 0
 set -g status-left '#[bg=#{@primary_color},fg=#{@primary_text_color},bold] #S '
 set -g status-left-length 40
 ```
@@ -116,19 +115,29 @@ Return to normal resize behavior with:
 tmux set -g window-size latest
 ```
 
-## Mouse
+## Mobile controls
 
-Mouse mode is left at the tmux built-in default (`off`) for maximum SSH/mobile compatibility.
+The prefix remains tmux's standard `Ctrl-b`, which works with Termius's extra-key row. Useful phone-friendly bindings:
+
+- `Ctrl-b r` — force a full redraw after a reconnect or orientation change.
+- `Ctrl-b v` — enter copy mode; press `v` to select and `y` to copy.
+- `Ctrl-b Page Up` — enter scrollback; then use `Page Up`/`Page Down` and `q` to exit.
+- `Ctrl-b m` — toggle mouse/touch scrolling for the current tmux server.
+- `Ctrl-b t` — toggle the status bar when every row matters.
+
+Mouse mode remains off by default so Termius can handle native touch selection. The status bar automatically drops path and git details below 100 columns. `xterm-256color` clients use synchronized output so Pi and other full-screen TUIs arrive as atomic frames instead of visible partial redraws. Detach and reconnect once after installing so tmux recalculates client terminal features.
 
 ## Local/mobile overrides
 
 The shared config sources `~/.tmux/local.tmux` at the end when it exists. Use this file for machine-specific settings only after stale-client cleanup is not enough.
 
-The defaults keep history large and refresh repo info slowly:
+The defaults keep history large, avoid idle status refreshes, and allow slightly slower mobile key sequences:
 
 ```tmux
-set -g status-interval 120
+set -g status-interval 0
 set -g history-limit 50000
+set -sg escape-time 100
+set -g repeat-time 750
 ```
 
 Test one extra setting at a time so rollback is easy:

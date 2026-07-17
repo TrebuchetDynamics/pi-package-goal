@@ -2,7 +2,7 @@
 
 `pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, and `/onklaud`;
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, and `/onklaud`, plus low-redraw TUI behavior for SSH/tmux;
 - agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
 - the `trebuchet-neon` TUI theme; and
 - `tx` tmux plus `autofolderrefactor` helper bins.
@@ -142,6 +142,10 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Shell helpers | Install a portable tmux profile and session launcher. | `tx` |
 
 ## Included extensions
+
+### Mobile SSH low-redraw
+
+When Pi runs inside both SSH and tmux, `mobile-low-redraw` hides the animated `Working…`/elapsed-time row. Streamed responses and tool results remain visible, while idle or long-running agent work no longer repaints that loader every second. Local non-SSH Pi sessions are unchanged.
 
 ### `/ponytail`
 

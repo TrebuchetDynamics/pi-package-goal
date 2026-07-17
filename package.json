@@ -61,7 +61,8 @@
       "./extensions/rtk",
       "./extensions/ponytail",
       "./extensions/ketch",
-      "./extensions/onklaud"
+      "./extensions/onklaud",
+      "./extensions/mobile-low-redraw"
     ],
     "skills": [
       "./skills"
