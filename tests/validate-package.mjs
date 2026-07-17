@@ -940,7 +940,9 @@ async function testSkills() {
   assert.match(gitCommitPush, /GIT_COMMIT_PUSH_DECISION: shipped\|blocked\|review_needed/);
   assert.match(gitCommitPush, /`git diff --stat` excludes untracked files/);
   assert.match(gitCommitPush, /modified and untracked paths/);
-  assert.match(gitCommitPush, /Completion audit/);
+  assert.match(gitCommitPush, /no more than three human-readable lines/);
+  assert.match(gitCommitPush, /do not repeat the same hash, branch, path, or decision/);
+  assert.match(gitCommitPush, /Never print separate Mode, Scope, Delivery, Unblocked, Final state, or Completion audit sections/);
   assert.match(gitCommitPush, /Do not deploy, publish, release, force-push, rewrite history, rebase, merge divergent history/);
   assert.match(gitCommitPush, /UI, MapLibre, Maestro, test, and documentation changes/);
 }

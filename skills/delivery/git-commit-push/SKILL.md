@@ -92,20 +92,17 @@ Do not ask merely to approve formatting, obvious test repairs, split commits, ex
 
 ## Output contract
 
-End with a short action-first report:
+End with no more than three human-readable lines, then the two machine markers. Omit empty fields and do not repeat the same hash, branch, path, or decision under multiple headings. Summarize commit lists as a count/range and validation by subsystem unless the user asks for full detail.
 
 ```text
-Git delivery: SHIPPED|NO-OP|NEEDS DECISION|BLOCKED — <plain-language result>
-Mode: ship|audit|continuation
-Commits: <hash + topic, or none>
-Push: <remote/branch result, or why not>
-Validation: <command receipts>
-Remaining: <none, or exact paths + concrete reason>
-Next: <none, or one exact owner action/decision>
-Completion audit: <all modified and untracked paths inspected; scoped validation disclosed>
+SHIPPED|NO-OP|NEEDS DECISION|BLOCKED — <commit count/range and push result, or one blocker>
+Checks: <grouped validation receipts>; inspected all modified and untracked paths
+Left local: <exact paths + reason> | Need: <one owner action>  # omit when empty
 GIT_COMMIT_PUSH_VALIDATED: yes|no
 GIT_COMMIT_PUSH_DECISION: shipped|blocked|review_needed
 ```
+
+For audit mode, start with `AUDIT — <what would happen>` and keep the same line limit. Never print separate Mode, Scope, Delivery, Unblocked, Final state, or Completion audit sections; their facts belong in the compact lines above.
 
 Marker mapping:
 
