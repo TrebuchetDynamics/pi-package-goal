@@ -160,6 +160,27 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
   }
 }
 
+async function testTxAddHandlesConfigWithoutTrailingNewline() {
+  const tmp = tempDir("tx-no-final-newline-");
+  try {
+    const config = path.join(tmp, "sessions.conf");
+    const one = path.join(tmp, "one");
+    const two = path.join(tmp, "two");
+    fs.mkdirSync(one);
+    fs.mkdirSync(two);
+    fs.writeFileSync(config, `one=${one}`);
+    const env = { TX_CONFIG: config, TX_TMUX: process.execPath };
+
+    run(tx, ["add", "two", two], { env });
+
+    assert.equal(run(tx, ["which", "one"], { env }).trim(), fs.realpathSync(one));
+    assert.equal(run(tx, ["which", "two"], { env }).trim(), fs.realpathSync(two));
+    assert.equal(fs.readFileSync(config, "utf8"), `one=${one}\ntwo=${two}\n`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 async function testInstallScript() {
   const tmp = tempDir("tx-install-");
   try {
@@ -384,6 +405,7 @@ await testPackageManifest();
 await testScriptSyntaxAndHelp();
 await testTxDefaultConfigPath();
 await testTxConfigLifecycleWithoutTmuxSessions();
+await testTxAddHandlesConfigWithoutTrailingNewline();
 await testTxListFormattingAndColorPortability();
 await testInstallScript();
 await testInstallScriptQuotesHelperPaths();

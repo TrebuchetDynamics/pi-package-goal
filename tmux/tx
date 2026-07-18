@@ -416,7 +416,7 @@ append_aliases_to_existing_path() {
 
 add_alias() {
   [[ $# -ge 1 && $# -le 2 ]] || die "add: expected alias[,alias2] and optional directory, or a directory to prompt for aliases"
-  local keys target part prompt_for_alias=0 first_path
+  local keys target part prompt_for_alias=0 first_path ending
   local -a parts
 
   first_path=$(expand_tilde "$1")
@@ -457,6 +457,10 @@ add_alias() {
     append_aliases_to_existing_path "$keys" "$target"
     printf 'updated: %s,%s=%s\n' "${PATH_TO_ALIASES[$target]}" "$keys" "$target"
   else
+    if [[ -s "$CONFIG_PATH" ]]; then
+      ending=$(tail -c 1 "$CONFIG_PATH"; printf x)
+      [[ "$ending" == $'\nx' ]] || printf '\n' >> "$CONFIG_PATH"
+    fi
     printf '%s=%s\n' "$keys" "$target" >> "$CONFIG_PATH"
     printf 'added: %s=%s\n' "$keys" "$target"
   fi
