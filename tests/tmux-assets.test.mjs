@@ -327,7 +327,7 @@ async function testTmuxConfigShowsRepoInfo() {
 
 async function testTmuxMobileControls() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
-  assert.match(config, /set -g detach-on-destroy off/);
+  assert.match(config, /set -g detach-on-destroy on/);
   assert.match(config, /setw -g automatic-rename off/);
   assert.match(config, /set -sg escape-time 100/);
   assert.match(config, /set -g repeat-time 750/);
