@@ -8,6 +8,7 @@ const root = path.resolve(new URL("..", import.meta.url).pathname);
 const expectedSkills = [
   "goal",
   "git-commit-push",
+  "s3upload",
   "modern-web-guidance",
   "chrome-extensions",
   "tdd",
@@ -84,7 +85,7 @@ const expectedSkills = [
 
 const skillDescriptionBudget = {
   maxPerSkillChars: 500,
-  maxTotalChars: 12500,
+  maxTotalChars: 12800,
 };
 
 function readJson(file) {
@@ -924,6 +925,13 @@ async function testSkills() {
   assert.match(piExtensionsHelper, /Pi owns tool execution/);
   assert.match(piExtensionsHelper, /Keep guardrail logic in pure helpers with focused tests/);
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
+
+  const s3upload = read("skills/delivery/s3upload/SKILL.md");
+  assert.match(s3upload, /recent generated pic\/image/);
+  assert.match(s3upload, /`48 hours` → `48h`/);
+  assert.match(s3upload, /command -v s3upload/);
+  assert.match(s3upload, /SAS URL is a bearer link/);
+  assert.match(s3upload, /URL expiry does not delete the blob/);
 
   const gitCommitPush = read("skills/delivery/git-commit-push/SKILL.md");
   assert.ok(gitCommitPush.length < 9000, "git-commit-push must stay action-first and readable");

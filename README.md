@@ -101,6 +101,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Debug broken, flaky, or slow behavior | `diagnose` | Reproduce, minimize, instrument, fix, and regression-test. |
 | Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
 | Ship finished work | `git-commit-push` | Polishes, validates, split-commits safe in-scope changes, and pushes. |
+| Share a local file with an expiring Azure link | `s3upload` | Uses the separately installed CLI and existing private-container configuration. |
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
@@ -130,7 +131,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Area | What it helps with | Start with |
 | --- | --- | --- |
 | Goal discipline | Keep a session pointed at one objective and finish only after evidence is checked. | `goal` |
-| Safe delivery | Polish obvious issues, validate, commit only safe work, and push. | `git-commit-push` |
+| Safe delivery | Polish obvious issues, validate, commit only safe work, push, or share a local file through private Azure Blob Storage. | `git-commit-push`, `s3upload` |
 | Engineering loops | Improve one safe repo slice, hunt bugs, debug, test-drive, prototype, review, improve architecture, run technical audits, or audit prompt caching. | `autonomous-codebase-improver`, `bug-harvest`, `diagnose`, `tdd`, `prototype`, `technical-auditor`, `prompt-cache-auditor` |
 | Clean-context review | Get an unbiased advisor (plan-time) or reviewer (change-time) second opinion, dispatched to a clean context when a fork/subagent tool is available — see [clean-context delegation](skills/shared/CLEAN-CONTEXT-DELEGATION.md). | `autoreview`, `grill-with-docs` |
 | Planning and handoff | Route to the right skill, update source-backed docs, turn context into PRDs/issues, triage work, summarize for the next agent. | `skill-router`, `wiki-docs`, `to-prd`, `to-issues`, `triage`, `handoff` |
@@ -392,6 +393,7 @@ Theme discipline:
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Inspect and ship every isolatable safe local topic; do not stop merely because the worktree contains changes. |
+| `s3upload` | Upload one explicitly requested local file with the separately installed CLI and return an expiring read-only Azure SAS URL. |
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
 | `lgtm` | Resolve short approval against the latest explicit checkpoint without rerunning completed work or authorizing unproposed side effects. |
 | `caveman` | Switch to terse, low-token communication. |

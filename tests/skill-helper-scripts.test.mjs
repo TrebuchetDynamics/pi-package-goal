@@ -94,7 +94,8 @@ function installedSkillCount(skillsDir) {
 }
 
 function assertInstalledSkillTree(skillsDir) {
-  assert.equal(installedSkillCount(skillsDir), 74);
+  assert.equal(installedSkillCount(skillsDir), 75);
+  assert.ok(fs.existsSync(path.join(skillsDir, "s3upload", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "beautify-github-readme", "scripts", "audit_readme.py")));
   assert.ok(fs.existsSync(path.join(skillsDir, "unused-code", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "shared", "COMMON-CONTRACT.md")));
