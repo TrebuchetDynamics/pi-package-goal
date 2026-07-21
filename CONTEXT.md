@@ -145,8 +145,8 @@ Concrete command outputs, test results, git state, commit hashes, and push resul
 _Avoid_: assistant prose in place of command evidence
 
 **s3upload Skill and Command**:
-A delivery skill under `skills/delivery/s3upload/` plus a thin `extensions/s3upload/` command bridge. `/s3upload <request>` dispatches to `/skill:s3upload <request>`, which invokes the separately installed CLI only after explicit upload intent and returns an expiring read-only Azure SAS URL.
-_Avoid_: requiring users to know the `/skill:` prefix, uploading credentials, printing storage configuration, silently installing the CLI, treating SAS expiry as blob deletion, or using the workflow for Amazon S3-compatible storage
+A delivery skill under `skills/delivery/s3upload/` plus a thin `extensions/s3upload/` command bridge. `/s3upload <request>` dispatches to `/skill:s3upload <request>`, which invokes the separately installed CLI for uploads, listing, or explicit delete-all requests against its configured Azure container; uploads return expiring read-only SAS URLs and report exact HNS expiry or approximate lifecycle-policy deletion.
+_Avoid_: requiring users to know the `/skill:` prefix, inferring destructive intent without the words `delete all`, supporting partial or arbitrary-container deletion, uploading credentials, printing storage configuration, silently installing the CLI, claiming lifecycle deletion is exact, leaving a blob stored when exact expiry fails, or using the workflow for Amazon S3-compatible storage
 
 **Third-Party Skill Notices**:
 License and attribution records in `THIRD_PARTY_NOTICES.md` and `licenses/` for bundled upstream-derived skills.

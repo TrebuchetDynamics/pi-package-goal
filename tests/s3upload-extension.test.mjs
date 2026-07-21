@@ -10,6 +10,7 @@ registerS3Upload({
 });
 
 assert.deepEqual([...commands.keys()], ["s3upload"]);
+assert.match(commands.get("s3upload").description, /delete/);
 
 const ctx = {
   isIdle: () => true,

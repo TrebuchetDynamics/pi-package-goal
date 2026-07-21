@@ -147,11 +147,12 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 
 ### `/s3upload`
 
-`/s3upload <file or request>` is the direct shortcut for the bundled `s3upload` skill. It queues `/skill:s3upload ...`, which uses the separately installed CLI and existing Azure configuration.
+`/s3upload <file or request>` is the direct shortcut for the bundled `s3upload` skill. It queues `/skill:s3upload ...`, which uses the separately installed CLI and existing Azure configuration to upload, list, or explicitly delete all files; uploaded links expire as requested and Azure deletes blobs through exact expiry or the container lifecycle policy.
 
 ```text
 /s3upload myapp.apk
 /s3upload upload recent generated image for 48 hours
+/s3upload delete all files in temporary-uploads
 ```
 
 Use the exact spelling `s3upload`; update this package and run `/reload` after first installing a version that includes the command.
@@ -405,7 +406,7 @@ Theme discipline:
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Inspect and ship every isolatable safe local topic; do not stop merely because the worktree contains changes. |
-| `s3upload` | Handle `/s3upload` or `/skill:s3upload` requests, upload one local file with the separately installed CLI, and return an expiring read-only Azure SAS URL. |
+| `s3upload` | Handle `/s3upload` or `/skill:s3upload` requests to upload one file, list uploads, or explicitly delete all files in the configured Azure container. |
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
 | `lgtm` | Resolve short approval against the latest explicit checkpoint without rerunning completed work or authorizing unproposed side effects. |
 | `caveman` | Switch to terse, low-token communication. |

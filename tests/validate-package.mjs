@@ -936,7 +936,12 @@ async function testSkills() {
   assert.match(s3upload, /`48 hours` → `48h`/);
   assert.match(s3upload, /command -v s3upload/);
   assert.match(s3upload, /SAS URL is a bearer link/);
-  assert.match(s3upload, /URL expiry does not delete the blob/);
+  assert.match(s3upload, /hierarchical namespace-enabled account/);
+  assert.match(s3upload, /CLI removes the new blob/);
+  assert.match(s3upload, /s3upload delete all/);
+  assert.match(s3upload, /Deletion requires the request to say `delete all`/);
+  assert.match(s3upload, /final line must contain only the raw URL/);
+  assert.match(s3upload, /no Markdown link/);
 
   const gitCommitPush = read("skills/delivery/git-commit-push/SKILL.md");
   assert.ok(gitCommitPush.length < 9000, "git-commit-push must stay action-first and readable");
