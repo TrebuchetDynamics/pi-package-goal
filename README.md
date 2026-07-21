@@ -2,7 +2,7 @@
 
 `pi-package-goal` is a Pi package that bundles curated agent skills, extensions, and helper scripts for safer agent workflows. It includes:
 
-- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, and `/onklaud`, plus low-redraw TUI behavior for SSH/tmux;
+- slash-command extensions such as `/goal`, `/understand`, `/folder-refactor`, `/ponytail`, `/rtk`, `/onklaud`, and `/s3upload`, plus low-redraw TUI behavior for SSH/tmux;
 - agent skills for planning, engineering, docs, delivery, Pi package work, frontend/UI, research, and communication;
 - the `trebuchet-neon` TUI theme; and
 - `tx` tmux plus `autofolderrefactor` helper bins.
@@ -101,7 +101,7 @@ Security note: Pi packages can include extensions and skills that run with your 
 | Debug broken, flaky, or slow behavior | `diagnose` | Reproduce, minimize, instrument, fix, and regression-test. |
 | Add behavior test-first | `tdd` | Red-green-refactor with repo study before code edits. |
 | Ship finished work | `git-commit-push` | Polishes, validates, split-commits safe in-scope changes, and pushes. |
-| Share a local file with an expiring Azure link | `s3upload` | Uses the separately installed CLI and existing private-container configuration. |
+| Share a local file with an expiring Azure link | `/s3upload <file>` | Uses the separately installed CLI and existing private-container configuration. |
 | Review before shipping | `autoreview` | Runs a structured closeout review when tooling is available. |
 | Get an unbiased second opinion | `autoreview` (reviewer) or `grill-with-docs` (advisor) | Dispatches a clean-context delegate for a plan- or change-time review when a fork/subagent tool is available. |
 | Understand a codebase | `/understand` | Builds a graph and automatically writes an agent-readable map. |
@@ -124,6 +124,7 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 /skill:tdd add coverage for the parser edge case
 /understand
 /folder-refactor skills/engineering
+/s3upload myapp.apk
 ```
 
 ## What you get
@@ -143,6 +144,17 @@ Skills load on demand. Ask naturally, or use `/skill:<name>` when skill commands
 | Shell helpers | Install a portable tmux profile and session launcher. | `tx` |
 
 ## Included extensions
+
+### `/s3upload`
+
+`/s3upload <file or request>` is the direct shortcut for the bundled `s3upload` skill. It queues `/skill:s3upload ...`, which uses the separately installed CLI and existing Azure configuration.
+
+```text
+/s3upload myapp.apk
+/s3upload upload recent generated image for 48 hours
+```
+
+Use the exact spelling `s3upload`; update this package and run `/reload` after first installing a version that includes the command.
 
 ### Mobile SSH low-redraw
 
@@ -393,7 +405,7 @@ Theme discipline:
 | --- | --- |
 | `goal` | Start or continue a bounded objective inside the conversation; no-arg `goal` auto-discovers useful repo work. |
 | `git-commit-push` | Inspect and ship every isolatable safe local topic; do not stop merely because the worktree contains changes. |
-| `s3upload` | Upload one explicitly requested local file with the separately installed CLI and return an expiring read-only Azure SAS URL. |
+| `s3upload` | Handle `/s3upload` or `/skill:s3upload` requests, upload one local file with the separately installed CLI, and return an expiring read-only Azure SAS URL. |
 | `autoreview` | Run a structured closeout review before shipping; the clean-context [reviewer](skills/shared/CLEAN-CONTEXT-DELEGATION.md) role. |
 | `lgtm` | Resolve short approval against the latest explicit checkpoint without rerunning completed work or authorizing unproposed side effects. |
 | `caveman` | Switch to terse, low-token communication. |
@@ -531,7 +543,8 @@ This package ships curated skills, package-local Pi extensions, and a theme. Pac
       "./extensions/folder-refactor",
       "./extensions/rtk",
       "./extensions/ponytail",
-      "./extensions/onklaud"
+      "./extensions/onklaud",
+      "./extensions/s3upload"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]

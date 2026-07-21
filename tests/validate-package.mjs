@@ -477,7 +477,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud", "./extensions/mobile-low-redraw"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
@@ -576,6 +576,11 @@ async function testUnderstandExtension() {
   assert.match(ketchExtension, /installKetch/);
   assert.match(ketchExtension, /verifyChecksum/);
   assert.ok(exists("tests/ketch-extension.test.mjs"), "ketch extension test must exist");
+
+  const s3uploadExtension = read("extensions/s3upload/index.js");
+  assert.match(s3uploadExtension, /registerCommand\("s3upload"/);
+  assert.match(s3uploadExtension, /`\/skill:s3upload \$\{request\}`/);
+  assert.ok(exists("tests/s3upload-extension.test.mjs"), "s3upload command test must exist");
 
   const onklaudExtension = read("extensions/onklaud/index.js");
   assert.match(onklaudExtension, /registerCommand\("onklaud"/);
@@ -967,6 +972,7 @@ async function testDocsAndNotices() {
   assert.match(readme, /technical-auditor/);
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /## Included extensions/);
+  assert.match(readme, /`\/s3upload <file or request>`/);
   assert.doesNotMatch(readme, /goal-advisor/);
   assert.match(readme, /trebuchet-neon/);
   assert.match(readme, /Provider bridge pattern/);

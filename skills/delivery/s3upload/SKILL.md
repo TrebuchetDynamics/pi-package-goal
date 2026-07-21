@@ -5,7 +5,7 @@ description: Upload local files with s3upload and return expiring Azure links. U
 
 # s3upload
 
-`/skill:s3upload <request>` is approval to upload.
+`/s3upload <request>` or `/skill:s3upload <request>` is approval to upload.
 
 ## Operational basis
 
@@ -36,8 +36,8 @@ Return the uploaded filename, size, expiry, and URL. Mention once that URL expir
 
 ## Examples
 
-- `/skill:s3upload upload recent pic generated for 48 hours` → find the clear latest generated image and upload it with `--expires 48h`.
-- `/skill:s3upload myapp.apk` → upload `myapp.apk` with the 24-hour default.
+- `/s3upload upload recent pic generated for 48 hours` → find the clear latest generated image and upload it with `--expires 48h`.
+- `/s3upload myapp.apk` → upload `myapp.apk` with the 24-hour default.
 
 ## Shared contract
 

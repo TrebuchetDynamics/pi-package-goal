@@ -144,9 +144,9 @@ _Avoid_: returning review-needed merely because changes exist or span several do
 Concrete command outputs, test results, git state, commit hashes, and push results used to prove a skill's final claim.
 _Avoid_: assistant prose in place of command evidence
 
-**s3upload Skill**:
-A delivery skill under `skills/delivery/s3upload/` that invokes the separately installed `s3upload` CLI only after explicit upload intent, uses existing private Azure Blob Storage configuration, and returns an expiring read-only SAS URL while warning that the blob persists.
-_Avoid_: uploading credentials, printing storage configuration, silently installing the CLI, treating SAS expiry as blob deletion, or using the skill for Amazon S3-compatible storage
+**s3upload Skill and Command**:
+A delivery skill under `skills/delivery/s3upload/` plus a thin `extensions/s3upload/` command bridge. `/s3upload <request>` dispatches to `/skill:s3upload <request>`, which invokes the separately installed CLI only after explicit upload intent and returns an expiring read-only Azure SAS URL.
+_Avoid_: requiring users to know the `/skill:` prefix, uploading credentials, printing storage configuration, silently installing the CLI, treating SAS expiry as blob deletion, or using the workflow for Amazon S3-compatible storage
 
 **Third-Party Skill Notices**:
 License and attribution records in `THIRD_PARTY_NOTICES.md` and `licenses/` for bundled upstream-derived skills.
