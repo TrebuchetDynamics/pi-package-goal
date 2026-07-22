@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">The pi-package-goal workflow</title>
+  <desc id="desc">A five-stage loop from setting an objective through understanding, routing, execution, and evidence-backed delivery.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="#73ffba"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="500" rx="26" fill="#0b1020"/>
+  <rect x="38" y="38" width="1124" height="424" rx="20" fill="#121827" stroke="#30415f"/>
+
+  <g transform="translate(72 72)">
+    <text x="0" y="0" dominant-baseline="hanging" fill="#67e8f9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" letter-spacing="2">ONE OBJECTIVE / ONE BOUNDED LOOP</text>
+    <text x="0" y="62" fill="#f4f7ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="38" font-weight="730">From intent to verified delivery</text>
+    <text x="0" y="96" fill="#a6b0c3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18">Each stage has a named surface, a clear handoff, and an observable success signal.</text>
+  </g>
+
+  <path d="M118 296H1082" fill="none" stroke="#30415f" stroke-width="4"/>
+  <path d="M118 296H1082" fill="none" stroke="#73ffba" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
+    <g transform="translate(126 296)">
+      <circle r="17" fill="#10291f" stroke="#73ffba" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" fill="#f4f7ff" font-size="13" font-weight="700">1</text>
+      <text x="-38" y="62" fill="#73ffba" font-size="13" font-weight="700">SET</text>
+      <text x="-38" y="88" fill="#f4f7ff" font-size="16">/goal</text>
+      <text x="-38" y="112" fill="#7888a0" font-size="12">objective + budget</text>
+    </g>
+
+    <g transform="translate(360 296)">
+      <circle r="17" fill="#142334" stroke="#67e8f9" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" fill="#f4f7ff" font-size="13" font-weight="700">2</text>
+      <text x="-54" y="62" fill="#67e8f9" font-size="13" font-weight="700">ORIENT</text>
+      <text x="-54" y="88" fill="#f4f7ff" font-size="16">/understand</text>
+      <text x="-54" y="112" fill="#7888a0" font-size="12">graph + live source</text>
+    </g>
+
+    <g transform="translate(594 296)">
+      <circle r="17" fill="#1f1a2e" stroke="#d8b4fe" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" fill="#f4f7ff" font-size="13" font-weight="700">3</text>
+      <text x="-48" y="62" fill="#d8b4fe" font-size="13" font-weight="700">ROUTE</text>
+      <text x="-48" y="88" fill="#f4f7ff" font-size="16">skill-router</text>
+      <text x="-48" y="112" fill="#7888a0" font-size="12">one specialist</text>
+    </g>
+
+    <g transform="translate(828 296)">
+      <circle r="17" fill="#2c2513" stroke="#ffe08a" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" fill="#f4f7ff" font-size="13" font-weight="700">4</text>
+      <text x="-52" y="62" fill="#ffe08a" font-size="13" font-weight="700">EXECUTE</text>
+      <text x="-52" y="88" fill="#f4f7ff" font-size="16">tdd · diagnose</text>
+      <text x="-52" y="112" fill="#7888a0" font-size="12">bounded change</text>
+    </g>
+
+    <g transform="translate(1062 296)">
+      <circle r="24" fill="#10291f" stroke="#73ffba" stroke-width="2"/>
+      <path d="M-9 0L-2 7L11 -8" fill="none" stroke="#f4f7ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="-72" y="62" fill="#73ffba" font-size="13" font-weight="700">PROVE + SHIP</text>
+      <text x="-72" y="88" fill="#f4f7ff" font-size="16">npm test</text>
+      <text x="-72" y="112" fill="#7888a0" font-size="12">git-commit-push</text>
+    </g>
+  </g>
+</svg>
