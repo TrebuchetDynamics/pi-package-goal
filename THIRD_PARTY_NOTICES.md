@@ -77,6 +77,17 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/qualisero-awesome-pi-agent-LICENSE`
 
+## en970/ui-vault
+
+- Source: https://github.com/en970/ui-vault
+- Snapshot inspected: `2b199ea33df34ae6bb974796fb0af20fd7cc49e8`
+- Bundled paths:
+  - `skills/frontend/ui-vault/references/catalog.json`
+- Local changes: extracted the `DATA` resource catalog from the pinned `index.html`; added package-local search and proposal guidance.
+- Security assumptions: the catalog is inert JSON; linked resources are recommendations only and must be re-verified before adoption.
+- License: MIT
+- Full license copy: `licenses/en970-ui-vault-LICENSE`
+
 ## nextlevelbuilder/ui-ux-pro-max-skill
 
 - Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill

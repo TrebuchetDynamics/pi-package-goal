@@ -50,6 +50,7 @@ const expectedSkills = [
   "research-forge",
   "ui-ux-pro-max",
   "ui-design",
+  "ui-vault",
   "frontend-design",
   "beautify-github-readme",
   "design-taste-frontend",

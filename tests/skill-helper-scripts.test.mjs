@@ -86,6 +86,34 @@ function testBeautifyReadmeAudit() {
   }
 }
 
+function testUiVaultSearch() {
+  const output = runNode("skills/frontend/ui-vault/scripts/search-catalog.mjs", ["icons", "--category", "icons", "--limit", "2"]);
+  assert.match(output, /\[icons\]/);
+  assert.match(output, /Snapshot pricing\/license:/);
+  assert.equal((output.match(/^- /gm) ?? []).length, 2);
+
+  const categories = runNode("skills/frontend/ui-vault/scripts/search-catalog.mjs");
+  assert.match(categories, /^component-libraries\t12$/m);
+  assert.match(categories, /^claude-skills-design\t8$/m);
+}
+
+function testUiVaultDiagnosisContract() {
+  const skill = fs.readFileSync(path.join(root, "skills/frontend/ui-vault/SKILL.md"), "utf8");
+  const rubric = fs.readFileSync(path.join(root, "skills/frontend/ui-vault/references/diagnosis-rubric.md"), "utf8");
+
+  assert.match(skill, /references\/diagnosis-rubric\.md/);
+  assert.match(skill, /Rendered appearance.*DOM\/CSS.*local source/s);
+  assert.match(skill, /Only findings scored `0` or `1` with medium or high confidence/);
+  assert.match(skill, /## UI Vault diagnosis/);
+  assert.match(skill, /No resource needed/);
+
+  assert.match(rubric, /## Universal criteria/);
+  assert.match(rubric, /## Page-type overlays/);
+  assert.match(rubric, /`N\/A`.*not assessed/);
+  assert.match(rubric, /Never turn `N\/A` or low-confidence findings into recommendations/);
+  assert.match(rubric, /Do not calculate an overall or aggregate score/);
+}
+
 function installedSkillCount(skillsDir) {
   return fs.readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name !== "shared")
@@ -94,8 +122,9 @@ function installedSkillCount(skillsDir) {
 }
 
 function assertInstalledSkillTree(skillsDir) {
-  assert.equal(installedSkillCount(skillsDir), 75);
+  assert.equal(installedSkillCount(skillsDir), 76);
   assert.ok(fs.existsSync(path.join(skillsDir, "s3upload", "SKILL.md")));
+  assert.ok(fs.existsSync(path.join(skillsDir, "ui-vault", "references", "catalog.json")));
   assert.ok(fs.existsSync(path.join(skillsDir, "beautify-github-readme", "scripts", "audit_readme.py")));
   assert.ok(fs.existsSync(path.join(skillsDir, "unused-code", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "shared", "COMMON-CONTRACT.md")));
@@ -173,6 +202,8 @@ function testStitchSkillUsesBundledResourcePrefix() {
 testPromptCacheSummary();
 testPiLogAuditRedactsFreeText();
 testBeautifyReadmeAudit();
+testUiVaultSearch();
+testUiVaultDiagnosisContract();
 testAgentSkillsInstaller();
 testClaudeSkillsInstallerCompatibilityWrapper();
 testStitchSkillUsesBundledResourcePrefix();

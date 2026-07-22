@@ -19,6 +19,7 @@ Use this as the front door for UI/UX work. Route to the smallest useful set of d
 | Request shape | Primary skill | Support skills |
 | --- | --- | --- |
 | Broad UI/UX decision, visual system, colors, typography, layout, accessibility, motion | `ui-ux-pro-max` | `modern-web-guidance` for browser APIs/perf |
+| Resource-backed improvement proposal for one selected webpage | `ui-vault` | `ui-ux-pro-max` only for deeper design-system checks |
 | UI design-smell audit, AI-slop detection, hierarchy/accessibility/state review | `hallmark` | `ui-ux-pro-max`; `modern-web-guidance` when browser behavior matters |
 | Fresh distinctive web UI, page, component, or app | `frontend-design` | `hallmark` for anti-slop structure; `ui-ux-pro-max` for checks |
 | React + TypeScript + Tailwind product UI, including shadcn-style systems | `frontend-design` | `ui-ux-pro-max`; `modern-web-guidance` |

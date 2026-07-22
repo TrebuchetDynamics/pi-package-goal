@@ -461,6 +461,7 @@ Bundled from `obra/superpowers` under `skills/superpowers/`: `brainstorming`, `d
 | `modern-web-guidance` | Check current web-platform guidance before browser UI or frontend work. |
 | `chrome-extensions` | Build, debug, review, or publish Chrome extensions. |
 | `ui-design` | Orchestrate the UI/UX skills and pick the right frontend/design workflow for the task. |
+| `ui-vault` | Propose evidence-backed resources and upgrades for one selected webpage from a pinned 196-item UI Vault catalog. |
 | `ui-ux-pro-max` | Apply broad UI/UX design-system, typography, color, layout, accessibility, and motion guidance. |
 | `frontend-design` | Create distinctive production-grade frontend interfaces that avoid generic AI aesthetics. |
 | `beautify-github-readme` | Redesign a repository README or create GitHub-safe README SVG assets from real project evidence. |
