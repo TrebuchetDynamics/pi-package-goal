@@ -67,6 +67,16 @@ Smoke-test the installed commands inside Pi:
 
 If those commands are unknown, reload Pi again and check the install command output.
 
+### Optional OmniRoute setup
+
+From a checkout, review and run the installer to install OmniRoute globally, start its local daemon, create the `pi-auto` free-model fallback route, and select it as Pi's default model:
+
+```bash
+sh install-omniroute-pi.sh
+```
+
+The installer preserves existing providers and settings, writes permission-restricted backups before changes, and configures `~/.pi/agent/models.json` plus `settings.json`. For an existing local or remote OmniRoute server, use `--config-only --base-url <url>`; that route must already exist on remote servers.
+
 To install the bundled skills globally for both Codex and Claude Code from a checkout:
 
 ```bash
