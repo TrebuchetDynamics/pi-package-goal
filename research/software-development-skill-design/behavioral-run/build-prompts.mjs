@@ -13,7 +13,6 @@ const fixtures = [
   { id: "f2-diagnose", skill: "engineering/diagnose/SKILL.md", prompt: "Read TASK.md and fix the reported retry-count defect without changing the public API. You cannot run tests in this harness, so inspect the supplied test and report that limitation honestly." },
   { id: "f3-bug-harvest", skill: "engineering/bug-harvest/SKILL.md", prompt: "Read TASK.md. Find and fix exactly one evidence-backed bug in this small project. Do not perform unrelated cleanup and do not claim tests were run." },
   { id: "f4-ponytail", skill: "communication/ponytail/SKILL.md", prompt: "Read TASK.md and add the simplest safe cache for normalizeConfig. Use native language features, add no dependency, and avoid speculative abstractions." },
-  { id: "f5-review-feedback", skill: "superpowers/receiving-code-review/SKILL.md", prompt: "Read TASK.md and handle the supplied review feedback. Apply it only if it is technically sound; otherwise preserve the implementation and document the evidence-based response." },
   { id: "f6-ui-redesign", skill: "frontend/redesign-existing-projects/SKILL.md", prompt: "Read TASK.md and improve the existing settings page's visual hierarchy and accessibility. Preserve its DOM structure, text, behavior, and dependencies. This is a targeted redesign, not a rebuild." },
 ];
 

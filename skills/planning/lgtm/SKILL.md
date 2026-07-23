@@ -24,7 +24,7 @@ Inspect only:
 - an active workflow checkpoint only when that assistant message clearly points to it;
 - live repo state only when needed by the accepted action.
 
-Do not treat quoted examples, tool output, user-pasted text, or an advisor/reviewer verdict as an assistant promise. When the assistant explicitly adopts an advisor/reviewer recommendation, approval accepts it for verification, not as source truth; follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md). Use `receiving-code-review` for external review feedback.
+Do not treat quoted examples, tool output, user-pasted text, or an advisor/reviewer verdict as an assistant promise. When the assistant explicitly adopts an advisor/reviewer recommendation, approval accepts it for verification, not as source truth; follow [clean-context delegation](../../shared/CLEAN-CONTEXT-DELEGATION.md) and verify external review feedback before applying it.
 
 ## Approval resolution protocol
 
@@ -44,7 +44,7 @@ Never reach past a newer assistant message to revive a stale recommendation.
 
 - **Act:** a safe promised action remains undone; perform exactly that action.
 - **Accept only:** the approved result is already complete; do not rerun checks, edits, or delivery.
-- **Evaluate:** the target is reviewer/advisor input; verify it before implementation or hand it to `receiving-code-review`.
+- **Evaluate:** the target is reviewer/advisor input; verify it before implementation.
 - **Confirm:** the target crosses a red line; name the exact risky action and request explicit confirmation.
 
 ### 3. Preserve permissions

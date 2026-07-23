@@ -83,7 +83,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 
 | Surface | Included | Purpose |
 | --- | ---: | --- |
-| Agent skills | **76** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
+| Agent skills | **62** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
 | Pi extensions | **10** | Commands, tools, hooks, status behavior, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |
@@ -177,10 +177,6 @@ Generated `.understand-anything/` data and `codebase-map-understand.md` are orie
 **Research (1)**
 
 `research-forge`
-
-**Superpowers compatibility (14)**
-
-`brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`
 
 </details>
 

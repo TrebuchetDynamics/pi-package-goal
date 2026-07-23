@@ -23,7 +23,7 @@ Inspect only what bears on the challenged point:
 - named files/docs/tests/commands behind the original claim;
 - `codebase-map-understand.md` only for cross-module or architecture claims, then verify named files in live source.
 
-Use `receiving-code-review` instead for external reviewer feedback. Use `grill-me` or `grill-with-docs` for full plan stress tests.
+Evaluate external reviewer feedback against live code and tests before applying it. Use `grill-me` or `grill-with-docs` for full plan stress tests.
 
 ## Workflow
 

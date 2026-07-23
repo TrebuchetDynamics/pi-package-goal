@@ -25,7 +25,6 @@ research/**/behavioral-run/offline-validation/
 
 # Local generated planning/audit docs
 docs/development-goal-log-audit.md
-docs/superpowers/plans/
 *-codebase-map-understand.md
 *-understand-compare.md
 *-understand-refactor.md

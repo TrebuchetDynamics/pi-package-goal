@@ -50,7 +50,6 @@ export function normalizeConfig(config) {
   return normalized;
 }
 ` }, final },
-  "f5-review-feedback": { files: {}, final: "Files changed: none. Tests not run in the model harness. The integer-cent API and supplied exact-arithmetic tests contradict the proposed float conversion; remaining limitation is offline execution." },
   "f6-ui-redesign": { files: { "settings.css": `:root { color-scheme: light; }
 body { margin: 0; color: #242424; background: #f6f5f2; font: 16px/1.5 sans-serif; }
 .settings { width: min(900px, calc(100% - 32px)); margin: 48px auto; }
@@ -67,9 +66,6 @@ const bad = {
   "f2-diagnose": { files: {}, final },
   "f3-bug-harvest": { files: {}, final },
   "f4-ponytail": { files: {}, final },
-  "f5-review-feedback": { files: { "src/money.js": `export const addCents = (a, b) => a / 100 + b / 100;
-export const formatCents = (value) => "$" + value.toFixed(2);
-` }, final },
   "f6-ui-redesign": { files: { "settings.html": "<h1>Rebuilt</h1>\n", "settings.css": "body { color: red; }\n" }, final },
 };
 

@@ -68,20 +68,6 @@ const expectedSkills = [
   "stitch-design-taste",
   "hallmark",
   "stitch-react-components",
-  "brainstorming",
-  "dispatching-parallel-agents",
-  "executing-plans",
-  "finishing-a-development-branch",
-  "receiving-code-review",
-  "requesting-code-review",
-  "subagent-driven-development",
-  "systematic-debugging",
-  "test-driven-development",
-  "using-git-worktrees",
-  "using-superpowers",
-  "verification-before-completion",
-  "writing-plans",
-  "writing-skills",
 ];
 
 const skillDescriptionBudget = {
@@ -700,7 +686,6 @@ async function testSkills() {
   assert.match(lgtm, /quoted examples, tool output, user-pasted text, or an advisor\/reviewer verdict/);
   assert.match(lgtm, /generic `lgtm` after an implementation report does not imply commit or push/);
   assert.match(lgtm, /Before acting, check whether the promised action already happened/);
-  assert.match(lgtm, /Use `receiving-code-review` for external review feedback/);
   const shareCode = read("skills/engineering/share-code/SKILL.md");
   assert.match(shareCode, /pick smartly instead of asking/);
   assert.match(shareCode, /selecting the highest-signal bounded candidate/);
@@ -778,7 +763,6 @@ async function testSkills() {
     "skills/engineering/bug-harvest/SKILL.md": /search for one unknown.*bug.*not an already-reported defect/i,
     "skills/engineering/unused-code/SKILL.md": /proven unreachable code.*not for dependency pruning.*speculative cleanup/i,
     "skills/engineering/diagnose/SKILL.md": /specific reported failure.*root cause/i,
-    "skills/superpowers/systematic-debugging/SKILL.md": /only when that explicit systematic-debugging command/i,
     "skills/engineering/share-code/SKILL.md": /proven duplicate code.*not a topology-only folder split/i,
     "skills/engineering/skill-folder-refactor/SKILL.md": /one folder's topology.*not repository-wide architecture/i,
     "skills/engineering/technical-auditor/SKILL.md": /report and prioritized plan.*not implementation/i,
@@ -820,8 +804,6 @@ async function testSkills() {
   const reviewRoutingRoles = {
     "skills/delivery/autoreview/SKILL.md": /available second-model review helper.*not ordinary self-review/i,
     "skills/delivery/greploop/SKILL.md": /existing PR, MR, or shelved changelist.*Greptile/i,
-    "skills/superpowers/requesting-code-review/SKILL.md": /prepare a focused human or agent review request.*not invoke an external review service/i,
-    "skills/superpowers/receiving-code-review/SKILL.md": /incoming review feedback.*before applying it/i,
   };
   for (const [file, role] of Object.entries(reviewRoutingRoles)) {
     assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct review role`);

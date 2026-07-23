@@ -7,7 +7,6 @@ export const expectedCells = [
   "f2-diagnose:off", "f2-diagnose:on",
   "f3-bug-harvest:off", "f3-bug-harvest:on",
   "f4-ponytail:off", "f4-ponytail:on",
-  "f5-review-feedback:off", "f5-review-feedback:on",
   "f6-ui-redesign:off", "f6-ui-redesign:on",
 ];
 

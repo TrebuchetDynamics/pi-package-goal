@@ -12,13 +12,12 @@ const sequence = [
   ["f2-diagnose", "on"], ["f2-diagnose", "off"],
   ["f3-bug-harvest", "off"], ["f3-bug-harvest", "on"],
   ["f4-ponytail", "on"], ["f4-ponytail", "off"],
-  ["f5-review-feedback", "off"], ["f5-review-feedback", "on"],
   ["f6-ui-redesign", "on"], ["f6-ui-redesign", "off"],
 ];
 const ledgerPath = path.join(root, "ledger.json");
-const ledger = fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, "utf8")) : { ceilingUsd: 10, maxCalls: 12, calls: [] };
+const ledger = fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, "utf8")) : { ceilingUsd: 10, maxCalls: 10, calls: [] };
 const index = ledger.calls.length;
-if (index >= sequence.length) throw new Error("all 12 calls already recorded");
+if (index >= sequence.length) throw new Error("all 10 calls already recorded");
 const [fixtureId, condition] = sequence[index];
 const expectedArg = `${fixtureId}-${condition}`;
 if (process.argv[2] !== expectedArg) throw new Error(`next cell is ${expectedArg}`);

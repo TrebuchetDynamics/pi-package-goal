@@ -30,12 +30,6 @@
       "deterministic": true
     },
     {
-      "fixtureId": "f5-review-feedback",
-      "goodScore": 100,
-      "badScore": 10,
-      "deterministic": true
-    },
-    {
       "fixtureId": "f6-ui-redesign",
       "goodScore": 100,
       "badScore": 10,

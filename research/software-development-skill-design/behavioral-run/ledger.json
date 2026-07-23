@@ -1,6 +1,6 @@
 {
   "ceilingUsd": 10,
-  "maxCalls": 12,
+  "maxCalls": 10,
   "calls": [
     {
       "callNumber": 1,

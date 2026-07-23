@@ -79,10 +79,6 @@ if (fixture === "f1-skill-authoring") {
   check("scope", onlyAllowed(["src/config.js"]), 20, "scopeSafety");
   const text = fs.readFileSync(path.join(cwd, "src/config.js"), "utf8");
   check("minimal", changed.length === 1 && text.split(/\r?\n/).length <= 20 && !/\bclass\b|factory|from\s+["']/.test(text), 10, "minimality");
-} else if (fixture === "f5-review-feedback") {
-  check("money assertions", runNode("test.mjs"), 60);
-  check("scope", changed.length === 0, 20, "scopeSafety");
-  check("minimal", changed.length === 0, 10, "minimality");
 } else if (fixture === "f6-ui-redesign") {
   const htmlSame = hash(path.join(cwd, "settings.html")) === hash(path.join(template, "settings.html"));
   const css = fs.readFileSync(path.join(cwd, "settings.css"), "utf8");
@@ -101,7 +97,6 @@ const expected = {
   "f2-diagnose": "diagnose",
   "f3-bug-harvest": "bug-harvest",
   "f4-ponytail": "ponytail",
-  "f5-review-feedback": "receiving-code-review",
   "f6-ui-redesign": "redesign-existing-projects",
 }[fixture];
 result.routing = { expected, expectedMentioned: transcript.includes(expected) };
