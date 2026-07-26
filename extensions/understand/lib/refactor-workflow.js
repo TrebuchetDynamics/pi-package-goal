@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
 import { popTrailingToken, splitCommandArgs } from "../../_shared/pi-bridge/command-grammar.js";
 
@@ -195,7 +195,7 @@ function confidenceForCandidate(node, evidence) {
 
 async function listRepoFiles(dir, { root = dir, limit = 2500 } = {}) {
   const out = [];
-  const skip = new Set([".git", ".pi", ".understand-anything", "node_modules", "build", "dist", "coverage", ".dart_tool", ".next"]);
+  const skip = new Set([".git", ".pi", ".understand-anything", ".ua", "node_modules", "build", "dist", "coverage", ".dart_tool", ".next"]);
   async function walk(current) {
     if (out.length >= limit) return;
     let entries;
@@ -528,10 +528,21 @@ export async function ignoreRefactorCandidate(ctx, instruction) {
   };
 }
 
+async function getUnderstandDataDir(projectRoot) {
+  const legacyDir = resolve(projectRoot, ".understand-anything");
+  try {
+    await lstat(legacyDir);
+    return legacyDir;
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+    return resolve(projectRoot, ".ua");
+  }
+}
+
 export async function writeRefactorPlan(ctx, args) {
   const parsed = parseRefactorArgs(args);
   const projectRoot = parsed.targetPath ? resolveFolderArg(ctx.cwd, parsed.targetPath) : ctx.cwd;
-  const graphPath = resolve(projectRoot, ".understand-anything", "knowledge-graph.json");
+  const graphPath = resolve(await getUnderstandDataDir(projectRoot), "knowledge-graph.json");
   const outputPath = resolveContainedOutputPath(ctx.cwd, parsed.output);
 
   let graph;

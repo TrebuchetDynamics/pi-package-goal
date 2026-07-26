@@ -19,6 +19,7 @@ Trebuchet Dynamics under the MIT License.
 - Source: https://github.com/mattpocock/skills
 - Snapshot inspected: `b8be62f`
 - Latest engineering skills comparison inspected: `694fa30` (upstream engineering grill-with-docs and improve-codebase-architecture skills)
+- Latest skill-design comparison inspected: `ed37663` (upstream writing-great-skills, TDD, and diagnosing-bugs guidance)
 - Latest caveman skill inspected: `694fa30`
 - Bundled paths:
   - `skills/engineering/tdd/`
@@ -47,7 +48,7 @@ Trebuchet Dynamics under the MIT License.
 ## DietrichGebert/ponytail
 
 - Source: https://github.com/DietrichGebert/ponytail
-- Snapshot inspected: `ff5d093`
+- Snapshot inspected: `16f2980`
 - Bundled paths:
   - `extensions/ponytail/`
   - `skills/communication/ponytail/`
@@ -192,6 +193,7 @@ Trebuchet Dynamics under the MIT License.
 ## Lum1104/Understand-Anything
 
 - Source: https://github.com/Lum1104/Understand-Anything
+- Snapshot inspected: `6ae7187`
 - Usage: the local `/understand` extension can clone and load the upstream Understand-Anything skills from a user checkout; no upstream code is bundled in this package tarball.
 - License: MIT
 
@@ -215,7 +217,7 @@ Trebuchet Dynamics under the MIT License.
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk
-- Snapshot inspected: `6785a6c7695d7273e722214a295249a84819b6f0` (HEAD observed 2026-06-10)
+- Snapshot inspected: `bee2178` (upstream version 0.42.4)
 - Usage: source evidence for the package-local `extensions/rtk/index.js` Pi command-rewrite integration; the Rust RTK binary is not bundled in this package tarball.
 - License: Apache-2.0
 - Full license copy: `licenses/rtk-ai-rtk-LICENSE`

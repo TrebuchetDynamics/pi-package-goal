@@ -141,9 +141,9 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 /understand update
 ```
 
-Direct aliases include `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`, `/understand-agent`, `/understand-compare`, and `/understand-refactor`.
+Direct aliases include `/understand-dashboard`, `/understand-chat`, `/understand-diff`, `/understand-explain`, `/understand-onboard`, `/understand-domain`, `/understand-knowledge`, `/understand-figma`, `/understand-agent`, `/understand-compare`, and `/understand-refactor`.
 
-Generated `.understand-anything/` data and `codebase-map-understand.md` are orientation aids, not package resources or automatic source-of-truth replacements.
+Generated `.ua/` data (or legacy `.understand-anything/`) and `codebase-map-understand.md` are orientation aids, not package resources or automatic source-of-truth replacements.
 
 </details>
 
@@ -274,7 +274,7 @@ The loop ranks bounded folder candidates, preserves dirty work, runs guarded ref
 - Graphs, councils, catalogs, and reviewer output are evidence inputs—not authority.
 - Advisors and reviewers use the [clean-context delegation contract](skills/shared/CLEAN-CONTEXT-DELEGATION.md) when the host supports isolated workers.
 - Third-party source, local changes, and license copies are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
-- Generated `.pi/` and `.understand-anything/` state is excluded from the package tarball.
+- Generated `.pi/`, `.ua/`, and `.understand-anything/` state is excluded from the package tarball.
 
 ## Package shape
 

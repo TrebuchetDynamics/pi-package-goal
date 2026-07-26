@@ -49,6 +49,7 @@ assert.equal(compareSemver([0, 22, 9], [0, 23, 0]), -1);
 assert.equal(compareSemver([1, 0, 0], [0, 23, 0]), 1);
 
 assert.equal(isSupportedRtkVersion("rtk 0.23.0"), true);
+assert.equal(isSupportedRtkVersion("rtk 0.42.4"), true);
 assert.equal(isSupportedRtkVersion("rtk 0.22.9"), false);
 assert.equal(isSupportedRtkVersion("unknown"), false);
 

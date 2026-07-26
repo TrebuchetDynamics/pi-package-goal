@@ -13,7 +13,7 @@ The package-local extension at `extensions/understand/index.js` registers `/unde
 _Avoid_: silent startup network work, shell-injected git commands, bundling upstream code without notices
 
 **Understand Artifacts**:
-Generated files from `/understand`, such as `.understand-anything/knowledge-graph.json`, `.understand-anything/meta.json`, `codebase-map-understand.md`, and `*-understand-compare.md`. They are local agent-orientation artifacts, not package product files.
+Generated files from `/understand`, such as `.ua/knowledge-graph.json` (or legacy `.understand-anything/knowledge-graph.json`), `meta.json`, `codebase-map-understand.md`, and `*-understand-compare.md`. They are local agent-orientation artifacts, not package product files.
 _Avoid_: committing generated graph snapshots by default, treating stale maps as source of truth, packaging generated Understand output
 
 **Understand Compare**:

@@ -37,6 +37,7 @@ const SKILL_NAMES = new Set([
   "understand-onboard",
   "understand-domain",
   "understand-knowledge",
+  "understand-figma",
 ]);
 
 const SUBCOMMAND_TO_SKILL = new Map([
@@ -47,6 +48,7 @@ const SUBCOMMAND_TO_SKILL = new Map([
   ["onboard", "understand-onboard"],
   ["domain", "understand-domain"],
   ["knowledge", "understand-knowledge"],
+  ["figma", "understand-figma"],
 ]);
 
 const META_COMMANDS = new Set(["help", "install", "status", "update", "agent", "compare", "refactor"]);
@@ -92,16 +94,17 @@ export function parseUnderstandCommand(commandName, args = "") {
 
 export { splitCommandArgs as splitArgs, splitFirstArg } from "../_shared/pi-bridge/command-grammar.js";
 
-const UNDERSTAND_ANALYSIS_FLAGS = new Set(["--full", "--auto-update", "--no-auto-update", "--review", "--no-agent-map"]);
+const UNDERSTAND_ANALYSIS_FLAGS = new Set(["--full", "--auto-update", "--no-auto-update", "--review", "--no-agent-map", "--exclude"]);
+const UNDERSTAND_ANALYSIS_VALUE_FLAGS = new Set(["--language", "--exclude"]);
 
 export function validateUnderstandAnalysisArgs(args = "") {
   const targets = [];
   const tokens = splitCommandArgs(args);
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];
-    if (token === "--language") {
+    if (UNDERSTAND_ANALYSIS_VALUE_FLAGS.has(token)) {
       if (!tokens[index + 1] || tokens[index + 1].startsWith("--")) {
-        return { ok: false, message: "Error: --language requires a value." };
+        return { ok: false, message: `Error: ${token} requires a value.` };
       }
       index += 1;
     } else if (token.startsWith("--")) {
@@ -242,7 +245,7 @@ function isCurrentDirectoryToken(token) {
 function hasProjectRootArg(tokens) {
   return tokens.some((token, index) => {
     if (token.startsWith("--")) return false;
-    return tokens[index - 1] !== "--language";
+    return !UNDERSTAND_ANALYSIS_VALUE_FLAGS.has(tokens[index - 1]);
   });
 }
 
@@ -266,7 +269,7 @@ export function buildAutoAgentArgs(understandArgs = "") {
   const pathToken = tokens.find((token, index) => {
     if (token.startsWith("--")) return false;
     const previous = tokens[index - 1];
-    return previous !== "--language";
+    return !UNDERSTAND_ANALYSIS_VALUE_FLAGS.has(previous);
   });
   if (!pathToken || isCurrentDirectoryToken(pathToken)) return "";
   const scopedPath = `@${pathToken}`;
@@ -583,6 +586,7 @@ function helpText(paths = getUnderstandPaths()) {
   return `Understand-Anything bridge\n\n` +
     `Slash commands:\n` +
     `  /understand [path|flags]          Analyze the current project, then write an agent-readable Markdown map\n` +
+    `  Flags: --full --auto-update --no-auto-update --review --no-agent-map --language <lang> --exclude <patterns>\n` +
     `  /understand --no-agent-map        Analyze only; skip the automatic Markdown map\n` +
     `  /understand dashboard            Open the dashboard\n` +
     `  /understand chat <question>       Ask about the graph\n` +
@@ -593,8 +597,9 @@ function helpText(paths = getUnderstandPaths()) {
     `  /understand explain <target>      Explain a file/function\n` +
     `  /understand onboard               Generate onboarding guide\n` +
     `  /understand domain                Extract business domain graph\n` +
-    `  /understand knowledge <wiki>      Analyze a knowledge base\n\n` +
-    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-agent, /understand-compare, /understand-refactor.\n\n` +
+    `  /understand knowledge <wiki>      Analyze a knowledge base\n` +
+    `  /understand figma <url-or-key>    Analyze a Figma design file\n\n` +
+    `Direct aliases also exist: /understand-dashboard, /understand-chat, /understand-diff, /understand-explain, /understand-onboard, /understand-domain, /understand-knowledge, /understand-figma, /understand-agent, /understand-compare, /understand-refactor.\n\n` +
     `Management:\n` +
     `  /understand install               Clone upstream Understand-Anything\n` +
     `  /understand update                git pull --ff-only upstream checkout\n` +
@@ -616,7 +621,7 @@ async function statusText(pi, ctx, paths) {
 async function writeAgentMap(ctx, args) {
   const parsed = parseAgentMapArgs(args);
   const graphRoot = parsed.graphRootArg ? resolveFolderArg(ctx.cwd, parsed.graphRootArg) : ctx.cwd;
-  const graphPath = resolve(graphRoot, ".understand-anything", "knowledge-graph.json");
+  const graphPath = resolve(await getUnderstandDataDir(graphRoot), "knowledge-graph.json");
   const outputPath = resolveContainedOutputPath(ctx.cwd, parsed.output);
 
   let graph;
@@ -662,8 +667,13 @@ function resolveFolderArg(cwd, folder) {
   return isAbsolute(cleaned) ? cleaned : resolve(cwd, cleaned);
 }
 
+async function getUnderstandDataDir(folderPath) {
+  const legacyDir = resolve(folderPath, ".understand-anything");
+  return (await pathExists(legacyDir)) ? legacyDir : resolve(folderPath, ".ua");
+}
+
 async function readGraphForFolder(folderPath) {
-  const graphPath = resolve(folderPath, ".understand-anything", "knowledge-graph.json");
+  const graphPath = resolve(await getUnderstandDataDir(folderPath), "knowledge-graph.json");
   return { graphPath, graph: JSON.parse(await readFile(graphPath, "utf8")) };
 }
 

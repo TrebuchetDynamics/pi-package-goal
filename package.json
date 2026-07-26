@@ -45,6 +45,8 @@
     "!**/.pi/**",
     "!**/.understand-anything",
     "!**/.understand-anything/**",
+    "!**/.ua",
+    "!**/.ua/**",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",

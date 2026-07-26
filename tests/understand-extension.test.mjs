@@ -62,6 +62,12 @@ assert.deepEqual(parseUnderstandCommand("understand", "update"), {
   args: "",
 });
 
+assert.deepEqual(parseUnderstandCommand("understand", "figma file-key --language en"), {
+  type: "skill",
+  skillName: "understand-figma",
+  args: "file-key --language en",
+});
+
 assert.deepEqual(parseUnderstandCommand("understand", "agent and codebase-map-understand.md"), {
   type: "agent",
   args: "and codebase-map-understand.md",
@@ -93,7 +99,9 @@ assert.deepEqual(parseUnderstandCommand("understand-refactor", "auth flow plan.m
 });
 
 assert.deepEqual(validateUnderstandAnalysisArgs("src --full --language zh"), { ok: true });
+assert.deepEqual(validateUnderstandAnalysisArgs("src --exclude tests/*,docs/*"), { ok: true });
 assert.deepEqual(validateUnderstandAnalysisArgs("--language"), { ok: false, message: "Error: --language requires a value." });
+assert.deepEqual(validateUnderstandAnalysisArgs("--exclude"), { ok: false, message: "Error: --exclude requires a value." });
 assert.deepEqual(validateUnderstandAnalysisArgs("--bogus"), { ok: false, message: "Error: unknown /understand option: --bogus" });
 assert.deepEqual(validateUnderstandAnalysisArgs("src test"), { ok: false, message: "Error: /understand accepts at most one target directory path, got: src, test" });
 
@@ -151,6 +159,7 @@ assert.deepEqual(parseAgentMapArgs("@. custom.md"), {
   output: "custom.md",
 });
 assert.equal(buildAutoAgentArgs("src/frontend --language zh"), "@src/frontend");
+assert.equal(buildAutoAgentArgs("--exclude tests/*,docs/* --language zh"), "");
 assert.equal(buildAutoAgentArgs("--full --language zh"), "");
 assert.equal(buildAutoAgentArgs("src --no-agent-map"), "@src");
 assert.equal(buildAutoAgentArgs("."), "");
@@ -388,7 +397,7 @@ function makePiRecorder() {
   );
   assert.equal(refactorBootstrapResult.needsGraphRefresh, true);
   assert.equal(refactorBootstrapResult.understandArgs, "internal/channels/telegram");
-  assert.equal(refactorBootstrapResult.graphPath, join(missingGraphRoot, "internal", "channels", "telegram", ".understand-anything", "knowledge-graph.json"));
+  assert.equal(refactorBootstrapResult.graphPath, join(missingGraphRoot, "internal", "channels", "telegram", ".ua", "knowledge-graph.json"));
   assert.match(recorder.postedMessages[0].content, /Starting `\/understand internal\/channels\/telegram` now/);
   assert.match(recorder.postedMessages[0].content, /folder-scoped graph/);
   assert.match(recorder.postedMessages[0].content, /\/understand-refactor @internal\/channels\/telegram\/\. auth flow custom-plan\.md/);
@@ -404,10 +413,27 @@ function makePiRecorder() {
     on() {},
     registerCommand(name, definition) { commands.set(name, definition); },
   });
+  assert.ok(commands.has("understand-figma"));
   await commands.get("understand").handler("--bogus", { cwd: fixtureRoot, isIdle: () => true });
   assert.equal(recorder.dispatchedUserMessages.length, 0);
   assert.equal(recorder.postedMessages.length, 1);
   assert.match(recorder.postedMessages[0].content, /unknown \/understand option: --bogus/);
+}
+
+{
+  const uaFixture = await mkdtemp(join(tmpdir(), "understand-ua-data-"));
+  await mkdir(join(uaFixture, ".ua"), { recursive: true });
+  await writeFile(join(uaFixture, ".ua", "knowledge-graph.json"), JSON.stringify(refactorGraph), "utf8");
+  const uaRecorder = makePiRecorder();
+  const uaCommands = new Map();
+  understandAnythingExtension({
+    ...uaRecorder.pi,
+    on() {},
+    registerCommand(name, definition) { uaCommands.set(name, definition); },
+  });
+  await uaCommands.get("understand-agent").handler("", { cwd: uaFixture, isIdle: () => true });
+  assert.equal(uaRecorder.postedMessages.length, 1);
+  assert.match(uaRecorder.postedMessages[0].content, /Wrote agent-readable codebase map/);
 }
 
 {
