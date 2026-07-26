@@ -785,6 +785,10 @@ async function testSkills() {
 
   const autonomousImprover = read("skills/engineering/autonomous-codebase-improver/SKILL.md");
   assert.match(autonomousImprover, /selection rationale/i, "autonomous improver must justify why its slice outranks alternatives");
+  assert.match(autonomousImprover, /Candidate record:/, "autonomous improver must define a concrete candidate record");
+  assert.match(autonomousImprover, /feedback signal:.*exact baseline command/i, "autonomous improver candidates must name a baseline signal");
+  assert.match(autonomousImprover, /preserve its result/i, "autonomous improver must preserve baseline evidence");
+  assert.match(autonomousImprover, /Selection:.*Trajectory:.*Outcome:/s, "autonomous improver must audit the full evidence chain");
   assert.match(autonomousImprover, /at most three candidates/i, "autonomous improver must compare a bounded candidate set");
   assert.match(autonomousImprover, /documented work over invented improvements/i, "autonomous improver must prefer documented repo work");
   assert.match(autonomousImprover, /code smell is a lead, not a bug/i, "autonomous improver must not invent bugs from smells");
@@ -792,7 +796,12 @@ async function testSkills() {
   assert.match(autonomousImprover, /baseline already fails/i, "autonomous improver must distinguish pre-existing failures");
   assert.match(autonomousImprover, /same blocker twice/i, "autonomous improver must stop repeated blind retries");
   assert.match(autonomousImprover, /single-slice mode.*continuous campaign mode/is, "autonomous improver must distinguish bounded and continuous operation");
+  assert.match(autonomousImprover, /plain “improve this repo” request runs one slice/i, "autonomous improver must keep ambiguous requests bounded");
+  assert.match(autonomousImprover, /Do not ask for approval between safe slices/i, "continuous campaigns must avoid unnecessary approval prompts");
+  assert.match(autonomousImprover, /`\/goal pause`.*`\/goal resume`/i, "continuous campaigns must expose pause and resume controls");
   assert.match(autonomousImprover, /ROADMAP\.md.*TODO\.md/is, "autonomous improver must consume repository task sources");
+  assert.match(autonomousImprover, /task source to `live discovery`/i, "autonomous improver must define a live-discovery fallback");
+  assert.match(autonomousImprover, /do not create a roadmap or task file unless the user asks/i, "autonomous improver must not create project-management files implicitly");
   assert.match(autonomousImprover, /correctness.*security.*CI\/pipeline.*performance.*UI/is, "autonomous improver must inspect broad weakness lanes");
   assert.match(autonomousImprover, /Campaign state:[\s\S]*- queue:[\s\S]*- completed:[\s\S]*- blocked:/, "autonomous improver must track a continuous campaign queue");
   assert.match(autonomousImprover, /Do not stop after one successful slice/i, "continuous campaigns must keep advancing safe work");

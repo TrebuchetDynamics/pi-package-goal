@@ -14,25 +14,38 @@ Research basis: `research/agentic-coding-skills/report.md` found the strongest p
 - **Single-slice mode:** use when the user asks for one improvement or a checkpoint. Select, implement, validate, and report one bounded slice.
 - **Continuous campaign mode:** use when the user says keep improving, work continuously, follow the roadmap/tasks, find everything worth fixing, or gives a broad ongoing objective. Maintain a ranked queue and keep completing validated slices until a terminal condition applies.
 
-Continuous means repeated bounded work, not one giant diff.
+Continuous means repeated bounded work, not one giant diff. Do not ask for approval between safe slices: `/goal pause` pauses a campaign and `/goal resume` continues it.
+
+Use continuous campaign mode only when the request clearly signals ongoing work, such as “keep improving,” “work continuously,” “follow the roadmap,” or “find everything worth fixing.” A plain “improve this repo” request runs one slice and reports the next candidate, so ambiguous wording never creates an indefinite run.
 
 ## Quick start
 
 1. Determine the mode and scope from the request; continuous intent authorizes continuation, not risky actions.
 2. Inspect `git status --short --branch`, repo instructions, package manifests, README/CONTEXT, task sources, tests/CI, and `codebase-map-understand.md` when present.
-3. Build or refresh a small evidence-backed candidate queue across relevant weakness lanes.
+3. Build or refresh a small evidence-backed candidate queue across relevant weakness lanes; each candidate needs a concrete consequence and validation signal.
 4. Pick exactly one highest-priority safe slice; record why it outranks alternatives or why higher-ranked signals are unavailable.
 5. Route to one specialist skill only when the slice crosses that seam.
-6. Validate the slice, update the queue, and continue according to the selected mode. Use `git-commit-push` only when the user asks to ship.
+6. Validate the slice, update the queue, and continue according to the selected mode without another approval prompt. Use `git-commit-push` only when the user asks to ship.
 
 ## Candidate discovery
 
-1. Read repository-owned work first: `ROADMAP.md`, `TODO.md`, `TASKS.md`, issue/plan/PRD/ADR files, unchecked tasks, CI failures, and explicit acceptance criteria.
+1. Read repository-owned work first: `ROADMAP.md`, `TODO.md`, `TASKS.md`, issue/plan/PRD/ADR files, unchecked tasks, CI failures, and explicit acceptance criteria. If those sources are absent or exhausted, set the task source to `live discovery`; do not create a roadmap or task file unless the user asks.
 2. Sweep only relevant live surfaces for correctness, security, CI/pipeline and release reliability, performance, architecture, tests/observability, UI/accessibility/responsive states, and docs/package drift.
 3. Verify map, TODO, smell, and static-analysis leads against live code, callers, behavior, or a runnable check.
 4. Keep at most three candidates that are actionable now; compare severity/impact, owner priority, evidence confidence, reversibility, and validation cost.
 
 Prefer documented work over invented improvements. A code smell is a lead, not a bug; require a concrete consequence before selecting it. If no safe candidate has a validation path, report that instead of manufacturing work.
+
+Candidate record:
+```text
+Candidate: <one sentence>
+- lane and evidence: <file, test, issue, log, or command>
+- consequence: <user, maintainer, security, reliability, or cost impact>
+- feedback signal: <exact baseline command or artifact>
+- intended slice: <smallest reversible change>
+- validation: <objective pass condition>
+- risk/owner blocker: <none or exact reason>
+```
 
 ## Slice selection ladder
 
@@ -63,7 +76,7 @@ Skip slices that need secrets, production access, deploy/publish, dependency upg
 
 ## Campaign and slice state
 
-Keep state in the conversation unless the repository already owns a roadmap/task file or the user asks to update one. Do not create a tracking system just to run this skill.
+Keep state in the conversation unless the repository already owns a roadmap/task file or the user asks to update one. Do not create a roadmap, task file, or tracking system just to run this skill.
 
 ```text
 Campaign state:
@@ -86,13 +99,13 @@ Slice state:
 
 ## Operating loop
 
-1. Build or identify the feedback signal before editing.
+1. Build or identify the feedback signal before editing; run the baseline and preserve its result. If no signal exists, create the smallest deterministic check before changing production files.
 2. Make the smallest safe change that can satisfy that signal.
 3. Run scoped validation, then repo-level validation when practical.
 4. Record receipts, update the campaign queue, and re-scan the changed area for exposed bugs or follow-up gaps.
 5. In single-slice mode, report the checkpoint. In continuous campaign mode, select the next safe candidate immediately.
 
-Do not stop after one successful slice when continuous campaign mode is active. Continue while useful in-scope work remains, validation is green, and no terminal condition applies.
+Do not stop after one successful slice when continuous campaign mode is active. Continue while useful in-scope work remains, validation is green, and no terminal condition applies. Stop only at the terminal conditions below or when the user pauses/stops the campaign.
 
 ## Failure handling
 
@@ -108,6 +121,16 @@ Stop continuous work only when the scoped roadmap/queue is exhausted and a fresh
 ## Example
 
 User: “Work continuously through this repo’s weaknesses.” Agent: read the roadmap and CI first, then inspect relevant bug, security, pipeline, performance, architecture, UI, and test signals; rank three candidates; fix and validate the release-blocking failure; update the queue; then continue to the next safe task instead of stopping at the first success.
+
+## Evidence discipline
+
+Tests passing are necessary, not sufficient. The slice receipt must connect selection → trajectory → outcome:
+
+- **Selection:** the chosen candidate and its evidence outrank the alternatives.
+- **Trajectory:** the repo/context inspection, specialist handoff, and changed scope stayed within the slice.
+- **Outcome:** the objective-specific acceptance check passes after the change, with the baseline result preserved for comparison.
+
+If the only evidence is a generic suite or a self-reported improvement, keep the slice open or mark it unreplicated; do not claim the objective was met.
 
 ## Completion audit
 
