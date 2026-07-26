@@ -69,6 +69,8 @@ Stop and say so explicitly. List what you tried. Ask the user for: (a) access to
 
 Do not proceed to Phase 2 until you have a loop you believe in.
 
+**Phase 1 completion criterion:** run one command that reaches the real bug path and asserts the exact symptom. It must be red-capable, deterministic (or high-rate for a flaky bug), fast enough to iterate, and agent-runnable without a human in the loop.
+
 ## Phase 2 — Reproduce
 
 Run the loop. Watch the bug appear.
@@ -80,6 +82,10 @@ Confirm:
 - [ ] You have captured the exact symptom (error message, wrong output, slow timing) so later phases can verify the fix actually addresses it.
 
 Do not proceed until you reproduce the bug.
+
+### Minimise
+
+Once the loop is red, shrink the repro to the smallest scenario that still fails. Remove one input, caller, configuration value, or step at a time and rerun the loop after each cut. Keep only load-bearing elements; removing any remaining element should make the loop green.
 
 ## Phase 3 — Hypothesise
 

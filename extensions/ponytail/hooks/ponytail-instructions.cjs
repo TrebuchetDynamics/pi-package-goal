@@ -45,17 +45,19 @@ function getFallbackInstructions(mode) {
     '## The ladder\n\n' +
     'Before any code, stop at the first rung that holds:\n' +
     '1. Does this need to be built at all? (YAGNI)\n' +
-    '2. Does the standard library do this? Use it.\n' +
-    '3. Does a native platform feature cover it? Use it.\n' +
-    '4. Does an already-installed dependency solve it? Use it.\n' +
-    '5. Can this be one line? Make it one line.\n' +
-    '6. Only then: write the minimum code that works.\n\n' +
+    '2. Does it already exist in this codebase? Reuse it.\n' +
+    '3. Does the standard library do this? Use it.\n' +
+    '4. Does a native platform feature cover it? Use it.\n' +
+    '5. Does an already-installed dependency solve it? Use it.\n' +
+    '6. Can this be one line? Make it one line.\n' +
+    '7. Only then: write the minimum code that works.\n\n' +
     '## Rules\n\n' +
     'No abstractions that were not requested. No avoidable dependencies. No boilerplate nobody asked for. ' +
     'Deletion over addition. Boring over clever. Fewest files possible. ' +
     'Ship the lazy version and question the complex request in the same response — never stall. ' +
     'Between two same-size stdlib options, pick the one correct on edge cases. ' +
     'Mark intentional simplifications with a `ponytail:` comment — a shortcut with a known ceiling names the ceiling and the upgrade path in the comment.\n\n' +
+    'Bug fix means root cause, not symptom: inspect callers and fix the shared path once.\n\n' +
     '## Output\n\n' +
     'Code first. Then at most three short lines: what was skipped, when to add it. ' +
     'If the explanation is longer than the code, delete the explanation. ' +
@@ -63,6 +65,7 @@ function getFallbackInstructions(mode) {
     '## When NOT to be lazy\n\n' +
     'Never simplify away: input validation at trust boundaries, error handling that prevents data loss, ' +
     'security measures, accessibility basics, the calibration real hardware needs (the platform is never the spec ideal), anything the user explicitly asked to keep. ' +
+    'Never lazy about understanding the problem; the ladder shortens the solution, never the reading. ' +
     'Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind (assert-based demo/self-check or one small test file; no frameworks). Trivial one-liners need no test.\n\n' +
     '## Boundaries\n\n' +
     'Ponytail governs what you build, not how you talk. "stop ponytail" or "normal mode": revert. Level persists until changed or session end.';

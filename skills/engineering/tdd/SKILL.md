@@ -11,7 +11,7 @@ description: Test-driven development with red-green-refactor loop. Use when user
 
 **Good tests** are integration-style: they exercise real code paths through public APIs. They describe _what_ the system does, not _how_ it does it. A good test reads like a specification - "user can checkout with valid cart" tells you exactly what capability exists. These tests survive refactors because they don't care about internal structure.
 
-**Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). The warning sign: your test breaks when you refactor, but behavior hasn't changed. If you rename an internal function and tests fail, those tests were testing implementation, not behavior.
+**Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). **Tautological tests** also fail: they recompute the expected value with the same logic as the implementation, so they can pass while the behavior is wrong. The warning sign: a test breaks when you refactor, or its expected value is derived from the code under test rather than a spec, fixture, or worked example.
 
 See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
 
@@ -100,7 +100,7 @@ Rules:
 
 ### 4. Refactor
 
-After all tests pass, look for [refactor candidates](refactoring.md):
+After all behavior cycles are green, look for [refactor candidates](refactoring.md). Refactoring is a post-loop step, not another RED→GREEN cycle:
 
 - [ ] Extract duplication
 - [ ] Deepen modules (move complexity behind simple interfaces)
@@ -116,6 +116,7 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 [ ] Test describes behavior, not implementation
 [ ] Test uses public interface only
 [ ] Test would survive internal refactor
+[ ] Expected values come from an independent source of truth
 [ ] Code is minimal for this test
 [ ] No speculative features added
 ```

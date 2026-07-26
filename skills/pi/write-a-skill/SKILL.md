@@ -2,20 +2,21 @@
 name: write-a-skill
 description: Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.
 ---
-
 # Writing Skills
 
 Create skills as small runtime contracts: when to load, what to inspect, what to do, what not to do, and what proves success.
-
 ## Repo study before drafting
 
 Before changing a skill, inspect the current skill inventory, `README.md`, `CONTEXT.md`, `THIRD_PARTY_NOTICES.md`, package manifests, validation tests, and any upstream source being adapted. When `codebase-map-understand.md` exists, consult the codebase map for package/skill relationships that can focus the repo study, then verify named files directly. Preserve third-party notices and make the skill fit this repo's package language instead of copying upstream commands that do not exist here.
 
 ## Research-backed rules
 
-- **Trigger precision beats breadth.** Add concrete triggers and anti-triggers so the skill does not shadow neighbors.
+- **Predictability over verbosity.** Define the process, not the output; use one leading term for a repeated idea instead of restating it.
+- **Trigger precision beats breadth.** Add concrete triggers and anti-triggers so the skill does not shadow neighbors; choose model invocation only when autonomous discovery is worth its permanent context load.
+- **Completion criteria prevent premature completion.** Every workflow step ends with an observable, preferably exhaustive, condition that proves the step is done.
 - **Four anchors for non-trivial skills:** operational basis, output contract, boundary disclosure, and one tiny example or expected outcome.
-- **Progressive disclosure by default.** Keep `SKILL.md` short; move rare details, long examples, and source notes to `references/`.
+- **Progressive disclosure by default.** Keep `SKILL.md` short; move branch-specific rules, long examples, and source notes to `references/` behind a clear context pointer.
+- **Prune no-ops and negation.** Delete lines that would not change default behavior; state the desired positive behavior instead of naming the failure mode unless it is a hard guardrail.
 - **Executable beats inspirational.** Prefer ordered steps, exact commands, schemas, and stop conditions over advice prose.
 - **Govern imports like code.** Record source, license, local changes, security assumptions, and validation receipts for third-party or generated skills.
 
@@ -35,6 +36,7 @@ Before changing a skill, inspect the current skill inventory, `README.md`, `CONT
    - Scripts only for deterministic validation, extraction, formatting, or repeated transforms.
 4. Review and validate:
    - Does it trigger at the right time and avoid nearby skills?
+   - Does each workflow step end with a checkable completion criterion?
    - Can an agent follow it without inventing missing inputs or commands?
    - Run package validation (`npm test` when shipping) and one realistic scenario/review.
 
@@ -43,11 +45,9 @@ Before changing a skill, inspect the current skill inventory, `README.md`, `CONT
 For a non-trivial new or changed skill, prepare one pinned realistic scenario. When an approved runner is available, record a skill-on/skill-off comparison using the same model and harness, deterministic acceptance checks, a token/cost receipt, and brief trajectory notes. If the comparison cannot run, label the improvement unreplicated instead of claiming it works.
 
 Do not invoke a paid or live model API without explicit approval, and never put live model calls in tests or CI.
-
 ## Example
 
 User: “Create a release-readiness skill that must never publish.” Agent: inspect neighboring skills and package commands, draft a no-publish boundary plus deterministic checks, then label behavior unreplicated until an approved paired run exists.
-
 ## Atomic fix skill pattern
 
 For narrow defect or optimization skills, prefer the upstream prompt-cache pattern: **Target → Symptom → Fix → Verify**. Make applicability deterministic, keep one bug per skill, cite the source/version being adapted, and require a concrete post-fix assertion instead of prose confidence.
@@ -62,7 +62,6 @@ skill-name/
 └── scripts/
     └── helper.js
 ```
-
 ## SKILL.md template
 
 ```md
@@ -109,10 +108,11 @@ Before finalizing, compare the description against nearby skill descriptions. If
 - Avoid new runtime dependencies unless the package manifest already allows them.
 
 ## Review checklist
-
 - [ ] Description includes triggers, anti-triggers if needed, and stays concise.
+- [ ] Invocation choice is deliberate: model discovery earns its context load, or the skill is user-invoked.
 - [ ] Nearby skills were checked for trigger shadowing.
 - [ ] `SKILL.md` is compact; details live in `references/`.
+- [ ] Every workflow step has a checkable completion criterion.
 - [ ] Contract names ambiguity handling, topology, verification, red lines, and output.
 - [ ] Non-trivial skill includes the four anchors and one tiny example.
 - [ ] Third-party provenance, notices, and license copies are preserved.

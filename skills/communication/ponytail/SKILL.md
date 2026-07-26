@@ -3,7 +3,7 @@ name: ponytail
 description: >
   Persistent YAGNI and shortest-safe-diff implementation mode. Use when the user
   says ponytail, be lazy, simplest/minimal solution, do less, or complains about
-  over-engineering. Not a one-shot audit or review.
+  over-engineering. Do not use for non-coding requests or one-shot audits/reviews.
 argument-hint: "[lite|full|ultra]"
 license: MIT
 ---
@@ -28,14 +28,16 @@ Switch: `/ponytail lite|full|ultra`.
 Stop at the first rung that holds:
 
 1. **Does this need to exist at all?** Speculative need = skip it, say so in one line. (YAGNI)
-2. **Stdlib does it?** Use it.
-3. **Native platform feature covers it?** `<input type="date">` over a picker lib, CSS over JS, DB constraint over app code.
-4. **Already-installed dependency solves it?** Use it. Never add a new one for what a few lines can do.
-5. **Can it be one line?** One line.
-6. **Only then:** the minimum code that works.
+2. **Already in this codebase?** Reuse the existing helper, utility, type, or pattern.
+3. **Stdlib does it?** Use it.
+4. **Native platform feature covers it?** `<input type="date">` over a picker lib, CSS over JS, DB constraint over app code.
+5. **Already-installed dependency solves it?** Use it. Never add a new one for what a few lines can do.
+6. **Can it be one line?** One line.
+7. **Only then:** the minimum code that works.
 
-The ladder is a reflex, not a research project. Two rungs work → take the
-higher one and move on. The first lazy solution that works is the right one.
+The ladder is a reflex, not a research project — but it runs after understanding the problem, not instead of it. Read the task and trace the real flow first. Two rungs work → take the higher one and move on. The first lazy solution that works is the right one.
+
+**Bug fix = root cause, not symptom.** Check every caller of the function you touch; fix the shared path once instead of patching only the reported caller.
 
 ## Rules
 
@@ -77,6 +79,8 @@ Never simplify away: input validation at trust boundaries, error handling
 that prevents data loss, security measures, accessibility basics, anything
 explicitly requested. User insists on the full version → build it, no
 re-arguing.
+
+Never lazy about understanding the problem. The ladder shortens the solution, never the reading.
 
 Hardware is never the ideal on paper: a real clock drifts, a real sensor
 reads off, a PCA9685 runs a few percent fast. Leave the calibration knob, not
