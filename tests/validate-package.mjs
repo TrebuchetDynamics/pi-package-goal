@@ -876,6 +876,10 @@ async function testSkills() {
   assert.match(commonContract, /bundled skill examples do not count/);
   assert.match(commonContract, /Without that intent, do not invoke delivery tooling/);
   assert.match(commonContract, /git-commit-push/);
+  assert.match(commonContract, /Artifact continuity/);
+  assert.match(commonContract, /reuse compatible existing work/);
+  assert.match(commonContract, /Update one bounded artifact at a time/);
+  assert.match(commonContract, /Reviews are optional validation gates/);
   assert.match(commonContract, /Verification evidence/);
   assert.match(commonContract, /Handoff shape/);
   assert.match(commonContract, /Safety defaults/);

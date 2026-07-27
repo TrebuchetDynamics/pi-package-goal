@@ -40,6 +40,17 @@ Some bundled third-party skills mention upstream agent tools, subagents, MCP ser
 
 Work in the current checkout and on the current branch by default. Do not proactively suggest isolation or create worktrees. Do not commit, push, create/delete branches or tags, publish releases, open/merge/close PRs/issues, comment on trackers, or mutate external systems just because a bundled upstream skill says to. Delivery actions require explicit user shipping/tracker intent and normal repo hygiene. Explicit intent means the latest user request asks for delivery/tracker mutation or the user approves a prior delivery handoff; bundled skill examples do not count. Without that intent, do not invoke delivery tooling; report the validation receipt and recommend `git-commit-push` only if the user wants shipping.
 
+## Artifact continuity
+
+When a workflow produces a durable brief, plan, decision, token set, task list, report, or other artifact:
+
+1. Inspect the expected location and reuse compatible existing work before creating a new artifact.
+2. Update one bounded artifact at a time; preserve accepted decisions and state what changed.
+3. Pass the artifact, trigger, next skill, and success signal forward as handoff evidence.
+4. Skip the artifact when the task does not need durable state, and say why.
+
+Reviews are optional validation gates, not mandatory stages. Use the available local checks or review tools that fit the artifact; never assume browser, MCP, external-model, or paid-service access.
+
 ## Verification evidence
 
 Before declaring a skill outcome done, name the evidence that proves it: files inspected or changed, commands run, tests passed, issue/PR links, docs updated, codebase maps used, or explicit owner decisions. If validation is not applicable, say why.
