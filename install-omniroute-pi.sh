@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
-# Install OmniRoute, start its local daemon, and add an automatic free routing combo to Pi.
+# Install OmniRoute, start its local daemon, and configure its automatic free route in Pi.
 # Use --config-only for an existing local or remote OmniRoute server.
 
 : "${HOME:?HOME is required}"
 
 base_url="${OMNIROUTE_PI_BASE_URL:-http://127.0.0.1:20128/v1}"
-model="${OMNIROUTE_PI_MODEL:-pi-auto}"
+model="${OMNIROUTE_PI_MODEL:-auto/coding:free}"
 api_key="${OMNIROUTE_PI_API_KEY:-omniroute-local}"
 config_only=0
 
@@ -20,7 +20,7 @@ Install OmniRoute, run it as a daemon, and configure Pi to use OmniRoute.
 Options:
   --config-only    Skip package installation and daemon startup
   --base-url URL   OmniRoute OpenAI-compatible base URL
-  --model ID       OmniRoute route (default: pi-auto)
+  --model ID       OmniRoute route (default: auto/coding:free)
   -h, --help       Show this help
 
 Environment:
@@ -119,62 +119,6 @@ if [ "$config_only" = "0" ]; then
   fi
 fi
 
-if [ "$model" = "pi-auto" ]; then
-  case "${base_url%/}" in
-    http://127.0.0.1:*/v1|http://localhost:*/v1)
-      management_base="${base_url%/}"
-      management_base="${management_base%/v1}"
-      combo_changed="$(OMNIROUTE_COMBOS_URL="${management_base}/api/combos" OMNIROUTE_KEY="$api_key" node <<'NODE'
-const comboUrl = process.env.OMNIROUTE_COMBOS_URL;
-const headers = {
-  Authorization: `Bearer ${process.env.OMNIROUTE_KEY}`,
-  "content-type": "application/json",
-};
-const listResponse = await fetch(comboUrl, { headers });
-if (!listResponse.ok) throw new Error(`OmniRoute combos returned HTTP ${listResponse.status}`);
-const payload = await listResponse.json();
-const combos = Array.isArray(payload) ? payload : payload.combos ?? [];
-const current = combos.find((item) => item.name === "pi-auto");
-const targets = ["mcode/mimo-auto", "oc/big-pickle"];
-const currentTargets = Array.isArray(current?.models) ? current.models.map((item) => item.model) : [];
-const changed = current?.strategy !== "lkgp" || JSON.stringify(currentTargets) !== JSON.stringify(targets);
-
-if (changed) {
-  const models = targets.map((target, index) => ({
-    id: `pi-auto-model-${index + 1}`,
-    kind: "model",
-    model: target,
-    providerId: target.split("/")[0],
-    weight: 0,
-  }));
-  const response = await fetch(current ? `${comboUrl}/${encodeURIComponent(current.id)}` : comboUrl, {
-    method: current ? "PATCH" : "POST",
-    headers,
-    body: JSON.stringify(current ? { models, strategy: "lkgp", config: {} } : {
-      name: "pi-auto",
-      models,
-      strategy: "lkgp",
-      config: {},
-    }),
-  });
-  if (!response.ok) throw new Error(`OmniRoute combo update returned HTTP ${response.status}: ${await response.text()}`);
-}
-
-console.log(changed ? "1" : "0");
-NODE
-)"
-      if [ "$combo_changed" = "1" ]; then
-        attempts=0
-        until catalog_ready; do
-          attempts=$((attempts + 1))
-          [ "$attempts" -lt 30 ] || { printf '%s\n' 'install-omniroute-pi: pi-auto did not become ready' >&2; exit 1; }
-          sleep 1
-        done
-      fi
-      ;;
-  esac
-fi
-
 if ! catalog_ready; then
   printf 'install-omniroute-pi: route %s is unavailable at %s\n' "$model" "$catalog_url" >&2
   exit 1
@@ -211,10 +155,11 @@ config.providers.omniroute = {
   models: [{
     id: process.env.OMNIROUTE_MODEL,
     name: `OmniRoute ${metadata.name ?? process.env.OMNIROUTE_MODEL}`,
-    reasoning: process.env.OMNIROUTE_MODEL === "pi-auto" || Boolean(metadata.capabilities?.reasoning || metadata.capabilities?.thinking),
+    reasoning: Boolean(metadata.capabilities?.reasoning || metadata.capabilities?.thinking),
     input: supportsImages ? ["text", "image"] : ["text"],
     contextWindow: metadata.context_length ?? 128000,
-    maxTokens: metadata.max_output_tokens ?? 16384,
+    // Automatic combos advertise aggregate limits; keep requests below common provider ceilings.
+    maxTokens: Math.min(metadata.max_output_tokens ?? 16384, 16384),
   }],
 };
 
