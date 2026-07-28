@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile, rm } from "node:fs/promises";
-import registerKetch, { buildFallbackArgs, buildKetchArgs, ensureKetch, inferSurface, releaseAsset, verifyChecksum } from "../extensions/ketch/index.js";
+import registerKetch, { buildFallbackArgs, buildKetchArgs, ensureKetch, inferSurface, releaseAsset, useKeylessSearch, verifyChecksum } from "../extensions/ketch/index.js";
 
 assert.equal(inferSurface({ request: "latest news about Pi coding agent" }), "search");
 assert.equal(inferSurface({ request: "find code examples for AbortSignal", language: "typescript" }), "code");
@@ -15,6 +15,7 @@ assert.deepEqual(buildKetchArgs({ request: "https://example.com/a", maxChars: 40
 assert.deepEqual(buildKetchArgs({ request: "crawl https://example.com/docs" }), ["crawl", "https://example.com/docs", "--depth", "2", "--json"]);
 assert.deepEqual(buildFallbackArgs({ request: "AbortSignal", limit: 2 }, "code"), ["search", "AbortSignal source code GitHub", "--limit", "2", "--minimal", "--json"]);
 assert.equal(buildFallbackArgs({ request: "Pi agent" }, "search"), null);
+assert.deepEqual(useKeylessSearch(["search", "Pi agent", "--limit", "3", "--minimal", "--json"]), ["search", "Pi agent", "--limit", "3", "--minimal", "--backend", "ddg", "--json"]);
 
 const tools = new Map();
 const commands = new Map();
@@ -128,6 +129,28 @@ try {
   assert.match(fallbackResult.content[0].text, /web search fallback/);
   assert.equal(fallbackResult.details.fallback.from, "code");
   assert.equal(fallbackCalls.at(-1)[0], "search");
+} finally {
+  if (previousKetchBin === undefined) delete process.env.KETCH_BIN;
+  else process.env.KETCH_BIN = previousKetchBin;
+}
+
+const keylessTools = new Map();
+const keylessCalls = [];
+registerKetch({
+  registerTool: (definition) => keylessTools.set(definition.name, definition),
+  exec: async (_command, args) => {
+    keylessCalls.push(args);
+    if (args[0] === "--version") return { code: 0, stdout: "ketch 0.11.0", stderr: "" };
+    if (!args.includes("ddg")) return { code: 5, stdout: "", stderr: "BRAVE_API_KEY is not set" };
+    return { code: 0, stdout: '[{"title":"Keyless","url":"https://example.com"}]', stderr: "" };
+  },
+});
+process.env.KETCH_BIN = "/fake/ketch";
+try {
+  const keylessResult = await keylessTools.get("ketch").execute("keyless", { request: "Polymarket analytics" }, signal);
+  assert.match(keylessResult.content[0].text, /keyless DuckDuckGo search/);
+  assert.equal(keylessResult.details.fallback.backend, "ddg");
+  assert.equal(keylessCalls.at(-1).includes("ddg"), true);
 } finally {
   if (previousKetchBin === undefined) delete process.env.KETCH_BIN;
   else process.env.KETCH_BIN = previousKetchBin;

@@ -70,6 +70,12 @@ export function buildFallbackArgs(input, failedSurface) {
   return buildKetchArgs({ ...input, request: `${String(input.request ?? "").trim()}${suffix}`, surface: "search" });
 }
 
+export function useKeylessSearch(args) {
+  if (args[0] !== "search") throw new Error("Keyless fallback requires ketch search arguments");
+  const jsonIndex = args.lastIndexOf("--json");
+  return [...args.slice(0, jsonIndex), "--backend", "ddg", ...args.slice(jsonIndex)];
+}
+
 function normalizeKetchOutput(surface, stdout) {
   const text = stdout.trim();
   try {
@@ -246,25 +252,40 @@ export default function ketchExtension(pi) {
       const args = buildKetchArgs(params);
       const resolved = await ensureKetch(pi, { signal });
       let result = await pi.exec(resolved.binary, args, { signal, timeout: surface === "crawl" ? 180_000 : 60_000 });
+      let executedArgs = args;
       let outputSurface = surface;
       let fallback = null;
-      if (result.code === 4) {
+      if (result.code === 4 || result.code === 5) {
         const fallbackArgs = buildFallbackArgs(params, surface);
         if (fallbackArgs) {
           const originalError = (result.stderr || result.stdout || "unknown upstream error").trim().slice(0, 1000);
-          const fallbackResult = await pi.exec(resolved.binary, fallbackArgs, { signal, timeout: 60_000 });
-          if (fallbackResult.code === 0) {
-            result = fallbackResult;
-            outputSurface = "search";
-            fallback = { from: surface, error: originalError, args: fallbackArgs };
-          }
+          result = await pi.exec(resolved.binary, fallbackArgs, { signal, timeout: 60_000 });
+          executedArgs = fallbackArgs;
+          outputSurface = "search";
+          fallback = { from: surface, error: originalError, args: fallbackArgs };
         }
+      }
+      if ((result.code === 4 || result.code === 5) && outputSurface === "search") {
+        const keylessArgs = useKeylessSearch(executedArgs);
+        const searchError = (result.stderr || result.stdout || "unknown search error").trim().slice(0, 1000);
+        result = await pi.exec(resolved.binary, keylessArgs, { signal, timeout: 60_000 });
+        fallback = {
+          from: surface,
+          error: fallback ? `${fallback.error}; search: ${searchError}` : searchError,
+          args: keylessArgs,
+          backend: "ddg",
+        };
       }
       if (result.code !== 0) {
         const detail = (result.stderr || result.stdout || "unknown error").trim().slice(0, 4000);
         throw new Error(`[${classifyError(result.code)}] ketch ${surface} failed (${result.code}): ${detail}`);
       }
-      const output = `${fallback ? `[Ketch ${surface} backend failed; results are from web search fallback.]\n\n` : ""}${normalizeKetchOutput(outputSurface, result.stdout)}`;
+      const fallbackNotice = fallback?.backend === "ddg"
+        ? `[Ketch ${surface} backend unavailable; results are from keyless DuckDuckGo search.]\n\n`
+        : fallback
+          ? `[Ketch ${surface} backend failed; results are from web search fallback.]\n\n`
+          : "";
+      const output = `${fallbackNotice}${normalizeKetchOutput(outputSurface, result.stdout)}`;
       const bounded = await boundedOutput(output, toolCallId);
       return {
         content: [{ type: "text", text: bounded.text }],
