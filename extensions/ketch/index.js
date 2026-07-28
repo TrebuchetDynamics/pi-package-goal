@@ -4,8 +4,8 @@ import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
 const KETCH_VERSION = "0.11.0";
-const MAX_OUTPUT_BYTES = 50 * 1024;
-const MAX_OUTPUT_LINES = 2000;
+const MAX_OUTPUT_BYTES = 20 * 1024;
+const MAX_OUTPUT_LINES = 500;
 const RELEASE_BASE = `https://github.com/1broseidon/ketch/releases/download/v${KETCH_VERSION}`;
 const CHECKSUMS = {
   "darwin-arm64": "8cc6039ac4911e3cee326a0fc9d3db43fb8529f7dc8e3e942674f8e7a09f56ed",
@@ -56,8 +56,18 @@ export function buildKetchArgs(input = {}) {
 
   const args = [surface, request, "--limit", String(limit)];
   if (surface === "code" && input.language) args.push("--lang", String(input.language));
-  args.push("--json");
+  args.push("--minimal", "--json");
   return args;
+}
+
+export function buildFallbackArgs(input, failedSurface) {
+  if (failedSurface === "search") return null;
+  const suffix = failedSurface === "code"
+    ? " source code GitHub"
+    : failedSurface === "docs"
+      ? " official documentation"
+      : "";
+  return buildKetchArgs({ ...input, request: `${String(input.request ?? "").trim()}${suffix}`, surface: "search" });
 }
 
 function normalizeKetchOutput(surface, stdout) {
@@ -184,7 +194,7 @@ async function boundedOutput(output, toolCallId) {
   const outputFile = join(tmpdir(), `pi-ketch-${String(toolCallId).replace(/[^a-z0-9_-]/gi, "-")}.json`);
   await writeFile(outputFile, output, "utf8");
   return {
-    text: `${byteBounded}\n\n[Output truncated at 50KB or 2000 lines. Full output saved to: ${outputFile}]`,
+    text: `${byteBounded}\n\n[Output truncated at 20KB or 500 lines. Full output saved to: ${outputFile}]`,
     truncated: true,
     outputFile,
   };
@@ -235,12 +245,26 @@ export default function ketchExtension(pi) {
       const surface = inferSurface(params);
       const args = buildKetchArgs(params);
       const resolved = await ensureKetch(pi, { signal });
-      const result = await pi.exec(resolved.binary, args, { signal, timeout: surface === "crawl" ? 180_000 : 60_000 });
+      let result = await pi.exec(resolved.binary, args, { signal, timeout: surface === "crawl" ? 180_000 : 60_000 });
+      let outputSurface = surface;
+      let fallback = null;
+      if (result.code === 4) {
+        const fallbackArgs = buildFallbackArgs(params, surface);
+        if (fallbackArgs) {
+          const originalError = (result.stderr || result.stdout || "unknown upstream error").trim().slice(0, 1000);
+          const fallbackResult = await pi.exec(resolved.binary, fallbackArgs, { signal, timeout: 60_000 });
+          if (fallbackResult.code === 0) {
+            result = fallbackResult;
+            outputSurface = "search";
+            fallback = { from: surface, error: originalError, args: fallbackArgs };
+          }
+        }
+      }
       if (result.code !== 0) {
         const detail = (result.stderr || result.stdout || "unknown error").trim().slice(0, 4000);
         throw new Error(`[${classifyError(result.code)}] ketch ${surface} failed (${result.code}): ${detail}`);
       }
-      const output = normalizeKetchOutput(surface, result.stdout);
+      const output = `${fallback ? `[Ketch ${surface} backend failed; results are from web search fallback.]\n\n` : ""}${normalizeKetchOutput(outputSurface, result.stdout)}`;
       const bounded = await boundedOutput(output, toolCallId);
       return {
         content: [{ type: "text", text: bounded.text }],
@@ -251,6 +275,7 @@ export default function ketchExtension(pi) {
           installed: resolved.installed,
           truncated: bounded.truncated,
           outputFile: bounded.outputFile,
+          fallback,
         },
       };
     },

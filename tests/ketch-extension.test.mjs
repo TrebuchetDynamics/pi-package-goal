@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile, rm } from "node:fs/promises";
-import registerKetch, { buildKetchArgs, ensureKetch, inferSurface, releaseAsset, verifyChecksum } from "../extensions/ketch/index.js";
+import registerKetch, { buildFallbackArgs, buildKetchArgs, ensureKetch, inferSurface, releaseAsset, verifyChecksum } from "../extensions/ketch/index.js";
 
 assert.equal(inferSurface({ request: "latest news about Pi coding agent" }), "search");
 assert.equal(inferSurface({ request: "find code examples for AbortSignal", language: "typescript" }), "code");
@@ -9,10 +9,12 @@ assert.equal(inferSurface({ request: "https://example.com/article" }), "scrape")
 assert.equal(inferSurface({ request: "crawl https://example.com docs" }), "crawl");
 assert.equal(inferSurface({ request: "anything", surface: "code" }), "code");
 
-assert.deepEqual(buildKetchArgs({ request: "Pi agent", limit: 3 }), ["search", "Pi agent", "--limit", "3", "--json"]);
-assert.deepEqual(buildKetchArgs({ request: "AbortSignal", language: "typescript", surface: "code" }), ["code", "AbortSignal", "--limit", "5", "--lang", "typescript", "--json"]);
+assert.deepEqual(buildKetchArgs({ request: "Pi agent", limit: 3 }), ["search", "Pi agent", "--limit", "3", "--minimal", "--json"]);
+assert.deepEqual(buildKetchArgs({ request: "AbortSignal", language: "typescript", surface: "code" }), ["code", "AbortSignal", "--limit", "5", "--lang", "typescript", "--minimal", "--json"]);
 assert.deepEqual(buildKetchArgs({ request: "https://example.com/a", maxChars: 4000 }), ["scrape", "https://example.com/a", "--max-chars", "4000", "--trim", "--json"]);
 assert.deepEqual(buildKetchArgs({ request: "crawl https://example.com/docs" }), ["crawl", "https://example.com/docs", "--depth", "2", "--json"]);
+assert.deepEqual(buildFallbackArgs({ request: "AbortSignal", limit: 2 }, "code"), ["search", "AbortSignal source code GitHub", "--limit", "2", "--minimal", "--json"]);
+assert.equal(buildFallbackArgs({ request: "Pi agent" }, "search"), null);
 
 const tools = new Map();
 const commands = new Map();
@@ -45,7 +47,7 @@ try {
   assert.match(result.content[0].text, /https:\/\/example\.com/);
   assert.equal(result.details.surface, "search");
   assert.equal(calls.at(-1).command, "/fake/ketch");
-  assert.deepEqual(calls.at(-1).args, ["search", "Pi agent", "--limit", "2", "--json"]);
+  assert.deepEqual(calls.at(-1).args, ["search", "Pi agent", "--limit", "2", "--minimal", "--json"]);
   assert.equal(calls.at(-1).options.signal, signal);
 } finally {
   if (previousKetchBin === undefined) delete process.env.KETCH_BIN;
@@ -102,8 +104,30 @@ process.env.KETCH_BIN = "/fake/ketch";
 try {
   const lineResult = await lineTools.get("ketch").execute("many-lines", { request: "many results" }, signal);
   assert.equal(lineResult.details.truncated, true);
-  assert.equal(lineResult.content[0].text.split("\n").length <= 2002, true);
+  assert.equal(lineResult.content[0].text.split("\n").length <= 502, true);
   await rm(lineResult.details.outputFile, { force: true });
+} finally {
+  if (previousKetchBin === undefined) delete process.env.KETCH_BIN;
+  else process.env.KETCH_BIN = previousKetchBin;
+}
+
+const fallbackTools = new Map();
+const fallbackCalls = [];
+registerKetch({
+  registerTool: (definition) => fallbackTools.set(definition.name, definition),
+  exec: async (_command, args) => {
+    fallbackCalls.push(args);
+    if (args[0] === "--version") return { code: 0, stdout: "ketch 0.11.0", stderr: "" };
+    if (args[0] === "code") return { code: 4, stdout: "", stderr: "grep.app returned status 504" };
+    return { code: 0, stdout: '[{"title":"Fallback","url":"https://github.com/example/repo"}]', stderr: "" };
+  },
+});
+process.env.KETCH_BIN = "/fake/ketch";
+try {
+  const fallbackResult = await fallbackTools.get("ketch").execute("fallback", { request: "Polymarket tools", surface: "code" }, signal);
+  assert.match(fallbackResult.content[0].text, /web search fallback/);
+  assert.equal(fallbackResult.details.fallback.from, "code");
+  assert.equal(fallbackCalls.at(-1)[0], "search");
 } finally {
   if (previousKetchBin === undefined) delete process.env.KETCH_BIN;
   else process.env.KETCH_BIN = previousKetchBin;
