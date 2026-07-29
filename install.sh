@@ -75,7 +75,7 @@ install_tmux_package() {
   elif command -v yum >/dev/null 2>&1; then
     as_root yum install -y tmux
   elif command -v pacman >/dev/null 2>&1; then
-    as_root pacman -Sy --needed --noconfirm tmux
+    as_root pacman -S --needed --noconfirm tmux
   elif command -v apk >/dev/null 2>&1; then
     as_root apk add tmux
   elif command -v pkg >/dev/null 2>&1; then
