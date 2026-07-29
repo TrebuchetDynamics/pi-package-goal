@@ -488,7 +488,8 @@ async function testPackageManifest() {
   assert.equal(pkg.files.includes("codebase-map-understand.md"), false, "package tarball must not include generated Understand agent maps");
   assert.ok(exists(".github/workflows/ci.yml"), "CI must run package validation");
   const ci = read(".github/workflows/ci.yml");
-  assert.match(ci, /npm ci --ignore-scripts --legacy-peer-deps/);
+  assert.match(ci, /npm ci --ignore-scripts/);
+  assert.doesNotMatch(ci, /npm ci[^\n]*--legacy-peer-deps/, ".npmrc must own the git-package peer install policy");
   assert.match(ci, /npm test/);
   assert.match(ci, /actions\/checkout@[a-f0-9]{40}/);
   assert.match(ci, /actions\/setup-node@[a-f0-9]{40}/);
@@ -612,6 +613,9 @@ async function testPiCoreDependencies() {
   if (Object.keys(pkg.dependencies ?? {}).length) {
     assert.ok(exists("package-lock.json"), "root runtime dependencies require a root package-lock.json so npm audit can run");
   }
+  assert.equal(read(".npmrc").trim(), "legacy-peer-deps=true", "git package installs must not duplicate Pi host peer packages");
+  const lock = readJson("package-lock.json");
+  assert.equal(Object.keys(lock.packages).some((name) => name.startsWith("node_modules/@earendil-works/")), false, "root lockfile must omit Pi host peer packages");
   assert.deepEqual(collectNestedPackageLockNameIssues(root), []);
 }
 
