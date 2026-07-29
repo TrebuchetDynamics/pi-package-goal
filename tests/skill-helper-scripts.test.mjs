@@ -163,6 +163,14 @@ function testAgentSkillsInstaller() {
     assert.equal(fs.readFileSync(path.join(backupRun, "Claude", "caveman", "marker.txt"), "utf8"), "existing skill");
     assert.equal(fs.readdirSync(codexSkillsDir).some((name) => name.includes(".bak.")), false);
     assert.equal(fs.readdirSync(claudeSkillsDir).some((name) => name.includes(".bak.")), false);
+
+    const secondOutput = execFileSync("sh", [path.join(root, "install-agent-skills.sh")], {
+      cwd: root,
+      env: { ...process.env, HOME: fixture, XDG_STATE_HOME: stateDir },
+      encoding: "utf8",
+    });
+    assert.match(secondOutput, /unchanged:/);
+    assert.equal(fs.readdirSync(backupBase).length, 1, "unchanged skills must not create another backup run");
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
   }

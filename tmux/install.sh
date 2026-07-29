@@ -30,6 +30,11 @@ install_file() {
   mode=$1
   src=$2
   dest=$3
+  if [ -f "$dest" ] && cmp -s "$src" "$dest"; then
+    chmod "$mode" "$dest"
+    printf 'unchanged: %s\n' "$dest"
+    return
+  fi
   backup_file "$dest"
   install -m "$mode" "$src" "$dest"
   printf 'installed: %s\n' "$dest"
@@ -73,16 +78,22 @@ install_tmux_conf() {
   trap - EXIT HUP INT TERM
 }
 
+install_completion() {
+  shell=$1
+  dest=$2
+  tmp=$(mktemp "${TMPDIR:-/tmp}/tx-completion.XXXXXX")
+  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion "$shell" > "$tmp"
+  install_file 0644 "$tmp" "$dest"
+  rm -f "$tmp"
+}
+
 install_completions() {
   [ "$TX_INSTALL_COMPLETIONS" = "1" ] || return 0
 
   mkdir -p "$TX_BASH_COMPLETION_DIR" "$TX_FISH_COMPLETION_DIR" "$TX_ZSH_COMPLETION_DIR"
-  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion bash > "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
-  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion fish > "$TX_FISH_COMPLETION_DIR/$TX_BIN_NAME.fish"
-  TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion zsh > "$TX_ZSH_COMPLETION_DIR/_$TX_BIN_NAME"
-  printf 'installed completion: %s\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
-  printf 'installed completion: %s\n' "$TX_FISH_COMPLETION_DIR/$TX_BIN_NAME.fish"
-  printf 'installed completion: %s\n' "$TX_ZSH_COMPLETION_DIR/_$TX_BIN_NAME"
+  install_completion bash "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+  install_completion fish "$TX_FISH_COMPLETION_DIR/$TX_BIN_NAME.fish"
+  install_completion zsh "$TX_ZSH_COMPLETION_DIR/_$TX_BIN_NAME"
 
   bashrc="$HOME/.bashrc"
   if [ "$TX_INSTALL_BASHRC_COMPLETION" = "1" ] && [ -f "$bashrc" ] && ! grep -F "# tx completion" "$bashrc" >/dev/null 2>&1; then

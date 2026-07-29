@@ -116,7 +116,8 @@ try {
   fs.rmSync(path.join(fixture, "outside-link"), { force: true });
   fs.rmSync(outside, { recursive: true, force: true });
   const installBin = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-bin-"));
-  const installApp = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-app-"));
+  const installAppParent = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-app-"));
+  const installApp = path.join(installAppParent, "app");
   const installOutput = execFileSync("sh", [autoInstaller], {
     cwd: fixture,
     encoding: "utf8",
@@ -130,6 +131,30 @@ try {
   assert.doesNotMatch(fs.readFileSync(installedAuto, "utf8"), new RegExp(escapeRegExp(root)));
   const installedHelp = execFileSync(installedAuto, ["--help"], { cwd: fixture, encoding: "utf8" });
   assert.match(installedHelp, /autofolderrefactor <loops> \[scan-root\]/);
+  const secondInstallOutput = execFileSync("sh", [autoInstaller], {
+    cwd: fixture,
+    encoding: "utf8",
+    env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: installBin, AUTO_FOLDER_REFACTOR_INSTALL_DIR: installApp },
+  });
+  assert.match(secondInstallOutput, /unchanged wrapper:/);
+  assert.equal(fs.readdirSync(installBin).some((name) => name.includes(".bak.")), false);
+  assert.equal(fs.readdirSync(installAppParent).some((name) => name.includes(".bak.")), false);
+
+  const legacyInstall = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-legacy-"));
+  const legacyBin = path.join(legacyInstall, "bin");
+  const legacyApp = path.join(legacyInstall, "app");
+  fs.mkdirSync(legacyBin);
+  fs.mkdirSync(legacyApp);
+  fs.writeFileSync(path.join(legacyApp, "autofolderrefactor"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  fs.writeFileSync(path.join(legacyBin, "autofolderrefactor"), `#!/bin/sh\nexec "${legacyApp}/autofolderrefactor" "$@"\n`, { mode: 0o755 });
+  assert.doesNotThrow(() => execFileSync("sh", [autoInstaller], {
+    cwd: fixture,
+    encoding: "utf8",
+    env: { ...process.env, AUTO_FOLDER_REFACTOR_BIN_DIR: legacyBin, AUTO_FOLDER_REFACTOR_INSTALL_DIR: legacyApp },
+  }));
+  assert.ok(fs.existsSync(path.join(legacyApp, ".autofolderrefactor-install")));
+  fs.rmSync(legacyInstall, { recursive: true, force: true });
+
   const unsafeInstallDir = fs.mkdtempSync(path.join(os.tmpdir(), "autofolderrefactor-unsafe-install-"));
   fs.writeFileSync(path.join(unsafeInstallDir, "keep.txt"), "do not replace\n");
   assert.throws(
@@ -420,6 +445,7 @@ try {
   assert.equal(fs.existsSync(path.join(fixture, "src/noisy/paper-toxicity-decisions.jsonl")), false);
   fs.rmSync(fakePiBugfind, { force: true });
   fs.rmSync(installBin, { recursive: true, force: true });
+  fs.rmSync(installAppParent, { recursive: true, force: true });
 
   const script = path.join(root, "skills/engineering/candidates-folder-refactor/scripts/find-candidates.mjs");
   write("src/noisy/large.ts", "export const large = 1;\n".repeat(200));

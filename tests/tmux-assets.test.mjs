@@ -190,7 +190,7 @@ async function testInstallScript() {
     const bashCompletionDir = path.join(tmp, "bash-completions");
     const fishCompletionDir = path.join(tmp, "fish-completions");
     const zshCompletionDir = path.join(tmp, "zsh-completions");
-    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
+    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "1", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
     const linkDir = path.join(tmp, "link-bin");
     fs.mkdirSync(linkDir, { recursive: true });
     const txLink = path.join(linkDir, "tx");
@@ -210,6 +210,9 @@ async function testInstallScript() {
     assert.match(installedConfigText, new RegExp(`${escapeRegExp(helperDir)}.*git-status\\.sh`));
     assert.match(fs.readFileSync(path.join(bashCompletionDir, "tx"), "utf8"), /__complete_aliases/);
     assert.match(run(path.join(bin, "tx"), ["help"], { env }), /doctor --install/);
+    const secondOutput = run(txLink, ["install"], { env });
+    assert.match(secondOutput, /unchanged:/);
+    assert.equal(fs.readdirSync(tmp, { recursive: true }).some((name) => name.includes(".bak.")), false, "unchanged tmux assets must not be backed up");
 
     const doctorEnv = { ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
     const doctor = run(txLink, ["doctor", "--install"], { env: doctorEnv });

@@ -122,17 +122,6 @@ install_dir() {
 
   mkdir -p "$(dirname "$dest")"
 
-  if [ "$AGENT_SKILLS_BACKUP" = "1" ] && [ -e "$dest" ]; then
-    backup="${backup_root}/$(basename "$dest")"
-    mkdir -p "$backup_root"
-    if [ -e "$backup" ]; then
-      printf 'install-agent-skills: backup already exists: %s\n' "$backup" >&2
-      exit 1
-    fi
-    cp -R "$dest" "$backup"
-    printf 'backup: %s -> %s\n' "$dest" "$backup"
-  fi
-
   tmp_dest="${dest}.tmp.$$"
   rm -rf "$tmp_dest"
   mkdir -p "$tmp_dest"
@@ -151,6 +140,23 @@ install_dir() {
       mv "$tmp" "$file"
     done
   ' sh {} +
+
+  if [ -d "$dest" ] && diff -qr "$tmp_dest" "$dest" >/dev/null 2>&1; then
+    rm -rf "$tmp_dest"
+    printf 'unchanged: %s\n' "$dest"
+    return
+  fi
+
+  if [ "$AGENT_SKILLS_BACKUP" = "1" ] && [ -e "$dest" ]; then
+    backup="${backup_root}/$(basename "$dest")"
+    mkdir -p "$backup_root"
+    if [ -e "$backup" ]; then
+      printf 'install-agent-skills: backup already exists: %s\n' "$backup" >&2
+      exit 1
+    fi
+    cp -R "$dest" "$backup"
+    printf 'backup: %s -> %s\n' "$dest" "$backup"
+  fi
 
   rm -rf "$dest"
   mv "$tmp_dest" "$dest"

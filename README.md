@@ -25,7 +25,7 @@ cd pi-package-goal
 sh install.sh
 ```
 
-It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Ketch, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up same-name skills before replacement. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
+It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Ketch, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
 
 To install only the Pi package when Pi already exists:
 
@@ -272,6 +272,8 @@ npm run tmux:install
 Then use `tx init`, `tx add <alias> [dir]`, and `tx doctor`. See [`tmux/README.md`](tmux/README.md).
 
 ### `autofolderrefactor`
+
+This niche autonomous refactoring loop remains opt-in:
 
 ```bash
 sh install-autofolderrefactor.sh

@@ -9,8 +9,8 @@ The npm/Pi package metadata: package name, repository URL, homepage, issue URL, 
 _Avoid_: stale resource manifests, deleted command entrypoints, docs that omit packaged resources
 
 **Universal Installer**:
-The root `install.sh` composes the official Pi bootstrap, Pi package installation, the existing tmux/`tx`, OmniRoute, and global-skill installers, Ketch's checksummed binary installer, RTK's checksum-verifying official installer, and Understand-Anything's established checkout layout into one idempotent setup command for macOS, Linux, and Termux.
-_Avoid_: duplicating component installers, hiding OmniRoute's daemon/default-provider side effects, silently installing Onklaud, overwriting valid Understand links/checkouts, claiming native Windows support for the POSIX shell entrypoint
+The root `install.sh` composes the official Pi bootstrap, Pi package installation, the existing tmux/`tx`, OmniRoute, and global-skill installers, Ketch's checksummed binary installer, RTK's checksum-verifying official installer, and Understand-Anything's established checkout layout into one idempotent setup command for macOS, Linux, and Termux. Component installers compare generated output before replacement so unchanged reruns do not create redundant backups.
+_Avoid_: duplicating component installers, hiding OmniRoute's daemon/default-provider side effects, silently installing Onklaud, overwriting valid Understand links/checkouts, backing up unchanged generated assets, claiming native Windows support for the POSIX shell entrypoint
 
 **Understand Extension**:
 The package-local extension at `extensions/understand/index.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.

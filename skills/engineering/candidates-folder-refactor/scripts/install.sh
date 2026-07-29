@@ -29,24 +29,17 @@ case "$app_dir" in
 esac
 
 if [ -e "$app_dir" ] && [ ! -f "$app_dir/.autofolderrefactor-install" ] && [ "$AUTO_FOLDER_REFACTOR_INSTALL_FORCE" != "1" ]; then
-  if [ -n "$(find "$app_dir" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-    printf 'autofolderrefactor install: refusing to replace non-autofolderrefactor dir: %s\n' "$app_dir" >&2
-    printf 'set AUTO_FOLDER_REFACTOR_INSTALL_FORCE=1 only if this directory is safe to replace.\n' >&2
-    exit 2
+  legacy_exec="exec \"$app_dir/autofolderrefactor\" \"\$@\""
+  if [ ! -f "$app_dir/autofolderrefactor" ] || [ ! -f "$dest" ] || ! grep -Fqx "$legacy_exec" "$dest"; then
+    if [ -n "$(find "$app_dir" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+      printf 'autofolderrefactor install: refusing to replace non-autofolderrefactor dir: %s\n' "$app_dir" >&2
+      printf 'set AUTO_FOLDER_REFACTOR_INSTALL_FORCE=1 only if this directory is safe to replace.\n' >&2
+      exit 2
+    fi
   fi
 fi
 
 mkdir -p "$AUTO_FOLDER_REFACTOR_BIN_DIR" "$(dirname "$app_dir")"
-
-if [ "$AUTO_FOLDER_REFACTOR_INSTALL_BACKUP" != "0" ] && [ -e "$dest" ]; then
-  cp -p "$dest" "$dest.bak.$timestamp"
-  printf 'backup: %s -> %s\n' "$dest" "$dest.bak.$timestamp"
-fi
-if [ "$AUTO_FOLDER_REFACTOR_INSTALL_BACKUP" != "0" ] && [ -e "$app_dir" ]; then
-  rm -rf "$app_dir.bak.$timestamp"
-  cp -R "$app_dir" "$app_dir.bak.$timestamp"
-  printf 'backup: %s -> %s\n' "$app_dir" "$app_dir.bak.$timestamp"
-fi
 
 tmp_app="$app_dir.tmp.$$"
 rm -rf "$tmp_app"
@@ -54,17 +47,34 @@ mkdir -p "$tmp_app"
 cp -R "$script_dir"/. "$tmp_app"/
 printf 'managed by autofolderrefactor install.sh\n' > "$tmp_app/.autofolderrefactor-install"
 chmod +x "$tmp_app/autofolderrefactor"
-rm -rf "$app_dir"
-mv "$tmp_app" "$app_dir"
 
 tmp="$dest.tmp.$$"
 cat > "$tmp" <<EOF
 #!/usr/bin/env sh
 exec "$app_dir/autofolderrefactor" "\$@"
 EOF
-install -m 0755 "$tmp" "$dest"
-rm -f "$tmp"
-printf 'installed wrapper: %s -> %s\n' "$dest" "$app_dir/autofolderrefactor"
+
+if [ -d "$app_dir" ] && [ -f "$dest" ] && diff -qr "$tmp_app" "$app_dir" >/dev/null 2>&1 && cmp -s "$tmp" "$dest"; then
+  chmod +x "$app_dir/autofolderrefactor" "$dest"
+  rm -rf "$tmp_app"
+  rm -f "$tmp"
+  printf 'unchanged wrapper: %s -> %s\n' "$dest" "$app_dir/autofolderrefactor"
+else
+  if [ "$AUTO_FOLDER_REFACTOR_INSTALL_BACKUP" != "0" ] && [ -e "$dest" ]; then
+    cp -p "$dest" "$dest.bak.$timestamp"
+    printf 'backup: %s -> %s\n' "$dest" "$dest.bak.$timestamp"
+  fi
+  if [ "$AUTO_FOLDER_REFACTOR_INSTALL_BACKUP" != "0" ] && [ -e "$app_dir" ]; then
+    rm -rf "$app_dir.bak.$timestamp"
+    cp -R "$app_dir" "$app_dir.bak.$timestamp"
+    printf 'backup: %s -> %s\n' "$app_dir" "$app_dir.bak.$timestamp"
+  fi
+  rm -rf "$app_dir"
+  mv "$tmp_app" "$app_dir"
+  install -m 0755 "$tmp" "$dest"
+  rm -f "$tmp"
+  printf 'installed wrapper: %s -> %s\n' "$dest" "$app_dir/autofolderrefactor"
+fi
 
 case ":$PATH:" in
   *":$AUTO_FOLDER_REFACTOR_BIN_DIR:"*) ;;

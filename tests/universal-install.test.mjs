@@ -12,6 +12,7 @@ const installer = fs.readFileSync(path.join(root, "install.sh"), "utf8");
 assert.match(installer, /pacman -S --needed --noconfirm tmux/);
 assert.doesNotMatch(installer, /pacman -Sy\b/, "Arch install must not perform a partial package database refresh");
 assert.match(installer, /install-agent-skills\.sh/);
+assert.doesNotMatch(installer, /install-autofolderrefactor\.sh/, "autofolderrefactor must remain opt-in");
 assert.match(installer, /install-omniroute-pi\.sh/);
 assert.match(installer, /RTK_INSTALL_URL/);
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
@@ -37,6 +38,7 @@ assert.match(help, /Understand-Anything/);
 assert.match(help, /RTK/);
 assert.match(help, /OmniRoute/);
 assert.match(help, /Codex and Claude/);
+assert.doesNotMatch(help, /autofolderrefactor/);
 
 const dryHome = fs.mkdtempSync(path.join(os.tmpdir(), "pi-goal-install-dry-"));
 try {
@@ -49,6 +51,7 @@ try {
   assert.match(output, /would install: RTK/);
   assert.match(output, /would install: OmniRoute/);
   assert.match(output, /would install: global Codex and Claude skill copies/);
+  assert.doesNotMatch(output, /autofolderrefactor/);
   assert.deepEqual(fs.readdirSync(dryHome), []);
 } finally {
   fs.rmSync(dryHome, { recursive: true, force: true });
