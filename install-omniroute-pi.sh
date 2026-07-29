@@ -103,7 +103,9 @@ if [ "$config_only" = "0" ]; then
   if ! command -v pi >/dev/null 2>&1; then
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent
   fi
-  npm install -g omniroute
+  if ! command -v omniroute >/dev/null 2>&1; then
+    npm install -g omniroute
+  fi
 
   if ! server_ready; then
     omniroute serve --daemon --no-open

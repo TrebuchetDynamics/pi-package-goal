@@ -11,9 +11,12 @@ assert.match(pkg.scripts["test:package"], /universal-install\.test\.mjs/);
 const installer = fs.readFileSync(path.join(root, "install.sh"), "utf8");
 assert.match(installer, /pacman -S --needed --noconfirm tmux/);
 assert.doesNotMatch(installer, /pacman -Sy\b/, "Arch install must not perform a partial package database refresh");
+assert.match(installer, /install-agent-skills\.sh/);
+assert.match(installer, /install-omniroute-pi\.sh/);
+assert.match(installer, /RTK_INSTALL_URL/);
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 assert.match(readme, /sh install\.sh/);
-assert.match(readme, /Pi, this package, tmux with `tx`, Ketch, and Understand-Anything/);
+assert.match(readme, /Pi, this package, tmux with `tx`, Ketch, Understand-Anything, RTK, OmniRoute, and global Codex\/Claude skill copies/);
 
 function run(args, options = {}) {
   const result = spawnSync("sh", ["install.sh", ...args], {
@@ -31,6 +34,9 @@ assert.match(help, /Pi coding agent/);
 assert.match(help, /tmux and tx/);
 assert.match(help, /Ketch/);
 assert.match(help, /Understand-Anything/);
+assert.match(help, /RTK/);
+assert.match(help, /OmniRoute/);
+assert.match(help, /Codex and Claude/);
 
 const dryHome = fs.mkdtempSync(path.join(os.tmpdir(), "pi-goal-install-dry-"));
 try {
@@ -40,6 +46,9 @@ try {
   assert.match(output, /would install: tmux and tx/);
   assert.match(output, /would install: Ketch/);
   assert.match(output, /would install: Understand-Anything/);
+  assert.match(output, /would install: RTK/);
+  assert.match(output, /would install: OmniRoute/);
+  assert.match(output, /would install: global Codex and Claude skill copies/);
   assert.deepEqual(fs.readdirSync(dryHome), []);
 } finally {
   fs.rmSync(dryHome, { recursive: true, force: true });
@@ -53,11 +62,14 @@ try {
   const log = path.join(tmp, "pi.log");
   fs.mkdirSync(path.join(understand, "understand-anything-plugin", "skills", "understand"), { recursive: true });
   fs.writeFileSync(path.join(understand, "understand-anything-plugin", "skills", "understand", "SKILL.md"), "# Understand\n");
+  fs.mkdirSync(home, { recursive: true });
+  fs.symlinkSync(path.join(tmp, "missing-understand-plugin"), path.join(home, ".understand-anything-plugin"));
   fs.mkdirSync(bin, { recursive: true });
   fs.writeFileSync(path.join(bin, "pi"), `#!/bin/sh\ncase "$1" in\n  list) exit 0 ;;\n  install) printf '%s\\n' "$*" >> '${log}' ;;\nesac\n`);
   fs.writeFileSync(path.join(bin, "tmux"), "#!/bin/sh\nexit 0\n");
   fs.writeFileSync(path.join(bin, "ketch"), "#!/bin/sh\nprintf 'ketch test\\n'\n");
-  for (const name of ["pi", "tmux", "ketch"]) fs.chmodSync(path.join(bin, name), 0o755);
+  fs.writeFileSync(path.join(bin, "rtk"), "#!/bin/sh\nprintf 'rtk test\\n'\n");
+  for (const name of ["pi", "tmux", "ketch", "rtk"]) fs.chmodSync(path.join(bin, name), 0o755);
 
   const output = run([], {
     env: {
@@ -70,14 +82,21 @@ try {
       TX_BIN_DIR: path.join(tmp, "tx-bin"),
       TX_INSTALL_BACKUP: "0",
       TX_INSTALL_COMPLETIONS: "0",
+      AGENT_SKILLS_DRY_RUN: "1",
+      PI_GOAL_SKIP_OMNIROUTE: "1",
     },
   });
 
   assert.match(fs.readFileSync(log, "utf8"), /install git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.ok(fs.existsSync(path.join(tmp, "tx-bin", "tx")));
+  assert.equal(fs.readlinkSync(path.join(home, ".local", "bin", "ketch")), path.join(bin, "ketch"));
   assert.equal(fs.readlinkSync(path.join(home, ".understand-anything-plugin")), path.join(understand, "understand-anything-plugin"));
   assert.match(output, /installed: Ketch/);
   assert.match(output, /installed: Understand-Anything/);
+  assert.match(output, /installed: RTK/);
+  assert.match(output, /Codex skills dir:/);
+  assert.match(output, /Claude skills dir:/);
+  assert.match(output, /skipped: OmniRoute/);
   assert.match(output, /installation complete/);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

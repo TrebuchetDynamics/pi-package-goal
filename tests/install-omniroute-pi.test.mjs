@@ -12,6 +12,7 @@ const script = path.join(root, "install-omniroute-pi.sh");
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pi-install-"));
 const agentDir = path.join(fixture, "agent");
 const binDir = path.join(fixture, "bin");
+const npmLog = path.join(fixture, "npm.log");
 fs.mkdirSync(agentDir, { recursive: true });
 fs.mkdirSync(binDir, { recursive: true });
 fs.writeFileSync(
@@ -20,6 +21,8 @@ fs.writeFileSync(
 );
 fs.writeFileSync(path.join(agentDir, "settings.json"), `${JSON.stringify({ theme: "keep-me" }, null, 2)}\n`);
 fs.writeFileSync(path.join(binDir, "pi"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+fs.writeFileSync(path.join(binDir, "omniroute"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+fs.writeFileSync(path.join(binDir, "npm"), "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$NPM_LOG\"\n", { mode: 0o755 });
 
 const server = http.createServer(async (request, response) => {
   response.setHeader("content-type", "application/json");
@@ -46,6 +49,7 @@ try {
     PATH: `${binDir}:${process.env.PATH}`,
     PI_CODING_AGENT_DIR: agentDir,
     OMNIROUTE_PI_API_KEY: "fixture-key",
+    NPM_LOG: npmLog,
   };
   const args = [
     script,
@@ -78,6 +82,8 @@ try {
   await execFileAsync("sh", args, { cwd: root, env });
   assert.equal(fs.readdirSync(agentDir).filter((name) => name.startsWith("models.json.bak.")).length, 1);
   assert.equal(fs.readdirSync(agentDir).filter((name) => name.startsWith("settings.json.bak.")).length, 1);
+  await execFileAsync("sh", [script, "--base-url", `http://127.0.0.1:${port}/v1`], { cwd: root, env });
+  assert.equal(fs.existsSync(npmLog), false, "an existing OmniRoute install must not be rewritten by npm");
   const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   assert.ok(pkg.files.includes("install-omniroute-pi.sh"));
 } finally {

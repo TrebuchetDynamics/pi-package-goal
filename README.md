@@ -17,7 +17,7 @@ Requires Pi and Node.js `>=22.19`.
 
 ### All-in-one setup
 
-From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Ketch, and Understand-Anything:
+From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Ketch, Understand-Anything, RTK, OmniRoute, and global Codex/Claude skill copies:
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/pi-package-goal.git
@@ -25,7 +25,7 @@ cd pi-package-goal
 sh install.sh
 ```
 
-It supports macOS, common Linux distributions, and Termux. Existing files are backed up by the `tx` installer; existing Pi, Ketch, and Understand installations are reused. Preview without changes using `sh install.sh --dry-run`. Optional integrations such as OmniRoute, RTK, Onklaud, and global Codex/Claude skill copies remain opt-in.
+It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Ketch, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up same-name skills before replacement. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
 
 To install only the Pi package when Pi already exists:
 
@@ -197,11 +197,11 @@ Generated `.ua/` data (or legacy `.understand-anything/`) and `codebase-map-unde
 
 ## Optional integrations
 
-The package does not silently install external tools. Use only what your workflow needs.
+Installing only the Pi package does not install these external tools. The explicit all-in-one `install.sh` command installs OmniRoute, RTK, and global skill copies by default; use the commands below for individual setup.
 
 ### OmniRoute for Pi
 
-From a checkout, review and run:
+The all-in-one installer runs this by default. For individual setup:
 
 ```bash
 sh install-omniroute-pi.sh
@@ -219,7 +219,7 @@ Remote servers must already expose the requested route.
 
 ### RTK
 
-Install and review [rtk-ai/rtk](https://github.com/rtk-ai/rtk) separately, then use `/rtk status`. The extension fails open when RTK is absent or unsupported.
+The all-in-one installer installs [rtk-ai/rtk](https://github.com/rtk-ai/rtk) through its checksum-verifying official installer. Package-only users can install RTK separately, then use `/rtk status`. The extension fails open when RTK is absent or unsupported.
 
 ```text
 /rtk status
@@ -241,7 +241,7 @@ Use `/onklaud explain` before installation. Pi remains responsible for file chan
 
 ### Global Codex and Claude skill copies
 
-From a checkout:
+The all-in-one installer runs this by default. For individual setup:
 
 ```bash
 sh install-agent-skills.sh

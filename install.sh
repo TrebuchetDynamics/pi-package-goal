@@ -4,9 +4,13 @@ set -eu
 script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 
 : "${HOME:?HOME is required}"
+PATH="$HOME/.local/bin:$HOME/.local/share/pi-node/current/bin:$PATH"
+export PATH
 
 PI_GOAL_SOURCE=${PI_GOAL_SOURCE:-git:github.com/TrebuchetDynamics/pi-package-goal}
 PI_INSTALL_URL=${PI_INSTALL_URL:-https://pi.dev/install.sh}
+RTK_INSTALL_URL=${RTK_INSTALL_URL:-https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh}
+PI_GOAL_SKIP_OMNIROUTE=${PI_GOAL_SKIP_OMNIROUTE:-0}
 dry_run=0
 
 usage() {
@@ -16,12 +20,18 @@ Usage: sh install.sh [--dry-run]
 Install the complete pi-package-goal setup:
   - Pi coding agent and this Pi package
   - tmux and tx with the bundled tmux profile
-  - Ketch research binary
-  - Understand-Anything skills
+  - Ketch research binary and Understand-Anything skills
+  - RTK binary
+  - OmniRoute daemon and Pi configuration
+  - Global Codex and Claude skill copies
 
 Options:
   --dry-run  Print the installation plan without changing the system
   -h, --help Show this help
+
+Environment:
+  PI_GOAL_SKIP_OMNIROUTE=1  Skip OmniRoute installation and configuration
+  RTK_VERSION=vX.Y.Z        Pin the RTK version used by its official installer
 EOF
 }
 
@@ -34,13 +44,21 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+case "$PI_GOAL_SKIP_OMNIROUTE" in
+  0|1) ;;
+  *) printf 'install: PI_GOAL_SKIP_OMNIROUTE must be 0 or 1\n' >&2; exit 2 ;;
+esac
+
 if [ "$dry_run" = 1 ]; then
   printf '%s\n' \
     'would install: Pi coding agent' \
     "would install: pi-package-goal ($PI_GOAL_SOURCE)" \
     'would install: tmux and tx' \
     'would install: Ketch' \
-    'would install: Understand-Anything'
+    'would install: Understand-Anything' \
+    'would install: RTK' \
+    'would install: OmniRoute' \
+    'would install: global Codex and Claude skill copies'
   exit 0
 fi
 
@@ -92,8 +110,6 @@ else
   require curl
   printf 'installing: Pi coding agent\n'
   curl -fsSL "$PI_INSTALL_URL" | sh
-  PATH="$HOME/.local/bin:$HOME/.local/share/pi-node/current/bin:$PATH"
-  export PATH
   hash -r
   require pi
 fi
@@ -112,6 +128,8 @@ printf 'installed: tmux and tx\n'
 require node
 node --input-type=module - "$script_dir/extensions/ketch/index.js" <<'NODE'
 import { execFile } from "node:child_process";
+import { lstat, mkdir, readlink, symlink, unlink } from "node:fs/promises";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const extensionPath = process.argv[2];
@@ -130,7 +148,23 @@ const pi = {
   },
 };
 const result = await ensureKetch(pi);
-console.log(`installed: Ketch (${result.binary})`);
+const linkDir = path.join(process.env.HOME, ".local", "bin");
+const link = path.join(linkDir, "ketch");
+await mkdir(linkDir, { recursive: true });
+try {
+  const stat = await lstat(link);
+  if (!stat.isSymbolicLink()) throw new Error(`refusing to replace existing file: ${link}`);
+  if (path.resolve(linkDir, await readlink(link)) !== path.resolve(result.binary)) await unlink(link);
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
+try {
+  await lstat(link);
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+  await symlink(result.binary, link);
+}
+console.log(`installed: Ketch (${result.binary}; command: ${link})`);
 NODE
 
 require git
@@ -154,10 +188,33 @@ if [ ! -f "$understand_skill" ]; then
   fi
 fi
 
+if [ -L "$understand_link" ] && [ ! -e "$understand_link" ]; then
+  rm "$understand_link"
+fi
 if [ ! -e "$understand_link" ] && [ ! -L "$understand_link" ]; then
   ln -s "$understand_plugin" "$understand_link"
 fi
 printf 'installed: Understand-Anything (%s)\n' "$understand_dir"
+
+if command -v rtk >/dev/null 2>&1; then
+  printf 'present: RTK (%s)\n' "$(rtk --version)"
+else
+  require curl
+  curl -fsSL "$RTK_INSTALL_URL" | sh
+  hash -r
+  require rtk
+fi
+printf 'installed: RTK\n'
+
+sh "$script_dir/install-agent-skills.sh"
+printf 'installed: global Codex and Claude skill copies\n'
+
+if [ "$PI_GOAL_SKIP_OMNIROUTE" = "1" ]; then
+  printf 'skipped: OmniRoute\n'
+else
+  sh "$script_dir/install-omniroute-pi.sh"
+  printf 'installed: OmniRoute\n'
+fi
 
 printf '\ninstallation complete\n'
 printf 'next: ensure %s is on PATH, then run pi and /login\n' "$HOME/.local/bin"
