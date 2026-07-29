@@ -1,11 +1,11 @@
 # Goal Technical Auditor Ledger
 
 - Run: `1785362414639-21eaeac321be`
-- Phase: `final_validation`
+- Phase: `delivery_pending`
 - Scope: `.`
 - Branch: `main`
 - Baseline commit: `2544d6d0bfcd3baea87b79fa7cc9620d8ea34f35`
-- Latest green commit: `2d40cbab22c92487171d0f5f4463212817b5e1c7`
+- Latest green commit: `b205514d7dd441a305c4d4d880d0109296cf7703`
 - Audit passes: 2
 - Clean audit pass: 2
 
@@ -47,6 +47,11 @@ Mega automation contract:
 
 ## Validation receipts
 
+- `node tests/validate-package.mjs` — exit 0
+- `npm audit --omit=dev --audit-level=high` — exit 0
+- `git diff --check` — exit 0
+- `npm test` — exit 0
+- `npm pack --dry-run` — exit 0
 - `node tests/validate-package.mjs` — exit 0
 - `npm audit --omit=dev --audit-level=high` — exit 0
 - `git diff --check` — exit 0
