@@ -15,6 +15,20 @@
 
 Requires Pi and Node.js `>=22.19`.
 
+### All-in-one setup
+
+From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Ketch, and Understand-Anything:
+
+```bash
+git clone https://github.com/TrebuchetDynamics/pi-package-goal.git
+cd pi-package-goal
+sh install.sh
+```
+
+It supports macOS, common Linux distributions, and Termux. Existing files are backed up by the `tx` installer; existing Pi, Ketch, and Understand installations are reused. Preview without changes using `sh install.sh --dry-run`. Optional integrations such as OmniRoute, RTK, Onklaud, and global Codex/Claude skill copies remain opt-in.
+
+To install only the Pi package when Pi already exists:
+
 ```bash
 pi install git:github.com/TrebuchetDynamics/pi-package-goal
 ```

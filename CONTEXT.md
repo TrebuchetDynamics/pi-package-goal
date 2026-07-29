@@ -8,6 +8,10 @@ This package ships Pi skills plus `/understand`, folder-refactor, RTK bridge, On
 The npm/Pi package metadata: package name, repository URL, homepage, issue URL, package description, package keywords, packaged files, `pi.skills`, and `pi.extensions` manifests.
 _Avoid_: stale resource manifests, deleted command entrypoints, docs that omit packaged resources
 
+**Universal Installer**:
+The root `install.sh` composes the official Pi bootstrap, Pi package installation, the existing tmux/`tx` installer, Ketch's checksummed binary installer, and Understand-Anything's established checkout layout into one idempotent setup command for macOS, Linux, and Termux.
+_Avoid_: duplicating component installers, silently installing optional OmniRoute/RTK/Onklaud integrations, overwriting existing Understand checkouts, claiming native Windows support for the POSIX shell entrypoint
+
 **Understand Extension**:
 The package-local extension at `extensions/understand/index.js` registers `/understand` and related aliases. It clones/updates `Lum1104/Understand-Anything` into the user checkout and dispatches to the upstream skill files instead of copying upstream code into this package.
 _Avoid_: silent startup network work, shell-injected git commands, bundling upstream code without notices
