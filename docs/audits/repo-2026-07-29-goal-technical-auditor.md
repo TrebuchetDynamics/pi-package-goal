@@ -1,13 +1,13 @@
 # Goal Technical Auditor Ledger
 
 - Run: `1785362414639-21eaeac321be`
-- Phase: `re_auditing`
+- Phase: `final_validation`
 - Scope: `.`
 - Branch: `main`
 - Baseline commit: `2544d6d0bfcd3baea87b79fa7cc9620d8ea34f35`
-- Latest green commit: `5a596082022eda617d5a5e6dcfdc444b954b05ea`
-- Audit passes: 1
-- Clean audit pass: not recorded
+- Latest green commit: `2d40cbab22c92487171d0f5f4463212817b5e1c7`
+- Audit passes: 2
+- Clean audit pass: 2
 
 ## Objective
 
