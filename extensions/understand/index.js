@@ -1,4 +1,4 @@
-import { lstat, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from "node:path";
 import { createRepoBackedSkillBridge, pathExists } from "../_shared/pi-bridge/lifecycle.js";
 import { splitCommandArgs, splitFirstArg } from "../_shared/pi-bridge/command-grammar.js";
@@ -527,12 +527,13 @@ async function isInstalled(paths = getUnderstandPaths()) {
 
 async function linkPluginRoot(paths) {
   try {
-    await lstat(paths.pluginLink);
-    return;
+    const stat = await lstat(paths.pluginLink);
+    if (!stat.isSymbolicLink() || await pathExists(paths.pluginLink)) return;
+    await rm(paths.pluginLink);
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
-    await symlink(paths.pluginDir, paths.pluginLink, "dir");
   }
+  await symlink(paths.pluginDir, paths.pluginLink, "dir");
 }
 
 const understandLifecycle = createRepoBackedSkillBridge({

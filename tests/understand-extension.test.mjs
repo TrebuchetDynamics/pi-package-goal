@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readlink, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import understandAnythingExtension, {
@@ -418,6 +418,39 @@ function makePiRecorder() {
   assert.equal(recorder.dispatchedUserMessages.length, 0);
   assert.equal(recorder.postedMessages.length, 1);
   assert.match(recorder.postedMessages[0].content, /unknown \/understand option: --bogus/);
+}
+
+{
+  const installFixture = await mkdtemp(join(tmpdir(), "understand-install-link-"));
+  const home = join(installFixture, "home");
+  const repoDir = join(installFixture, "repo");
+  const pluginDir = join(repoDir, "understand-anything-plugin");
+  const pluginLink = join(home, ".understand-anything-plugin");
+  await mkdir(join(pluginDir, "skills", "understand"), { recursive: true });
+  await writeFile(join(pluginDir, "skills", "understand", "SKILL.md"), "# Understand\n");
+  await mkdir(home, { recursive: true });
+  await symlink(join(installFixture, "missing-plugin"), pluginLink);
+  const previousHome = process.env.HOME;
+  const previousUaDir = process.env.UA_DIR;
+  process.env.HOME = home;
+  process.env.UA_DIR = repoDir;
+  try {
+    const commands = new Map();
+    const recorder = makePiRecorder();
+    understandAnythingExtension({
+      ...recorder.pi,
+      on() {},
+      registerCommand(name, definition) { commands.set(name, definition); },
+    });
+    await commands.get("understand").handler("install", { cwd: installFixture, hasUI: false });
+    assert.equal(await readlink(pluginLink), pluginDir);
+  } finally {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+    if (previousUaDir === undefined) delete process.env.UA_DIR;
+    else process.env.UA_DIR = previousUaDir;
+    await rm(installFixture, { recursive: true, force: true });
+  }
 }
 
 {
