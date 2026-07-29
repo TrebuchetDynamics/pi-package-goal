@@ -70,6 +70,7 @@ assert.equal(cleanAudit.phase, "final_validation");
 const verified = applyRunEvent(cleanAudit, { type: "final_validation_passed", receipts: [{ command: "npm test", code: 0 }], ledgerCommit: "ccc333", now: 10 });
 assert.equal(verified.phase, "delivery_pending");
 assert.match(completionBlocker(verified), /delivery_pending/);
+assert.match(renderAuditLedger(verified), /ledger snapshot is committed before the controller pushes/i);
 const delivered = applyRunEvent(verified, { type: "push_succeeded", remote: "origin", branch: "feature/audit", now: 11 });
 assert.equal(completionBlocker(delivered), null);
 assert.equal(delivered.phase, "ready_to_complete");

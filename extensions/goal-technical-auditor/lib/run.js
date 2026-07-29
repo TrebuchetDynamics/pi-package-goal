@@ -265,7 +265,11 @@ export function renderAuditLedger(run) {
     ? run.receipts.map((receipt) => `- \`${receipt.command}\` — exit ${receipt.code}`).join("\n")
     : "- None recorded";
 
-  return `# Goal Technical Auditor Ledger\n\n- Run: \`${run.id}\`\n- Phase: \`${run.phase}\`\n- Scope: \`${run.scope}\`\n- Branch: \`${run.branch}\`\n- Baseline commit: \`${run.baselineCommit ?? "not recorded"}\`\n- Latest green commit: \`${run.latestGreenCommit ?? "not recorded"}\`\n- Audit passes: ${run.auditPass}\n- Clean audit pass: ${run.cleanAuditPass ?? "not recorded"}\n\n## Objective\n\n${run.objective}\n\n## Findings\n\n| ID | Severity | Status | Title | Evidence | Commit / stash |\n| --- | --- | --- | --- | --- | --- |\n${findings}\n\n## Validation receipts\n\n${receipts}\n\n## Delivery\n\n${run.delivery ? `Pushed \`${run.delivery.branch}\` to \`${run.delivery.remote}\` in session state.` : "Final push not yet recorded in session state."}\n`;
+  return `# Goal Technical Auditor Ledger\n\n- Run: \`${run.id}\`\n- Phase: \`${run.phase}\`\n- Scope: \`${run.scope}\`\n- Branch: \`${run.branch}\`\n- Baseline commit: \`${run.baselineCommit ?? "not recorded"}\`\n- Latest green commit: \`${run.latestGreenCommit ?? "not recorded"}\`\n- Audit passes: ${run.auditPass}\n- Clean audit pass: ${run.cleanAuditPass ?? "not recorded"}\n\n## Objective\n\n${run.objective}\n\n## Findings\n\n| ID | Severity | Status | Title | Evidence | Commit / stash |\n| --- | --- | --- | --- | --- | --- |\n${findings}\n\n## Validation receipts\n\n${receipts}\n\n## Delivery\n\n${run.delivery
+    ? `Pushed \`${run.delivery.branch}\` to \`${run.delivery.remote}\` in session state.`
+    : run.phase === "delivery_pending"
+      ? "Delivery is pending: this ledger snapshot is committed before the controller pushes. Verify final delivery in controller session state and Git remote state."
+      : "Final push not yet recorded in session state."}\n`;
 }
 
 const execFileAsync = promisify(execFile);
