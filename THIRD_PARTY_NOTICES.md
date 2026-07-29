@@ -214,6 +214,15 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/1broseidon-ketch-LICENSE`
 
+## jeff-phil/pi-posher
+
+- Source: https://github.com/jeff-phil/pi-posher
+- Bundled version: `0.3.2` (`d04ab1f98cf332cbe693236d2ece448cf21a47c2`)
+- Bundled path: `node_modules/pi-posher/` through the package's `bundledDependencies`
+- Security assumptions: global defaults are user-owned and may run formatter, linter, package-manager, and SAST commands after edits; project-local `.pi/poshifiers.json` commands require hash-based trust and are rejected in non-interactive mode.
+- License: MIT
+- Full license copy: `licenses/jeff-phil-pi-posher-LICENSE`
+
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk

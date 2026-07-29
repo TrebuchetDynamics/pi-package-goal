@@ -13,7 +13,7 @@
 
 ## Quick start
 
-Requires Pi and Node.js `>=22`.
+Requires Pi and Node.js `>=22.19`.
 
 ```bash
 pi install git:github.com/TrebuchetDynamics/pi-package-goal
@@ -84,10 +84,10 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | Surface | Included | Purpose |
 | --- | ---: | --- |
 | Agent skills | **62** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
-| Pi extensions | **10** | Commands, tools, hooks, status behavior, and research bridges |
+| Pi extensions | **11** | Commands, tools, hooks, status behavior, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |
-| Runtime dependencies | **0** | Pi core packages remain optional peers |
+| Direct runtime dependencies | **1** | Bundled `pi-posher`; Pi core packages remain optional peers |
 
 ### Core extension surfaces
 
@@ -102,6 +102,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | `/ketch` | Web, public-code, documentation, scrape, and crawl research routing |
 | `/onklaud` | Advisory Onklaud council while Pi retains mutation ownership |
 | `/s3upload` | Dispatch to the separately installed Azure upload workflow |
+| `/poshify` | Run configured formatters, linters, fixes, and audits after edits or on demand |
 | Mobile low-redraw | Hides the repainting work timer inside SSH + tmux sessions |
 
 <details>
@@ -269,7 +270,7 @@ The loop ranks bounded folder candidates, preserves dirty work, runs guarded ref
 ## Safety model
 
 - Package extensions and skills run with your local permissions; review source before installation.
-- External tools are opt-in and remain outside the package's runtime dependencies.
+- `pi-posher` is bundled, but its formatter/linter/audit executables remain external and user-configurable; review its seeded global config before relying on automatic post-edit checks.
 - Delivery workflows do not deploy, release, force-push, rebase, or rewrite history without explicit authorization.
 - Graphs, councils, catalogs, and reviewer output are evidence inputs—not authority.
 - Advisors and reviewers use the [clean-context delegation contract](skills/shared/CLEAN-CONTEXT-DELEGATION.md) when the host supports isolated workers.
@@ -302,7 +303,8 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
       "./extensions/ketch",
       "./extensions/onklaud",
       "./extensions/mobile-low-redraw",
-      "./extensions/s3upload"
+      "./extensions/s3upload",
+      "./node_modules/pi-posher/src/index.ts"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
@@ -310,7 +312,7 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
 }
 ```
 
-Pi core imports are optional peer dependencies. The root package intentionally has no runtime dependencies.
+Pi core imports remain optional peer dependencies. `pi-posher` is pinned and bundled as the package's only direct runtime dependency; review `~/.pi/agent/extensions/pi-posher/poshifiers.json` because its user-owned defaults can run external formatting, linting, and audit commands after edits.
 
 ## Update or remove
 

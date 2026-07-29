@@ -108,6 +108,10 @@ _Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting 
 The package-local extension at `extensions/ketch/index.js` exposes one `ketch` model tool plus a thin `/ketch <request>` command that queues the tool-backed research workflow. It infers web search, public code search, library docs, URL scrape, or bounded crawl from a request. It prefers `$KETCH_BIN` or `ketch` on `PATH`, then auto-installs the pinned Ketch v0.11.0 release into the user cache after SHA-256 verification; it never changes Ketch backend configuration automatically.
 _Avoid_: multiple command wrappers, startup installation, unpinned downloads, unverified archives, global package-manager mutation, automatic API-key/config changes, unbounded output, or using external search for the local codebase
 
+**Pi Posher Extension**:
+The bundled `pi-posher` dependency registers `/poshify`, `run_poshify`, and post-write/edit formatter, linter, and audit hooks. It seeds user-owned global defaults, executes configured commands without a shell, and requires hash-based trust before project-local `.pi/poshifiers.json` commands can run.
+_Avoid_: treating seeded formatter/SAST tools as installed dependencies, silently trusting project-local command configs, hiding automatic post-edit command execution, modifying upstream code without updating provenance
+
 **Skill Router Skill**:
 A front-door planning skill under `skills/planning/skill-router/` that selects exactly one primary skill for a user task and routes blank tasks to `autonomous-codebase-improver` so the agent can still work autonomously from repo evidence.
 _Avoid_: becoming a second planning layer, stacking skills up front, using routing as approval for risky actions

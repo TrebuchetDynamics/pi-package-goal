@@ -17,7 +17,7 @@
     "url": "https://github.com/TrebuchetDynamics/pi-package-goal/issues"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.19.0"
   },
   "keywords": [
     "pi-package",
@@ -66,7 +66,8 @@
       "./extensions/ketch",
       "./extensions/onklaud",
       "./extensions/mobile-low-redraw",
-      "./extensions/s3upload"
+      "./extensions/s3upload",
+      "./node_modules/pi-posher/src/index.ts"
     ],
     "skills": [
       "./skills"
@@ -104,5 +105,11 @@
     "prepublishOnly": "node scripts/ensure-clean-worktree.mjs && npm test",
     "validate": "npm test",
     "tmux:install": "sh tmux/install.sh"
-  }
+  },
+  "dependencies": {
+    "pi-posher": "0.3.2"
+  },
+  "bundledDependencies": [
+    "pi-posher"
+  ]
 }

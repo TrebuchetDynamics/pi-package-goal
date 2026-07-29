@@ -455,6 +455,7 @@ async function testPackageManifest() {
   const pkg = readJson("package.json");
   assert.equal(pkg.name, "pi-package-goal");
   assert.equal(pkg.type, "module");
+  assert.equal(pkg.engines.node, ">=22.19.0");
   assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-package-goal.git");
   assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-goal#readme");
   assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-goal/issues");
@@ -464,12 +465,18 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./node_modules/pi-posher/src/index.ts"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
+    if (extensionPath.startsWith("./node_modules/")) {
+      assert.equal(fs.statSync(absolutePath).isFile(), true, `${extensionPath} must expose a runtime-loadable extension file`);
+      continue;
+    }
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
     assert.equal(exists(path.join(extensionPath, "index.js")), true, `${extensionPath} must expose runtime-loadable index.js`);
   }
+  assert.deepEqual(pkg.dependencies, { "pi-posher": "0.3.2" });
+  assert.deepEqual(pkg.bundledDependencies, ["pi-posher"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.files.includes("extensions"), true, "package tarball must include package extensions");
@@ -481,6 +488,7 @@ async function testPackageManifest() {
   assert.equal(pkg.files.includes("codebase-map-understand.md"), false, "package tarball must not include generated Understand agent maps");
   assert.ok(exists(".github/workflows/ci.yml"), "CI must run package validation");
   const ci = read(".github/workflows/ci.yml");
+  assert.match(ci, /npm ci --ignore-scripts --legacy-peer-deps/);
   assert.match(ci, /npm test/);
   assert.match(ci, /actions\/checkout@[a-f0-9]{40}/);
   assert.match(ci, /actions\/setup-node@[a-f0-9]{40}/);
