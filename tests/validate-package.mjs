@@ -490,6 +490,7 @@ async function testPackageManifest() {
   const ci = read(".github/workflows/ci.yml");
   assert.match(ci, /npm ci --ignore-scripts/);
   assert.doesNotMatch(ci, /npm ci[^\n]*--legacy-peer-deps/, ".npmrc must own the git-package peer install policy");
+  assert.match(ci, /npm audit --omit=dev --audit-level=high/, "CI must audit root runtime dependencies");
   assert.match(ci, /npm test/);
   assert.match(ci, /actions\/checkout@[a-f0-9]{40}/);
   assert.match(ci, /actions\/setup-node@[a-f0-9]{40}/);
