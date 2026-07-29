@@ -328,6 +328,8 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
 
 Pi core imports remain optional peer dependencies. `pi-posher` is pinned and bundled as the package's only direct runtime dependency; review `~/.pi/agent/extensions/pi-posher/poshifiers.json` because its user-owned defaults can run external formatting, linting, and audit commands after edits.
 
+The root `.npmrc` intentionally disables npm's automatic peer installation for git-package checkouts. Pi already provides those host packages; installing duplicate copies adds unnecessary dependencies and can introduce unrelated audit findings.
+
 ## Update or remove
 
 ```bash
