@@ -5,7 +5,7 @@
 - Scope: `.`
 - Branch: `main`
 - Baseline commit: `2544d6d0bfcd3baea87b79fa7cc9620d8ea34f35`
-- Latest green commit: `2544d6d0bfcd3baea87b79fa7cc9620d8ea34f35`
+- Latest green commit: `10a40a95082553638e02007ea5f68bfbbfe6a03d`
 - Audit passes: 1
 - Clean audit pass: not recorded
 
@@ -41,12 +41,17 @@ Mega automation contract:
 
 | ID | Severity | Status | Title | Evidence | Commit / stash |
 | --- | --- | --- | --- | --- | --- |
-| F-1 | High | pending | Prevent duplicate Pi host peer installation | Managed git checkout installed 137 packages; npm audit reported GHSA-mh99-v99m-4gvg under node_modules/@earendil-works/pi-coding-agent. package-lock.json:67-70 shows pi-posher's Pi peer declarations; .npmrc:1 and tests/validate-package.mjs:610-619 contain the pre-audit safety fix. | — |
+| F-1 | High | fixed | Prevent duplicate Pi host peer installation | Managed git checkout installed 137 packages; npm audit reported GHSA-mh99-v99m-4gvg under node_modules/@earendil-works/pi-coding-agent. package-lock.json:67-70 shows pi-posher's Pi peer declarations; .npmrc:1 and tests/validate-package.mjs:610-619 contain the pre-audit safety fix. | 10a40a95082553638e02007ea5f68bfbbfe6a03d |
 | F-2 | Medium | pending | Audit root runtime dependencies in CI | .github/workflows/ci.yml:16-27 installs root runtime dependencies and audits only skills/frontend/stitch-react-components; package.json declares pi-posher as a runtime dependency. | — |
 | F-3 | Medium | pending | Avoid Arch Linux partial package upgrade | install.sh:77-78 runs pacman -Sy --needed --noconfirm tmux; tests/universal-install.test.mjs:59-78 only exercises the already-installed tmux path. | — |
 
 ## Validation receipts
 
+- `node tests/validate-package.mjs` — exit 0
+- `npm audit --omit=dev --audit-level=high` — exit 0
+- `git diff --check` — exit 0
+- `npm test` — exit 0
+- `npm pack --dry-run` — exit 0
 - `node tests/validate-package.mjs` — exit 0
 - `npm audit --omit=dev --audit-level=high` — exit 0
 - `git diff --check` — exit 0
