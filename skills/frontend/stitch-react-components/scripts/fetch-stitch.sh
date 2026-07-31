@@ -19,9 +19,13 @@ if [ -z "$URL" ] || [ -z "$OUTPUT" ]; then
   echo "Usage: $0 <url> <output_path>"
   exit 1
 fi
+mkdir -p "$(dirname "$OUTPUT")"
 echo "Initiating high-reliability fetch for Stitch HTML..."
-curl -L -f -sS --connect-timeout 10 --compressed "$URL" -o "$OUTPUT"
-if [ $? -eq 0 ]; then
+TEMP_OUTPUT=$(mktemp "${OUTPUT}.tmp.XXXXXX") || exit 1
+trap 'rm -f "$TEMP_OUTPUT"' EXIT
+if curl -L -f -sS --connect-timeout 10 --compressed "$URL" -o "$TEMP_OUTPUT" &&
+  mv -f "$TEMP_OUTPUT" "$OUTPUT"; then
+  trap - EXIT
   echo "✅ Successfully retrieved HTML at: $OUTPUT"
   exit 0
 else

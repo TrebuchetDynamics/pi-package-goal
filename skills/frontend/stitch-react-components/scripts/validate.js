@@ -18,7 +18,7 @@ import swc from '@swc/core';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}/;
+import { hasHardcodedHex, jsxAttributeText } from './validation-rules.js';
 
 async function validateComponent(filePath) {
   const code = fs.readFileSync(filePath, 'utf-8');
@@ -34,7 +34,8 @@ async function validateComponent(filePath) {
       if (!node) return;
       if (node.type === 'TsInterfaceDeclaration' && node.id.value.endsWith('Props')) hasInterface = true;
       if (node.type === 'JSXAttribute' && (node.name?.value === 'className' || node.name?.name === 'className')) {
-        if (node.value?.value && HEX_COLOR_REGEX.test(node.value.value)) tailwindIssues.push(node.value.value);
+        const value = jsxAttributeText(node.value);
+        if (value && hasHardcodedHex(value)) tailwindIssues.push(value);
       }
       for (const key in node) { if (node[key] && typeof node[key] === 'object') walk(node[key]); }
     };

@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { hasHardcodedHex, jsxAttributeText } from "../skills/frontend/stitch-react-components/scripts/validation-rules.js";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 
@@ -194,6 +195,80 @@ function testClaudeSkillsInstallerCompatibilityWrapper() {
   }
 }
 
+function testStitchHexDetection() {
+  for (const color of ["#fff", "#ffff", "#ffffff", "#ffffffff"]) {
+    assert.equal(hasHardcodedHex(`bg-[${color}]`), true, `${color} must be rejected`);
+  }
+  assert.equal(hasHardcodedHex("bg-[#fffff]"), false);
+  assert.equal(jsxAttributeText({
+    type: "JSXExpressionContainer",
+    expression: { type: "StringLiteral", value: "bg-[#fff]" },
+  }), "bg-[#fff]");
+  assert.equal(jsxAttributeText({
+    type: "JSXExpressionContainer",
+    expression: {
+      type: "TemplateLiteral",
+      quasis: [{ type: "TemplateElement", cooked: "bg-[#fff]", raw: "bg-[#fff]" }],
+    },
+  }), "bg-[#fff]");
+  assert.equal(jsxAttributeText({
+    type: "JSXExpressionContainer",
+    expression: {
+      type: "CallExpression",
+      arguments: [
+        { expression: { type: "StringLiteral", value: "bg-[#fff]" } },
+        { expression: { type: "StringLiteral", value: "p-2" } },
+      ],
+    },
+  }), "bg-[#fff] p-2");
+}
+
+function testStitchFetchCreatesOutputDirectory() {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "stitch-fetch-"));
+  try {
+    const source = path.join(fixture, "source.html");
+    const output = path.join(fixture, ".stitch", "designs", "page.html");
+    fs.writeFileSync(source, "stitch fixture\n");
+    execFileSync("bash", [
+      path.join(root, "skills/frontend/stitch-react-components/scripts/fetch-stitch.sh"),
+      new URL(`file://${source}`).href,
+      output,
+    ]);
+    assert.equal(fs.readFileSync(output, "utf8"), "stitch fixture\n");
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
+function testStitchFetchPreservesExistingOutput() {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "stitch-fetch-atomic-"));
+  try {
+    const binDir = path.join(fixture, "bin");
+    const output = path.join(fixture, "page.html");
+    fs.mkdirSync(binDir);
+    fs.writeFileSync(path.join(binDir, "curl"), `#!/bin/sh
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "-o" ]; then printf partial > "$2"; exit 18; fi
+  shift
+done
+exit 18
+`);
+    fs.chmodSync(path.join(binDir, "curl"), 0o755);
+    fs.writeFileSync(output, "known-good\n");
+    assert.throws(() => execFileSync("bash", [
+      path.join(root, "skills/frontend/stitch-react-components/scripts/fetch-stitch.sh"),
+      "https://example.invalid/design",
+      output,
+    ], {
+      env: { ...process.env, PATH: `${binDir}:${process.env.PATH}` },
+      stdio: ["ignore", "pipe", "pipe"],
+    }), { status: 1 });
+    assert.equal(fs.readFileSync(output, "utf8"), "known-good\n");
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
 function testStitchSkillUsesBundledResourcePrefix() {
   const skill = fs.readFileSync(path.join(root, "skills/frontend/stitch-react-components/SKILL.md"), "utf8");
   assert.match(skill, /Set `SKILL_DIR` to this skill directory/);
@@ -216,6 +291,9 @@ testUiVaultSearch();
 testUiVaultDiagnosisContract();
 testAgentSkillsInstaller();
 testClaudeSkillsInstallerCompatibilityWrapper();
+testStitchHexDetection();
 testStitchSkillUsesBundledResourcePrefix();
+testStitchFetchCreatesOutputDirectory();
+testStitchFetchPreservesExistingOutput();
 
 console.log("skill-helper-scripts ok");
