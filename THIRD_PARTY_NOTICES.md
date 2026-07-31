@@ -21,9 +21,11 @@ Trebuchet Dynamics under the MIT License.
 - Latest engineering skills comparison inspected: `694fa30` (upstream engineering grill-with-docs and improve-codebase-architecture skills)
 - Latest skill-design comparison inspected: `ed37663` (upstream writing-great-skills, TDD, and diagnosing-bugs guidance)
 - Latest caveman skill inspected: `694fa30`
+- Wayfinder skill snapshot inspected: `2ab9580`
 - Bundled paths:
   - `skills/engineering/tdd/`
   - `skills/engineering/diagnose/`
+  - `skills/engineering/wayfinder/`
   - `skills/engineering/improve-codebase-architecture/`
   - `skills/engineering/technical-auditor/references/architecture-deepening-dependencies.md`
   - `skills/engineering/technical-auditor/references/architecture-deepening-mode.md`

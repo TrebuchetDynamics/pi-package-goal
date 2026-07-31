@@ -18,6 +18,7 @@ const expectedSkills = [
   "wiki-docs",
   "improve-codebase-architecture",
   "technical-auditor",
+  "wayfinder",
   "grill-me",
   "grill-with-docs",
   "prototype",
@@ -676,6 +677,12 @@ async function testSkills() {
   const tdd = read("skills/engineering/tdd/SKILL.md");
   assert.match(tdd, /Repo study before RED/);
   assert.match(tdd, /git status --short --branch/);
+  const wayfinder = read("skills/engineering/wayfinder/SKILL.md");
+  assert.match(wayfinder, /disable-model-invocation: true/);
+  assert.match(wayfinder, /## Pi package adaptation/);
+  assert.match(wayfinder, /explicit tracker mutation approval/);
+  assert.ok(exists("skills/engineering/wayfinder/agents/openai.yaml"));
+  assert.match(read("THIRD_PARTY_NOTICES.md"), /skills\/engineering\/wayfinder\//);
   assert.match(read("skills/engineering/prototype/SKILL.md"), /Repo study before building/);
   const candidatesFolderRefactor = read("skills/engineering/candidates-folder-refactor/SKILL.md");
   assert.match(candidatesFolderRefactor, /Top candidates/);
