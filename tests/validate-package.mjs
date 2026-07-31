@@ -696,6 +696,10 @@ async function testSkills() {
   assert.match(candidatesFolderRefactor, /autofolderrefactor <loops> \[folder\]/);
   const lgtm = read("skills/planning/lgtm/SKILL.md");
   assert.match(lgtm, /candidates-folder-refactor/);
+  assert.match(lgtm, /Wayfinder/);
+  assert.match(lgtm, /named tracker and exact issue mutations/);
+  assert.match(lgtm, /one named frontier ticket/);
+  assert.match(wayfinder, /`lgtm` counts as tracker approval only/);
   assert.match(lgtm, /selecting the #1 top candidate/);
   assert.match(lgtm, /immediately run `\/folder-refactor <candidate #1>`/);
   assert.match(lgtm, /extension invokes `skill-folder-refactor`/);

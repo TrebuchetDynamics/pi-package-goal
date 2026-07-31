@@ -10,6 +10,7 @@ license: MIT
 This bundled copy preserves Wayfinder's map model while adapting its external-action assumptions to Pi:
 
 - Treat `/skill:wayfinder` as workflow intent, not automatic tracker mutation approval. Require explicit tracker mutation approval and a named tracker before creating, assigning, commenting on, linking, or closing issues. Without one, keep the draft map in conversation and ask one focused setup question; do not silently create a local Markdown tracker.
+- `lgtm` counts as tracker approval only when the immediately preceding checkpoint names the tracker and exact issue mutations it will perform. It approves that preview once, never the whole frontier.
 - Use available local specialists for the upstream intents: `brainstorming` for live destination/frontier shaping, `research-forge` for research, `prototype` for reaction artifacts, and `triage` for approved issue operations.
 - Do not invent unavailable setup commands, subagents, or throwaway branches. Run research sequentially unless the host explicitly provides safe isolated workers.
 - Follow the [shared package contract](../../shared/COMMON-CONTRACT.md), especially its tracker, external-action, artifact-continuity, and delivery boundaries.

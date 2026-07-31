@@ -61,6 +61,8 @@ Special continuations:
 
 - Goal slice: continue only the exact approved next slice and preserve its evidence.
 - Architecture/audit: verify named live files, then take the smallest approved implementation or documented design-grilling step.
+- Wayfinder map publication: `lgtm` approves tracker work only when the immediately preceding checkpoint names the named tracker and exact issue mutations and explicitly offers publication on approval. Apply only that previewed map/ticket set through `triage`; do not add newly inferred tickets in the same continuation.
+- Wayfinder frontier: when the checkpoint recommends one named frontier ticket, claim and work only that ticket. Approval of a map, destination, or ticket batch never means resolve the whole frontier.
 - `candidates-folder-refactor`: when the latest report explicitly recommends candidate #1, treat `lgtm` as selecting the #1 top candidate and immediately run `/folder-refactor <candidate #1>` so the extension invokes `skill-folder-refactor`. Carry candidate metrics, boundary, inspected paths, and validation hints.
 
 ## Skill contract
@@ -106,6 +108,8 @@ Assistant: `Validation passed. Recommended next action: wire the bounded CLI ada
 User: `lgtm`
 
 Agent: `Accepted: implement the bounded CLI adapter and rerun the CLI tests.` Then performs only that action and validates it.
+
+Wayfinder example: `If you say lgtm, I will create the previewed map and three named child issues in GitHub.` → `lgtm` approves exactly those four issue creations, not later fog or frontier work.
 
 ## Shared contract
 
