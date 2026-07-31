@@ -2,4 +2,4 @@ interface:
   display_name: "Wayfinder Next"
   short_description: "Resolve one autonomous Wayfinder ticket"
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
