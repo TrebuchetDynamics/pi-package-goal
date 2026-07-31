@@ -28,6 +28,15 @@ Ponytail is not a prose-compression requirement. Final replies should use normal
 
 Before broad codebase exploration, check whether `codebase-map-understand.md` exists. When the task needs relationship, architecture, data-flow, refactor, onboarding, review, impact, route/component, package-resource, or cross-module evidence, consult the codebase map first when present. If no map exists and the task is broad enough to benefit from one, ask before generating new artifacts unless the user has already requested map generation. Generated Understand artifacts (`codebase-map-understand.md`, `.ua/`, or legacy `.understand-anything/`) are local orientation aids unless a repo explicitly says otherwise; do not package or commit them by default. Treat map facts as leads only: verify named files, callers, and tests against live source before editing or reporting.
 
+## Search Hub for live web evidence
+
+When Search Hub tools are available:
+
+- `web_search` queries all available sources by default, merges results, and reports source failures. Do not force one backend unless the user requests it or backend diagnosis requires it.
+- Use `web_read` for selected public HTTP(S) pages after discovery; private and internal hosts are intentionally blocked.
+- Cite original source URLs, prefer authoritative/primary pages, and treat search snippets as leads until the source page supports the claim.
+- Use repository and graph tools—not Search Hub—for local repository evidence. Use `research-forge` when the work requires reproducible search artifacts, systematic coverage, or formal provenance.
+
 ## Bundled resource paths
 
 When a skill references bundled scripts, examples, templates, or other files, resolve those paths relative to that skill's own directory (the parent of `SKILL.md`) and invoke helper commands with absolute paths or package-manager `--prefix` options. Do not assume the user's project cwd contains the skill's `scripts/` or `resources/` folders, and do not install bundled validator dependencies into the user's project unless the skill explicitly says to.

@@ -467,7 +467,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/ketch", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./node_modules/pi-posher/src/index.ts"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     if (extensionPath.startsWith("./node_modules/")) {
@@ -567,14 +567,21 @@ async function testUnderstandExtension() {
   assert.match(rtkExtension, /execRtk\(pi, \["rewrite"/);
   assert.match(rtkExtension, /tool_call/);
 
-  const ketchExtension = read("extensions/ketch/index.js");
-  assert.match(ketchExtension, /registerCommand\?\.\("ketch"/);
-  assert.match(ketchExtension, /deliverAs: "followUp"/);
-  assert.match(ketchExtension, /name: "ketch"/);
-  assert.match(ketchExtension, /inferSurface/);
-  assert.match(ketchExtension, /installKetch/);
-  assert.match(ketchExtension, /verifyChecksum/);
-  assert.ok(exists("tests/ketch-extension.test.mjs"), "ketch extension test must exist");
+  const searchHubExtension = read("extensions/search-hub/index.js");
+  assert.match(searchHubExtension, /registerCommand\?\.\("search-hub"/);
+  assert.match(searchHubExtension, /deliverAs: "followUp"/);
+  assert.match(searchHubExtension, /name: "web_search"/);
+  assert.match(searchHubExtension, /name: "web_read"/);
+  assert.match(searchHubExtension, /searchDuckDuckGo/);
+  assert.match(searchHubExtension, /normalizePublicUrl/);
+  assert.match(searchHubExtension, /boundedOutput/);
+  assert.doesNotMatch(searchHubExtension, /installKetch/);
+  assert.ok(exists("tests/search-hub-extension.test.mjs"), "search-hub extension test must exist");
+
+  const poshifyExtension = read("extensions/poshify/index.js");
+  assert.match(poshifyExtension, /registerPosher\(pi\)/);
+  assert.match(poshifyExtension, /registerPoshifyFollowups/);
+  assert.ok(exists("tests/poshify-followups.test.mjs"), "poshify follow-up tools test must exist");
 
   const s3uploadExtension = read("extensions/s3upload/index.js");
   assert.match(s3uploadExtension, /registerCommand\("s3upload"/);
@@ -895,6 +902,11 @@ async function testSkills() {
   assert.match(read("skills/communication/ponytail/SKILL.md"), /The ladder/);
   assert.match(read("skills/communication/caveman/SKILL.md"), /Optimize vertical space too/);
   assert.match(commonContract, /Repo and ownership check/);
+  assert.match(commonContract, /Search Hub for live web evidence/);
+  assert.match(commonContract, /`web_search` queries all available sources by default/);
+  assert.match(commonContract, /Use `web_read` for selected public HTTP\(S\) pages/);
+  assert.match(commonContract, /Cite original source URLs/);
+  assert.match(commonContract, /local repository evidence/);
   assert.match(commonContract, /Upstream and delivery boundaries/);
   assert.match(commonContract, /portable intent, not automatic permission/);
   assert.match(commonContract, /tools exposed in the current Pi tool list/);
@@ -950,6 +962,7 @@ async function testSkills() {
   assert.ok(exists("skills/engineering/prompt-cache-auditor/scripts/summarize-cache-usage.mjs"), "prompt cache skill helper must exist");
 
   const piEcosystemScout = read("skills/pi/pi-ecosystem-scout/SKILL.md");
+  assert.match(piEcosystemScout, /Use `web_search` for ecosystem discovery and `web_read`/);
   assert.match(piEcosystemScout, /translate the external pattern into a local requirement before editing/);
   assert.match(piEcosystemScout, /pattern-only inspiration belongs in the scout report, not package notices/);
   const piExtensionsHelper = read("skills/pi/pi-extensions-helper/SKILL.md");
@@ -958,6 +971,12 @@ async function testSkills() {
   assert.match(piExtensionsHelper, /Pi owns tool execution/);
   assert.match(piExtensionsHelper, /Keep guardrail logic in pure helpers with focused tests/);
   assert.match(piExtensionsHelper, /Make safety gates fail closed/);
+
+  const researchForge = read("skills/research/research-forge/SKILL.md");
+  assert.match(researchForge, /Search Hub boundary/);
+  assert.match(researchForge, /`web_search` and `web_read` may discover or inspect leads/);
+  assert.match(researchForge, /do not replace rforge provenance artifacts/);
+  assert.match(read("skills/planning/skill-router/SKILL.md"), /simple live-web lookup.*`web_search`.*`web_read`/i);
 
   const s3upload = read("skills/delivery/s3upload/SKILL.md");
   assert.match(s3upload, /recent generated pic\/image/);

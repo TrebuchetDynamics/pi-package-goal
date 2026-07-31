@@ -37,6 +37,7 @@ Use this as the front door when the user wants the agent to choose the workflow.
 
 ## Ambiguity rules
 
+- A simple live-web lookup needs no specialist skill: use `web_search`, then `web_read` for relevant source pages. Route to `research-forge` only when reproducible or systematic research artifacts are required.
 - Pick the smallest reversible workflow with the clearest validation signal.
 - Prefer specific skills over broad ones.
 - Do not stack skills up front.

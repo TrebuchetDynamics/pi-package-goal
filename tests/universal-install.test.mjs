@@ -17,7 +17,7 @@ assert.match(installer, /install-omniroute-pi\.sh/);
 assert.match(installer, /RTK_INSTALL_URL/);
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 assert.match(readme, /sh install\.sh/);
-assert.match(readme, /Pi, this package, tmux with `tx`, Ketch, Understand-Anything, RTK, OmniRoute, and global Codex\/Claude skill copies/);
+assert.match(readme, /Pi, this package, tmux with `tx`, Search Hub, Understand-Anything, RTK, OmniRoute, and global Codex\/Claude skill copies/);
 
 function run(args, options = {}) {
   const result = spawnSync("sh", ["install.sh", ...args], {
@@ -33,7 +33,7 @@ function run(args, options = {}) {
 const help = run(["--help"]);
 assert.match(help, /Pi coding agent/);
 assert.match(help, /tmux and tx/);
-assert.match(help, /Ketch/);
+assert.match(help, /Search Hub/);
 assert.match(help, /Understand-Anything/);
 assert.match(help, /RTK/);
 assert.match(help, /OmniRoute/);
@@ -46,7 +46,6 @@ try {
   assert.match(output, /would install: Pi coding agent/);
   assert.match(output, /would install: pi-package-goal/);
   assert.match(output, /would install: tmux and tx/);
-  assert.match(output, /would install: Ketch/);
   assert.match(output, /would install: Understand-Anything/);
   assert.match(output, /would install: RTK/);
   assert.match(output, /would install: OmniRoute/);
@@ -70,15 +69,13 @@ try {
   fs.mkdirSync(bin, { recursive: true });
   fs.writeFileSync(path.join(bin, "pi"), `#!/bin/sh\ncase "$1" in\n  list) exit 0 ;;\n  install) printf '%s\\n' "$*" >> '${log}' ;;\nesac\n`);
   fs.writeFileSync(path.join(bin, "tmux"), "#!/bin/sh\nexit 0\n");
-  fs.writeFileSync(path.join(bin, "ketch"), "#!/bin/sh\nprintf 'ketch test\\n'\n");
   fs.writeFileSync(path.join(bin, "rtk"), "#!/bin/sh\nprintf 'rtk test\\n'\n");
-  for (const name of ["pi", "tmux", "ketch", "rtk"]) fs.chmodSync(path.join(bin, name), 0o755);
+  for (const name of ["pi", "tmux", "rtk"]) fs.chmodSync(path.join(bin, name), 0o755);
 
   const output = run([], {
     env: {
       HOME: home,
       PATH: `${bin}:${path.dirname(process.execPath)}:${process.env.PATH}`,
-      KETCH_BIN: path.join(bin, "ketch"),
       UA_DIR: understand,
       TMUX_CONF_TARGET: path.join(tmp, "tmux.conf"),
       TMUX_HELPER_DIR: path.join(tmp, "tmux-helpers"),
@@ -92,9 +89,7 @@ try {
 
   assert.match(fs.readFileSync(log, "utf8"), /install git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
   assert.ok(fs.existsSync(path.join(tmp, "tx-bin", "tx")));
-  assert.equal(fs.readlinkSync(path.join(home, ".local", "bin", "ketch")), path.join(bin, "ketch"));
   assert.equal(fs.readlinkSync(path.join(home, ".understand-anything-plugin")), path.join(understand, "understand-anything-plugin"));
-  assert.match(output, /installed: Ketch/);
   assert.match(output, /installed: Understand-Anything/);
   assert.match(output, /installed: RTK/);
   assert.match(output, /Codex skills dir:/);

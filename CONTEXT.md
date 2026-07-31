@@ -9,7 +9,7 @@ The npm/Pi package metadata: package name, repository URL, homepage, issue URL, 
 _Avoid_: stale resource manifests, deleted command entrypoints, docs that omit packaged resources
 
 **Universal Installer**:
-The root `install.sh` composes the official Pi bootstrap, Pi package installation, the existing tmux/`tx`, OmniRoute, and global-skill installers, Ketch's checksummed binary installer, RTK's checksum-verifying official installer, and Understand-Anything's established checkout layout into one idempotent setup command for macOS, Linux, and Termux. Component installers compare generated output before replacement so unchanged reruns do not create redundant backups.
+The root `install.sh` composes the official Pi bootstrap, Pi package installation (including Search Hub), the existing tmux/`tx`, OmniRoute, and global-skill installers, RTK's checksum-verifying official installer, and Understand-Anything's established checkout layout into one idempotent setup command for macOS, Linux, and Termux. Component installers compare generated output before replacement so unchanged reruns do not create redundant backups.
 _Avoid_: duplicating component installers, hiding OmniRoute's daemon/default-provider side effects, silently installing Onklaud, overwriting valid Understand links/checkouts, backing up unchanged generated assets, claiming native Windows support for the POSIX shell entrypoint
 
 **Understand Extension**:
@@ -108,12 +108,12 @@ _Avoid_: argumentative loops, treating pushback as approval, broad plan grilling
 The package-local extension at `extensions/goal-technical-auditor/index.js` registers `/goal-technical-auditor` as a deterministic controller around `/goal` and `technical-auditor` Full mode. It persists phase/finding state in Pi session entries, commits a Markdown audit ledger, validates and commits one finding at a time on the current branch, stashes twice-failed slices, re-audits until no new safe actionable finding remains, and permits completion only after final validation and one successful push. Protected/default branches require confirmation.
 _Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting broad automation for invalid arguments, premature `goal_complete`, destructive rollback, force-push/history rewriting, or weakening the command's predictable Full-mode meaning
 
-**Ketch Extension**:
-The package-local extension at `extensions/ketch/index.js` exposes one `ketch` model tool plus a thin `/ketch <request>` command that queues the tool-backed research workflow. It infers web search, public code search, library docs, URL scrape, or bounded crawl from a request. It prefers `$KETCH_BIN` or `ketch` on `PATH`, then auto-installs the pinned Ketch v0.11.0 release into the user cache after SHA-256 verification; it never changes Ketch backend configuration automatically.
-_Avoid_: multiple command wrappers, startup installation, unpinned downloads, unverified archives, global package-manager mutation, automatic API-key/config changes, unbounded output, or using external search for the local codebase
+**Search Hub Extension**:
+The package-local extension at `extensions/search-hub/index.js` exposes `web_search`, `web_read`, and a thin `/search-hub <request>` command. Search queries every available source in parallel—keyless DuckDuckGo plus configured Brave and SearXNG—then merges and deduplicates results while tolerating individual source failures; page reads use Jina Reader after rejecting private/internal URLs. It installs no binary or runtime dependency and caps tool output at 20KB or 500 lines.
+_Avoid_: startup installation, undocumented provider fan-out, automatic API-key/config changes, private/internal URL reads, unbounded response buffering or model output, unsupported crawl promises, or using external search for the local codebase
 
 **Pi Posher Extension**:
-The bundled `pi-posher` dependency registers `/poshify`, `run_poshify`, and post-write/edit formatter, linter, and audit hooks. It seeds user-owned global defaults, executes configured commands without a shell, and requires hash-based trust before project-local `.pi/poshifiers.json` commands can run.
+The package-local adapter at `extensions/poshify/` loads the bundled `pi-posher` dependency, preserving `/poshify`, `run_poshify`, and post-write/edit hooks while adding explicit `run_poshify_fix` and `run_poshify_audit` tools with absolute failure targets. It seeds user-owned global defaults, executes configured commands without a shell, and requires hash-based trust before project-local `.pi/poshifiers.json` commands can run.
 _Avoid_: treating seeded formatter/SAST tools as installed dependencies, silently trusting project-local command configs, hiding automatic post-edit command execution, modifying upstream code without updating provenance
 
 **Skill Router Skill**:

@@ -41,14 +41,15 @@ High-value categories from that index:
    - `docs/packages.md`
    - `docs/tui.md`
    - `examples/extensions/`
-3. Check the awesome-pi-agent category that matches the request.
-4. Pick one of these outcomes:
+3. Use `web_search` for ecosystem discovery and `web_read` to verify candidate documentation or repository pages. Keep the default all-source search; select one backend only when diagnosing it.
+4. Check the awesome-pi-agent category that matches the request.
+5. Pick one of these outcomes:
    - `reuse`: install or reference an existing package.
    - `adapt`: borrow the pattern, keep local ownership clear.
    - `exclude`: existing tool is stale, unsafe, too broad, or conflicts with project constraints.
    - `build`: no suitable existing pattern found.
-5. For `adapt`, translate the external pattern into a local requirement before editing. Do not add source-specific files, notices, or references unless you copy code/text or bundle a resource.
-6. If building, include package metadata, tests, and a short README from the start.
+6. For `adapt`, translate the external pattern into a local requirement before editing. Do not add source-specific files, notices, or references unless you copy code/text or bundle a resource.
+7. If building, include package metadata, tests, and a short README from the start.
 
 ## Report Format
 

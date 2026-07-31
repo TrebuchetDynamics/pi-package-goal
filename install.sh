@@ -20,7 +20,7 @@ Usage: sh install.sh [--dry-run]
 Install the complete pi-package-goal setup:
   - Pi coding agent and this Pi package
   - tmux and tx with the bundled tmux profile
-  - Ketch research binary and Understand-Anything skills
+  - Search Hub research extension and Understand-Anything skills
   - RTK binary
   - OmniRoute daemon and Pi configuration
   - Global Codex and Claude skill copies
@@ -54,7 +54,6 @@ if [ "$dry_run" = 1 ]; then
     'would install: Pi coding agent' \
     "would install: pi-package-goal ($PI_GOAL_SOURCE)" \
     'would install: tmux and tx' \
-    'would install: Ketch' \
     'would install: Understand-Anything' \
     'would install: RTK' \
     'would install: OmniRoute' \
@@ -124,48 +123,6 @@ fi
 install_tmux_package
 sh "$script_dir/tmux/install.sh"
 printf 'installed: tmux and tx\n'
-
-require node
-node --input-type=module - "$script_dir/extensions/ketch/index.js" <<'NODE'
-import { execFile } from "node:child_process";
-import { lstat, mkdir, readlink, symlink, unlink } from "node:fs/promises";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
-
-const extensionPath = process.argv[2];
-const { ensureKetch } = await import(pathToFileURL(extensionPath));
-const pi = {
-  exec(command, args, options = {}) {
-    return new Promise((resolve) => {
-      execFile(command, args, {
-        signal: options.signal,
-        timeout: options.timeout,
-        encoding: "utf8",
-      }, (error, stdout = "", stderr = "") => {
-        resolve({ code: error ? (Number.isInteger(error.code) ? error.code : 1) : 0, stdout, stderr });
-      });
-    });
-  },
-};
-const result = await ensureKetch(pi);
-const linkDir = path.join(process.env.HOME, ".local", "bin");
-const link = path.join(linkDir, "ketch");
-await mkdir(linkDir, { recursive: true });
-try {
-  const stat = await lstat(link);
-  if (!stat.isSymbolicLink()) throw new Error(`refusing to replace existing file: ${link}`);
-  if (path.resolve(linkDir, await readlink(link)) !== path.resolve(result.binary)) await unlink(link);
-} catch (error) {
-  if (error?.code !== "ENOENT") throw error;
-}
-try {
-  await lstat(link);
-} catch (error) {
-  if (error?.code !== "ENOENT") throw error;
-  await symlink(result.binary, link);
-}
-console.log(`installed: Ketch (${result.binary}; command: ${link})`);
-NODE
 
 require git
 understand_dir=${UA_DIR:-$HOME/.understand-anything/repo}

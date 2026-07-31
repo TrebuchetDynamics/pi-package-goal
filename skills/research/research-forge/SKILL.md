@@ -16,6 +16,10 @@ command -v rforge && rforge version || true
 rforge automation policy 2>/dev/null || true
 ```
 
+### Search Hub boundary
+
+For a simple live-web lookup or one public page, use `web_search` and `web_read` directly instead of creating a review workspace. During a ResearchForge workflow, `web_search` and `web_read` may discover or inspect leads, but they do not replace rforge provenance artifacts, source coverage statistics, saved outputs, or review gates.
+
 1. Resolve save path; use Comprehensive depth unless the user explicitly asks quick/standard.
 2. Write `queries.txt` for multi-query work.
 3. Run `rforge search batch ... --stats`; prefer it over shell loops.

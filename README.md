@@ -17,7 +17,7 @@ Requires Pi and Node.js `>=22.19`.
 
 ### All-in-one setup
 
-From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Ketch, Understand-Anything, RTK, OmniRoute, and global Codex/Claude skill copies:
+From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Search Hub, Understand-Anything, RTK, OmniRoute, and global Codex/Claude skill copies:
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/pi-package-goal.git
@@ -25,7 +25,7 @@ cd pi-package-goal
 sh install.sh
 ```
 
-It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Ketch, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
+It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
 
 To install only the Pi package when Pi already exists:
 
@@ -81,7 +81,7 @@ The package does not hide the work behind a universal mega-agent. It keeps five 
 | Audit repository health | `technical-auditor` | Evidence-backed findings and priorities |
 | Improve a webpage with curated resources | `ui-vault` | Scored diagnosis + 3–5 traced proposals |
 | Build or redesign UI | `ui-design` | Correct specialist + visual/validation evidence |
-| Research with provenance | `research-forge` or `/ketch <request>` | Source-backed findings |
+| Research with provenance | `research-forge` or `/search-hub <request>` | Source-backed findings |
 | Ship local work | `git-commit-push` | Validated commit and push receipts |
 | Use fewer tokens | `/ponytail` or `caveman` | Smaller scope or shorter communication |
 
@@ -113,11 +113,13 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | `/folder-refactor` | Deterministic folder scan, state, and completion audit tools |
 | `/rtk` | Optional command rewriting and output compaction through an installed RTK binary |
 | `/ponytail` | Session-level YAGNI and shortest-safe-diff modes |
-| `/ketch` | Web, public-code, documentation, scrape, and crawl research routing |
+| `/search-hub` | Keyless web search and public-page reading through `web_search` and `web_read` |
 | `/onklaud` | Advisory Onklaud council while Pi retains mutation ownership |
 | `/s3upload` | Dispatch to the separately installed Azure upload workflow |
 | `/poshify` | Run configured formatters, linters, fixes, and audits after edits or on demand |
 | Mobile low-redraw | Hides the repainting work timer inside SSH + tmux sessions |
+
+Search Hub needs no binary or API key: `web_search` queries every available source in parallel—keyless DuckDuckGo plus Brave and SearXNG when configured—then merges and deduplicates results; `web_read` uses Jina Reader. Enable additional sources with `BRAVE_API_KEY` or `SEARCH_HUB_SEARXNG_URL`; `JINA_API_KEY` raises reader limits. Results are capped at 20KB or 500 lines, with full page output saved to a temporary file when truncated.
 
 <details>
 <summary><strong>Goal controls</strong></summary>
@@ -316,11 +318,11 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
       "./extensions/folder-refactor",
       "./extensions/rtk",
       "./extensions/ponytail",
-      "./extensions/ketch",
+      "./extensions/search-hub",
       "./extensions/onklaud",
       "./extensions/mobile-low-redraw",
       "./extensions/s3upload",
-      "./node_modules/pi-posher/src/index.ts"
+      "./extensions/poshify"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
