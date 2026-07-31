@@ -97,7 +97,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 
 | Surface | Included | Purpose |
 | --- | ---: | --- |
-| Agent skills | **63** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
+| Agent skills | **64** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
 | Pi extensions | **11** | Commands, tools, hooks, status behavior, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |

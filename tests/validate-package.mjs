@@ -19,6 +19,7 @@ const expectedSkills = [
   "improve-codebase-architecture",
   "technical-auditor",
   "wayfinder",
+  "wayfinder-next",
   "grill-me",
   "grill-with-docs",
   "prototype",
@@ -683,6 +684,13 @@ async function testSkills() {
   assert.match(wayfinder, /explicit tracker mutation approval/);
   assert.ok(exists("skills/engineering/wayfinder/agents/openai.yaml"));
   assert.match(read("THIRD_PARTY_NOTICES.md"), /skills\/engineering\/wayfinder\//);
+  const wayfinderNext = read("skills/engineering/wayfinder-next/SKILL.md");
+  assert.match(wayfinderNext, /disable-model-invocation: true/);
+  assert.match(wayfinderNext, /first eligible unclaimed AFK frontier ticket/);
+  assert.match(wayfinderNext, /one existing ticket/);
+  assert.match(wayfinderNext, /HITL tickets are ineligible/);
+  assert.match(wayfinderNext, /does not authorize new issue creation/);
+  assert.ok(exists("skills/engineering/wayfinder-next/agents/openai.yaml"));
   assert.match(read("skills/engineering/prototype/SKILL.md"), /Repo study before building/);
   const candidatesFolderRefactor = read("skills/engineering/candidates-folder-refactor/SKILL.md");
   assert.match(candidatesFolderRefactor, /Top candidates/);
