@@ -9,6 +9,7 @@ set -eu
 base_url="${OMNIROUTE_PI_BASE_URL:-http://127.0.0.1:20128/v1}"
 model="${OMNIROUTE_PI_MODEL:-auto/coding:free}"
 api_key="${OMNIROUTE_PI_API_KEY:-omniroute-local}"
+max_heavy="${OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT:-2}"
 config_only=0
 
 usage() {
@@ -24,8 +25,9 @@ Options:
   -h, --help       Show this help
 
 Environment:
-  OMNIROUTE_PI_API_KEY   Endpoint key; local installs default to omniroute-local
-  PI_CODING_AGENT_DIR    Pi config directory (default: ~/.pi/agent)
+  OMNIROUTE_PI_API_KEY                 Endpoint key; local installs default to omniroute-local
+  OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT   Concurrent large chats (default: 2)
+  PI_CODING_AGENT_DIR                  Pi config directory (default: ~/.pi/agent)
 EOF
 }
 
@@ -62,6 +64,9 @@ case "$base_url" in
   *) printf 'install-omniroute-pi: invalid base URL: %s\n' "$base_url" >&2; exit 2 ;;
 esac
 [ -n "$model" ] || { printf '%s\n' 'install-omniroute-pi: model cannot be empty' >&2; exit 2; }
+case "$max_heavy" in
+  ''|*[!0-9]*|0) printf '%s\n' 'install-omniroute-pi: OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT must be a positive integer' >&2; exit 2 ;;
+esac
 
 command -v node >/dev/null 2>&1 || {
   printf '%s\n' 'install-omniroute-pi: Node.js 22+ is required' >&2
@@ -108,7 +113,7 @@ if [ "$config_only" = "0" ]; then
   fi
 
   if ! server_ready; then
-    omniroute serve --daemon --no-open
+    OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT="$max_heavy" omniroute serve --daemon --no-open
     attempts=0
     until server_ready; do
       attempts=$((attempts + 1))
