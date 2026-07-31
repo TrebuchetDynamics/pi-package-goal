@@ -579,6 +579,8 @@ async function testUnderstandExtension() {
   assert.ok(exists("tests/search-hub-extension.test.mjs"), "search-hub extension test must exist");
 
   const poshifyExtension = read("extensions/poshify/index.js");
+  assert.match(poshifyExtension, /import \{ Type \} from "typebox"/);
+  assert.doesNotMatch(poshifyExtension, /\bimport\(/, "Poshify host packages must use Pi-resolved static imports");
   assert.match(poshifyExtension, /registerPosher\(pi\)/);
   assert.match(poshifyExtension, /registerPoshifyFollowups/);
   assert.ok(exists("tests/poshify-followups.test.mjs"), "poshify follow-up tools test must exist");
