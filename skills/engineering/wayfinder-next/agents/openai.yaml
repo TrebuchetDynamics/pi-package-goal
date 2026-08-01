@@ -1,5 +1,5 @@
 interface:
   display_name: "Wayfinder Next"
-  short_description: "Resolve one autonomous Wayfinder ticket"
+  short_description: "Resolve or resume one Wayfinder ticket"
 policy:
   allow_implicit_invocation: true

@@ -697,6 +697,16 @@ async function testSkills() {
   assert.doesNotMatch(wayfinderNext, /disable-model-invocation: true/);
   assert.match(wayfinderNext, /first eligible unclaimed AFK frontier ticket/);
   assert.match(wayfinderNext, /one existing ticket/);
+  assert.match(wayfinderNext, /resumable current-worker claim/);
+  assert.match(wayfinderNext, /Current claims outrank unclaimed work/);
+  assert.match(wayfinderNext, /assigned to another identity.*ineligible/i);
+  assert.match(wayfinderNext, /ask its exact Question in the current conversation/);
+  assert.match(wayfinderNext, /Never tell the user to finish another interactive session/);
+  assert.match(wayfinderNext, /Never report `selected: none` while a resumable current-worker claim exists/);
+  assert.match(wayfinderNext, /Do not newly claim a HITL ticket/);
+  assert.match(wayfinderNext, /awaiting HITL answer/);
+  assert.match(wayfinderNext, /claim: <assigned\|resumed\|race-lost\|blocked>/);
+  assert.doesNotMatch(wayfinderNext, /not for map creation, HITL decisions/);
   assert.match(wayfinderNext, /HITL tickets are ineligible/);
   assert.match(wayfinderNext, /Task tickets are AFK-eligible by default/);
   assert.match(wayfinderNext, /positive HITL evidence/);
@@ -712,7 +722,9 @@ async function testSkills() {
   assert.match(wayfinderNext, /Never ask the user to choose among discoverable maps or tickets/);
   assert.doesNotMatch(wayfinderNext, /ask one focused setup question/);
   assert.ok(exists("skills/engineering/wayfinder-next/agents/openai.yaml"));
-  assert.match(read("skills/engineering/wayfinder-next/agents/openai.yaml"), /allow_implicit_invocation: true/);
+  const wayfinderNextOpenAI = read("skills/engineering/wayfinder-next/agents/openai.yaml");
+  assert.match(wayfinderNextOpenAI, /allow_implicit_invocation: true/);
+  assert.match(wayfinderNextOpenAI, /Resolve or resume one Wayfinder ticket/);
   assert.match(read("skills/engineering/prototype/SKILL.md"), /Repo study before building/);
   const candidatesFolderRefactor = read("skills/engineering/candidates-folder-refactor/SKILL.md");
   assert.match(candidatesFolderRefactor, /Top candidates/);
