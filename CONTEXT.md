@@ -125,8 +125,8 @@ A bounded repo-improvement skill under `skills/engineering/autonomous-codebase-i
 _Avoid_: multi-agent scaffolding by default, broad repo-wide rewrites, self-approved completion, stacking specialists without a real seam
 
 **Bug Harvest Skill**:
-A narrow engineering skill under `skills/engineering/bug-harvest/` that finds one evidence-backed bug candidate from failing validation, issues, TODOs tied to behavior, or reproducible logs, then hands the repro/fix loop to `diagnose` and regression coverage to `tdd` when needed.
-_Avoid_: inventing bugs from code smells, scanning forever, broad architecture edits disguised as bug fixes
+A long-running engineering skill under `skills/engineering/bug-harvest/` that fixes one evidence-backed defect at a time from failing validation, issues, behavior-linked TODOs, or reproducible logs, then immediately hunts the next candidate. Each iteration uses `diagnose` and adds `tdd` coverage only at a real regression seam.
+_Avoid_: inventing bugs from code smells, investigating candidates concurrently, stopping after one validated fix, or broad architecture edits disguised as bug fixes
 
 **Unused Code Skill**:
 A deletion-focused engineering skill under `skills/engineering/unused-code/` that uses fresh Understand graph edges and orphan reports to rank leads, then proves private code has no static, dynamic, configured, or external live path in current source before removing it in small baseline-checked batches.

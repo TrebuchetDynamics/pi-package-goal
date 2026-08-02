@@ -21,7 +21,7 @@ Use this as the front door when the user wants the agent to choose the workflow.
 | --- | --- |
 | No task, "do something useful", "improve this repo" | `autonomous-codebase-improver` |
 | Broken, failing, flaky, slow, throwing | `diagnose` |
-| Find one bug without a specific report | `bug-harvest` |
+| Run an ongoing bug hunt without a specific report | `bug-harvest` |
 | New behavior with clear expected output | `tdd` |
 | Architecture, refactor, seams, testability | `technical-auditor` Architecture mode |
 | One noisy folder split or guarded folder refactor | `skill-folder-refactor` |

@@ -825,7 +825,7 @@ async function testSkills() {
 
   const engineeringRoutingRoles = {
     "skills/engineering/autonomous-codebase-improver/SKILL.md": /broad, open-ended or continuous roadmap-driven repository improvement.*not a single known defect/i,
-    "skills/engineering/bug-harvest/SKILL.md": /search for one unknown.*bug.*not an already-reported defect/i,
+    "skills/engineering/bug-harvest/SKILL.md": /long-running evidence-backed bug hunts.*one unknown bug at a time.*not a specific reported defect/i,
     "skills/engineering/unused-code/SKILL.md": /proven unreachable code.*not for dependency pruning.*speculative cleanup/i,
     "skills/engineering/diagnose/SKILL.md": /specific reported failure.*root cause/i,
     "skills/engineering/share-code/SKILL.md": /proven duplicate code.*not a topology-only folder split/i,
@@ -835,6 +835,11 @@ async function testSkills() {
   for (const [file, role] of Object.entries(engineeringRoutingRoles)) {
     assert.match(normalizeSkillDescription(parseFrontmatter(read(file)).description), role, `${file} must expose its distinct routing role`);
   }
+  const bugHarvest = read("skills/engineering/bug-harvest/SKILL.md");
+  assert.match(bugHarvest, /immediately return to candidate discovery/);
+  assert.match(bugHarvest, /Do not emit a final response between bugs/);
+  assert.match(bugHarvest, /Changed-file count.*not stop reasons/);
+  assert.match(bugHarvest, /Stop only when the user pauses\/stops/);
   const unusedCode = read("skills/engineering/unused-code/SKILL.md");
   assert.match(unusedCode, /Age, low coverage, and unfamiliarity are leads, not proof/);
   assert.match(unusedCode, /string\/config\/template references/);
