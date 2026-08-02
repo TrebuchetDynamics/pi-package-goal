@@ -44,7 +44,7 @@ const dryHome = fs.mkdtempSync(path.join(os.tmpdir(), "pi-goal-install-dry-"));
 try {
   const output = run(["--dry-run"], { env: { HOME: dryHome } });
   assert.match(output, /would install: Pi coding agent/);
-  assert.match(output, /would install: pi-package-goal/);
+  assert.match(output, /would install: pi-toolset/);
   assert.match(output, /would install: tmux and tx/);
   assert.match(output, /would install: Understand-Anything/);
   assert.match(output, /would install: RTK/);
@@ -87,7 +87,7 @@ try {
     },
   });
 
-  assert.match(fs.readFileSync(log, "utf8"), /install git:github\.com\/TrebuchetDynamics\/pi-package-goal/);
+  assert.match(fs.readFileSync(log, "utf8"), /install git:github\.com\/TrebuchetDynamics\/pi-toolset/);
   assert.ok(fs.existsSync(path.join(tmp, "tx-bin", "tx")));
   assert.equal(fs.readlinkSync(path.join(home, ".understand-anything-plugin")), path.join(understand, "understand-anything-plugin"));
   assert.match(output, /installed: Understand-Anything/);

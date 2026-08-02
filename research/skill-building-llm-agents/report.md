@@ -4,7 +4,7 @@
 
 Question: "skill building for LLM agents and harnesses".
 
-I ran a Standard ResearchForge sweep on 2026-06-17 from `pi-package-goal/research/skill-building-llm-agents/`: 6 query variants across OpenAlex, Crossref, Semantic Scholar, and arXiv, then citation expansion for 5 seed papers. The sweep retrieved metadata, titles, DOIs, and citation graphs only. No copyrighted full text was downloaded or used.
+I ran a Standard ResearchForge sweep on 2026-06-17 from `pi-toolset/research/skill-building-llm-agents/`: 6 query variants across OpenAlex, Crossref, Semantic Scholar, and arXiv, then citation expansion for 5 seed papers. The sweep retrieved metadata, titles, DOIs, and citation graphs only. No copyrighted full text was downloaded or used.
 
 Limits:
 - Semantic Scholar rate-limited 5 of 6 query files with HTTP 429; one query still returned 20 records.

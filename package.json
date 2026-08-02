@@ -1,5 +1,5 @@
 {
-  "name": "pi-package-goal",
+  "name": "pi-toolset",
   "version": "0.2.0",
   "description": "Pi package bundling high-signal engineering skills, opt-in Pi UX extensions, and Understand slash-command bridges.",
   "type": "module",
@@ -10,11 +10,11 @@
   "license": "SEE LICENSE IN THIRD_PARTY_NOTICES.md",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrebuchetDynamics/pi-package-goal.git"
+    "url": "git+https://github.com/TrebuchetDynamics/pi-toolset.git"
   },
-  "homepage": "https://github.com/TrebuchetDynamics/pi-package-goal#readme",
+  "homepage": "https://github.com/TrebuchetDynamics/pi-toolset#readme",
   "bugs": {
-    "url": "https://github.com/TrebuchetDynamics/pi-package-goal/issues"
+    "url": "https://github.com/TrebuchetDynamics/pi-toolset/issues"
   },
   "engines": {
     "node": ">=22.19.0"

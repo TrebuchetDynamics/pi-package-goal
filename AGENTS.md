@@ -1,4 +1,4 @@
-# AGENTS.md — pi-package-goal
+# AGENTS.md — pi-toolset
 
 This repository packages a global Pi skills bundle plus selected third-party skills.
 

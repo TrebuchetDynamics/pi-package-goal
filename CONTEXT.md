@@ -1,4 +1,4 @@
-# pi-package-goal Context
+# pi-toolset Context
 
 This package ships Pi skills plus `/understand`, folder-refactor, RTK bridge, Onklaud advisory, and OpenWiki extensions.
 

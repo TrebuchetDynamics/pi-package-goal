@@ -2,7 +2,7 @@
 
 ## Method and limits
 
-Research question: **What very recent evidence can improve reusable agent skills for software development in `pi-package-goal`?**
+Research question: **What very recent evidence can improve reusable agent skills for software development in `pi-toolset`?**
 
 On 2026-07-11, I ran a Comprehensive ResearchForge sweep with 28 query variants. An initial `--sources all` run timed out after completing 25 queries and produced substantial cross-domain noise. I therefore completed all 28 queries with the focused CS-oriented sources OpenAlex, Crossref, Semantic Scholar, and arXiv. The focused sweep retrieved 1,839 records and deduplicated them to 1,364 DOI/identifier records; OpenAlex, Crossref, and arXiv completed every query, while Semantic Scholar completed 8 and rate-limited 20. Citation expansion succeeded through OpenAlex for five direct seed papers. I also generated an OSS search plan, inspected current Pi skill documentation, `skills/pi/write-a-skill/SKILL.md`, the shared package contract, package validation code, and a deterministic structural audit of the 72 bundled `SKILL.md` files.
 

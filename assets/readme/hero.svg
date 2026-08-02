@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
-  <title id="title">pi-package-goal</title>
+  <title id="title">pi-toolset</title>
   <desc id="desc">A Pi workflow package that keeps the objective visible, routes work to specialist skills, and requires evidence before delivery.</desc>
   <defs>
     <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
@@ -16,14 +16,14 @@
 
   <g id="title-block" transform="translate(64 54)">
     <text x="0" y="0" dominant-baseline="hanging" fill="#67e8f9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="2.2">PI WORKFLOW PACKAGE / OBJECTIVE-FIRST</text>
-    <text x="0" y="78" fill="#f4f7ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="62" font-weight="760" letter-spacing="-2.2">pi-package-goal</text>
+    <text x="0" y="78" fill="#f4f7ff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="62" font-weight="760" letter-spacing="-2.2">pi-toolset</text>
     <text x="0" y="128" fill="#a6b0c3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22">Keep the objective visible. Route work deliberately.</text>
     <text x="0" y="160" fill="#a6b0c3" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22">Ship only when the evidence is real.</text>
 
     <g transform="translate(0 202)">
       <rect width="612" height="58" rx="13" fill="#121827" stroke="#30415f"/>
       <circle cx="28" cy="29" r="5" fill="#73ffba"/>
-      <text x="48" y="36" fill="#f4f7ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">pi install git:github.com/TrebuchetDynamics/pi-package-goal</text>
+      <text x="48" y="36" fill="#f4f7ff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16">pi install git:github.com/TrebuchetDynamics/pi-toolset</text>
     </g>
 
     <g transform="translate(0 302)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">

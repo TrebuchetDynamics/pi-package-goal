@@ -455,12 +455,12 @@ function skillTriggerTokens(description) {
 
 async function testPackageManifest() {
   const pkg = readJson("package.json");
-  assert.equal(pkg.name, "pi-package-goal");
+  assert.equal(pkg.name, "pi-toolset");
   assert.equal(pkg.type, "module");
   assert.equal(pkg.engines.node, ">=22.19.0");
-  assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-package-goal.git");
-  assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-package-goal#readme");
-  assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-package-goal/issues");
+  assert.equal(pkg.repository.url, "git+https://github.com/TrebuchetDynamics/pi-toolset.git");
+  assert.equal(pkg.homepage, "https://github.com/TrebuchetDynamics/pi-toolset#readme");
+  assert.equal(pkg.bugs.url, "https://github.com/TrebuchetDynamics/pi-toolset/issues");
   assert.match(pkg.description, /skills/);
   assert.match(pkg.description, /UX extensions/);
   assert.ok(pkg.keywords.includes("pi-package"));

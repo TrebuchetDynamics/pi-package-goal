@@ -158,7 +158,7 @@ function testAgentSkillsInstaller() {
     assertInstalledSkillTree(codexSkillsDir);
     assertInstalledSkillTree(claudeSkillsDir);
 
-    const backupBase = path.join(stateDir, "pi-package-goal", "skill-backups");
+    const backupBase = path.join(stateDir, "pi-toolset", "skill-backups");
     const backupRuns = fs.readdirSync(backupBase);
     assert.equal(backupRuns.length, 1);
     const backupRun = path.join(backupBase, backupRuns[0]);

@@ -96,7 +96,7 @@ fi
 
 timestamp="$(date +%Y%m%d%H%M%S).$$"
 state_root="${XDG_STATE_HOME:-${HOME}/.local/state}"
-AGENT_SKILLS_BACKUP_DIR="${AGENT_SKILLS_BACKUP_DIR:-${state_root}/pi-package-goal/skill-backups/${timestamp}}"
+AGENT_SKILLS_BACKUP_DIR="${AGENT_SKILLS_BACKUP_DIR:-${state_root}/pi-toolset/skill-backups/${timestamp}}"
 
 skill_name() {
   awk '

@@ -7,7 +7,7 @@ script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd)
 PATH="$HOME/.local/bin:$HOME/.local/share/pi-node/current/bin:$PATH"
 export PATH
 
-PI_GOAL_SOURCE=${PI_GOAL_SOURCE:-git:github.com/TrebuchetDynamics/pi-package-goal}
+PI_GOAL_SOURCE=${PI_GOAL_SOURCE:-git:github.com/TrebuchetDynamics/pi-toolset}
 PI_INSTALL_URL=${PI_INSTALL_URL:-https://pi.dev/install.sh}
 RTK_INSTALL_URL=${RTK_INSTALL_URL:-https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh}
 PI_GOAL_SKIP_OMNIROUTE=${PI_GOAL_SKIP_OMNIROUTE:-0}
@@ -17,7 +17,7 @@ usage() {
   cat <<'EOF'
 Usage: sh install.sh [--dry-run]
 
-Install the complete pi-package-goal setup:
+Install the complete pi-toolset setup:
   - Pi coding agent and this Pi package
   - tmux and tx with the bundled tmux profile
   - Search Hub research extension and Understand-Anything skills
@@ -52,7 +52,7 @@ esac
 if [ "$dry_run" = 1 ]; then
   printf '%s\n' \
     'would install: Pi coding agent' \
-    "would install: pi-package-goal ($PI_GOAL_SOURCE)" \
+    "would install: pi-toolset ($PI_GOAL_SOURCE)" \
     'would install: tmux and tx' \
     'would install: Understand-Anything' \
     'would install: RTK' \
@@ -114,10 +114,10 @@ else
 fi
 
 if pi list 2>/dev/null | grep -F "$PI_GOAL_SOURCE" >/dev/null 2>&1; then
-  printf 'present: pi-package-goal\n'
+  printf 'present: pi-toolset\n'
 else
   pi install "$PI_GOAL_SOURCE"
-  printf 'installed: pi-package-goal\n'
+  printf 'installed: pi-toolset\n'
 fi
 
 install_tmux_package

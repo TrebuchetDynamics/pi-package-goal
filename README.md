@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="pi-package-goal keeps coding objectives visible, routes work to specialist skills, and requires evidence before delivery">
+  <img src="./assets/readme/hero.svg" width="100%" alt="pi-toolset keeps coding objectives visible, routes work to specialist skills, and requires evidence before delivery">
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
   <a href="#development">Development</a>
 </p>
 
-`pi-package-goal` is a curated [Pi](https://pi.dev) package for disciplined agent work. It combines persistent objectives, specialist skills, codebase understanding, guarded refactors, research, UI craft, and evidence-backed delivery in one install.
+`pi-toolset` is a curated [Pi](https://pi.dev) package for disciplined agent work. It combines persistent objectives, specialist skills, codebase understanding, guarded refactors, research, UI craft, and evidence-backed delivery in one install.
 
 ## Quick start
 
@@ -20,8 +20,8 @@ Requires Pi and Node.js `>=22.19`.
 From a checkout, the universal installer sets up Pi, this package, tmux with `tx`, Search Hub, Understand-Anything, RTK, OmniRoute, and global Codex/Claude skill copies:
 
 ```bash
-git clone https://github.com/TrebuchetDynamics/pi-package-goal.git
-cd pi-package-goal
+git clone https://github.com/TrebuchetDynamics/pi-toolset.git
+cd pi-toolset
 sh install.sh
 ```
 
@@ -30,7 +30,7 @@ It supports macOS, common Linux distributions, and Termux. Existing files are ba
 To install only the Pi package when Pi already exists:
 
 ```bash
-pi install git:github.com/TrebuchetDynamics/pi-package-goal
+pi install git:github.com/TrebuchetDynamics/pi-toolset
 ```
 
 Reload an open Pi session, then start with a real objective:
@@ -50,7 +50,7 @@ Useful smoke checks:
 Install for only the current project/team repository with `-l`:
 
 ```bash
-pi install -l git:github.com/TrebuchetDynamics/pi-package-goal
+pi install -l git:github.com/TrebuchetDynamics/pi-toolset
 ```
 
 ## The operating loop
@@ -249,7 +249,7 @@ The all-in-one installer runs this by default. For individual setup:
 sh install-agent-skills.sh
 ```
 
-This installs flattened skill directories to `~/.agents/skills` and `~/.claude/skills`, backing up same-name skills under `~/.local/state/pi-package-goal/skill-backups/`. Options: `--codex-only`, `--claude-only`, `--dry-run`, and `--no-backup`.
+This installs flattened skill directories to `~/.agents/skills` and `~/.claude/skills`, backing up same-name skills under `~/.local/state/pi-toolset/skill-backups/`. Options: `--codex-only`, `--claude-only`, `--dry-run`, and `--no-backup`.
 
 ## Theme and shell helpers
 
@@ -337,8 +337,8 @@ The root `.npmrc` intentionally disables npm's automatic peer installation for g
 ## Update or remove
 
 ```bash
-pi update git:github.com/TrebuchetDynamics/pi-package-goal
-pi remove git:github.com/TrebuchetDynamics/pi-package-goal
+pi update git:github.com/TrebuchetDynamics/pi-toolset
+pi remove git:github.com/TrebuchetDynamics/pi-toolset
 ```
 
 Run `/reload` after either command in an open session.
