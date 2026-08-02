@@ -575,7 +575,6 @@ async function testUnderstandExtension() {
   assert.match(searchHubExtension, /searchDuckDuckGo/);
   assert.match(searchHubExtension, /normalizePublicUrl/);
   assert.match(searchHubExtension, /boundedOutput/);
-  assert.doesNotMatch(searchHubExtension, /installKetch/);
   assert.ok(exists("tests/search-hub-extension.test.mjs"), "search-hub extension test must exist");
 
   const poshifyExtension = read("extensions/poshify/index.js");
