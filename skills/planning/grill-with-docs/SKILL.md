@@ -40,6 +40,8 @@ Interview the owner by resolving dependencies between decisions one-by-one. For 
 6. Ask exactly one owner-decision question, then wait.
 7. After the answer, restate the resolved decision, apply accepted doc updates, and move to the next dependent branch.
 
+Waiting is scoped to the active grilling branch. If the user pivots to implementation or live discovery, stop grilling, preserve the unresolved branch and accepted constraints in the handoff, and start the requested workflow without repeating the question. The unresolved decision blocks only work that depends on it.
+
 Prefer evidence over questions. Do not proceed to dependent branches until the current decision is answered, evidenced, or blocked.
 
 ## Council and delegation

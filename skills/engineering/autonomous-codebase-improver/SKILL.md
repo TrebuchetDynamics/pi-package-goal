@@ -16,6 +16,8 @@ Research basis: `research/agentic-coding-skills/report.md` found the strongest p
 
 Continuous means repeated bounded work, not one giant diff. Do not ask for approval between safe slices: `/goal pause` pauses a campaign and `/goal resume` continues it.
 
+A collection, benchmark, spend, experiment, or owner-decision gate is branch-local: preserve that branch's frozen state, but continue independent local work. If the user rejects waiting and asks for gaps or bugs now, pivot immediately to live discovery without re-asking the prior question or changing the gated branch. After the minimum repo and ownership check, run one bounded baseline or repro; do not spend the turn only narrating plans or searches.
+
 Use continuous campaign mode only when the request clearly signals ongoing work, such as “keep improving,” “work continuously,” “follow the roadmap,” or “find everything worth fixing.” A plain “improve this repo” request runs one slice and reports the next candidate, so ambiguous wording never creates an indefinite run.
 
 ## Quick start

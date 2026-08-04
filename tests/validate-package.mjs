@@ -167,6 +167,7 @@ function globPatternToRegExp(pattern) {
       source += escapeRegExp(char);
     }
   }
+  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp -- package-owned glob syntax is escaped above
   return new RegExp(`${source}$`);
 }
 
@@ -840,6 +841,12 @@ async function testSkills() {
   assert.match(bugHarvest, /Do not emit a final response between bugs/);
   assert.match(bugHarvest, /Changed-file count.*not stop reasons/);
   assert.match(bugHarvest, /Stop only when the user pauses\/stops/);
+  assert.match(bugHarvest, /pre-existing dirty or untracked paths.*quarantined/i);
+  assert.match(bugHarvest, /first executable evidence.*bounded/i);
+  assert.match(bugHarvest, /benchmark is frozen.*preserve my untracked test/is);
+  assert.match(bugHarvest, /severity: critical\|high\|medium\|low/i);
+  assert.match(bugHarvest, /severity assessment.*not a stop reason/i);
+  assert.match(bugHarvest, /fixed bugs:.*severity.*why/is);
   const unusedCode = read("skills/engineering/unused-code/SKILL.md");
   assert.match(unusedCode, /Age, low coverage, and unfamiliarity are leads, not proof/);
   assert.match(unusedCode, /string\/config\/template references/);
@@ -868,6 +875,8 @@ async function testSkills() {
   assert.match(autonomousImprover, /single-slice mode.*continuous campaign mode/is, "autonomous improver must distinguish bounded and continuous operation");
   assert.match(autonomousImprover, /plain “improve this repo” request runs one slice/i, "autonomous improver must keep ambiguous requests bounded");
   assert.match(autonomousImprover, /Do not ask for approval between safe slices/i, "continuous campaigns must avoid unnecessary approval prompts");
+  assert.match(autonomousImprover, /gate is branch-local/i, "blocked experiments must not stall independent safe work");
+  assert.match(autonomousImprover, /rejects waiting.*pivot/i, "explicit no-wait intent must start live discovery");
   assert.match(autonomousImprover, /`\/goal pause`.*`\/goal resume`/i, "continuous campaigns must expose pause and resume controls");
   assert.match(autonomousImprover, /ROADMAP\.md.*TODO\.md/is, "autonomous improver must consume repository task sources");
   assert.match(autonomousImprover, /task source to `live discovery`/i, "autonomous improver must define a live-discovery fallback");
@@ -904,6 +913,10 @@ async function testSkills() {
   assert.match(grillWithDocs, /docs-council/);
   assert.match(grillWithDocs, /external LLMs only when explicitly requested\/approved/);
   assert.match(grillWithDocs, /If the user has not accepted the canonical term, keep grilling instead of writing/);
+  assert.match(grillWithDocs, /user pivots.*implementation or live discovery/i);
+  const goalSkill = read("skills/planning/goal/SKILL.md");
+  assert.match(goalSkill, /blocked only when no independent safe slice remains/i);
+  assert.match(goalSkill, /latest user pivot.*supersedes/i);
   assert.match(read("skills/planning/to-prd/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/planning/to-issues/SKILL.md"), /codebase-map-understand\.md/);
   assert.match(read("skills/planning/triage/SKILL.md"), /codebase-map-understand\.md/);

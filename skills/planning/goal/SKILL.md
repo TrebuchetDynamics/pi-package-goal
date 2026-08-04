@@ -55,7 +55,7 @@ Goal state:
 
 ## Active goal loop
 
-When status is `active`: restate the next concrete action, use matching skills only at real seams, do the work with normal tool discipline, gather evidence, and continue until complete, paused, blocked, or cleared.
+When status is `active`: restate the next concrete action, use matching skills only at real seams, do the work with normal tool discipline, gather evidence, and continue until complete, paused, blocked, or cleared. A blocker applies to its branch, not automatically to the whole objective: mark the goal blocked only when no independent safe slice remains. The latest user pivot supersedes an earlier recommended checkpoint or collection gate; preserve the gated branch, update the objective/queue, and start the newly requested safe work without asking for the old answer again.
 
 ## Slice continuation
 

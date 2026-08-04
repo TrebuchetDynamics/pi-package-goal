@@ -35,6 +35,10 @@ Bug candidate:
 
 Reject code-smell-only candidates. Keep one active candidate at a time; unproven leads remain leads.
 
+Pre-existing dirty or untracked paths stay quarantined from candidate discovery unless the user explicitly puts them in scope or a repo-owned failing command proves their relevance. Do not inspect or modify one merely because its filename resembles the current topic.
+
+Get first executable evidence with a bounded command after the repo and ownership check: prefer a reported failure or scoped validation, then inspect its path. Do not spend a turn only announcing plans, searching TODOs, or reading unrelated dirty work.
+
 ## Campaign loop
 
 - After each validated fix, preserve its receipt and immediately rescan for the next evidence-backed candidate.
@@ -53,6 +57,12 @@ Reject code-smell-only candidates. Keep one active candidate at a time; unproven
 5. Rerun the repro, then relevant repository validation.
 6. Record the fix and receipt, clear the active candidate, and continue the campaign loop.
 
+## Severity receipt
+
+After validating each fix, record `severity: critical|high|medium|low` and `why: <evidenced consequence, affected path/users, and realistic trigger>`. Critical means proven exploit, data loss, or broad outage; high means a realistic security impact or broken core path; medium means bounded wrong behavior or reliability loss; low means a limited edge case or maintainer-facing failure. Do not inflate severity from diff size, code smell, or hypothetical reach.
+
+A severity assessment is not a stop reason. Add it to the campaign receipt and immediately look for another evidence-backed bug.
+
 ## Red lines
 
 - Do not invent bugs from vague code smells.
@@ -69,15 +79,17 @@ Emit this only when the campaign stops:
 ```text
 Bug harvest:
 - fixed bugs:
+  - <bug> — severity: <level>; why: <concrete impact and trigger>
 - regression/validation:
+- search performed after last fix:
 - stop reason:
 - resumable next action:
 ```
 
 ## Example
 
-User: “Keep harvesting bugs.”
-Agent: Fixes one stale test command, validates it, records the receipt, then immediately starts the next evidence-backed candidate without reporting completion.
+User: “The benchmark is frozen and scoring needs spend approval. Don’t wait—find gaps and bugs now; preserve my untracked test.”
+Agent: Quarantines the untracked file, runs tracked local validation, reproduces and fixes the highest-signal independent defect, validates it, then continues harvesting.
 
 ## Shared contract
 
