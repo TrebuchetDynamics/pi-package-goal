@@ -98,7 +98,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | Surface | Included | Purpose |
 | --- | ---: | --- |
 | Agent skills | **64** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
-| Pi extensions | **12** | Commands, tools, hooks, status behavior, and research bridges |
+| Pi extensions | **14** | Commands, tools, hooks, status behavior, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |
 | Direct runtime dependencies | **1** | Bundled `pi-posher`; Pi core packages remain optional peers |
@@ -109,7 +109,9 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | --- | --- |
 | `/goal` | Persistent objective, budget, pause/resume, status, and completion tools |
 | `/goal-technical-auditor` | Autonomous audit → validated slices → re-audit controller |
-| `/bug-harvest` | Session-local continuous bug hunt with pause, resume, status, and stop controls |
+| `/bug-harvest` | Session-local continuous bug hunt with anti-repetition and clean-context handoffs |
+| `/verify-isolated` | Explicit fresh-session, read-only verification against a named contract |
+| `/workspace-guard` | Workspace-bound edit/write protection plus a default bash timeout |
 | `/understand` | Understand-Anything graph, map, compare, explain, onboard, domain, and refactor flows |
 | `/folder-refactor` | Deterministic folder scan, state, and completion audit tools |
 | `/rtk` | Optional command rewriting and output compaction through an installed RTK binary |
@@ -148,10 +150,13 @@ Search Hub needs no binary or API key: `web_search` queries every available sour
 /bug-harvest status
 /bug-harvest pause
 /bug-harvest resume
+/bug-harvest handoff
 /bug-harvest stop
 ```
 
-The controller queues another evidence-backed bug pass whenever the agent settles. It runs without a fixed iteration limit while the session remains active; reloads, restarts, and failed turns pause it to prevent silent spend.
+The controller queues another evidence-backed bug pass whenever the agent settles, rotates recovery instructions when work repeats, and pauses after five stuck turns. At 80% context use it hands the run to a clean session. It has no fixed iteration limit while active; reloads, restarts, and failed turns pause it to prevent silent spend.
+
+`/verify-isolated <contract>` starts a separate read-only Pi process with no extensions, skills, prompts, context files, or mutation tools. It can use multiple provider requests, so it runs only on an explicit command. `/workspace-guard` reports write protection: `edit` and `write` stay inside the workspace or temporary directory, `.git`/`.pi`/`.agents`/`.env`/cache paths are blocked, and bash receives a 180-second default timeout. Bash is not an OS sandbox.
 
 </details>
 
@@ -365,6 +370,7 @@ Read [`AGENTS.md`](AGENTS.md), then validate changes with:
 
 ```bash
 npm test
+npm run test:behavioral
 git diff --check
 npm pack --dry-run
 ```

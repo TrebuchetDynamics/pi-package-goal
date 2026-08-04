@@ -109,8 +109,16 @@ The package-local extension at `extensions/goal-technical-auditor/index.js` regi
 _Avoid_: hidden workflow modes, parallel-agent orchestration, silently starting broad automation for invalid arguments, premature `goal_complete`, destructive rollback, force-push/history rewriting, or weakening the command's predictable Full-mode meaning
 
 **Bug Harvest Extension**:
-The package-local extension at `extensions/bug-harvest/index.js` registers `/bug-harvest [scope]` as an unbounded session-local controller around the `bug-harvest` skill. It persists branch-local run state, queues the next evidence lane whenever the agent settles, reports iteration status, and supports `status`, `pause`, `resume`, and `stop`. Reloads, restarts, and failed turns pause the loop so it never creates hidden background spend.
-_Avoid_: timers or background daemons, silent startup resumption, invented defects, unrelated dirty-file adoption, fixed iteration caps, or implicit commit/push behavior
+The package-local extension at `extensions/bug-harvest/index.js` registers `/bug-harvest [scope]` as an unbounded session-local controller around the `bug-harvest` skill. It persists branch-local run state, detects repeated and narration-only turns, rotates recovery instructions, pauses after five stuck turns, and hands active work into a fresh session at 80% context use. It supports `status`, `pause`, `resume`, `handoff`, and `stop`; reloads, restarts, and failed turns pause the loop.
+_Avoid_: timers or background daemons, silent startup resumption, repeated no-evidence churn, invented defects, unrelated dirty-file adoption, fixed iteration caps, or implicit commit/push behavior
+
+**Isolated Verifier Extension**:
+The package-local extension at `extensions/isolated-verifier/index.js` registers `/verify-isolated <contract>`. Each explicit invocation starts a fresh read-only Pi process with no extensions, skills, prompts, context files, session history, or mutation tools, then records the independent verdict and usage in the parent conversation.
+_Avoid_: automatic paid verification, inherited implementation context, mutation-capable verifier tools, pass verdicts without path evidence, or presenting a model verdict as deterministic proof
+
+**Workspace Guard Extension**:
+The package-local extension at `extensions/workspace-guard/index.js` blocks `edit` and `write` outside the canonical workspace or temporary directory, protects repository control/secret/cache paths, follows symlinks before deciding, and gives bash calls a default timeout. It explicitly does not claim to sandbox bash or user shell commands.
+_Avoid_: path-prefix checks without canonicalization, claiming OS isolation, silent writes to `.git`/`.pi`/`.agents`/`.env`, or unbounded default shell execution
 
 **Search Hub Extension**:
 The package-local extension at `extensions/search-hub/index.js` exposes `web_search`, `web_read`, and a thin `/search-hub <request>` command. Search queries every available source in parallel—keyless DuckDuckGo plus configured Brave and SearXNG—then merges and deduplicates results while tolerating individual source failures; page reads use Jina Reader after rejecting private/internal URLs. It installs no binary or runtime dependency and caps tool output at 20KB or 500 lines.
