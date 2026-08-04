@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import registerPoshifyFollowups from "../extensions/poshify/followups.js";
+
+const poshifyExtension = fs.readFileSync(
+  new URL("../extensions/poshify/index.js", import.meta.url),
+  "utf8",
+);
+assert.match(
+  poshifyExtension,
+  /await registerPosher\(pi\);\s*\/\/ ponytail:[\s\S]*?registerSafeDiagnosticsRenderer\(pi\);/,
+);
+assert.match(poshifyExtension, /box\.addChild\(new Text\(body, 0, 0\)\);/);
 
 const tools = new Map();
 const calls = [];
