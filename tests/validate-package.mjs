@@ -468,7 +468,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/bug-harvest", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     if (extensionPath.startsWith("./node_modules/")) {
@@ -551,6 +551,13 @@ async function testUnderstandExtension() {
   assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
   assert.match(goalExtension, /@earendil-works\/pi-tui/);
   assert.doesNotMatch(goalExtension, /@mariozechner\//);
+
+  const bugHarvestExtension = read("extensions/bug-harvest/index.js");
+  assert.match(bugHarvestExtension, /registerCommand\("bug-harvest"/);
+  assert.match(bugHarvestExtension, /pi\.on\("agent_settled"/);
+  assert.match(bugHarvestExtension, /different tracked evidence lane/);
+  assert.match(bugHarvestExtension, /session_shutdown/);
+  assert.ok(exists("tests/bug-harvest-extension.test.mjs"), "bug-harvest extension test must exist");
 
   const folderRefactorExtension = read("extensions/folder-refactor/index.js");
   assert.match(folderRefactorExtension, /folder_refactor_scan/);
@@ -1073,6 +1080,7 @@ async function testDocsAndNotices() {
   assert.doesNotMatch(readme, /\/development-goal/);
   assert.match(readme, /### Core extension surfaces/);
   assert.match(readme, /`\/s3upload`/);
+  assert.match(readme, /`\/bug-harvest`/);
   assert.doesNotMatch(readme, /goal-advisor/);
   assert.match(readme, /trebuchet-neon/);
   assert.match(readme, /\/understand-refactor/);

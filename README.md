@@ -98,7 +98,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | Surface | Included | Purpose |
 | --- | ---: | --- |
 | Agent skills | **64** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
-| Pi extensions | **11** | Commands, tools, hooks, status behavior, and research bridges |
+| Pi extensions | **12** | Commands, tools, hooks, status behavior, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |
 | Direct runtime dependencies | **1** | Bundled `pi-posher`; Pi core packages remain optional peers |
@@ -109,6 +109,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | --- | --- |
 | `/goal` | Persistent objective, budget, pause/resume, status, and completion tools |
 | `/goal-technical-auditor` | Autonomous audit → validated slices → re-audit controller |
+| `/bug-harvest` | Session-local continuous bug hunt with pause, resume, status, and stop controls |
 | `/understand` | Understand-Anything graph, map, compare, explain, onboard, domain, and refactor flows |
 | `/folder-refactor` | Deterministic folder scan, state, and completion audit tools |
 | `/rtk` | Optional command rewriting and output compaction through an installed RTK binary |
@@ -136,6 +137,21 @@ Search Hub needs no binary or API key: `web_search` queries every available sour
 ```
 
 `/goal-technical-auditor [--tokens 700k] [--dry-run] [--focus bug-hunt-refactor] [folder|prompt]` runs technical-auditor in Full mode, records findings in `docs/audits/`, validates one slice at a time, and re-audits before delivery. Use `status`, `resume`, or `abort` to control it.
+
+</details>
+
+<details>
+<summary><strong>Bug harvest controls</strong></summary>
+
+```text
+/bug-harvest [scope]
+/bug-harvest status
+/bug-harvest pause
+/bug-harvest resume
+/bug-harvest stop
+```
+
+The controller queues another evidence-backed bug pass whenever the agent settles. It runs without a fixed iteration limit while the session remains active; reloads, restarts, and failed turns pause it to prevent silent spend.
 
 </details>
 
