@@ -11,12 +11,19 @@ const root = path.resolve(new URL("..", import.meta.url).pathname);
 const script = path.join(root, "install-omniroute-pi.sh");
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pi-install-"));
 const agentDir = path.join(fixture, "agent");
+const omnirouteDir = path.join(fixture, ".omniroute");
 const binDir = path.join(fixture, "bin");
 const npmLog = path.join(fixture, "npm.log");
 const omnirouteLog = path.join(fixture, "omniroute.log");
 const serverMarker = path.join(fixture, "server.ready");
 fs.mkdirSync(agentDir, { recursive: true });
+fs.mkdirSync(omnirouteDir, { recursive: true });
 fs.mkdirSync(binDir, { recursive: true });
+fs.writeFileSync(
+  path.join(omnirouteDir, ".env"),
+  "KEEP_ME=yes\nOMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT=1\nOMNIROUTE_SERVER_HOST=0.0.0.0\n",
+  { mode: 0o600 },
+);
 fs.writeFileSync(
   path.join(agentDir, "models.json"),
   `${JSON.stringify({ providers: { existing: { models: [{ id: "keep-me" }] } } }, null, 2)}\n`,
@@ -30,7 +37,7 @@ fs.writeFileSync(path.join(binDir, "pi"), "#!/bin/sh\nexit 0\n", {
 });
 fs.writeFileSync(
   path.join(binDir, "omniroute"),
-  '#!/bin/sh\nprintf \'%s|%s\\n\' "$OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT" "$*" >> "$OMNIROUTE_LOG"\ntouch "$SERVER_MARKER"\n',
+  '#!/bin/sh\nprintf \'%s|%s\\n\' "$OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT" "$*" >> "$OMNIROUTE_LOG"\ncase "$1" in serve) touch "$SERVER_MARKER";; stop) rm -f "$SERVER_MARKER";; esac\n',
   { mode: 0o755 },
 );
 fs.writeFileSync(
@@ -85,6 +92,17 @@ try {
     `http://127.0.0.1:${port}/v1`,
   ];
 
+  await assert.rejects(
+    execFileAsync("sh", args, {
+      cwd: root,
+      env: { ...env, OMNIROUTE_SERVER_HOST: "bad host" },
+    }),
+    (error) =>
+      error.code === 2 &&
+      error.stderr.includes(
+        "OMNIROUTE_SERVER_HOST must be a hostname or IP address",
+      ),
+  );
   await execFileAsync("sh", args, { cwd: root, env });
   const config = JSON.parse(
     fs.readFileSync(path.join(agentDir, "models.json"), "utf8"),
@@ -143,15 +161,36 @@ try {
     1,
   );
   requireDaemonStart = true;
+  fs.writeFileSync(serverMarker, "ready\n");
   await execFileAsync(
     "sh",
     [script, "--base-url", `http://127.0.0.1:${port}/v1`],
     { cwd: root, env },
   );
+  const calls = fs.readFileSync(omnirouteLog, "utf8");
   assert.match(
-    fs.readFileSync(omnirouteLog, "utf8"),
+    calls,
+    /^\|stop$/m,
+    "changed runtime settings must restart an existing local daemon",
+  );
+  assert.match(
+    calls,
     /^2\|serve --daemon --no-open$/m,
     "local daemon must allow two structurally heavy Pi requests",
+  );
+  assert.match(
+    calls,
+    /^\|autostart enable$/m,
+    "rerunning the installer must refresh stale autostart paths",
+  );
+  assert.equal(
+    fs.readFileSync(path.join(omnirouteDir, ".env"), "utf8"),
+    "KEEP_ME=yes\nOMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT=2\nOMNIROUTE_SERVER_HOST=127.0.0.1\n",
+    "autostart must retain safe local runtime settings",
+  );
+  assert.equal(
+    fs.statSync(path.join(omnirouteDir, ".env")).mode & 0o777,
+    0o600,
   );
   assert.equal(
     fs.existsSync(npmLog),

@@ -209,7 +209,7 @@ The all-in-one installer runs this by default. For individual setup:
 sh install-omniroute-pi.sh
 ```
 
-The installer installs OmniRoute globally, starts its local daemon, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
+The installer installs OmniRoute globally, binds its local daemon to `127.0.0.1`, enables crash recovery and autostart, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. It also persists capacity for two structurally heavy Pi chats across restarts. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
 
 For an existing server:
 

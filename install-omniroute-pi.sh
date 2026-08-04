@@ -10,6 +10,7 @@ base_url="${OMNIROUTE_PI_BASE_URL:-http://127.0.0.1:20128/v1}"
 model="${OMNIROUTE_PI_MODEL:-auto/coding:free}"
 api_key="${OMNIROUTE_PI_API_KEY:-omniroute-local}"
 max_heavy="${OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT:-2}"
+server_host="${OMNIROUTE_SERVER_HOST:-127.0.0.1}"
 config_only=0
 
 usage() {
@@ -27,6 +28,7 @@ Options:
 Environment:
   OMNIROUTE_PI_API_KEY                 Endpoint key; local installs default to omniroute-local
   OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT   Concurrent large chats (default: 2)
+  OMNIROUTE_SERVER_HOST                Local bind address (default: 127.0.0.1)
   PI_CODING_AGENT_DIR                  Pi config directory (default: ~/.pi/agent)
 EOF
 }
@@ -66,6 +68,9 @@ esac
 [ -n "$model" ] || { printf '%s\n' 'install-omniroute-pi: model cannot be empty' >&2; exit 2; }
 case "$max_heavy" in
   ''|*[!0-9]*|0) printf '%s\n' 'install-omniroute-pi: OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT must be a positive integer' >&2; exit 2 ;;
+esac
+case "$server_host" in
+  ''|*[!A-Za-z0-9._:-]*) printf '%s\n' 'install-omniroute-pi: OMNIROUTE_SERVER_HOST must be a hostname or IP address' >&2; exit 2 ;;
 esac
 
 command -v node >/dev/null 2>&1 || {
@@ -112,8 +117,51 @@ if [ "$config_only" = "0" ]; then
     npm install -g omniroute
   fi
 
+  runtime_changed="$(
+  OMNIROUTE_ENV_FILE="${HOME}/.omniroute/.env" OMNIROUTE_MAX_HEAVY="$max_heavy" OMNIROUTE_BIND_HOST="$server_host" node <<'NODE'
+import fs from "node:fs";
+import path from "node:path";
+
+const file = process.env.OMNIROUTE_ENV_FILE;
+const settings = {
+  OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT: process.env.OMNIROUTE_MAX_HEAVY,
+  OMNIROUTE_SERVER_HOST: process.env.OMNIROUTE_BIND_HOST,
+};
+fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+const before = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+let after = before;
+for (const [key, value] of Object.entries(settings)) {
+  const pattern = new RegExp(`^${key}=.*$`, "gm");
+  const line = `${key}=${value}`;
+  after = pattern.test(after)
+    ? after.replace(pattern, line)
+    : `${after}${after && !after.endsWith("\n") ? "\n" : ""}${line}\n`;
+}
+const changed = after !== before;
+if (changed) {
+  const temporary = `${file}.tmp.${process.pid}`;
+  fs.writeFileSync(temporary, after, { mode: 0o600 });
+  fs.renameSync(temporary, file);
+}
+fs.chmodSync(file, 0o600);
+console.log(changed ? "1" : "0");
+NODE
+  )"
+
+  if omniroute autostart status >/dev/null 2>&1; then
+    omniroute autostart enable >/dev/null 2>&1
+  fi
+
+  case "$base_url" in
+    http://127.0.0.1:*|http://localhost:*)
+      if [ "$runtime_changed" = "1" ] && server_ready; then
+        omniroute stop >/dev/null
+      fi
+      ;;
+  esac
+
   if ! server_ready; then
-    OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT="$max_heavy" omniroute serve --daemon --no-open
+    OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT="$max_heavy" OMNIROUTE_SERVER_HOST="$server_host" omniroute serve --daemon --no-open
     attempts=0
     until server_ready; do
       attempts=$((attempts + 1))
