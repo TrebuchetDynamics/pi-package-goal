@@ -45,6 +45,7 @@ function testPiLogAuditRedactsFreeText() {
     const logDir = path.join(piDir, "development-goal");
     fs.mkdirSync(logDir, { recursive: true });
     fs.writeFileSync(path.join(piDir, "development-goal.json"), JSON.stringify({ adapter: "fixture" }));
+    // nosemgrep: generic.secrets.security.detected-jwt-token.detected-jwt-token -- synthetic redaction fixture
     const fakeJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.abcdefghijklmnopqrstuvwxyzABCD.abcdefghijklmnopqrstuvwxyzEFGH";
     fs.writeFileSync(path.join(logDir, "logs.jsonl"), `${JSON.stringify({
       event: "blocked",
@@ -155,6 +156,7 @@ function testAgentSkillsInstaller() {
 
     assert.match(output, /Codex skills dir:/);
     assert.match(output, /Claude skills dir:/);
+    assert.match(output, /Reload open Pi sessions/);
     assertInstalledSkillTree(codexSkillsDir);
     assertInstalledSkillTree(claudeSkillsDir);
 

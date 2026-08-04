@@ -192,9 +192,9 @@ fi
 
 if [ "$AGENT_SKILLS_DRY_RUN" = "0" ]; then
   if [ "$install_codex" = "1" ] && [ "$install_claude" = "1" ]; then
-    printf 'Restart open Codex and Claude Code sessions to refresh skill discovery.\n'
+    printf 'Reload open Pi sessions and restart open Codex and Claude Code sessions to refresh skill discovery.\n'
   elif [ "$install_codex" = "1" ]; then
-    printf 'Restart open Codex sessions to refresh skill discovery.\n'
+    printf 'Reload open Pi sessions and restart open Codex sessions to refresh skill discovery.\n'
   else
     printf 'Restart open Claude Code sessions to refresh skill discovery.\n'
   fi
