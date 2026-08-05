@@ -217,6 +217,18 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/jeff-phil-pi-posher-LICENSE`
 
+## nicobailon/pi-subagents
+
+- Source: https://github.com/nicobailon/pi-subagents
+- Bundled version: `0.40.0` (`d4d2ab706b612ccd173caad2bc202eef07e7eda3` inspected)
+- Bundled paths:
+  - `node_modules/pi-subagents/` through the package's `bundledDependencies`
+  - `skills/pi/pi-subagents/`
+- Local integration: `extensions/pi-subagents/index.js` re-exports the bundled extension; the orchestration skill adds the package shared-contract reference.
+- Security assumptions: the extension can spawn child Pi or explicitly configured external CLI processes, read and write Pi settings and run artifacts, and give child agents configured filesystem or shell tools. It does not launch work until invoked or explicitly scheduled/configured.
+- License: MIT
+- Full license copy: `licenses/nicobailon-pi-subagents-LICENSE`
+
 ## rtk-ai/rtk
 
 - Source: https://github.com/rtk-ai/rtk
@@ -250,20 +262,12 @@ Trebuchet Dynamics under the MIT License.
 - License: MIT
 - Full license copy: `licenses/jthack-claude-goal-LICENSE`
 
-## Michaelliv/pi-goal
-
-- Source: https://github.com/Michaelliv/pi-goal
-- Snapshot inspected: `806d849f4dc8`
-- Bundled paths:
-  - `extensions/goal/`
-- Local changes: renamed the bundled extension path from `pi-goal` to `goal` and updated Pi core imports to `@earendil-works/*` package names.
-- License: MIT
-- Full license copy: `licenses/Michaelliv-pi-goal-LICENSE`
-
 ## narumiruna/pi-extensions pi-goal
 
 - Source: https://github.com/narumiruna/pi-extensions/tree/main/extensions/pi-goal
-- Snapshot inspected: `6047a382ee50`
-- Usage: source inspiration and small validation-guard patterns for the local `extensions/goal/` revamp.
+- Bundled package: `@narumitw/pi-goal@0.49.3` (`4c2c2e8c4b6c3d21659110ea1966810b1d15e045`)
+- Bundled path: `node_modules/@narumitw/pi-goal/` through the package's `bundledDependencies`
+- Local integration: `extensions/goal/index.js` re-exports the bundled extension, replacing the previous local Goal runtime.
+- Security assumptions: Goal continuation can initiate repeated model turns until completion or a configured safety limit; settings writes are confined to the Pi agent directory and require explicit user interaction.
 - License: MIT
 - Full license copy: `licenses/narumiruna-pi-goal-LICENSE`

@@ -97,17 +97,17 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 
 | Surface | Included | Purpose |
 | --- | ---: | --- |
-| Agent skills | **64** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
-| Pi extensions | **14** | Commands, tools, hooks, status behavior, and research bridges |
+| Agent skills | **65** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
+| Pi extensions | **15** | Commands, tools, hooks, status behavior, delegation, and research bridges |
 | Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
 | Package bins | **2** | `tx` and `autofolderrefactor` |
-| Direct runtime dependencies | **1** | Bundled `pi-posher`; Pi core packages remain optional peers |
+| Direct runtime dependencies | **3** | Bundled `@narumitw/pi-goal`, `pi-posher`, and `pi-subagents`; Pi core packages remain optional peers |
 
 ### Core extension surfaces
 
 | Surface | What it adds |
 | --- | --- |
-| `/goal` | Persistent objective, budget, pause/resume, status, and completion tools |
+| `/goal` | Autonomous session goals with budgets, safety limits, strict completion/blocker tools, and optional ordered queues |
 | `/goal-technical-auditor` | Autonomous audit → validated slices → re-audit controller |
 | `/bug-harvest` | Session-local continuous bug hunt with anti-repetition and clean-context handoffs |
 | `/verify-isolated` | Explicit fresh-session, read-only verification against a named contract |
@@ -120,6 +120,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | `/onklaud` | Advisory Onklaud council while Pi retains mutation ownership |
 | `/s3upload` | Upload to private Azure storage with an expiring is.gd link and TinyURL fallback |
 | `/poshify` | Run configured formatters, linters, fixes, and audits after edits or on demand |
+| `subagent` / `/subagents` | Delegate focused work to foreground or background child Pi sessions |
 | Mobile low-redraw | Hides the repainting work timer inside SSH + tmux sessions |
 
 Search Hub needs no binary or API key: `web_search` queries every available source in parallel—keyless DuckDuckGo plus Brave and SearXNG when configured—then merges and deduplicates results; `web_read` uses Jina Reader. Enable additional sources with `BRAVE_API_KEY` or `SEARCH_HUB_SEARXNG_URL`; `JINA_API_KEY` raises reader limits. Results are capped at 20KB or 500 lines, with full page output saved to a temporary file when truncated.
@@ -135,7 +136,12 @@ Search Hub needs no binary or API key: `web_search` queries every available sour
 /goal pause
 /goal resume
 /goal clear
-/goal statusbar on|off
+
+# With experimental ordered goals enabled:
+/goal add <objective>
+/goal prioritize <objective>
+/goal drop-last
+/goal skip
 ```
 
 `/goal-technical-auditor [--tokens 700k] [--dry-run] [--focus bug-hunt-refactor] [folder|prompt]` runs technical-auditor in Full mode, records findings in `docs/audits/`, validates one slice at a time, and re-audits before delivery. Use `status`, `resume`, or `abort` to control it.
@@ -204,9 +210,9 @@ Generated `.ua/` data (or legacy `.understand-anything/`) and `codebase-map-unde
 
 `beautify-github-readme`, `brandkit`, `chrome-extensions`, `design-taste-frontend`, `design-taste-frontend-v1`, `frontend-design`, `full-output-enforcement`, `gpt-taste`, `hallmark`, `high-end-visual-design`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `image-to-code`, `industrial-brutalist-ui`, `minimalist-ui`, `modern-web-guidance`, `redesign-existing-projects`, `stitch-design-taste`, `stitch-react-components`, `ui-design`, `ui-ux-pro-max`, `ui-vault`
 
-**Pi authoring (3)**
+**Pi authoring and orchestration (4)**
 
-`pi-ecosystem-scout`, `pi-extensions-helper`, `write-a-skill`
+`pi-ecosystem-scout`, `pi-extensions-helper`, `pi-subagents`, `write-a-skill`
 
 **Planning (11)**
 
@@ -310,6 +316,7 @@ The loop ranks bounded folder candidates, preserves dirty work, runs guarded ref
 
 - Package extensions and skills run with your local permissions; review source before installation.
 - `pi-posher` is bundled, but its formatter/linter/audit executables remain external and user-configurable; review its seeded global config before relying on automatic post-edit checks.
+- `pi-subagents` can spawn child Pi processes with configured tools; mutation-capable agents have the same local permissions as the parent process.
 - Delivery workflows do not deploy, release, force-push, rebase, or rewrite history without explicit authorization.
 - Graphs, councils, catalogs, and reviewer output are evidence inputs—not authority.
 - Advisors and reviewers use the [clean-context delegation contract](skills/shared/CLEAN-CONTEXT-DELEGATION.md) when the host supports isolated workers.
@@ -343,7 +350,8 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
       "./extensions/onklaud",
       "./extensions/mobile-low-redraw",
       "./extensions/s3upload",
-      "./extensions/poshify"
+      "./extensions/poshify",
+      "./extensions/pi-subagents"
     ],
     "skills": ["./skills"],
     "themes": ["./themes"]
@@ -351,7 +359,7 @@ Pi discovers resources through `pi.extensions`, `pi.skills`, and `pi.themes` in 
 }
 ```
 
-Pi core imports remain optional peer dependencies. `pi-posher` is pinned and bundled as the package's only direct runtime dependency; review `~/.pi/agent/extensions/pi-posher/poshifiers.json` because its user-owned defaults can run external formatting, linting, and audit commands after edits.
+Pi core imports remain optional peer dependencies. `@narumitw/pi-goal`, `pi-posher`, and `pi-subagents` are pinned and bundled runtime dependencies. Review `~/.pi/agent/extensions/pi-posher/poshifiers.json` because its user-owned defaults can run external formatting, linting, and audit commands after edits; configure autonomous goals, subagent tools, and models with the same care.
 
 The root `.npmrc` intentionally disables npm's automatic peer installation for git-package checkouts. Pi already provides those host packages; installing duplicate copies adds unnecessary dependencies and can introduce unrelated audit findings.
 

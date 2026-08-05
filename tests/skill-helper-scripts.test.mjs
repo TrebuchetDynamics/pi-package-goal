@@ -124,8 +124,9 @@ function installedSkillCount(skillsDir) {
 }
 
 function assertInstalledSkillTree(skillsDir) {
-  assert.equal(installedSkillCount(skillsDir), 64);
+  assert.equal(installedSkillCount(skillsDir), 65);
   assert.ok(fs.existsSync(path.join(skillsDir, "s3upload", "SKILL.md")));
+  assert.ok(fs.existsSync(path.join(skillsDir, "pi-subagents", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "wayfinder", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "wayfinder-next", "SKILL.md")));
   assert.ok(fs.existsSync(path.join(skillsDir, "ui-vault", "references", "catalog.json")));

@@ -49,6 +49,7 @@ const expectedSkills = [
   "autoreview",
   "pi-ecosystem-scout",
   "pi-extensions-helper",
+  "pi-subagents",
   "research-forge",
   "ui-ux-pro-max",
   "ui-design",
@@ -468,7 +469,7 @@ async function testPackageManifest() {
   assert.ok(pkg.keywords.includes("agent-skills"));
   assert.ok(pkg.keywords.includes("pi-theme"));
   assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
-  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/bug-harvest", "./extensions/isolated-verifier", "./extensions/workspace-guard", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify"]);
+  assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/bug-harvest", "./extensions/isolated-verifier", "./extensions/workspace-guard", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify", "./extensions/pi-subagents"]);
   for (const extensionPath of pkg.pi.extensions) {
     const absolutePath = path.join(root, extensionPath);
     if (extensionPath.startsWith("./node_modules/")) {
@@ -478,8 +479,8 @@ async function testPackageManifest() {
     assert.equal(fs.statSync(absolutePath).isDirectory(), true, `${extensionPath} must be a folder extension`);
     assert.equal(exists(path.join(extensionPath, "index.js")), true, `${extensionPath} must expose runtime-loadable index.js`);
   }
-  assert.deepEqual(pkg.dependencies, { "pi-posher": "0.3.2" });
-  assert.deepEqual(pkg.bundledDependencies, ["pi-posher"]);
+  assert.deepEqual(pkg.dependencies, { "@narumitw/pi-goal": "0.49.3", "pi-posher": "0.3.2", "pi-subagents": "0.40.0" });
+  assert.deepEqual(pkg.bundledDependencies, ["@narumitw/pi-goal", "pi-posher", "pi-subagents"]);
   assert.deepEqual(pkg.pi.skills, ["./skills"]);
   assert.deepEqual(pkg.pi.themes, ["./themes"]);
   assert.equal(pkg.scripts["test:behavioral"], "node research/software-development-skill-design/behavioral-run/validate-offline-scorer.mjs");
@@ -530,11 +531,10 @@ async function testPackageManifestPaths() {
 
 async function testUnderstandExtension() {
   const goalExtension = read("extensions/goal/index.js");
-  assert.match(goalExtension, /registerCommand\("goal"/);
-  assert.match(goalExtension, /emptyGoalCommandAction/);
-  assert.match(goalExtension, /sendUserMessage\("\/skill:goal"\)/);
-  assert.ok(exists("extensions/goal/lib/command.js"), "goal command helper must exist");
-  assert.ok(exists("tests/goal-extension-command.test.mjs"), "goal command helper test must exist");
+  assert.equal(goalExtension, 'export { default } from "@narumitw/pi-goal";\n');
+  assert.equal(exists("extensions/goal/lib/command.js"), false, "replaced goal adapter must not retain its old command helper");
+  assert.equal(exists("extensions/goal/lib/extension-helpers.js"), false, "replaced goal adapter must not retain old runtime helpers");
+  assert.equal(exists("extensions/goal/usage.js"), false, "replaced goal adapter must not retain old usage accounting");
   const goalTechnicalAuditorExtension = read("extensions/goal-technical-auditor/index.js");
   assert.match(goalTechnicalAuditorExtension, /registerCommand\("goal-technical-auditor"/);
   assert.match(goalTechnicalAuditorExtension, /parseGoalTechnicalAuditorCommand/);
@@ -548,12 +548,6 @@ async function testUnderstandExtension() {
   assert.ok(exists("tests/goal-technical-auditor-run.test.mjs"), "goal-technical-auditor run test must exist");
   assert.ok(exists("tests/goal-technical-auditor-git.test.mjs"), "goal-technical-auditor git test must exist");
   assert.ok(exists("tests/goal-technical-auditor-extension.test.mjs"), "goal-technical-auditor extension test must exist");
-  assert.match(goalExtension, /CUSTOM_TYPE = "pi-goal"/);
-  assert.match(goalExtension, /registerTool\(\{\s*name: "get_goal"/);
-  assert.match(goalExtension, /registerTool\(\{\s*name: "update_goal"/);
-  assert.match(goalExtension, /@earendil-works\/pi-tui/);
-  assert.doesNotMatch(goalExtension, /@mariozechner\//);
-
   const bugHarvestExtension = read("extensions/bug-harvest/index.js");
   assert.match(bugHarvestExtension, /registerCommand\("bug-harvest"/);
   assert.match(bugHarvestExtension, /pi\.on\("agent_settled"/);
@@ -603,6 +597,9 @@ async function testUnderstandExtension() {
   assert.match(poshifyExtension, /registerPosher\(pi\)/);
   assert.match(poshifyExtension, /registerPoshifyFollowups/);
   assert.ok(exists("tests/poshify-followups.test.mjs"), "poshify follow-up tools test must exist");
+
+  const subagentsExtension = read("extensions/pi-subagents/index.js");
+  assert.equal(subagentsExtension, 'export { default } from "pi-subagents";\n');
 
   const s3uploadExtension = read("extensions/s3upload/index.js");
   assert.match(s3uploadExtension, /registerCommand\("s3upload"/);
