@@ -118,7 +118,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | `/ponytail` | Session-level YAGNI and shortest-safe-diff modes |
 | `/search-hub` | Keyless web search and public-page reading through `web_search` and `web_read` |
 | `/onklaud` | Advisory Onklaud council while Pi retains mutation ownership |
-| `/s3upload` | Dispatch to the separately installed Azure upload workflow |
+| `/s3upload` | Upload to private Azure storage with an expiring is.gd link and TinyURL fallback |
 | `/poshify` | Run configured formatters, linters, fixes, and audits after edits or on demand |
 | Mobile low-redraw | Hides the repainting work timer inside SSH + tmux sessions |
 

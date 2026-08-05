@@ -1045,6 +1045,9 @@ async function testSkills() {
   assert.match(s3upload, /recent generated pic\/image/);
   assert.match(s3upload, /`48 hours` → `48h`/);
   assert.match(s3upload, /command -v s3upload/);
+  assert.match(s3upload, /is\.gd/);
+  assert.match(s3upload, /TinyURL/);
+  assert.match(s3upload, /--no-shorten/);
   assert.match(s3upload, /SAS URL is a bearer link/);
   assert.match(s3upload, /hierarchical namespace-enabled account/);
   assert.match(s3upload, /CLI removes the new blob/);
