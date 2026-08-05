@@ -531,7 +531,7 @@ async function testPackageManifestPaths() {
 
 async function testUnderstandExtension() {
   const goalExtension = read("extensions/goal/index.js");
-  assert.equal(goalExtension, 'export { default } from "@narumitw/pi-goal";\n');
+  assert.equal(goalExtension, 'export { default } from "../../node_modules/@narumitw/pi-goal/src/index.ts";\n');
   assert.equal(exists("extensions/goal/lib/command.js"), false, "replaced goal adapter must not retain its old command helper");
   assert.equal(exists("extensions/goal/lib/extension-helpers.js"), false, "replaced goal adapter must not retain old runtime helpers");
   assert.equal(exists("extensions/goal/usage.js"), false, "replaced goal adapter must not retain old usage accounting");
