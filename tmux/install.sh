@@ -16,7 +16,18 @@ TX_FISH_COMPLETION_DIR=${TX_FISH_COMPLETION_DIR:-$HOME/.config/fish/completions}
 TX_ZSH_COMPLETION_DIR=${TX_ZSH_COMPLETION_DIR:-$HOME/.zsh/completions}
 TX_INSTALL_BASHRC_COMPLETION=${TX_INSTALL_BASHRC_COMPLETION:-1}
 
-timestamp=$(date +%Y%m%d%H%M%S)
+for setting in TX_INSTALL_BACKUP TX_INSTALL_COMPLETIONS TX_INSTALL_BASHRC_COMPLETION; do
+  eval "value=\${$setting}"
+  case "$value" in
+    0|1) ;;
+    *) printf 'tmux install: %s must be 0 or 1\n' "$setting" >&2; exit 2 ;;
+  esac
+done
+case "$TX_BIN_NAME" in
+  ''|.|..|*/*) printf 'tmux install: TX_BIN_NAME must be a file name\n' >&2; exit 2 ;;
+esac
+
+timestamp=$(date +%Y%m%d%H%M%S).$$
 
 backup_file() {
   target=$1
@@ -68,7 +79,8 @@ install_tmux_conf() {
   short_path_cmd=$(sed_replacement_escape "$(shell_quote "$TMUX_HELPER_DIR/short-path.sh")")
   git_status_cmd=$(sed_replacement_escape "$(shell_quote "$TMUX_HELPER_DIR/git-status.sh")")
   tmp=$(mktemp "${TMPDIR:-/tmp}/tx-tmux.conf.XXXXXX")
-  trap 'rm -f "$tmp"' EXIT HUP INT TERM
+  trap 'rm -f "$tmp"' EXIT
+  trap 'rm -f "$tmp"; exit 1' HUP INT TERM
   sed \
     -e "s|~/.tmux/short-path.sh|$short_path_cmd|g" \
     -e "s|~/.tmux/git-status.sh|$git_status_cmd|g" \
@@ -82,9 +94,12 @@ install_completion() {
   shell=$1
   dest=$2
   tmp=$(mktemp "${TMPDIR:-/tmp}/tx-completion.XXXXXX")
+  trap 'rm -f "$tmp"' EXIT
+  trap 'rm -f "$tmp"; exit 1' HUP INT TERM
   TX_COMPLETION_COMMAND=$TX_BIN_NAME "$script_dir/tx" completion "$shell" > "$tmp"
   install_file 0644 "$tmp" "$dest"
   rm -f "$tmp"
+  trap - EXIT HUP INT TERM
 }
 
 install_completions() {
@@ -98,9 +113,10 @@ install_completions() {
   bashrc="$HOME/.bashrc"
   if [ "$TX_INSTALL_BASHRC_COMPLETION" = "1" ] && [ -f "$bashrc" ] && ! grep -F "# tx completion" "$bashrc" >/dev/null 2>&1; then
     backup_file "$bashrc"
+    completion_file=$(shell_quote "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME")
     {
       printf '\n# tx completion\n'
-      printf '[ -r %s ] && . %s\n' "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME" "$TX_BASH_COMPLETION_DIR/$TX_BIN_NAME"
+      printf '[ -r %s ] && . %s\n' "$completion_file" "$completion_file"
     } >> "$bashrc"
     printf 'updated shell rc: %s\n' "$bashrc"
   fi

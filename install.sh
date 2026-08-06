@@ -55,9 +55,15 @@ if [ "$dry_run" = 1 ]; then
     "would install: pi-toolset ($PI_GOAL_SOURCE)" \
     'would install: tmux and tx' \
     'would install: Understand-Anything' \
-    'would install: RTK' \
-    'would install: OmniRoute' \
-    'would install: global Codex and Claude skill copies'
+    'would install: RTK'
+  if [ "$PI_GOAL_SKIP_OMNIROUTE" = "1" ]; then
+    printf '%s\n' 'would skip: OmniRoute'
+  else
+    printf '%s\n' 'would install: OmniRoute'
+  fi
+  printf '%s\n' \
+    'would install: global Codex and Claude skill copies' \
+    'would configure: Pi to use global skills without duplicate package skills'
   exit 0
 fi
 
@@ -66,6 +72,22 @@ require() {
     printf 'install: required command not found: %s\n' "$1" >&2
     exit 1
   fi
+}
+
+run_remote_installer() {
+  url=$1
+  label=$2
+  require curl
+  download=$(mktemp "${TMPDIR:-/tmp}/pi-toolset-install.XXXXXX")
+  trap 'rm -f "$download"' EXIT
+  trap 'rm -f "$download"; exit 1' HUP INT TERM
+  if ! curl -fsSL "$url" -o "$download"; then
+    printf 'install: failed to download %s installer\n' "$label" >&2
+    exit 1
+  fi
+  sh "$download"
+  rm -f "$download"
+  trap - EXIT HUP INT TERM
 }
 
 as_root() {
@@ -106,14 +128,21 @@ install_tmux_package() {
 if command -v pi >/dev/null 2>&1; then
   printf 'present: Pi coding agent (%s)\n' "$(pi --version)"
 else
-  require curl
   printf 'installing: Pi coding agent\n'
-  curl -fsSL "$PI_INSTALL_URL" | sh
+  run_remote_installer "$PI_INSTALL_URL" Pi
   hash -r
   require pi
 fi
 
-if pi list 2>/dev/null | grep -F "$PI_GOAL_SOURCE" >/dev/null 2>&1; then
+if ! pi_packages=$(pi list); then
+  printf 'install: failed to list Pi packages\n' >&2
+  exit 1
+fi
+if printf '%s\n' "$pi_packages" | awk -v source="$PI_GOAL_SOURCE" '
+  { line = $0; sub(/^[[:space:]]+/, "", line) }
+  line == source || index(line, source " ") == 1 { found = 1 }
+  END { exit found ? 0 : 1 }
+'; then
   printf 'present: pi-toolset\n'
 else
   pi install "$PI_GOAL_SOURCE"
@@ -145,10 +174,15 @@ if [ ! -f "$understand_skill" ]; then
   fi
 fi
 
-if [ -L "$understand_link" ] && [ ! -e "$understand_link" ]; then
-  rm "$understand_link"
+if [ -L "$understand_link" ]; then
+  if [ "$(readlink "$understand_link")" != "$understand_plugin" ]; then
+    rm "$understand_link"
+  fi
+elif [ -e "$understand_link" ]; then
+  printf 'install: Understand link path exists and is not a symlink: %s\n' "$understand_link" >&2
+  exit 1
 fi
-if [ ! -e "$understand_link" ] && [ ! -L "$understand_link" ]; then
+if [ ! -L "$understand_link" ]; then
   ln -s "$understand_plugin" "$understand_link"
 fi
 printf 'installed: Understand-Anything (%s)\n' "$understand_dir"
@@ -156,8 +190,7 @@ printf 'installed: Understand-Anything (%s)\n' "$understand_dir"
 if command -v rtk >/dev/null 2>&1; then
   printf 'present: RTK (%s)\n' "$(rtk --version)"
 else
-  require curl
-  curl -fsSL "$RTK_INSTALL_URL" | sh
+  run_remote_installer "$RTK_INSTALL_URL" RTK
   hash -r
   require rtk
 fi
@@ -165,6 +198,38 @@ printf 'installed: RTK\n'
 
 sh "$script_dir/install-agent-skills.sh"
 printf 'installed: global Codex and Claude skill copies\n'
+
+if [ "${AGENT_SKILLS_DRY_RUN:-0}" = "0" ]; then
+  require node
+  pi_settings="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/settings.json"
+  PI_SETTINGS_FILE="$pi_settings" PI_TOOLSET_SOURCE="$PI_GOAL_SOURCE" node <<'NODE'
+import fs from "node:fs";
+
+const file = process.env.PI_SETTINGS_FILE;
+const source = process.env.PI_TOOLSET_SOURCE;
+const before = fs.readFileSync(file, "utf8");
+const settings = JSON.parse(before);
+let found = false;
+settings.packages = (settings.packages ?? []).map((entry) => {
+  const entrySource = typeof entry === "string" ? entry : entry?.source;
+  if (entrySource !== source) return entry;
+  found = true;
+  return typeof entry === "string" ? { source: entry, skills: [] } : { ...entry, skills: [] };
+});
+if (!found) throw new Error(`Pi package setting not found: ${source}`);
+const after = `${JSON.stringify(settings, null, 2)}\n`;
+if (after !== before) {
+  const backup = `${file}.bak.${Date.now()}`;
+  fs.copyFileSync(file, backup);
+  fs.chmodSync(backup, 0o600);
+  const temporary = `${file}.tmp.${process.pid}`;
+  fs.writeFileSync(temporary, after, { mode: 0o600 });
+  fs.renameSync(temporary, file);
+}
+fs.chmodSync(file, 0o600);
+NODE
+  printf 'configured: disabled duplicate package skills; using global Codex skill copies\n'
+fi
 
 if [ "$PI_GOAL_SKIP_OMNIROUTE" = "1" ]; then
   printf 'skipped: OmniRoute\n'

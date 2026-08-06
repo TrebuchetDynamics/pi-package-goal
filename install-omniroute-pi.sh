@@ -77,10 +77,20 @@ command -v node >/dev/null 2>&1 || {
   printf '%s\n' 'install-omniroute-pi: Node.js 22+ is required' >&2
   exit 1
 }
-node -e 'const major=Number(process.versions.node.split(".")[0]); process.exit(major >= 22 ? 0 : 1)' || {
+node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 22 ? 0 : 1)' || {
   printf '%s\n' 'install-omniroute-pi: Node.js 22+ is required' >&2
   exit 1
 }
+if [ "$config_only" = "0" ]; then
+  node -e '
+const [major, minor, patch] = process.versions.node.split(".").map(Number);
+const supported = (major === 22 && (minor > 22 || (minor === 22 && patch >= 2))) || (major >= 24 && major < 27);
+process.exit(supported ? 0 : 1);
+' || {
+    printf '%s\n' 'install-omniroute-pi: OmniRoute requires Node.js 22.22.2, 24, 25, or 26' >&2
+    exit 1
+  }
+fi
 
 catalog_url="${base_url%/}/models"
 server_ready() {
@@ -111,10 +121,10 @@ if [ "$config_only" = "0" ]; then
   }
 
   if ! command -v pi >/dev/null 2>&1; then
-    npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+    npm install -g --ignore-scripts --legacy-peer-deps @earendil-works/pi-coding-agent
   fi
   if ! command -v omniroute >/dev/null 2>&1; then
-    npm install -g omniroute
+    npm install -g --legacy-peer-deps --engine-strict omniroute
   fi
 
   runtime_changed="$(

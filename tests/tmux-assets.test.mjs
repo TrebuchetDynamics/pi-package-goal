@@ -190,7 +190,10 @@ async function testInstallScript() {
     const bashCompletionDir = path.join(tmp, "bash-completions");
     const fishCompletionDir = path.join(tmp, "fish-completions");
     const zshCompletionDir = path.join(tmp, "zsh-completions");
-    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "1", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
+    const fakeBin = path.join(tmp, "fake-bin");
+    fs.mkdirSync(fakeBin);
+    fs.writeFileSync(path.join(fakeBin, "date"), "#!/bin/sh\nprintf '20260101000000\\n'\n", { mode: 0o755 });
+    const env = { HOME: home, PATH: `${fakeBin}${path.delimiter}${process.env.PATH}`, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "1", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
     const linkDir = path.join(tmp, "link-bin");
     fs.mkdirSync(linkDir, { recursive: true });
     const txLink = path.join(linkDir, "tx");
@@ -214,6 +217,13 @@ async function testInstallScript() {
     assert.match(secondOutput, /unchanged:/);
     assert.equal(fs.readdirSync(tmp, { recursive: true }).some((name) => name.includes(".bak.")), false, "unchanged tmux assets must not be backed up");
 
+    fs.writeFileSync(installedConfig, "first changed config\n");
+    run(txLink, ["install"], { env });
+    fs.writeFileSync(installedConfig, "second changed config\n");
+    run(txLink, ["install"], { env });
+    const configBackups = fs.readdirSync(home).filter((name) => name.startsWith(".tmux.conf.bak."));
+    assert.equal(configBackups.length, 2, "same-second changed installs must keep both backups");
+
     const doctorEnv = { ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
     const doctor = run(txLink, ["doctor", "--install"], { env: doctorEnv });
     assert.match(doctor, /PATH: includes/);
@@ -229,7 +239,10 @@ async function testInstallScriptQuotesHelperPaths() {
     const home = path.join(tmp, "home space");
     const bin = path.join(tmp, "bin space");
     const helperDir = path.join(tmp, "helper dir it's");
-    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_INSTALL_COMPLETIONS: "0" };
+    const bashCompletionDir = path.join(tmp, "bash completion it's");
+    fs.mkdirSync(home, { recursive: true });
+    fs.writeFileSync(path.join(home, ".bashrc"), "# fixture\n");
+    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: path.join(tmp, "fish completion"), TX_ZSH_COMPLETION_DIR: path.join(tmp, "zsh completion") };
     const output = run("sh", ["tmux/install.sh"], { env });
     const installedConfig = path.join(home, ".tmux.conf");
     const config = fs.readFileSync(installedConfig, "utf8");
@@ -237,6 +250,9 @@ async function testInstallScriptQuotesHelperPaths() {
     assert.match(config, new RegExp(escapeRegExp(`#(${shellQuote(path.join(helperDir, "git-status.sh"))} `)));
     assert.match(output, new RegExp(`next: tmux source-file ${escapeRegExp(shellQuote(installedConfig))}`));
     assert.match(output, new RegExp(`next: ${escapeRegExp(shellQuote(path.join(bin, "tx")))} init`));
+    const bashrc = fs.readFileSync(path.join(home, ".bashrc"), "utf8");
+    assert.match(bashrc, new RegExp(escapeRegExp(shellQuote(path.join(bashCompletionDir, "tx")))));
+    run("bash", ["-n", path.join(home, ".bashrc")], { env });
     if (hasCommand("tmux")) run("tmux", ["source-file", "-n", installedConfig], { env });
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });

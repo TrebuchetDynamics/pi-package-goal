@@ -13,7 +13,7 @@
 
 ## Quick start
 
-Requires Pi and Node.js `>=22.19`.
+Requires Pi and Node.js `>=22.19`. The bundled OmniRoute installer requires a version supported by OmniRoute: Node.js `22.22.2`, `24`, `25`, or `26`.
 
 ### All-in-one setup
 
@@ -25,7 +25,7 @@ cd pi-toolset
 sh install.sh
 ```
 
-It supports macOS, common Linux distributions, and Termux. Existing files are backed up where supported; existing Pi, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
+It supports macOS, common Linux distributions, and Termux. Remote installers are fully downloaded before execution. Existing files are backed up where supported; existing Pi, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. To prevent Pi skill-collision warnings, the all-in-one installer disables this package's skill entries in Pi and uses the identical `~/.agents/skills` copies shared with Codex; package-only installs continue to load skills from the package. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
 
 To install only the Pi package when Pi already exists:
 
@@ -236,7 +236,7 @@ The all-in-one installer runs this by default. For individual setup:
 sh install-omniroute-pi.sh
 ```
 
-The installer installs OmniRoute globally, binds its local daemon to `127.0.0.1`, enables crash recovery and autostart, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. It also persists capacity for two structurally heavy Pi chats across restarts. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
+The installer installs OmniRoute globally with strict Node engine checks and npm's legacy peer resolver (avoiding upstream React/Marked peer-warning noise), binds its local daemon to `127.0.0.1`, enables crash recovery and autostart, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. It also persists capacity for two structurally heavy Pi chats across restarts. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
 
 For an existing server:
 
@@ -276,7 +276,7 @@ The all-in-one installer runs this by default. For individual setup:
 sh install-agent-skills.sh
 ```
 
-This installs flattened skill directories to `~/.agents/skills` and `~/.claude/skills`, backing up same-name skills under `~/.local/state/pi-toolset/skill-backups/`. Options: `--codex-only`, `--claude-only`, `--dry-run`, and `--no-backup`.
+This installs flattened skill directories to `~/.agents/skills` and `~/.claude/skills`, backing up same-name skills under `~/.local/state/pi-toolset/skill-backups/`. The all-in-one installer then disables the package's duplicate Pi skill entries; direct `pi install` users are unaffected. Options: `--codex-only`, `--claude-only`, `--dry-run`, and `--no-backup`.
 
 ## Theme and shell helpers
 

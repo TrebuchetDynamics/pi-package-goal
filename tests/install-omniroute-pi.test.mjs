@@ -92,6 +92,39 @@ try {
     `http://127.0.0.1:${port}/v1`,
   ];
 
+  const installProbe = path.join(fixture, "install-probe");
+  const installProbeBin = path.join(installProbe, "bin");
+  const installProbeLog = path.join(installProbe, "npm.log");
+  fs.mkdirSync(installProbeBin, { recursive: true });
+  fs.writeFileSync(
+    path.join(installProbeBin, "npm"),
+    '#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$NPM_LOG"\ncase "$*" in *" omniroute") printf \'#!/bin/sh\\nexit 0\\n\' > "$PROBE_BIN/omniroute"; chmod +x "$PROBE_BIN/omniroute";; esac\n',
+    { mode: 0o755 },
+  );
+  fs.symlinkSync(process.execPath, path.join(installProbeBin, "node"));
+  await execFileAsync(
+    "sh",
+    [script, "--base-url", `http://127.0.0.1:${port}/v1`],
+    {
+      cwd: root,
+      env: {
+        ...env,
+        HOME: installProbe,
+        PATH: `${installProbeBin}:/usr/bin:/bin`,
+        PI_CODING_AGENT_DIR: path.join(installProbe, "agent"),
+        NPM_LOG: installProbeLog,
+        PROBE_BIN: installProbeBin,
+      },
+    },
+  );
+  assert.deepEqual(
+    fs.readFileSync(installProbeLog, "utf8").trim().split("\n"),
+    [
+      "install -g --ignore-scripts --legacy-peer-deps @earendil-works/pi-coding-agent",
+      "install -g --legacy-peer-deps --engine-strict omniroute",
+    ],
+  );
+
   await assert.rejects(
     execFileAsync("sh", args, {
       cwd: root,

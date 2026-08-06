@@ -122,9 +122,12 @@ install_dir() {
 
   mkdir -p "$(dirname "$dest")"
 
-  tmp_dest="${dest}.tmp.$$"
-  rm -rf "$tmp_dest"
-  mkdir -p "$tmp_dest"
+  tmp_dest=$(mktemp -d "${dest}.tmp.XXXXXX")
+  cleanup_install_dir() {
+    rm -rf "$tmp_dest"
+  }
+  trap cleanup_install_dir EXIT
+  trap 'cleanup_install_dir; exit 1' HUP INT TERM
   cp -R "$src"/. "$tmp_dest"/
 
   find "$tmp_dest" -type d \( -name .pi -o -name .understand-anything -o -name node_modules -o -name .git \) -prune -exec rm -rf {} + 2>/dev/null || true
@@ -143,6 +146,7 @@ install_dir() {
 
   if [ -d "$dest" ] && diff -qr "$tmp_dest" "$dest" >/dev/null 2>&1; then
     rm -rf "$tmp_dest"
+    trap - EXIT HUP INT TERM
     printf 'unchanged: %s\n' "$dest"
     return
   fi
@@ -160,6 +164,7 @@ install_dir() {
 
   rm -rf "$dest"
   mv "$tmp_dest" "$dest"
+  trap - EXIT HUP INT TERM
   printf 'installed: %s\n' "$dest"
 }
 
