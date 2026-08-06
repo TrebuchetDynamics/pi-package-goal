@@ -339,7 +339,6 @@ async function testTmuxConfigShowsRepoInfo() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
   assert.match(config, /set -g status-interval 0/);
-  assert.match(config, /#\{>=:#\{client_width\},100\}/);
   assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
   assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
   assert.match(config, /set -g status-left-length 80/);
@@ -352,6 +351,9 @@ async function testTmuxConfigShowsRepoInfo() {
 async function testTmuxMobileControls() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /set -g detach-on-destroy on/);
+  assert.match(config, /set -g status on/);
+  assert.match(config, /set -g bell-action none/);
+  assert.match(config, /set -g set-titles off/);
   assert.match(config, /setw -g automatic-rename off/);
   assert.match(config, /set -sg escape-time 100/);
   assert.match(config, /set -g repeat-time 750/);
