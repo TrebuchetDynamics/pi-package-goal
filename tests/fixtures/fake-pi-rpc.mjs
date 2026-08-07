@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fake `pi --mode rpc` for txservice tests: echoes a canned event per prompt.
+// Fake `pi --mode rpc` for txd tests: echoes a canned event per prompt.
 import { createInterface } from "node:readline";
 
 const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });

@@ -69,7 +69,7 @@ async function testPackageManifest() {
     tx: "./tmux/tx",
     autofolderrefactor:
       "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor",
-    txservice: "./txservice/server.mjs",
+    txd: "./txd/server.mjs",
   });
   assert.ok(pkg.files.includes("tmux"));
   assert.equal(pkg.scripts["tmux:install"], "sh tmux/install.sh");

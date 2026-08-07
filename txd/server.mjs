@@ -1,4 +1,4 @@
-// txservice — local HTTP/SSE API for tx/tmux sessions and Pi agents.
+// txd — local HTTP/SSE API for tx/tmux sessions and Pi agents.
 // No runtime dependencies: node:http + SSE only. Bind localhost, token auth.
 import http from "node:http";
 import fs from "node:fs";
@@ -14,9 +14,9 @@ import {
 } from "./tmux.mjs";
 import { PiAgent, agents } from "./pi-agent.mjs";
 
-const usage = `txservice - local HTTP/SSE API for tx/tmux sessions and Pi agents
+const usage = `txd - local HTTP/SSE API for tx/tmux sessions and Pi agents
 
-Usage: txservice [--host HOST] [--port PORT] [--token TOKEN]
+Usage: txd [--host HOST] [--port PORT] [--token TOKEN]
 
 Endpoints (all require Authorization: Bearer <token> except /healthz):
   GET    /healthz
@@ -31,18 +31,18 @@ Endpoints (all require Authorization: Bearer <token> except /healthz):
   DELETE /pi/sessions/:id
 
 Environment:
-  TXSERVICE_HOST        Bind address (default: 127.0.0.1)
-  TXSERVICE_PORT        Port (default: 8123)
-  TXSERVICE_TOKEN       Auth token; if unset, generated and stored in
-                        ~/.config/txservice/token (mode 0600)
-  TXSERVICE_PI_CMD      Command that starts pi (default: pi)
+  TXD_HOST    Bind address (default: 127.0.0.1)
+  TXD_PORT    Port (default: 8123)
+  TXD_TOKEN   Auth token; if unset, generated and stored in
+              ~/.config/txd/token (mode 0600)
+  TXD_PI_CMD  Command that starts pi (default: pi)
 `;
 
 const argv = process.argv.slice(2);
-let host = process.env.TXSERVICE_HOST || "127.0.0.1";
-let port = Number(process.env.TXSERVICE_PORT || 8123);
-let token = process.env.TXSERVICE_TOKEN || "";
-let piCmd = process.env.TXSERVICE_PI_CMD || "pi";
+let host = process.env.TXD_HOST || "127.0.0.1";
+let port = Number(process.env.TXD_PORT || 8123);
+let token = process.env.TXD_TOKEN || "";
+let piCmd = process.env.TXD_PI_CMD || "pi";
 for (let i = 0; i < argv.length; i++) {
   switch (argv[i]) {
     case "--host":
@@ -59,20 +59,20 @@ for (let i = 0; i < argv.length; i++) {
       process.stdout.write(usage);
       process.exit(0);
     default:
-      process.stderr.write(`txservice: unknown option: ${argv[i]}\n`);
+      process.stderr.write(`txd: unknown option: ${argv[i]}\n`);
       process.stderr.write(usage);
       process.exit(2);
   }
 }
 if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-  process.stderr.write("txservice: invalid port\n");
+  process.stderr.write("txd: invalid port\n");
   process.exit(2);
 }
 
 if (!token) {
   const tokenFile = path.join(
     process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"),
-    "txservice",
+    "txd",
     "token",
   );
   if (fs.existsSync(tokenFile)) {
@@ -81,7 +81,7 @@ if (!token) {
     token = randomBytes(24).toString("hex");
     fs.mkdirSync(path.dirname(tokenFile), { recursive: true, mode: 0o700 });
     fs.writeFileSync(tokenFile, `${token}\n`, { mode: 0o600 });
-    process.stderr.write(`txservice: token written to ${tokenFile}\n`);
+    process.stderr.write(`txd: token written to ${tokenFile}\n`);
   }
 }
 
@@ -141,7 +141,7 @@ function sse(req, res, agent) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, "http://txservice");
+  const url = new URL(req.url, "http://txd");
   const parts = url.pathname.split("/").filter(Boolean);
   const auth = (req.headers.authorization || "") === `Bearer ${token}`;
 
@@ -234,14 +234,13 @@ const server = http.createServer(async (req, res) => {
     json(res, 404, { error: "not found" });
   } catch (err) {
     const status = err.status || 500;
-    if (status === 500)
-      process.stderr.write(`txservice: ${err.stack || err}\n`);
+    if (status === 500) process.stderr.write(`txd: ${err.stack || err}\n`);
     json(res, status, { error: err.message || "internal error" });
   }
 });
 
 server.listen(port, host, () => {
-  process.stderr.write(`txservice: listening on http://${host}:${port}\n`);
+  process.stderr.write(`txd: listening on http://${host}:${port}\n`);
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {

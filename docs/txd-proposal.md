@@ -1,6 +1,6 @@
-# Proposal: txservice — network control for tx, terminals, and Pi agents
+# Proposal: txd — network control for tx, terminals, and Pi agents
 
-**Goal:** a local service (`txservice`) that exposes tx/tmux sessions and Pi
+**Goal:** a local service (`txd`) that exposes tx/tmux sessions and Pi
 agents over HTTP + streaming events, so a Flutter app can list sessions, drive
 terminals, and chat with Pi agents from a phone/desktop.
 
@@ -8,7 +8,7 @@ terminals, and chat with Pi agents from a phone/desktop.
 
 `tx` is a 960-line bash CLI. Adding HTTP/WS/JSON to bash means a rewrite, and a
 CLI shouldn't own a long-running process lifecycle. Keep `tx` a CLI; add a thin
-`txservice` beside it. It shells out to `tx`/`tmux` (unchanged) and spawns
+`txd` beside it. It shells out to `tx`/`tmux` (unchanged) and spawns
 `pi --mode rpc` per agent session.
 
 ## Key building blocks (already exist, zero new infra)
@@ -26,7 +26,7 @@ CLI shouldn't own a long-running process lifecycle. Keep `tx` a CLI; add a thin
 ## Architecture
 
 ```
-Flutter app ──HTTP/SSE──▶ txservice (Node 22, node:http only)
+Flutter app ──HTTP/SSE──▶ txd (Node 22, node:http only)
                               ├── tx / tmux   → terminal sessions
                               └── pi --mode rpc (or AgentSession) → agents
 ```
@@ -77,12 +77,12 @@ DELETE /pi/sessions/:id          # stop the agent
 
 ```
 pi-toolset/
-  txservice/            # Node 22 service, no runtime deps
+  txd/            # Node 22 service, no runtime deps
     server.mjs          # http + SSE router
     tmux.mjs            # tx/tmux shell-out wrappers
     pi-agent.mjs        # pi --mode rpc (or AgentSession) lifecycle
-  package.json          # add bin: { "txservice": "./txservice/server.mjs" }
-pi-control/             # NEW repo: Flutter app
+  package.json          # add bin: { "txd": "./txd/server.mjs" }
+tx-deck/                # NEW repo: Flutter app branded "TX Deck"
   lib/                  # screens: sessions, terminal, agent chat
 ```
 
@@ -95,7 +95,7 @@ pi-control/             # NEW repo: Flutter app
 ## Open decisions for approval
 
 1. **Service location:** inside pi-toolset (ships with the package) vs. a new
-   `txservice` repo. I recommend pi-toolset — it already owns tx and the
+   `txd` repo. I recommend pi-toolset — it already owns tx and the
    installer.
 2. **Pi driver:** subprocess `pi --mode rpc` (decoupled, protocol-maintained)
    vs. embedded `AgentSession` (no protocol parsing, but tight coupling to the
@@ -108,14 +108,14 @@ pi-control/             # NEW repo: Flutter app
 
 ## Effort estimate
 
-- txservice v1: ~300–400 lines Node, no deps.
+- txd v1: ~300–400 lines Node, no deps.
 - Flutter app v1: sessions list + terminal control + agent chat, ~1–2 weeks
   for a competent Flutter dev.
 - Integration test: reuse the debian:12 sandbox pattern; Flutter app against a
-  real txservice on the host.
+  real txd on the host.
 
 ---
 
-**Recommended path:** approve options 1–4 as marked → I build txservice v1 in
+**Recommended path:** approve options 1–4 as marked → I build txd v1 in
 pi-toolset (no deps, Node 22), sandbox-test it like install.sh, then scaffold
 the Flutter app repo.

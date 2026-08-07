@@ -1,4 +1,4 @@
-// txservice — Pi agent lifecycle: spawn `pi --mode rpc` and bridge JSONL
+// txd — Pi agent lifecycle: spawn `pi --mode rpc` and bridge JSONL
 // events to SSE clients. No runtime dependencies.
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";

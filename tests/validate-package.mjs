@@ -471,7 +471,7 @@ async function testPackageManifest() {
   assert.deepEqual(pkg.bin, {
     tx: "./tmux/tx",
     autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor",
-    txservice: "./txservice/server.mjs",
+    txd: "./txd/server.mjs",
   });
   assert.deepEqual(pkg.pi.extensions, ["./extensions/goal", "./extensions/goal-technical-auditor", "./extensions/bug-harvest", "./extensions/isolated-verifier", "./extensions/workspace-guard", "./extensions/understand", "./extensions/folder-refactor", "./extensions/rtk", "./extensions/ponytail", "./extensions/search-hub", "./extensions/onklaud", "./extensions/mobile-low-redraw", "./extensions/s3upload", "./extensions/poshify", "./extensions/pi-subagents"]);
   for (const extensionPath of pkg.pi.extensions) {

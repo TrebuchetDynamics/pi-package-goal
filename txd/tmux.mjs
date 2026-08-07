@@ -1,4 +1,4 @@
-// txservice — tx/tmux session control. Reads the tx config format directly
+// txd — tx/tmux session control. Reads the tx config format directly
 // and drives tmux headlessly; tx stays the interactive CLI.
 // ponytail: config parser expands ~ and $VAR; full tx semantics (prefix
 // matching, VAR-in-path precedence) live in tx itself, add if the app needs it.

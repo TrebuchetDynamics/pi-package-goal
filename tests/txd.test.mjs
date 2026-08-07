@@ -5,10 +5,10 @@ import os from "node:os";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const server = path.join(root, "txservice", "server.mjs");
+const server = path.join(root, "txd", "server.mjs");
 const fakePi = path.join(root, "tests", "fixtures", "fake-pi-rpc.mjs");
 const token = "test-token";
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "txservice-"));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "txd-"));
 const hasTmux = (() => {
   try {
     execFileSync("tmux", ["-V"], { stdio: "ignore" });
@@ -26,9 +26,9 @@ const proc = spawn(
     cwd: root,
     env: {
       ...process.env,
-      TXSERVICE_PI_CMD: fakePi,
+      TXD_PI_CMD: fakePi,
       TX_CONFIG: path.join(tmp, "session.config"),
-      TXSERVICE_HOST: "127.0.0.1",
+      TXD_HOST: "127.0.0.1",
     },
     stdio: ["ignore", "pipe", "pipe"],
   },
@@ -57,7 +57,7 @@ async function waitReady(timeoutMs = 15000) {
     } catch {}
     await new Promise((r) => setTimeout(r, 200));
   }
-  throw new Error("txservice did not become ready");
+  throw new Error("txd did not become ready");
 }
 
 try {
@@ -83,12 +83,12 @@ try {
     assert.equal(res.body.find((s) => s.alias === "work").running, true);
 
     res = await request("POST", "/sessions/work/keys", {
-      body: { keys: "echo txservice-ok", enter: true },
+      body: { keys: "echo txd-ok", enter: true },
     });
     assert.equal(res.status, 200);
     await new Promise((r) => setTimeout(r, 300));
     res = await request("GET", "/sessions/work/pane");
-    assert.match(res.body.pane, /txservice-ok/, "keys reach the pane");
+    assert.match(res.body.pane, /txd-ok/, "keys reach the pane");
 
     res = await request("POST", "/sessions/work/kill");
     assert.equal(res.status, 200);
@@ -160,4 +160,4 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
-console.log("txservice ok");
+console.log("txd ok");
