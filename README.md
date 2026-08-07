@@ -25,7 +25,7 @@ cd pi-toolset
 sh install.sh
 ```
 
-It supports macOS, common Linux distributions, and Termux. Remote installers are fully downloaded before execution. Existing files are backed up where supported; existing Pi, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. To prevent Pi skill-collision warnings, the all-in-one installer disables this package's skill entries in Pi and uses the identical `~/.agents/skills` copies shared with Codex; package-only installs continue to load skills from the package. Preview with `sh install.sh --dry-run`, or set `PI_GOAL_SKIP_OMNIROUTE=1` to omit OmniRoute. Onklaud remains opt-in.
+It supports macOS, common Linux distributions, and Termux. Remote installers are fully downloaded before execution. Existing files are backed up where supported; existing Pi, Understand, RTK, and OmniRoute installations are reused. OmniRoute is installed globally, starts a local daemon, and becomes Pi's default provider. Global skill copies back up changed same-name skills before replacement; unchanged tools and assets are reused on subsequent runs. To prevent Pi skill-collision warnings, the all-in-one installer disables this package's skill entries in Pi and uses the identical `~/.agents/skills` copies shared with Codex; package-only installs continue to load skills from the package. When run in a terminal, the installer shows an interactive checklist so you can deselect any component; non-interactive runs install everything. Preview with `sh install.sh --dry-run`, or set `PI_TOOLSET_SKIP=rtk,omniroute` (ids: `pi`, `package`, `tmux`, `understand`, `rtk`, `skills`, `omniroute`) or `PI_TOOLSET_SKIP_OMNIROUTE=1` to omit components. Onklaud remains opt-in.
 
 To install only the Pi package when Pi already exists:
 
@@ -69,21 +69,21 @@ The package does not hide the work behind a universal mega-agent. It keeps five 
 
 ## Choose a workflow
 
-| You want to… | Start here | Success signal |
-| --- | --- | --- |
-| Keep a long task on course | `/goal <objective>` | Objective completed with evidence |
-| Find useful repository work | `autonomous-codebase-improver` | One validated bounded slice |
-| Diagnose a concrete failure | `diagnose` | Repro fails before and passes after |
-| Build behavior test-first | `tdd` | Red → green → refactor |
-| Understand architecture | `/understand` | Knowledge graph + agent-readable map |
-| Plan a graph-backed refactor | `/understand-refactor <focus>` | Bounded plan grounded in live files |
-| Split one noisy folder | `/folder-refactor <folder>` | Every remaining root file classified |
-| Audit repository health | `technical-auditor` | Evidence-backed findings and priorities |
-| Improve a webpage with curated resources | `ui-vault` | Scored diagnosis + 3–5 traced proposals |
-| Build or redesign UI | `ui-design` | Correct specialist + visual/validation evidence |
-| Research with provenance | `research-forge` or `/search-hub <request>` | Source-backed findings |
-| Ship local work | `git-commit-push` | Validated commit and push receipts |
-| Use fewer tokens | `/ponytail` or `caveman` | Smaller scope or shorter communication |
+| You want to…                             | Start here                                  | Success signal                                  |
+| ---------------------------------------- | ------------------------------------------- | ----------------------------------------------- |
+| Keep a long task on course               | `/goal <objective>`                         | Objective completed with evidence               |
+| Find useful repository work              | `autonomous-codebase-improver`              | One validated bounded slice                     |
+| Diagnose a concrete failure              | `diagnose`                                  | Repro fails before and passes after             |
+| Build behavior test-first                | `tdd`                                       | Red → green → refactor                          |
+| Understand architecture                  | `/understand`                               | Knowledge graph + agent-readable map            |
+| Plan a graph-backed refactor             | `/understand-refactor <focus>`              | Bounded plan grounded in live files             |
+| Split one noisy folder                   | `/folder-refactor <folder>`                 | Every remaining root file classified            |
+| Audit repository health                  | `technical-auditor`                         | Evidence-backed findings and priorities         |
+| Improve a webpage with curated resources | `ui-vault`                                  | Scored diagnosis + 3–5 traced proposals         |
+| Build or redesign UI                     | `ui-design`                                 | Correct specialist + visual/validation evidence |
+| Research with provenance                 | `research-forge` or `/search-hub <request>` | Source-backed findings                          |
+| Ship local work                          | `git-commit-push`                           | Validated commit and push receipts              |
+| Use fewer tokens                         | `/ponytail` or `caveman`                    | Smaller scope or shorter communication          |
 
 Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill commands are enabled:
 
@@ -95,33 +95,33 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 
 ## What ships
 
-| Surface | Included | Purpose |
-| --- | ---: | --- |
-| Agent skills | **65** | Engineering, planning, delivery, UI, research, Pi, and communication workflows |
-| Pi extensions | **15** | Commands, tools, hooks, status behavior, delegation, and research bridges |
-| Theme | **1** | `trebuchet-neon`, a complete dark Pi token map |
-| Package bins | **2** | `tx` and `autofolderrefactor` |
-| Direct runtime dependencies | **3** | Bundled `@narumitw/pi-goal`, `pi-posher`, and `pi-subagents`; Pi core packages remain optional peers |
+| Surface                     | Included | Purpose                                                                                              |
+| --------------------------- | -------: | ---------------------------------------------------------------------------------------------------- |
+| Agent skills                |   **65** | Engineering, planning, delivery, UI, research, Pi, and communication workflows                       |
+| Pi extensions               |   **15** | Commands, tools, hooks, status behavior, delegation, and research bridges                            |
+| Theme                       |    **1** | `trebuchet-neon`, a complete dark Pi token map                                                       |
+| Package bins                |    **2** | `tx` and `autofolderrefactor`                                                                        |
+| Direct runtime dependencies |    **3** | Bundled `@narumitw/pi-goal`, `pi-posher`, and `pi-subagents`; Pi core packages remain optional peers |
 
 ### Core extension surfaces
 
-| Surface | What it adds |
-| --- | --- |
-| `/goal` | Autonomous session goals with budgets, safety limits, strict completion/blocker tools, and optional ordered queues |
-| `/goal-technical-auditor` | Autonomous audit → validated slices → re-audit controller |
-| `/bug-harvest` | Session-local continuous bug hunt with anti-repetition and clean-context handoffs |
-| `/verify-isolated` | Explicit fresh-session, read-only verification against a named contract |
-| `/workspace-guard` | Workspace-bound edit/write protection plus a default bash timeout |
-| `/understand` | Understand-Anything graph, map, compare, explain, onboard, domain, and refactor flows |
-| `/folder-refactor` | Deterministic folder scan, state, and completion audit tools |
-| `/rtk` | Optional command rewriting and output compaction through an installed RTK binary |
-| `/ponytail` | Session-level YAGNI and shortest-safe-diff modes |
-| `/search-hub` | Keyless web search and public-page reading through `web_search` and `web_read` |
-| `/onklaud` | Advisory Onklaud council while Pi retains mutation ownership |
-| `/s3upload` | Upload to private Azure storage with an expiring is.gd link and TinyURL fallback |
-| `/poshify` | Run configured formatters, linters, fixes, and audits after edits or on demand |
-| `subagent` / `/subagents` | Delegate focused work to foreground or background child Pi sessions |
-| Mobile low-redraw | Hides the repainting work timer inside SSH + tmux sessions |
+| Surface                   | What it adds                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `/goal`                   | Autonomous session goals with budgets, safety limits, strict completion/blocker tools, and optional ordered queues |
+| `/goal-technical-auditor` | Autonomous audit → validated slices → re-audit controller                                                          |
+| `/bug-harvest`            | Session-local continuous bug hunt with anti-repetition and clean-context handoffs                                  |
+| `/verify-isolated`        | Explicit fresh-session, read-only verification against a named contract                                            |
+| `/workspace-guard`        | Workspace-bound edit/write protection plus a default bash timeout                                                  |
+| `/understand`             | Understand-Anything graph, map, compare, explain, onboard, domain, and refactor flows                              |
+| `/folder-refactor`        | Deterministic folder scan, state, and completion audit tools                                                       |
+| `/rtk`                    | Optional command rewriting and output compaction through an installed RTK binary                                   |
+| `/ponytail`               | Session-level YAGNI and shortest-safe-diff modes                                                                   |
+| `/search-hub`             | Keyless web search and public-page reading through `web_search` and `web_read`                                     |
+| `/onklaud`                | Advisory Onklaud council while Pi retains mutation ownership                                                       |
+| `/s3upload`               | Upload to private Azure storage with an expiring is.gd link and TinyURL fallback                                   |
+| `/poshify`                | Run configured formatters, linters, fixes, and audits after edits or on demand                                     |
+| `subagent` / `/subagents` | Delegate focused work to foreground or background child Pi sessions                                                |
+| Mobile low-redraw         | Hides the repainting work timer inside SSH + tmux sessions                                                         |
 
 Search Hub needs no binary or API key: `web_search` queries every available source in parallel—keyless DuckDuckGo plus Brave and SearXNG when configured—then merges and deduplicates results; `web_read` uses Jina Reader. Enable additional sources with `BRAVE_API_KEY` or `SEARCH_HUB_SEARXNG_URL`; `JINA_API_KEY` raises reader limits. Results are capped at 20KB or 500 lines, with full page output saved to a temporary file when truncated.
 

@@ -55,7 +55,7 @@ try {
   assert.deepEqual(fs.readdirSync(dryHome), []);
 
   const skippedOutput = run(["--dry-run"], {
-    env: { HOME: dryHome, PI_GOAL_SKIP_OMNIROUTE: "1" },
+    env: { HOME: dryHome, PI_TOOLSET_SKIP_OMNIROUTE: "1" },
   });
   assert.match(skippedOutput, /would skip: OmniRoute/);
   assert.doesNotMatch(skippedOutput, /would install: OmniRoute/);
@@ -81,7 +81,7 @@ try {
       HOME: partialHome,
       PATH: `${partialBin}:/usr/bin:/bin`,
       MARKER: partialMarker,
-      PI_GOAL_SKIP_OMNIROUTE: "1",
+      PI_TOOLSET_SKIP_OMNIROUTE: "1",
     },
   });
   assert.notEqual(result.status, 0);
@@ -128,7 +128,7 @@ try {
       CLAUDE_SKILLS_DIR: path.join(tmp, "claude-skills"),
       AGENT_SKILLS_BACKUP: "0",
       PI_CODING_AGENT_DIR: agentDir,
-      PI_GOAL_SKIP_OMNIROUTE: "1",
+      PI_TOOLSET_SKIP_OMNIROUTE: "1",
       PI_LIST_OUTPUT: "git:github.com/TrebuchetDynamics/pi-toolset-extra",
     },
   });
