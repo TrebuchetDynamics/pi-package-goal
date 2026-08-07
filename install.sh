@@ -314,7 +314,8 @@ if [ "$want_package" = 1 ]; then
     line == source || index(line, source " ") == 1 { found = 1 }
     END { exit found ? 0 : 1 }
   '; then
-    printf 'present: pi-toolset\n'
+    pi update "$PI_TOOLSET_SOURCE"
+    printf 'updated: pi-toolset\n'
   else
     pi install "$PI_TOOLSET_SOURCE"
     printf 'installed: pi-toolset\n'
