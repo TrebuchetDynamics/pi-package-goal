@@ -100,7 +100,7 @@ Skills load on demand. Invoke them naturally or use `/skill:<name>` when skill c
 | Agent skills                |   **65** | Engineering, planning, delivery, UI, research, Pi, and communication workflows                       |
 | Pi extensions               |   **15** | Commands, tools, hooks, status behavior, delegation, and research bridges                            |
 | Theme                       |    **1** | `trebuchet-neon`, a complete dark Pi token map                                                       |
-| Package bins                |    **2** | `tx` and `autofolderrefactor`                                                                        |
+| Package bins                |    **3** | `tx`, `autofolderrefactor`, and `txservice`                                                          |
 | Direct runtime dependencies |    **3** | Bundled `@narumitw/pi-goal`, `pi-posher`, and `pi-subagents`; Pi core packages remain optional peers |
 
 ### Core extension surfaces

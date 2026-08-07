@@ -3,7 +3,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import mobileLowRedraw, { shouldReduceRedraw } from "../extensions/mobile-low-redraw/index.js";
+import mobileLowRedraw, {
+  shouldReduceRedraw,
+} from "../extensions/mobile-low-redraw/index.js";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 const tx = path.join(root, "tmux", "tx");
@@ -32,12 +34,19 @@ function runFail(command, args = [], options = {}) {
     ...spawnOptions,
     env: { ...process.env, ...(env ?? {}) },
   });
-  assert.notEqual(result.status, 0, `${command} ${args.join(" ")} unexpectedly passed`);
+  assert.notEqual(
+    result.status,
+    0,
+    `${command} ${args.join(" ")} unexpectedly passed`,
+  );
   return result;
 }
 
 function hasCommand(command) {
-  return spawnSync("sh", ["-c", `command -v ${command} >/dev/null 2>&1`]).status === 0;
+  return (
+    spawnSync("sh", ["-c", `command -v ${command} >/dev/null 2>&1`]).status ===
+    0
+  );
 }
 
 function tempDir(name) {
@@ -53,8 +62,15 @@ function shellQuote(value) {
 }
 
 async function testPackageManifest() {
-  const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-  assert.deepEqual(pkg.bin, { tx: "./tmux/tx", autofolderrefactor: "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor" });
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(root, "package.json"), "utf8"),
+  );
+  assert.deepEqual(pkg.bin, {
+    tx: "./tmux/tx",
+    autofolderrefactor:
+      "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor",
+    txservice: "./txservice/server.mjs",
+  });
   assert.ok(pkg.files.includes("tmux"));
   assert.equal(pkg.scripts["tmux:install"], "sh tmux/install.sh");
 }
@@ -83,7 +99,10 @@ async function testTxDefaultConfigPath() {
   const tmp = tempDir("tx-default-config-");
   try {
     const env = { HOME: tmp, XDG_CONFIG_HOME: "" };
-    assert.equal(run(tx, ["config"], { env }).trim(), path.join(tmp, ".config", "tx", "session.config"));
+    assert.equal(
+      run(tx, ["config"], { env }).trim(),
+      path.join(tmp, ".config", "tx", "session.config"),
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -100,41 +119,95 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
     assert.equal(run(tx, ["config"], { env }).trim(), config);
     assert.match(run(tx, ["init"], { env }), /created config:/);
     assert.ok(fs.existsSync(config));
-    assert.match(run(tx, ["add", "ga,gormes", project], { env }), /added: ga,gormes=/);
-    assert.equal(run(tx, ["which", "g"], { env }).trim(), fs.realpathSync(project));
+    assert.match(
+      run(tx, ["add", "ga,gormes", project], { env }),
+      /added: ga,gormes=/,
+    );
+    assert.equal(
+      run(tx, ["which", "g"], { env }).trim(),
+      fs.realpathSync(project),
+    );
 
     const other = path.join(tmp, "other");
     fs.mkdirSync(other);
     assert.match(run(tx, ["add", "aa,ab", other], { env }), /added: aa,ab=/);
-    assert.equal(run(tx, ["which", "a"], { env }).trim(), fs.realpathSync(other));
-    assert.match(run(tx, ["doctor"], { env }), /targets: ok \(2 configured paths\)/);
+    assert.equal(
+      run(tx, ["which", "a"], { env }).trim(),
+      fs.realpathSync(other),
+    );
+    assert.match(
+      run(tx, ["doctor"], { env }),
+      /targets: ok \(2 configured paths\)/,
+    );
 
     const duplicate = runFail(tx, ["add", "ga", project], { env });
     assert.match(duplicate.stderr, /duplicate alias 'ga'/);
 
     const promptProject = path.join(tmp, "prompt-project");
     fs.mkdirSync(promptProject);
-    assert.match(run(tx, ["add", promptProject], { env, input: "pp\n" }), /added: pp=/);
-    assert.equal(run(tx, ["which", "pp"], { env }).trim(), fs.realpathSync(promptProject));
-    assert.match(run(tx, ["add", "."], { env, cwd: promptProject, input: "here\n" }), /updated: pp,here=/);
-    assert.equal(run(tx, ["which", "here"], { env }).trim(), fs.realpathSync(promptProject));
-    assert.match(run(tx, ["add", ".", "dot2"], { env, cwd: promptProject }), /updated: pp,here,dot2=/);
-    assert.equal(run(tx, ["which", "dot2"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.match(
+      run(tx, ["add", promptProject], { env, input: "pp\n" }),
+      /added: pp=/,
+    );
+    assert.equal(
+      run(tx, ["which", "pp"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
+    assert.match(
+      run(tx, ["add", "."], { env, cwd: promptProject, input: "here\n" }),
+      /updated: pp,here=/,
+    );
+    assert.equal(
+      run(tx, ["which", "here"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
+    assert.match(
+      run(tx, ["add", ".", "dot2"], { env, cwd: promptProject }),
+      /updated: pp,here,dot2=/,
+    );
+    assert.equal(
+      run(tx, ["which", "dot2"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
     const dirFirstProject = path.join(tmp, "dir-first-project");
     fs.mkdirSync(dirFirstProject);
-    assert.match(run(tx, ["add", dirFirstProject, "df"], { env }), /added: df=/);
-    assert.equal(run(tx, ["which", "df"], { env }).trim(), fs.realpathSync(dirFirstProject));
-    assert.deepEqual(run(tx, ["__complete_aliases"], { env }).trim().split(/\n/), ["aa", "ab", "df", "dot2", "ga", "gormes", "here", "pp"]);
+    assert.match(
+      run(tx, ["add", dirFirstProject, "df"], { env }),
+      /added: df=/,
+    );
+    assert.equal(
+      run(tx, ["which", "df"], { env }).trim(),
+      fs.realpathSync(dirFirstProject),
+    );
+    assert.deepEqual(
+      run(tx, ["__complete_aliases"], { env }).trim().split(/\n/),
+      ["aa", "ab", "df", "dot2", "ga", "gormes", "here", "pp"],
+    );
     assert.match(run(tx, ["remove", "dot"], { env }), /removed: dot2=/);
     assert.throws(() => run(tx, ["which", "dot2"], { env }), /failed/);
-    assert.equal(run(tx, ["which", "here"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.equal(
+      run(tx, ["which", "here"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
     assert.match(run(tx, ["edit", "pp", "p2"], { env }), /renamed: pp -> p2=/);
     assert.throws(() => run(tx, ["which", "pp"], { env }), /failed/);
-    assert.equal(run(tx, ["which", "p2"], { env }).trim(), fs.realpathSync(promptProject));
-    assert.match(run(tx, ["edit", "p2"], { env, input: "p3\n" }), /renamed: p2 -> p3=/);
-    assert.equal(run(tx, ["which", "p3"], { env }).trim(), fs.realpathSync(promptProject));
+    assert.equal(
+      run(tx, ["which", "p2"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
+    assert.match(
+      run(tx, ["edit", "p2"], { env, input: "p3\n" }),
+      /renamed: p2 -> p3=/,
+    );
+    assert.equal(
+      run(tx, ["which", "p3"], { env }).trim(),
+      fs.realpathSync(promptProject),
+    );
     assert.match(fs.readFileSync(config, "utf8"), /p3,here=.*prompt-project/);
-    assert.doesNotMatch(fs.readFileSync(config, "utf8"), /(^|,)pp[,=]|(^|,)p2[,=]|(^|,)dot2[,=]/m);
+    assert.doesNotMatch(
+      fs.readFileSync(config, "utf8"),
+      /(^|,)pp[,=]|(^|,)p2[,=]|(^|,)dot2[,=]/m,
+    );
     assert.match(run(tx, ["__complete_commands"], { env }), /\bremove\b/);
     assert.match(run(tx, ["__complete_commands"], { env }), /\bedit\b/);
     assert.match(run(tx, ["__complete_commands"], { env }), /\bcompletion\b/);
@@ -142,7 +215,9 @@ async function testTxConfigLifecycleWithoutTmuxSessions() {
     assert.match(bashCompletion, /__complete_aliases/);
     assert.match(bashCompletion, /which\|kill\|remove\|edit\|-k\|--kill/);
     assert.match(bashCompletion, /complete -F _tx_completion tx/);
-    const zshCompletion = run(tx, ["completion", "zsh"], { env: { ...env, TX_COMPLETION_COMMAND: "tx-dev" } });
+    const zshCompletion = run(tx, ["completion", "zsh"], {
+      env: { ...env, TX_COMPLETION_COMMAND: "tx-dev" },
+    });
     assert.match(zshCompletion, /#compdef tx-dev/);
     assert.match(zshCompletion, /which\|kill\|remove\|edit\|-k\|--kill/);
     const fishCompletion = run(tx, ["completion", "fish"], { env });
@@ -173,8 +248,14 @@ async function testTxAddHandlesConfigWithoutTrailingNewline() {
 
     run(tx, ["add", "two", two], { env });
 
-    assert.equal(run(tx, ["which", "one"], { env }).trim(), fs.realpathSync(one));
-    assert.equal(run(tx, ["which", "two"], { env }).trim(), fs.realpathSync(two));
+    assert.equal(
+      run(tx, ["which", "one"], { env }).trim(),
+      fs.realpathSync(one),
+    );
+    assert.equal(
+      run(tx, ["which", "two"], { env }).trim(),
+      fs.realpathSync(two),
+    );
     assert.equal(fs.readFileSync(config, "utf8"), `one=${one}\ntwo=${two}\n`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -192,8 +273,21 @@ async function testInstallScript() {
     const zshCompletionDir = path.join(tmp, "zsh-completions");
     const fakeBin = path.join(tmp, "fake-bin");
     fs.mkdirSync(fakeBin);
-    fs.writeFileSync(path.join(fakeBin, "date"), "#!/bin/sh\nprintf '20260101000000\\n'\n", { mode: 0o755 });
-    const env = { HOME: home, PATH: `${fakeBin}${path.delimiter}${process.env.PATH}`, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "1", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: fishCompletionDir, TX_ZSH_COMPLETION_DIR: zshCompletionDir };
+    fs.writeFileSync(
+      path.join(fakeBin, "date"),
+      "#!/bin/sh\nprintf '20260101000000\\n'\n",
+      { mode: 0o755 },
+    );
+    const env = {
+      HOME: home,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH}`,
+      TX_BIN_DIR: bin,
+      TMUX_HELPER_DIR: helperDir,
+      TX_INSTALL_BACKUP: "1",
+      TX_BASH_COMPLETION_DIR: bashCompletionDir,
+      TX_FISH_COMPLETION_DIR: fishCompletionDir,
+      TX_ZSH_COMPLETION_DIR: zshCompletionDir,
+    };
     const linkDir = path.join(tmp, "link-bin");
     fs.mkdirSync(linkDir, { recursive: true });
     const txLink = path.join(linkDir, "tx");
@@ -209,22 +303,49 @@ async function testInstallScript() {
     assert.ok(fs.existsSync(path.join(fishCompletionDir, "tx.fish")));
     assert.ok(fs.existsSync(path.join(zshCompletionDir, "_tx")));
     const installedConfigText = fs.readFileSync(installedConfig, "utf8");
-    assert.match(installedConfigText, new RegExp(`${escapeRegExp(helperDir)}.*short-path\\.sh`));
-    assert.match(installedConfigText, new RegExp(`${escapeRegExp(helperDir)}.*git-status\\.sh`));
-    assert.match(fs.readFileSync(path.join(bashCompletionDir, "tx"), "utf8"), /__complete_aliases/);
-    assert.match(run(path.join(bin, "tx"), ["help"], { env }), /doctor --install/);
+    assert.match(
+      installedConfigText,
+      new RegExp(`${escapeRegExp(helperDir)}.*short-path\\.sh`),
+    );
+    assert.match(
+      installedConfigText,
+      new RegExp(`${escapeRegExp(helperDir)}.*git-status\\.sh`),
+    );
+    assert.match(
+      fs.readFileSync(path.join(bashCompletionDir, "tx"), "utf8"),
+      /__complete_aliases/,
+    );
+    assert.match(
+      run(path.join(bin, "tx"), ["help"], { env }),
+      /doctor --install/,
+    );
     const secondOutput = run(txLink, ["install"], { env });
     assert.match(secondOutput, /unchanged:/);
-    assert.equal(fs.readdirSync(tmp, { recursive: true }).some((name) => name.includes(".bak.")), false, "unchanged tmux assets must not be backed up");
+    assert.equal(
+      fs
+        .readdirSync(tmp, { recursive: true })
+        .some((name) => name.includes(".bak.")),
+      false,
+      "unchanged tmux assets must not be backed up",
+    );
 
     fs.writeFileSync(installedConfig, "first changed config\n");
     run(txLink, ["install"], { env });
     fs.writeFileSync(installedConfig, "second changed config\n");
     run(txLink, ["install"], { env });
-    const configBackups = fs.readdirSync(home).filter((name) => name.startsWith(".tmux.conf.bak."));
-    assert.equal(configBackups.length, 2, "same-second changed installs must keep both backups");
+    const configBackups = fs
+      .readdirSync(home)
+      .filter((name) => name.startsWith(".tmux.conf.bak."));
+    assert.equal(
+      configBackups.length,
+      2,
+      "same-second changed installs must keep both backups",
+    );
 
-    const doctorEnv = { ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
+    const doctorEnv = {
+      ...env,
+      PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+    };
     const doctor = run(txLink, ["doctor", "--install"], { env: doctorEnv });
     assert.match(doctor, /PATH: includes/);
     assert.match(doctor, /helper: .*git-status\.sh/);
@@ -242,18 +363,50 @@ async function testInstallScriptQuotesHelperPaths() {
     const bashCompletionDir = path.join(tmp, "bash completion it's");
     fs.mkdirSync(home, { recursive: true });
     fs.writeFileSync(path.join(home, ".bashrc"), "# fixture\n");
-    const env = { HOME: home, TX_BIN_DIR: bin, TMUX_HELPER_DIR: helperDir, TX_INSTALL_BACKUP: "0", TX_BASH_COMPLETION_DIR: bashCompletionDir, TX_FISH_COMPLETION_DIR: path.join(tmp, "fish completion"), TX_ZSH_COMPLETION_DIR: path.join(tmp, "zsh completion") };
+    const env = {
+      HOME: home,
+      TX_BIN_DIR: bin,
+      TMUX_HELPER_DIR: helperDir,
+      TX_INSTALL_BACKUP: "0",
+      TX_BASH_COMPLETION_DIR: bashCompletionDir,
+      TX_FISH_COMPLETION_DIR: path.join(tmp, "fish completion"),
+      TX_ZSH_COMPLETION_DIR: path.join(tmp, "zsh completion"),
+    };
     const output = run("sh", ["tmux/install.sh"], { env });
     const installedConfig = path.join(home, ".tmux.conf");
     const config = fs.readFileSync(installedConfig, "utf8");
-    assert.match(config, new RegExp(escapeRegExp(`#(${shellQuote(path.join(helperDir, "short-path.sh"))} `)));
-    assert.match(config, new RegExp(escapeRegExp(`#(${shellQuote(path.join(helperDir, "git-status.sh"))} `)));
-    assert.match(output, new RegExp(`next: tmux source-file ${escapeRegExp(shellQuote(installedConfig))}`));
-    assert.match(output, new RegExp(`next: ${escapeRegExp(shellQuote(path.join(bin, "tx")))} init`));
+    assert.match(
+      config,
+      new RegExp(
+        escapeRegExp(`#(${shellQuote(path.join(helperDir, "short-path.sh"))} `),
+      ),
+    );
+    assert.match(
+      config,
+      new RegExp(
+        escapeRegExp(`#(${shellQuote(path.join(helperDir, "git-status.sh"))} `),
+      ),
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `next: tmux source-file ${escapeRegExp(shellQuote(installedConfig))}`,
+      ),
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `next: ${escapeRegExp(shellQuote(path.join(bin, "tx")))} init`,
+      ),
+    );
     const bashrc = fs.readFileSync(path.join(home, ".bashrc"), "utf8");
-    assert.match(bashrc, new RegExp(escapeRegExp(shellQuote(path.join(bashCompletionDir, "tx")))));
+    assert.match(
+      bashrc,
+      new RegExp(escapeRegExp(shellQuote(path.join(bashCompletionDir, "tx")))),
+    );
     run("bash", ["-n", path.join(home, ".bashrc")], { env });
-    if (hasCommand("tmux")) run("tmux", ["source-file", "-n", installedConfig], { env });
+    if (hasCommand("tmux"))
+      run("tmux", ["source-file", "-n", installedConfig], { env });
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -267,25 +420,41 @@ async function testTxListFormattingAndColorPortability() {
     const present = path.join(tmp, "present");
     const missing = path.join(tmp, "missing");
     fs.mkdirSync(present);
-    fs.writeFileSync(config, `run=${present}\nstop=${present}\nmiss=${missing}\n`);
-    fs.writeFileSync(fakeTmux, `#!/usr/bin/env sh
+    fs.writeFileSync(
+      config,
+      `run=${present}\nstop=${present}\nmiss=${missing}\n`,
+    );
+    fs.writeFileSync(
+      fakeTmux,
+      `#!/usr/bin/env sh
 case "$1" in
   list-sessions) printf 'run\\n' ;;
 esac
-`);
+`,
+    );
     fs.chmodSync(fakeTmux, 0o755);
 
-    const plain = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never" } });
+    const plain = run(tx, ["ls"], {
+      env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "never" },
+    });
     assert.match(plain, /run, stop\s+.*present/);
     assert.match(plain, /miss\s+.*missing/);
     assert.equal((plain.match(/present/g) ?? []).length, 1);
     assert.doesNotMatch(plain, /\u001b\[/);
     assert.doesNotMatch(plain, /\(running\)|\(stopped\)|\(missing\)|[●○•]/);
 
-    const colored = run(tx, ["ls"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "always" } });
-    assert.match(colored, /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m/);
+    const colored = run(tx, ["ls"], {
+      env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TX_COLOR: "always" },
+    });
+    assert.match(
+      colored,
+      /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m/,
+    );
     assert.match(colored, /\u001b\[31mmiss\u001b\[0m/);
-    assert.match(colored, /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m\s+.*present/);
+    assert.match(
+      colored,
+      /\u001b\[32mrun\u001b\[0m, \u001b\[31mstop\u001b\[0m\s+.*present/,
+    );
     assert.doesNotMatch(colored, /\(running\)|\(stopped\)|\(missing\)/);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -303,26 +472,40 @@ async function testKillAllOrdersCurrentSessionLast() {
     fs.mkdirSync(one);
     fs.mkdirSync(two);
     fs.writeFileSync(config, `one=${one}\ntwo=${two}\n`);
-    fs.writeFileSync(fakeTmux, `#!/usr/bin/env sh
+    fs.writeFileSync(
+      fakeTmux,
+      `#!/usr/bin/env sh
 case "$1" in
   list-sessions) printf 'one\\ntwo\\n' ;;
   display-message) printf 'one\\n' ;;
   kill-session) printf '%s\\n' "$3" >> "${log}" ;;
 esac
-`);
+`,
+    );
     fs.chmodSync(fakeTmux, 0o755);
 
-    const output = run(tx, ["kill-all"], { env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TMUX: "/tmp/tmux-client" } });
+    const output = run(tx, ["kill-all"], {
+      env: { TX_CONFIG: config, TX_TMUX: fakeTmux, TMUX: "/tmp/tmux-client" },
+    });
     assert.match(output, /2 killed; 0 not running/);
-    assert.deepEqual(fs.readFileSync(log, "utf8").trim().split("\n"), ["=two", "=one"]);
+    assert.deepEqual(fs.readFileSync(log, "utf8").trim().split("\n"), [
+      "=two",
+      "=one",
+    ]);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 }
 
 async function testStatusHelpers() {
-  assert.equal(run("tmux/short-path.sh", ["/tmp/git/gormes/gormes-agent"]).trim(), "gormes/gormes-agent");
-  assert.equal(run("tmux/short-path.sh", ["/tmp/git/pi-package-development-goal"]).trim(), "git/pi-package-development-goal");
+  assert.equal(
+    run("tmux/short-path.sh", ["/tmp/git/gormes/gormes-agent"]).trim(),
+    "gormes/gormes-agent",
+  );
+  assert.equal(
+    run("tmux/short-path.sh", ["/tmp/git/pi-package-development-goal"]).trim(),
+    "git/pi-package-development-goal",
+  );
   assert.equal(run("tmux/git-status.sh", ["/"]).trim(), "");
 
   if (!hasCommand("git")) return;
@@ -340,7 +523,10 @@ async function testStatusHelpers() {
 
 async function testTmuxMouseSelectionDoesNotAutoCopy() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
-  assert.doesNotMatch(config, /Mouse(?:DragEnd|DoubleClick|TripleClick)1Pane[^\n]*copy-pipe-and-cancel/);
+  assert.doesNotMatch(
+    config,
+    /Mouse(?:DragEnd|DoubleClick|TripleClick)1Pane[^\n]*copy-pipe-and-cancel/,
+  );
   assert.doesNotMatch(config, /set -g mouse on/);
 }
 
@@ -355,8 +541,14 @@ async function testTmuxConfigShowsRepoInfo() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.match(config, /source-file -q ~\/\.tmux\/style\.tmux/);
   assert.match(config, /set -g status-interval 0/);
-  assert.match(config, /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/);
-  assert.match(config, /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/);
+  assert.match(
+    config,
+    /#\(~\/\.tmux\/short-path\.sh #\{q:pane_current_path\}\)/,
+  );
+  assert.match(
+    config,
+    /#\(~\/\.tmux\/git-status\.sh #\{q:pane_current_path\}\)/,
+  );
   assert.match(config, /set -g status-left-length 80/);
   assert.match(config, /set -g window-status-format ''/);
   assert.match(config, /set -g window-status-current-format ''/);
@@ -380,19 +572,41 @@ async function testTmuxMobileControls() {
 }
 
 async function testMobileLowRedrawExtension() {
-  assert.equal(shouldReduceRedraw({ TMUX: "/tmp/tmux", SSH_CONNECTION: "client server" }), true);
+  assert.equal(
+    shouldReduceRedraw({ TMUX: "/tmp/tmux", SSH_CONNECTION: "client server" }),
+    true,
+  );
   assert.equal(shouldReduceRedraw({ TMUX: "/tmp/tmux" }), false);
   assert.equal(shouldReduceRedraw({ SSH_TTY: "/dev/pts/1" }), false);
 
-  const previous = { TMUX: process.env.TMUX, SSH_CONNECTION: process.env.SSH_CONNECTION };
+  const previous = {
+    TMUX: process.env.TMUX,
+    SSH_CONNECTION: process.env.SSH_CONNECTION,
+  };
   process.env.TMUX = "/tmp/tmux";
   process.env.SSH_CONNECTION = "client server";
   try {
     let sessionStart;
-    mobileLowRedraw({ on: (_event, handler) => { sessionStart = handler; } });
+    mobileLowRedraw({
+      on: (_event, handler) => {
+        sessionStart = handler;
+      },
+    });
     const calls = [];
-    sessionStart({}, { mode: "tui", ui: { setWorkingVisible: (visible) => calls.push(visible) } });
-    sessionStart({}, { mode: "print", ui: { setWorkingVisible: (visible) => calls.push(visible) } });
+    sessionStart(
+      {},
+      {
+        mode: "tui",
+        ui: { setWorkingVisible: (visible) => calls.push(visible) },
+      },
+    );
+    sessionStart(
+      {},
+      {
+        mode: "print",
+        ui: { setWorkingVisible: (visible) => calls.push(visible) },
+      },
+    );
     assert.deepEqual(calls, [false]);
   } finally {
     for (const [name, value] of Object.entries(previous)) {
@@ -406,8 +620,14 @@ async function testTmuxUsesDefaultResizeBehavior() {
   const config = fs.readFileSync(path.join(root, "tmux", "tmux.conf"), "utf8");
   assert.doesNotMatch(config, /set -g window-size/);
   assert.doesNotMatch(config, /setw -g aggressive-resize/);
-  assert.doesNotMatch(config, /set-hook -g client-(?:resized|focus-in|attached).*resize-window -A/);
-  assert.doesNotMatch(config, /bind S if -F '#\{==:#\{window-size\},smallest\}'/);
+  assert.doesNotMatch(
+    config,
+    /set-hook -g client-(?:resized|focus-in|attached).*resize-window -A/,
+  );
+  assert.doesNotMatch(
+    config,
+    /bind S if -F '#\{==:#\{window-size\},smallest\}'/,
+  );
   assert.doesNotMatch(config, /bind F resize-window -A/);
 }
 

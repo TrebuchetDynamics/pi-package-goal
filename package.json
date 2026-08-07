@@ -5,7 +5,8 @@
   "type": "module",
   "bin": {
     "tx": "./tmux/tx",
-    "autofolderrefactor": "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor"
+    "autofolderrefactor": "./skills/engineering/candidates-folder-refactor/scripts/autofolderrefactor",
+    "txservice": "./txservice/server.mjs"
   },
   "license": "SEE LICENSE IN THIRD_PARTY_NOTICES.md",
   "repository": {
@@ -54,7 +55,8 @@
     "install-autofolderrefactor.sh",
     "install-omniroute-pi.sh",
     "install-agent-skills.sh",
-    "install-claude-skills.sh"
+    "install-claude-skills.sh",
+    "txservice"
   ],
   "pi": {
     "extensions": [
@@ -74,8 +76,12 @@
       "./extensions/poshify",
       "./extensions/pi-subagents"
     ],
-    "skills": ["./skills"],
-    "themes": ["./themes"]
+    "skills": [
+      "./skills"
+    ],
+    "themes": [
+      "./themes"
+    ]
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "*",
@@ -105,7 +111,7 @@
     "test": "npm run test:package && npm run test:extensions && npm run test:assets && npm run test:goal && npm run test:behavioral",
     "test:package": "node tests/validate-package.mjs && node tests/universal-install.test.mjs && node tests/install-omniroute-pi.test.mjs && node tests/install-safety.test.mjs && node tests/pi-bridge-lifecycle.test.mjs && node tests/pi-bridge-command-grammar.test.mjs && node tests/candidates-folder-refactor.test.mjs && node tests/skill-helper-scripts.test.mjs && node tests/clean-context-delegation.test.mjs",
     "test:extensions": "node tests/bug-harvest-extension.test.mjs && node tests/isolated-verifier-extension.test.mjs && node tests/workspace-guard-extension.test.mjs && node tests/folder-refactor-extension.test.mjs && node tests/rtk-extension.test.mjs && node tests/ponytail-extension.test.mjs && node tests/understand-extension.test.mjs && node tests/goal-technical-auditor-command.test.mjs && node tests/goal-technical-auditor-run.test.mjs && node tests/goal-technical-auditor-git.test.mjs && node tests/goal-technical-auditor-extension.test.mjs && node tests/search-hub-extension.test.mjs && node tests/onklaud-extension-command.test.mjs && node tests/s3upload-extension.test.mjs && node tests/poshify-followups.test.mjs",
-    "test:assets": "node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs",
+    "test:assets": "node tests/theme-assets.test.mjs && node tests/tmux-assets.test.mjs && node tests/txservice.test.mjs",
     "test:goal": "node tests/development-goal-report-parser.test.mjs && node tests/development-goal-final-report-gate.test.mjs && node tests/development-goal-worktree-risk.test.mjs && node tests/development-goal-validation-receipts.test.mjs && node tests/development-goal-terminal-audit.test.mjs && node tests/development-goal-lib-architecture.test.mjs",
     "prepublishOnly": "node scripts/ensure-clean-worktree.mjs && npm test",
     "validate": "npm test",
@@ -117,5 +123,9 @@
     "pi-posher": "0.3.2",
     "pi-subagents": "0.40.0"
   },
-  "bundledDependencies": ["@narumitw/pi-goal", "pi-posher", "pi-subagents"]
+  "bundledDependencies": [
+    "@narumitw/pi-goal",
+    "pi-posher",
+    "pi-subagents"
+  ]
 }
