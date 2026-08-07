@@ -47,9 +47,10 @@ fs.writeFileSync(
 );
 
 let requireDaemonStart = false;
+let catalogPath = "/v1/models";
 const server = http.createServer(async (request, response) => {
   response.setHeader("content-type", "application/json");
-  if (request.url === "/v1/models") {
+  if (request.url === catalogPath) {
     if (requireDaemonStart && !fs.existsSync(serverMarker)) {
       response.statusCode = 503;
       response.end(JSON.stringify({ error: "daemon stopped" }));
@@ -89,7 +90,7 @@ try {
     script,
     "--config-only",
     "--base-url",
-    `http://127.0.0.1:${port}/v1`,
+    `http://127.0.0.1:${port}`,
   ];
 
   const installProbe = path.join(fixture, "install-probe");
@@ -193,8 +194,24 @@ try {
       .filter((name) => name.startsWith("settings.json.bak.")).length,
     1,
   );
+
+  catalogPath = "/models";
+  const rootCatalogAgent = path.join(fixture, "root-catalog-agent");
+  await execFileAsync(
+    "sh",
+    [script, "--config-only", "--base-url", `http://127.0.0.1:${port}/v1`],
+    { cwd: root, env: { ...env, PI_CODING_AGENT_DIR: rootCatalogAgent } },
+  );
+  const rootCatalogConfig = JSON.parse(
+    fs.readFileSync(path.join(rootCatalogAgent, "models.json"), "utf8"),
+  );
+  assert.equal(
+    rootCatalogConfig.providers.omniroute.baseUrl,
+    `http://127.0.0.1:${port}`,
+    "the installer must retain a working root-level models endpoint",
+  );
+  catalogPath = "/v1/models";
   requireDaemonStart = true;
-  fs.writeFileSync(serverMarker, "ready\n");
   await execFileAsync(
     "sh",
     [script, "--base-url", `http://127.0.0.1:${port}/v1`],
@@ -204,12 +221,12 @@ try {
   assert.match(
     calls,
     /^\|stop$/m,
-    "changed runtime settings must restart an existing local daemon",
+    "changed runtime settings must stop even an unready local daemon",
   );
   assert.match(
     calls,
-    /^2\|serve --daemon --no-open$/m,
-    "local daemon must allow two structurally heavy Pi requests",
+    /^8\|serve --daemon --no-open$/m,
+    "local daemon must allow eight structurally heavy Pi requests",
   );
   assert.match(
     calls,
@@ -218,7 +235,7 @@ try {
   );
   assert.equal(
     fs.readFileSync(path.join(omnirouteDir, ".env"), "utf8"),
-    "KEEP_ME=yes\nOMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT=2\nOMNIROUTE_SERVER_HOST=127.0.0.1\n",
+    "KEEP_ME=yes\nOMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT=8\nOMNIROUTE_SERVER_HOST=127.0.0.1\n",
     "autostart must retain safe local runtime settings",
   );
   assert.equal(

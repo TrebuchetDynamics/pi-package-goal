@@ -236,7 +236,7 @@ The all-in-one installer runs this by default. For individual setup:
 sh install-omniroute-pi.sh
 ```
 
-The installer installs OmniRoute globally with strict Node engine checks and npm's legacy peer resolver (avoiding upstream React/Marked peer-warning noise), binds its local daemon to `127.0.0.1`, enables crash recovery and autostart, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. It also persists capacity for two structurally heavy Pi chats across restarts. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
+The installer installs OmniRoute globally with strict Node engine checks and npm's legacy peer resolver (avoiding upstream React/Marked peer-warning noise), binds its local daemon to `127.0.0.1`, enables crash recovery and autostart, selects OmniRoute's keyless/no-login `auto/coding:free` routing pool, preserves existing Pi providers/settings, writes permission-restricted backups, and sets that router as Pi's default model. It also persists capacity for eight structurally heavy Pi chats across restarts; lower `OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT` on memory-constrained hosts. Individual free upstreams can still be rate-limited or temporarily unavailable; OmniRoute handles selection and fallback.
 
 For an existing server:
 
@@ -244,7 +244,7 @@ For an existing server:
 sh install-omniroute-pi.sh --config-only --base-url https://host.example/v1
 ```
 
-Remote servers must already expose the requested route.
+Remote servers must already expose the requested route. The installer probes both the supplied path and its `/v1` variant, then stores the first working models endpoint.
 
 ### RTK
 

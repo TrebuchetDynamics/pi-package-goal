@@ -9,7 +9,7 @@ set -eu
 base_url="${OMNIROUTE_PI_BASE_URL:-http://127.0.0.1:20128/v1}"
 model="${OMNIROUTE_PI_MODEL:-auto/coding:free}"
 api_key="${OMNIROUTE_PI_API_KEY:-omniroute-local}"
-max_heavy="${OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT:-2}"
+max_heavy="${OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT:-8}"
 server_host="${OMNIROUTE_SERVER_HOST:-127.0.0.1}"
 config_only=0
 
@@ -21,13 +21,13 @@ Install OmniRoute, run it as a daemon, and configure Pi to use OmniRoute.
 
 Options:
   --config-only    Skip package installation and daemon startup
-  --base-url URL   OmniRoute OpenAI-compatible base URL
+  --base-url URL   OmniRoute base URL (`/v1` is detected automatically)
   --model ID       OmniRoute route (default: auto/coding:free)
   -h, --help       Show this help
 
 Environment:
   OMNIROUTE_PI_API_KEY                 Endpoint key; local installs default to omniroute-local
-  OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT   Concurrent large chats (default: 2)
+  OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT   Concurrent large chats (default: 8)
   OMNIROUTE_SERVER_HOST                Local bind address (default: 127.0.0.1)
   PI_CODING_AGENT_DIR                  Pi config directory (default: ~/.pi/agent)
 EOF
@@ -69,6 +69,9 @@ esac
 case "$max_heavy" in
   ''|*[!0-9]*|0) printf '%s\n' 'install-omniroute-pi: OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT must be a positive integer' >&2; exit 2 ;;
 esac
+if [ "$config_only" = "0" ] && [ "$max_heavy" -ge 8 ]; then
+  printf '%s\n' 'install-omniroute-pi: warning: eight heavy chats can increase memory use; lower OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT if OmniRoute is OOM-killed' >&2
+fi
 case "$server_host" in
   ''|*[!A-Za-z0-9._:-]*) printf '%s\n' 'install-omniroute-pi: OMNIROUTE_SERVER_HOST must be a hostname or IP address' >&2; exit 2 ;;
 esac
@@ -90,6 +93,46 @@ process.exit(supported ? 0 : 1);
     printf '%s\n' 'install-omniroute-pi: OmniRoute requires Node.js 22.22.2, 24, 25, or 26' >&2
     exit 1
   }
+fi
+
+requested_base_url="${base_url%/}"
+base_url="$(
+  OMNIROUTE_BASE_URL="$requested_base_url" OMNIROUTE_KEY="$api_key" node 2>/dev/null <<'NODE'
+const input = new URL(process.env.OMNIROUTE_BASE_URL);
+input.hash = "";
+input.search = "";
+input.pathname = input.pathname.replace(/\/$/, "");
+const direct = input.toString().replace(/\/$/, "");
+let alternateUrl = new URL(input);
+let candidates;
+if (input.pathname.endsWith("/v1")) {
+  alternateUrl.pathname = input.pathname.slice(0, -3) || "/";
+  candidates = [direct, alternateUrl.toString().replace(/\/$/, "")];
+} else {
+  alternateUrl.pathname = `${input.pathname}/v1`.replace(/\/+/g, "/");
+  const versioned = alternateUrl.toString().replace(/\/$/, "");
+  candidates = input.pathname ? [direct, versioned] : [versioned, direct];
+}
+for (const candidate of candidates) {
+  try {
+    const response = await fetch(`${candidate}/models`, {
+      headers: { Authorization: `Bearer ${process.env.OMNIROUTE_KEY}` },
+      signal: AbortSignal.timeout(1500),
+    });
+    if (response.ok) {
+      console.log(candidate);
+      process.exit(0);
+    }
+  } catch {}
+}
+console.log(candidates[0]);
+NODE
+)" || {
+  printf 'install-omniroute-pi: invalid or unreachable base URL: %s\n' "$requested_base_url" >&2
+  exit 2
+}
+if [ "$base_url" != "$requested_base_url" ]; then
+  printf 'install-omniroute-pi: selected endpoint %s\n' "$base_url"
 fi
 
 catalog_url="${base_url%/}/models"
@@ -120,10 +163,10 @@ if [ "$config_only" = "0" ]; then
     exit 1
   }
 
-  if ! command -v pi >/dev/null 2>&1; then
+  if ! command -v pi >/dev/null 2>&1 || ! pi --version >/dev/null 2>&1; then
     npm install -g --ignore-scripts --legacy-peer-deps @earendil-works/pi-coding-agent
   fi
-  if ! command -v omniroute >/dev/null 2>&1; then
+  if ! command -v omniroute >/dev/null 2>&1 || ! omniroute --version >/dev/null 2>&1; then
     npm install -g --legacy-peer-deps --engine-strict omniroute
   fi
 
@@ -164,8 +207,8 @@ NODE
 
   case "$base_url" in
     http://127.0.0.1:*|http://localhost:*)
-      if [ "$runtime_changed" = "1" ] && server_ready; then
-        omniroute stop >/dev/null
+      if [ "$runtime_changed" = "1" ]; then
+        omniroute stop >/dev/null 2>&1 || true
       fi
       ;;
   esac
@@ -200,6 +243,7 @@ import path from "node:path";
 const file = process.env.PI_MODELS_FILE;
 const catalogResponse = await fetch(`${process.env.OMNIROUTE_BASE_URL.replace(/\/$/, "")}/models`, {
   headers: { Authorization: `Bearer ${process.env.OMNIROUTE_KEY}` },
+  signal: AbortSignal.timeout(5000),
 });
 if (!catalogResponse.ok) throw new Error(`OmniRoute catalog returned HTTP ${catalogResponse.status}`);
 const catalog = await catalogResponse.json();
@@ -270,6 +314,6 @@ if command -v pi >/dev/null 2>&1; then
   pi --no-extensions --no-skills --no-prompt-templates --list-models omniroute >/dev/null
 fi
 
-printf '\nOmniRoute is ready for Pi.\n'
+printf '\nOmniRoute is ready for Pi (%s heavy chats).\n' "$max_heavy"
 printf 'Run: pi --provider omniroute --model %s\n' "$model"
 printf 'Dashboard: %s\n' "${base_url%/v1}"
