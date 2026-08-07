@@ -13,7 +13,7 @@
 
 ## Quick start
 
-Requires Pi and Node.js `>=22.19`. The bundled OmniRoute installer requires a version supported by OmniRoute: Node.js `22.22.2`, `24`, `25`, or `26`.
+Requires Pi. The bundled OmniRoute installer requires a version supported by OmniRoute: Node.js `22.22.2`, `24`, `25`, or `26`. When that Node version is missing or too old on Linux, the universal installer downloads it into `~/.local/share/pi-node/current` (the location Pi's own installer uses) and puts it on `PATH`; other platforms need Node installed manually.
 
 ### All-in-one setup
 

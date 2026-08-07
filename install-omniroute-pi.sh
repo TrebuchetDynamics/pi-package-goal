@@ -202,7 +202,7 @@ NODE
   )"
 
   if omniroute autostart status >/dev/null 2>&1; then
-    omniroute autostart enable >/dev/null 2>&1
+    omniroute autostart enable >/dev/null 2>&1 || true
   fi
 
   case "$base_url" in

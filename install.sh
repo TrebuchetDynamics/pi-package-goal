@@ -191,6 +191,56 @@ require() {
   fi
 }
 
+# Install Node.js 22 into ~/.local/share/pi-node/current when the system node
+# is missing or too old (the settings step and OmniRoute need 22.22.2+).
+# Same location Pi's own installer uses, already on PATH.
+ensure_node() {
+  if command -v node >/dev/null 2>&1 && node -e '
+const [major, minor, patch] = process.versions.node.split(".").map(Number);
+const supported = (major === 22 && (minor > 22 || (minor === 22 && patch >= 2))) || (major >= 24 && major < 27);
+process.exit(supported ? 0 : 1);
+'; then
+    return 0
+  fi
+  [ "$(uname -s)" = "Linux" ] || {
+    printf 'install: Node.js 22 is required; install it manually on this system\n' >&2
+    exit 1
+  }
+  node_ver=22.22.2
+  node_dir=$HOME/.local/share/pi-node
+  node_arch=$(uname -m)
+  case "$node_arch" in
+    x86_64|amd64) node_arch=x64 ;;
+    aarch64|arm64) node_arch=arm64 ;;
+    armv7l) node_arch=armv7l ;;
+    *)
+      printf 'install: unsupported architecture for Node bootstrap: %s\n' "$node_arch" >&2
+      exit 1
+      ;;
+  esac
+  printf 'installing: Node.js %s into %s\n' "$node_ver" "$node_dir"
+  require curl
+  mkdir -p "$node_dir"
+  download=$(mktemp "${TMPDIR:-/tmp}/pi-toolset-node.XXXXXX")
+  trap 'rm -f "$download"' EXIT
+  trap 'rm -f "$download"; exit 1' HUP INT TERM
+  if ! curl -fsSL "https://nodejs.org/dist/v${node_ver}/node-v${node_ver}-linux-${node_arch}.tar.gz" -o "$download"; then
+    printf 'install: failed to download Node.js\n' >&2
+    exit 1
+  fi
+  rm -rf "$node_dir/current"
+  tar -xzf "$download" -C "$node_dir"
+  mv "$node_dir/node-v${node_ver}-linux-${node_arch}" "$node_dir/current"
+  rm -f "$download"
+  trap - EXIT HUP INT TERM
+  hash -r
+  if ! node --version >/dev/null 2>&1; then
+    printf 'install: Node.js bootstrap failed\n' >&2
+    exit 1
+  fi
+  printf 'installed: Node.js (%s)\n' "$(node --version)"
+}
+
 run_remote_installer() {
   url=$1
   label=$2
@@ -247,6 +297,7 @@ if [ "$want_pi" = 1 ]; then
     printf 'present: Pi coding agent (%s)\n' "$(pi --version)"
   else
     printf 'installing: Pi coding agent\n'
+    ensure_node
     run_remote_installer "$PI_INSTALL_URL" Pi
     hash -r
     require pi
@@ -329,7 +380,7 @@ if [ "$want_skills" = 1 ]; then
 fi
 
 if [ "$want_skills" = 1 ] && [ "$want_package" = 1 ] && [ "${AGENT_SKILLS_DRY_RUN:-0}" = "0" ]; then
-  require node
+  ensure_node
   pi_settings="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/settings.json"
   PI_SETTINGS_FILE="$pi_settings" PI_TOOLSET_SOURCE="$PI_TOOLSET_SOURCE" node <<'NODE'
 import fs from "node:fs";
@@ -361,6 +412,7 @@ NODE
 fi
 
 if [ "$want_omniroute" = 1 ]; then
+  ensure_node
   sh "$script_dir/install-omniroute-pi.sh"
   printf 'installed: OmniRoute\n'
 else
